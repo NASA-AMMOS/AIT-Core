@@ -1,0 +1,12 @@
+bottle==0.12
+coverage
+crcmod==1.7
+docopt==0.6.2
+gevent-websocket==0.9.5
+gevent==1.0.2
+greenlet==0.4.9
+intervaltree==2.1.0
+nose
+pyyaml==3.11
+requests
+sgp4==1.4
