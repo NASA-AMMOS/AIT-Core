@@ -1,0 +1,15 @@
+- !Packet
+  name: Packet
+  fields:
+    - !Field
+      name: foo
+      bytes: [0]
+      type: U8
+    - !Field
+      name: bar
+      bytes: 1
+      type: U8
+    - !Field
+      name: baz
+      bytes: [9,10]
+      type: MSB_U16

@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "EVR Dictionary Schema",
+    "description": "EVR Dictionary Schema. See http://json-schema.org/ for more details on how to create this schema.",
+    "type": "array",
+    "items": {
+        "required": ["evr", "name", "code"],
+        "additionalProperties": false,
+        "properties": {
+            "evr": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "code": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            }
+        }
+    }
+}

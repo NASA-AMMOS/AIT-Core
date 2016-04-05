@@ -1,0 +1,24 @@
+- !Command
+  name:      AIT_COMMAND
+  opcode:    0x1000
+  subsystem: CMD
+  desc:      |
+    This is a generic command
+
+  arguments:
+    - !Argument
+      name:  genericargument1
+      desc:  genericargument1
+      units: none
+      type:  MSB_U16
+      bytes: [0,1]
+
+    - !Argument
+      name:  genericargument2
+      desc:  genericargument2
+      units: none
+      type:  U8
+      bytes: [2,3] # invalid nbytes, type says 1 byte but 2 specified
+      enum:
+        0: DISABLED
+        1: ENABLED

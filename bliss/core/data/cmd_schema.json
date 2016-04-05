@@ -1,0 +1,105 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Command Dictionary Schema",
+	"description": "Command Dictionary Schema",
+	"type": "array",
+    "items": {
+        "required": ["command", "name", "opcode"],
+        "additionalProperties": false,
+        "properties": {
+            "command": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "opcode": {
+                "type": "integer"
+            },
+            "subsystem": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "arguments": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["argument", "name", "type", "bytes"],
+                            "properties": {
+                                "argument": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "desc": {
+                                    "type": "string"
+                                },
+                                "units": {
+                                    "type": "string"
+                                },
+                                "range": {
+                                    "type": "array",
+                                    "maxItems": 2
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "bytes": {
+                                    "type": [ "integer", "array" ],
+                                    "description": "TODO: Need to update the min/max when NOT a list",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                },
+                                "enum": {
+                                    "type": "object",
+                                    "description": "TODO: Does not check valid enumeration"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["fixed", "type", "bytes"],
+                            "properties": {
+                                "fixed": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "desc": {
+                                    "type": "string"
+                                },
+                                "units": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "bytes": {
+                                    "type": [ "integer", "array" ],
+                                    "description": "TODO: Need to update the min/max when NOT a list",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                },
+                                "value": {
+                                    "type": "number",
+                                    "description": "TODO: Does not check valid enumeration"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

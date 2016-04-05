@@ -1,0 +1,124 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Flight Software Command Table Schema",
+    "description": "Flight Software Command Table Schema",
+    "type": "array",
+    "items": {
+        "required": ["fswtable", "name", "delimiter", "uptype", "size", "header", "columns"],
+        "additionalProperties": false,
+        "properties": {
+            "fswtable": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "delimiter": {
+                "type": "string"
+            },
+            "uptype": {
+                "type": "integer"
+            },
+            "size": {
+                "type": "integer"
+            },
+            "header": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["fswcolumn", "name", "format", "type"],
+                    "properties": {
+                        "fswcolumn": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "desc": {
+                            "type": "string"
+                        },
+                        "format": {
+                            "type": "string"
+                        },
+                        "units": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "bytes": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": ["@prev"]
+
+                                },
+                                {
+                                    "type": "array",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                }
+                              ],
+                            "description": "TODO: Need to update the min/max when NOT a list"
+                        }
+                    }
+                }
+            },
+            "columns": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["fswcolumn", "name", "format", "type"],
+                    "properties": {
+                        "fswcolumn": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "desc": {
+                            "type": "string"
+                        },
+                        "format": {
+                            "type": "string"
+                        },
+                        "units": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "bytes": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": ["@prev"]
+
+                                },
+                                {
+                                    "type": "array",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                }
+                              ],
+                            "description": "TODO: Need to update the min/max when NOT a list"
+                        },
+                        "enum": {
+                            "type": "object",
+                            "description": "TODO: Does not check valid enumeration"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

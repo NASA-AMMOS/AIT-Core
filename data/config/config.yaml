@@ -1,0 +1,52 @@
+default:
+    command:
+        history:
+            filename: ../../cmdhist.pcap
+    sequence:
+        directory: ../../seq/
+    cmddict:
+        filename:  cmd.yaml
+
+    evrdict:
+        filename:  evr.yaml
+
+    tlmdict:
+        filename:  tlm.yaml
+
+    limits:
+        filename:  limits/limits.yaml
+      
+    table:
+        filename: table.yaml
+
+    bsc:
+        filename: bsc.yaml
+
+    logging:
+        name: bliss
+        hostname: bliss.jpl.nasa.gov
+
+    phase: 'dev'
+
+    data:
+        '1553':
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
+        bad:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
+        lehx:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
+        planning:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
+        sdos:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
+        uplink:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
+        ats:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
+
+    gui:
+      port: 8080
+      telemetry:
+        - stream:
+            name: OCO3_1553_EHS
+            port: 3076

@@ -1,0 +1,45 @@
+# Distribution / Packaging / Build files
+.coverage
+doc/build/*
+*.egg-info/
+*.egg
+
+# Object Files
+*.o
+*.pkl
+*.pyc
+
+# Libraries
+*.lib
+*.a
+
+# Log Files
+bliss-logmsgs-*.txt
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# LaTeX / PDF Documentation
+src/doc/dict/cmd/*.aux
+src/doc/dict/cmd/*.log
+src/doc/dict/cmd/*.out
+src/doc/dict/cmd/*.toc
+src/doc/dict/cmd/*.pdf
+src/doc/dict/cmd/cmddict-07-cmddefs.tex
+
+# Temporary files
+*~
+
+# Unignore (hack)
+!build/clean.py
+
+# Nosetests ouptut file
+nosetests.xml

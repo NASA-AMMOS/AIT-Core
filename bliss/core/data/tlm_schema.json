@@ -1,0 +1,133 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Telemetry Dictionary Schema",
+    "description": "Telemetry Dictionary Schema",
+    "type": "array",
+    "items": {
+        "oneOf" : [{
+            "required" : ["packet", "fields"]
+            }, {
+            "required" : ["include"]
+        }],
+        "additionalProperties": false,
+        "properties": {
+            "packet": {
+                "type": "string"
+            },
+            "include": {
+                "type": "string"
+            },
+            "ccsds": {
+                "type": "object",
+                "apid": {
+                    "type": "string"
+                }
+            },
+            "name": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "constants": {
+                "type": "object",
+                "description": "Key:Value pairs that define a constant and its value."
+            },
+            "functions": {
+                "type": "object",
+                "description": "Function name to function mappings. The function name should be of the form 'R(dn)'. The function body can reference history values and constant values."
+            },
+            "history": {
+                "type": "array",
+                "description": "A list of field names for which history values should be stored."
+            },
+            "fields": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "oneOf" : [{
+                    "required" : ["name", "type"]
+                        }, {
+                    "required" : ["include"]
+                    }],
+                    "properties": {
+                        "include": {
+                            "type": "string"
+                        },
+                        "field": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "units": {
+                            "type": "string"
+                        },
+                        "desc": {
+                            "type": "string"
+                        },
+                        "mask": {
+                            "type": "integer"
+                        },
+                        "bytes": {
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": ["@prev"]
+
+                                },
+                                {
+                                    "type": "array",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                }
+                            ],
+                            "description": "TODO: Need to update the min/max when NOT a list"
+                        },
+                        "aliases": {
+                            "type": "object"
+                        },
+                        "enum": {
+                            "type": "object",
+                            "description": "TODO: Does not check valid enumeration"
+                        },
+                        "value": {
+                            "type": "integer",
+                            "description": "Set value for this defn in hex"
+                        },
+                        "when": {
+                            "type": "string",
+                            "description": "An expression defining when a !Field's value is valid."
+                        },
+                        "dntoeu": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["equation", "units"],
+                            "properties": {
+                                "equation": {
+                                    "type": "string"
+                                },
+                                "units": {
+                                    "type": "string"
+                                },
+                                "when": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

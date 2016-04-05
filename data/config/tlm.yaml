@@ -1,0 +1,88 @@
+- !Packet
+  name: 1553_HS_Packet
+  desc: Ethernet 1553 packet used to monitor telemetry in real-time
+  functions:
+        CurrA_Fx(dn):   (dn - 2) / 1234.0
+
+  fields:
+    - !Field
+      name: Voltage_A
+      desc: Voltage A as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
+      type: MSB_U16
+    - !Field
+      name: Voltage_B
+      desc: Voltage B as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
+      type: MSB_U16
+    - !Field
+      name: Voltage_C
+      desc: Voltage C as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
+      type: MSB_U16
+    - !Field
+      name: Voltage_D
+      desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
+      type: MSB_U16
+      aliases:
+        icd: Voltage_D_Alias
+    - !Field
+      name: Current_A
+      type: MSB_U16
+      dntoeu:
+        equation: CurrA_Fx(raw.Current_A)
+        units:    amperes
+
+- !Packet
+  name: Ethernet_HS_Packet
+  desc: Ethernet Health and Status Packet
+  fields:
+    - !Field
+      name:  sync_word
+      type:  MSB_U32
+      value: 0x01234567
+    - !Field
+      name:  time
+      type:  TIME64
+      desc:  Time when data product created (seconds since GPS/ISS epoch)
+    - !Field
+      name: product_type
+      type: U8
+      enum:
+        0: TABLE_FOO
+        1: TABLE_BAR
+        2: MEM_DUMP
+        3: HEALTH_AND_STATUS
+      when: product_type == 3
+    - !Field
+      name: product_length
+      type: MSB_U32
+      desc: Product length (including this header)
+      mask: 0x00FFFFFF
+    - !Field
+      name: VoltageSampleTime
+      desc: Time measurements were taken
+      type: TIME64
+    - !Field
+      name: Voltage_A
+      desc: Voltage A as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_B
+      desc: Voltage B as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_C
+      desc: Voltage C as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_D
+      desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name:  footer
+      type:  MSB_U32
+      value: 0x89ABCDEF
+
+- !include ccsds_header.yaml

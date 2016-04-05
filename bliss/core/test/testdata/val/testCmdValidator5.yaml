@@ -1,0 +1,24 @@
+- !Command
+  name:      AIT_COMMAND
+  opcode:    0x1000
+  subsystem: CMD
+  desc:      |
+    This is a generic command
+
+  arguments:
+    - !Argument
+      name:  genericargument1
+      desc:  genericargument1
+      units: none
+      type:  MSB_U16
+      bytes: [0,1]
+
+    - !Argument
+      name:  genericargument2
+      desc:  genericargument2
+      units: none
+      type:  U8
+      bytes: 3 # invalid byte order, should be 2
+      enum:
+        0: DISABLED
+        1: ENABLED

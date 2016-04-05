@@ -1,0 +1,21 @@
+# Min/Max Range Example - Simple case for telemetry value range
+- !Limit
+  source: 1553_HS_Packet.Voltage_A
+  desc: Voltage A
+  units: Volts
+  lower:
+    error: 5.0
+    warn: 10.0
+  upper:
+    error: 45.0
+    warn: 40.0
+
+# Error enumerations example - throw error if value is in enum list
+- !Limit
+  source: Ethernet_HS_Packet.product_type
+  desc: Ethernet Product Type field
+  value:
+    error: MEM_DUMP
+    warn:
+      - TABLE_FOO
+      - TABLE_BAR
