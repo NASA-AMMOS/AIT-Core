@@ -20,6 +20,12 @@ tools, but as the OCO-3 tools are generalized and made more
 configurable, they'll be brought over to this repository.
 
 
+Build Status
+------------
+
+See the [BLISS Buildbot]().
+
+
 File and Directory Structure
 ----------------------------
 
@@ -30,27 +36,31 @@ File and Directory Structure
     .
 
 
+Developer Quickstart
+--------------------
 
-Build
------
+Before you install `bliss-core` you should install
+[virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) to properly
+isolate your development environment. It is also recommended that you install
+[virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/install.html)
+for convenience. The following instructions will assume that you have installed
+both already.
 
 JPLers may clone (checkout) this repository from the [JPL
 GitHub](https://github.jpl.nasa.gov):
 
     $ git clone https://github.jpl.nasa.gov/bliss/bliss-core.git
 
-to build and test on Mac OS X, Linux (Unix), and Windows (under
-[Cygwin](http://cygwin.com)):
 
-    $ cd <this directory>
-    $ source setup.sh
-    $ build/test.sh
+First you need to make a virtual environment into which we'll install the
+`bliss-core` package and its dependencies:
 
+    $ mkvirtualenv bliss-core-development
 
-Build Status
-------------
+Install the `bliss-core` package and its dependencies in `develop` mode so you
+can continue to edit and test the package as needed:
 
-See the [BLISS Buildbot]().
+    $ python setup.py develop
 
 
 Unit Tests
@@ -59,9 +69,18 @@ Unit Tests
 BLISS uses the [Nose](https://nose.readthedocs.org/en/latest/) unit
 test framework.  To run the tests in `python/bliss/test`:
 
-    $ cd <this directory>
-    $ source setup.sh
-    $ build/test.sh
+    $ nosetests
+
+
+Documentation
+-------------
+
+BLISS uses Sphinx to build its documentation. You can build the documentation
+with:
+
+    $ python setup.py build_sphinx
+
+To view the documentation, open `doc/build/html/index.html` in a web browser.
 
 
 Contributing
