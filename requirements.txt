@@ -7,6 +7,7 @@ gevent-websocket==0.9.5
 gevent==1.0.2
 greenlet==0.4.9
 intervaltree==2.1.0
+jsonschema==2.5.1
 pyyaml==3.11
 requests
 sgp4==1.4
