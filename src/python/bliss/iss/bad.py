@@ -4,8 +4,7 @@ from datetime import datetime
 from collections import namedtuple
 import os
 import yaml
-import pkt
-import dmc
+from bliss import pkt, dmc
 
 
 vec3d = namedtuple('vec3d', 'x y z')
