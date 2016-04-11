@@ -4,8 +4,6 @@ import os
 
 PROJECT_BIN_PATH = "./bin"
 SRC_PATH = "src/python"
-with open("./requirements.txt") as in_file:
-    REQUIREMENTS_LIST = in_file.read().splitlines()
 
 setup(
     name = "bliss-core",
@@ -17,7 +15,22 @@ setup(
         for f in os.listdir(PROJECT_BIN_PATH)
     ],
 
-    install_requires = REQUIREMENTS_LIST,
+    install_requires = [
+        'nose==1.3.7',
+        'bottle==0.12.9',
+        'coverage',
+        'crcmod==1.7',
+        'docopt==0.6.2',
+        'gevent-websocket==0.9.5',
+        'gevent==1.0.2',
+        'greenlet==0.4.9',
+        'intervaltree==2.1.0',
+        'jsonschema==2.5.1',
+        'pyyaml==3.11',
+        'requests',
+        'sgp4==1.4',
+        'Sphinx==1.4',
+    ],
 
     package_dir = {"": SRC_PATH},
 
