@@ -29,9 +29,10 @@ See the [BLISS Buildbot]().
 File and Directory Structure
 ----------------------------
 
-    ├── build        <--  Helpful build and test scripts
-    ├── config       <--  Instrument-specific CMD/TLM dictionaries, etc.
-    ├── doc          <--  Documentation, ICDs, etc.
+    ├── bin          <--  Utilities and command line scripts
+    ├── doc          <--  Project and API level documentation
+    ├── src/doc/dict <--  Cmd/Tlm Dictionary definitions and documentation
+    ├── src/gui      <--  BLIS GUI source tree
     ├── src/python   <--  BLISS Python source tree
     .
 
