@@ -70,7 +70,7 @@ Unit Tests
 BLISS uses the [Nose](https://nose.readthedocs.org/en/latest/) unit
 test framework.  To run the tests in `python/bliss/test`:
 
-    $ nosetests
+    $ python setup.py nosetests
 
 
 Documentation
