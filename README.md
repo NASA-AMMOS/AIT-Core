@@ -32,7 +32,7 @@ File and Directory Structure
     ├── bin          <--  Utilities and command line scripts
     ├── doc          <--  Project and API level documentation
     ├── src/doc/dict <--  Cmd/Tlm Dictionary definitions and documentation
-    ├── src/gui      <--  BLIS GUI source tree
+    ├── src/gui      <--  BLISS GUI source tree
     ├── src/python   <--  BLISS Python source tree
     .
 
