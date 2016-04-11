@@ -16,9 +16,7 @@ setup(
     ],
 
     install_requires = [
-        'nose==1.3.7',
         'bottle==0.12.9',
-        'coverage',
         'docopt==0.6.2',
         'gevent-websocket==0.9.5',
         'gevent==1.0.2',
@@ -26,8 +24,12 @@ setup(
         'jsonschema==2.5.1',
         'pyyaml==3.11',
         'requests==2.9.1',
-        'Sphinx==1.4',
     ],
+
+    extras_require = {
+        'docs': ['Sphinx==1.4'],
+        'tests': ['nose', 'coverage'],
+    },
 
     package_dir = {"": SRC_PATH},
 
