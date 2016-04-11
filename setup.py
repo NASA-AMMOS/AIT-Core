@@ -27,7 +27,7 @@ setup(
         'intervaltree==2.1.0',
         'jsonschema==2.5.1',
         'pyyaml==3.11',
-        'requests',
+        'requests==2.9.1',
         'sgp4==1.4',
         'Sphinx==1.4',
     ],
