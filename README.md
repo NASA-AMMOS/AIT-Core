@@ -58,10 +58,15 @@ First you need to make a virtual environment into which we'll install the
 
     $ mkvirtualenv bliss-core-development
 
-Install the `bliss-core` package and its dependencies in `develop` mode so you
-can continue to edit and test the package as needed:
+Install the `bliss-core` package and its dependencies in `edit` mode so you can
+continue to develop on the code.
 
-    $ python setup.py develop
+    $ pip install -e .[docs,tests]
+
+Note, if you don't want to be able to build the docs or run the unit tests you
+can save a small amount of dependency installation time by just running
+
+    $ pip install -e .
 
 
 Unit Tests
