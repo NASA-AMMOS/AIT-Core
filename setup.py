@@ -27,7 +27,7 @@ setup(
     ],
 
     extras_require = {
-        'docs': ['Sphinx==1.4'],
+        'docs': ['Sphinx==1.4', 'sphinx_rtd_theme'],
         'tests': ['nose', 'coverage'],
     },
 
