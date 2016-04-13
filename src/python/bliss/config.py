@@ -17,9 +17,9 @@ U.S. Government Sponsorship acknowledged.
 import os
 import platform
 import sys
+from pkg_resources import Requirement, resource_filename
 
 import yaml
-
 
 from bliss import log
 from bliss import util
@@ -74,17 +74,61 @@ class BlissConfig (object):
         the given YAML configuration file or passed-in via the given
         config dictionary.
 
-        If pathname is not given, it defaults to:
+        If pathname is not given, it attempts to load the default configuration
+        values as set in the BLISS settings.yaml file. If no valid config
+        file can be located this way, it will default to an empty dictionary.
 
-            ${BLISS_ROOT}/config/${BLISS_MISSION}/config.yaml
+        If pathname is not give it will attempt to locate a 'config.yaml' file
+        using the 'config_path' attribute in the default settings.yaml file
+        located in the bliss package. If a configuration file cannot be located
+        in this way then an empty configuration dictionary will be set.
         """
         if pathname is None:
-            pathname = os.path.join(BlissConfig.CONFIG_DIR, 'config.yaml')
+            # Locate the BLISS package settings file.
+            package_location = Requirement.parse("bliss-core")
+            settings_file = resource_filename(
+                package_location,
+                os.path.join("bliss", "data", "settings.yaml")
+            )
+
+            # Try to pull out the 'config_path' settings value from the
+            # default BLISS package settings file.
+            with open(settings_file, 'r') as config_in:
+                try: 
+                    loaded_config = yaml.load(config_in)
+                except IOError, e:
+                    msg = 'Could not read BLISS settings.yaml file {} : {}'
+                    log.error(msg, settings_file, str(e))
+
+            try:
+                config_path = loaded_config['config_path']
+            except KeyError, e:
+                config_path = None
+                msg = 'Could not locate "config_path" setting {} : {}'
+                log.error(msg, settings_file, str(e))
+                
+            # If we're given a relative path for the config path we assume
+            # that it is stored within bliss-core package. The most likely
+            # situation for this would be during development when the test
+            # configuration values are used.
+            if config_path:
+                if not os.path.isabs(config_path):
+                    pathname = os.path.join(
+                        package_location.key,
+                        config_path,
+                        "config.yaml"
+                    )
+                else:
+                    pathname = os.path.join(config_path, "config.yaml")
+
+                if not os.path.isfile(pathname):
+                    pathname = None
 
         if pathname and config is None:
             config  = self._load(pathname)
-        elif config is None:
-            config = { }
+
+        if config is None:
+            config = {}
 
         self._pathname = pathname
         self._config   = config
