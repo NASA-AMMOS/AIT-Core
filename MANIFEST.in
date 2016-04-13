@@ -1,0 +1,2 @@
+include src/python/bliss/data/settings.yaml
+include README.md

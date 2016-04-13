@@ -9,6 +9,7 @@ setup(
     name = "bliss-core",
     version = "0.1",
     packages = find_packages(where=SRC_PATH),
+    include_package_data = True,
 
     scripts = [
         os.path.join(PROJECT_BIN_PATH, f)
