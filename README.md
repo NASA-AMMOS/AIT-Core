@@ -68,6 +68,15 @@ can save a small amount of dependency installation time by just running
 
     $ pip install -e .
 
+Similarly, if you just want to install the additional documentation or test
+dependencies you can do so with the below commands:
+
+    # Install the base dependencies and extra documentation dependencies
+    $ pip install -e .[docs]
+
+    # Install the base dependencies and extra unit test dependencies
+    $ pip install -e .[tests]
+
 
 Unit Tests
 ----------
