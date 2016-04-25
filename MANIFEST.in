@@ -1,0 +1,2 @@
+include data/config/*.yaml
+include README.md
