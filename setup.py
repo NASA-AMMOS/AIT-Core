@@ -9,6 +9,7 @@ setup(
     author       = 'BLISS-Core Development Team',
     author_email = 'bliss@jpl.nasa.gov',
 
+    include_package_data = True,
 
     scripts = [
         os.path.join('./bin', f) for f in os.listdir('./bin')
