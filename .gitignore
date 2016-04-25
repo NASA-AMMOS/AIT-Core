@@ -1,6 +1,7 @@
 # Distribution / Packaging / Build files
 .coverage
-build/
+build/*
+doc/build/*
 *.egg-info/
 *.egg
 
@@ -37,3 +38,7 @@ src/doc/dict/cmd/cmddict-07-cmddefs.tex
 
 # Temporary files
 *~
+
+
+# Unignore (hack)
+!build/clean.py

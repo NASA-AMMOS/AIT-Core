@@ -1,0 +1,69 @@
+- !Packet
+  name: CCSDS
+  fields:
+    - !Field
+      name:   version
+      desc:   CCSDS Version
+      bytes:  0
+      type:   U8
+      mask:   0xE0
+
+    - !Field
+      name:   packet_type
+      bytes:  0
+      type:   U8
+      mask:   0x10
+
+    - !Field
+      name:   secondary_header_flag
+      desc:   |
+        Indicates whether, or not, a Secondary Header follows the primary
+        header (always set to 1)
+      bytes:  0
+      type:   U8
+      mask:   0x08
+      enum:
+        0: 'Not Present'
+        1: 'Present'
+
+    - !Field
+      name:   apid
+      desc:   |
+        Used in conjunction with packet_type to define the Logical
+        Data Path
+      bytes:  [0, 1]
+      type:   MSB_U16
+      mask:   0x07FF
+
+    - !Field
+      name:   sequence_flags
+      desc:   |
+        When sending commands, the sequence flags must be marked as
+        unsegmented data. All other PL packets may be per source/destination
+        ICDs.
+      bytes:  2
+      type:   U8
+      mask:   0xC0
+      enum:
+        0: 'Continuation Segment'
+        1: 'First Segment'
+        2: 'Last Segment'
+        3: 'Unsegmented'
+
+    - !Field
+      name:   sequence_count
+      desc:   |
+        Sequential count which numbers each packet on a Logical Data Path,
+        i.e. a separate counter is maintained for each source-destination
+        pair.
+      bytes:  [2, 3]
+      mask:   0x03FF
+      type:   MSB_U16
+
+    - !Field
+      name:   packet_length
+      desc:   |
+        Sequential count which expresses the length of the remainder of the
+        packet including checkword if present. The value is the number of
+        bytes (octets) following the field minus 1.
+      type:   MSB_U16

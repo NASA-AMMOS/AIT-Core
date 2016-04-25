@@ -1,0 +1,9 @@
+default:
+    cmddict:
+        filename:  cmd.yaml
+
+    evrdict:
+        filename:  evr.yaml
+
+    tlmdict:
+        filename:  tlm.yaml
