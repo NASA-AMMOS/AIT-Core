@@ -9,8 +9,9 @@ Welcome to BLISS-Core's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
+   bliss.rst
 
 
 Indices and tables
