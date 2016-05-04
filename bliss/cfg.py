@@ -116,10 +116,10 @@ class BlissConfig (object):
     NOTE: The platform string is Python's sys.platform, i.e. 'linux2',
     'darwin', 'win32'.
     """
-    ROOT_DIR = os.path.abspath( os.environ.get('BLISS_ROOT', os.getcwd()) )
+    _ROOT_DIR = os.path.abspath( os.environ.get('BLISS_ROOT', os.getcwd()) )
 
     if 'BLISS_ROOT' not in os.environ:
-        log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % ROOT_DIR)
+        log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
 
     def __init__ (self, filename=None, data=None, config=None):
@@ -200,7 +200,7 @@ class BlissConfig (object):
     def _directory (self):
         """The directory for this BlissConfig."""
         if self._filename is None:
-            return os.path.join(self.ROOT_DIR, 'config')
+            return os.path.join(self._ROOT_DIR, 'config')
         else:
             return os.path.dirname(self._filename)
 
