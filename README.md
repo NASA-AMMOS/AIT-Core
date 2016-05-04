@@ -97,6 +97,11 @@ with:
 
 To view the documentation, open `doc/build/html/index.html` in a web browser.
 
+If you need to update the auto-generated documentation you can run the
+following command to rebuild all of the `bliss` package documentation:
+
+    $ sphinx-apidoc --separate --force --no-toc -o doc/source bliss bliss/test
+
 
 Contributing
 ------------
