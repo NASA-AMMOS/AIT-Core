@@ -13,6 +13,7 @@ Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
 U.S. Government Sponsorship acknowledged.
 """
 
+import datetime
 import os
 import struct
 import time
@@ -39,6 +40,8 @@ def testPCapGlobalHeader ():
     assert header.snaplen       == 65535
     assert header.network       == 147
     assert str(header)          == header._data
+    assert len(header)          == 24
+    assert header.incomplete()  == False
 
 
 def testPCapPacketHeader ():
@@ -166,6 +169,23 @@ def testWriteRead ():
         assert packet is None
 
     os.unlink(TmpFilename)
+
+
+def testPCapPacketHeaderInit ():
+    header = bliss.pcap.PCapPacketHeader()
+    assert header._format == 'IIII'
+    assert header._size == 16
+    assert header.incl_len == 0
+    assert header.orig_len == 0
+    assert header._data == str(header)
+    assert header._swap == '@'
+
+    ts, usec = bliss.dmc.getTimestampUTC()
+    header.ts_sec, header.ts_usec = ts, usec
+
+    float_ts = float(ts) + (float(usec) / 1e6)
+    assert header.ts == float_ts
+    assert header.timestamp == datetime.datetime.utcfromtimestamp(float_ts)
 
 
 if __name__ == '__main__':
