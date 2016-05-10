@@ -63,3 +63,61 @@ class TestYAMLProcessor(object):
         )
 
         os.remove('/tmp/test.yaml')
+
+    def test_basic_process_doc_object_name_strip(self):
+        yaml_docs = (
+            'a: hello\n'
+            '--- !foo\n'
+            'b: goodbye\n'
+        )
+
+        with open('/tmp/test.yaml', 'w') as out:
+            out.write(yaml_docs)
+
+        yp = bliss.val.YAMLProcessor(clean=False)
+        out = yp.process('/tmp/test.yaml')
+
+        assert len(yp.doclines) == 2
+        assert yp.doclines == [1, 3]
+        assert '!foo' not in out
+
+    def test_basic_process_seq_name_strip(self):
+        yaml_docs = (
+            ' - !bar\n'
+            ' - blah\n'
+        )
+
+        with open('/tmp/test.yaml', 'w') as out:
+            out.write(yaml_docs)
+
+        yp = bliss.val.YAMLProcessor(clean=False)
+        out = yp.process('/tmp/test.yaml')
+
+        assert "bar:" in out
+
+    def test_empty_file_process(self):
+        open('/tmp/test.yaml', 'w').close()
+
+        yp = bliss.val.YAMLProcessor(clean=False)
+        nose.tools.assert_raises(
+            bliss.val.YAMLError,
+            yp.process, '/tmp/test.yaml'
+        )
+
+    def test_invalid_yaml_process(self):
+        yaml_docs = """
+        ---
+        a: these newlines and white space break stuff
+        ---
+        b: processing wont even get here
+        """
+        open('/tmp/test.yaml', 'w').close()
+
+        yp = bliss.val.YAMLProcessor(clean=False)
+        nose.tools.assert_raises(
+            IOError,
+            yp.process, '/tmp/thisFileDoesntExistAndWillCauseAnError'
+        )
+
+if __name__ == '__main__':
+    nose.main()
