@@ -85,7 +85,7 @@ def ecef2geodetic (x, y, z, ellipsoid=None):
   lat  = math.atan((z + ep2 * Z_0) / r)
   lon  = math.atan2(y, x)
 
-  return lat, lon, z
+  return lat, lon, h
 
 
 def eci2ecef (x, y, z, gmst=None):
