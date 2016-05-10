@@ -104,7 +104,7 @@ class YAMLProcessor (object):
                     output = output + line
 
             if linenum is None:
-                msg = "Empty YAML file: " + yml
+                msg = "Empty YAML file: " + ymlfile
                 raise YAMLError(msg)
             else:
                 # Append one more document to docline for the end
@@ -113,7 +113,7 @@ class YAMLProcessor (object):
             return output
 
         except IOError, e:
-            msg = "Could not process YAML file '" + self._ymlfile + "': '" + str(e) + "'"
+            msg = "Could not process YAML file '" + ymlfile + "': '" + str(e) + "'"
             raise IOError(msg)
 
 
