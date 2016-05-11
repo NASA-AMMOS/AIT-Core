@@ -5,6 +5,8 @@ import mock
 import nose
 
 class TestYAMLProcessor(object):
+    test_yaml_file = '/tmp/test.yaml'
+
     def test_yamlprocess_init(self):
         yp = bliss.val.YAMLProcessor()
         assert yp.loaded == False
@@ -35,16 +37,16 @@ class TestYAMLProcessor(object):
             'b: goodbye\n'
         )
 
-        with open('/tmp/test.yaml', 'wb') as out:
+        with open(self.test_yaml_file, 'wb') as out:
             out.write(yaml_docs)
 
         yp = bliss.val.YAMLProcessor(clean=False)
-        yp.load('/tmp/test.yaml')
+        yp.load(self.test_yaml_file)
         assert len(yp.data) == 2
         assert yp.data[0]['a'] == 'hello'
         assert yp.data[1]['b'] == 'goodbye'
 
-        os.remove('/tmp/test.yaml')
+        os.remove(self.test_yaml_file)
 
     def test_invalid_yaml_load(self):
         yaml_docs = """
@@ -53,16 +55,16 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        with open('/tmp/test.yaml', 'wb') as out:
+        with open(self.test_yaml_file, 'wb') as out:
             out.write(yaml_docs)
 
         yp = bliss.val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
             bliss.val.YAMLError,
-            yp.load, '/tmp/test.yaml'
+            yp.load, self.test_yaml_file
         )
 
-        os.remove('/tmp/test.yaml')
+        os.remove(self.test_yaml_file)
 
     def test_basic_process_doc_object_name_strip(self):
         yaml_docs = (
@@ -71,15 +73,16 @@ class TestYAMLProcessor(object):
             'b: goodbye\n'
         )
 
-        with open('/tmp/test.yaml', 'w') as out:
+        with open(self.test_yaml_file, 'w') as out:
             out.write(yaml_docs)
 
         yp = bliss.val.YAMLProcessor(clean=False)
-        out = yp.process('/tmp/test.yaml')
+        out = yp.process(self.test_yaml_file)
 
         assert len(yp.doclines) == 2
         assert yp.doclines == [1, 3]
         assert '!foo' not in out
+        os.remove(self.test_yaml_file)
 
     def test_basic_process_seq_name_strip(self):
         yaml_docs = (
@@ -87,22 +90,25 @@ class TestYAMLProcessor(object):
             ' - blah\n'
         )
 
-        with open('/tmp/test.yaml', 'w') as out:
+        with open(self.test_yaml_file, 'w') as out:
             out.write(yaml_docs)
 
         yp = bliss.val.YAMLProcessor(clean=False)
-        out = yp.process('/tmp/test.yaml')
+        out = yp.process(self.test_yaml_file)
 
         assert "bar:" in out
+        os.remove(self.test_yaml_file)
 
     def test_empty_file_process(self):
-        open('/tmp/test.yaml', 'w').close()
+        open(self.test_yaml_file, 'w').close()
 
         yp = bliss.val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
             bliss.val.YAMLError,
-            yp.process, '/tmp/test.yaml'
+            yp.process, self.test_yaml_file
         )
+
+        os.remove(self.test_yaml_file)
 
     def test_invalid_yaml_process(self):
         yaml_docs = """
@@ -111,7 +117,7 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        open('/tmp/test.yaml', 'w').close()
+        open(self.test_yaml_file, 'w').close()
 
         yp = bliss.val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
