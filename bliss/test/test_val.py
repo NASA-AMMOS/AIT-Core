@@ -168,6 +168,58 @@ class TestSchemaProcessor(object):
         os.remove(test_file_path)
 
 
+class TestErrorHandler(object):
+    def test_error_handler_init(self):
+        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        assert eh.error == 'error'
+        assert eh.ymlfile == 'ymlfile'
+        assert eh.schemafile == 'schemafile'
+
+    def test_process_bad_root_object(self):
+        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        messages = []
+        error = mock.MagicMock()
+        error.message = "this is not of type u'object'"
+        eh.process(1, [1, 2], error, messages)
+        assert len(messages) == 1
+        assert messages[0] == "Invalid root object in YAML. Check format."
+
+    @mock.patch('bliss.val.ErrorHandler.pretty')
+    def test_process_docline_docnum_mismatch(self, pretty_mock):
+        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        messages = []
+        error = mock.MagicMock()
+        error.message = "Some error message"
+        eh.process(1, [1, 2, 3, 4], error, messages)
+        assert pretty_mock.called
+        pretty_mock.assert_called_with(3, 4, error, messages)
+
+
+    @mock.patch('bliss.val.ErrorHandler.pretty')
+    def test_procces_with_single_doc(self, pretty_mock):
+        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        messages = []
+        error = mock.MagicMock()
+        error.message = "Some error message"
+        eh.process(1, [1, 2], error, messages)
+        assert pretty_mock.called
+        pretty_mock.assert_called_with(1, 3, error, messages)
+
+
+@mock.patch('bliss.log.error')
+def test_YAMLValidationError_exception(log_mock):
+    msg = 'foo'
+    e = bliss.val.YAMLValidationError(msg)
+    assert msg == e.msg
+    log_mock.assert_called_with(msg)
+
+@mock.patch('bliss.log.error')
+def test_YAMLError_exception(log_mock):
+    msg = 'foo'
+    e = bliss.val.YAMLError(msg)
+    assert msg == e.msg
+    log_mock.assert_called_with(msg)
+
 def val(args):
     msgs = []
 
