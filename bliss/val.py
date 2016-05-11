@@ -500,7 +500,7 @@ class TlmValidator (Validator):
                 #
                 ###
 
-                flddefns = pktdefn.flddefns
+                flddefns = pktdefn.fields
                 for fld in flddefns:
                     # check field rules
                     for rule in fldrules:
