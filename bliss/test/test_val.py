@@ -1,8 +1,11 @@
 import os
+import jsonschema
 
 import bliss
 import mock
 import nose
+
+DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
 
 class TestYAMLProcessor(object):
     test_yaml_file = '/tmp/test.yaml'
@@ -127,7 +130,43 @@ class TestYAMLProcessor(object):
 
         os.remove(self.test_yaml_file)
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
+
+class TestSchemaProcessor(object):
+    def test_schema_load(self):
+        """ Test variable settings from proper schema loading. """
+        schemaproc = bliss.val.SchemaProcessor()
+
+        # Test success
+        schema = os.path.join(DATA_PATH, "testSchemaLoad1.json")
+        schemaproc.load(schema)
+        assert schemaproc.data is not None
+        assert isinstance(schemaproc.data, dict)
+        assert schemaproc.loaded
+        assert schemaproc.schemafile == schemaproc._schemafile
+
+    def test_schema_load_failure_bad_file(self):
+        """ Test Exception raise on not existent file load. """
+        schemaproc = bliss.val.SchemaProcessor()
+
+        schema = os.path.join('not', 'a', 'valid', 'path.json')
+        nose.tools.assert_raises(
+            jsonschema.SchemaError,
+            schemaproc.load, schema
+        )
+
+    def test_schema_load_failure_no_json_object(self):
+        test_file_path = '/tmp/test.json'
+        open(test_file_path, 'w').close()
+
+        schemaproc = bliss.val.SchemaProcessor()
+
+        nose.tools.assert_raises(
+            jsonschema.SchemaError,
+            schemaproc.load, test_file_path
+        )
+
+        os.remove(test_file_path)
+
 
 def val(args):
     msgs = []
@@ -158,17 +197,6 @@ def tlmval(args):
     v = validator.validate(messages=msgs)
 
     return msgs, v
-
-def testSchemaLoad():
-    schemaproc = bliss.val.SchemaProcessor()
-
-    # Test success
-    schema = os.path.join(DATA_PATH, "testSchemaLoad1.json")
-    schemaproc.load(schema)
-    assert schemaproc.data is not None
-    assert isinstance(schemaproc.data, dict)
-    assert schemaproc.loaded
-
 
 def testYAMLProcesserLoad():
     ymlproc = bliss.val.YAMLProcessor()
