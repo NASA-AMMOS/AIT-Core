@@ -1,0 +1,206 @@
+--- !Command
+name:      OCO3_DCC_RAW
+opcode:    0x1001
+subsystem: DCC
+desc:      |
+  This command sends an ASCII passthrough command to the cameras.
+
+arguments:
+  - !Argument
+    name:  raw_command
+    desc:  ASCII command to send to cameras
+    units: none
+    type:  S80
+    bytes: [0,79]
+
+
+
+--- !Command
+name:      OCO3_CMD_START_SEQUENCE_NOW
+opcode:    0x2001
+subsystem: CMD
+desc:      |
+  This command starts a specified command sequence.
+
+arguments:
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [0,1]
+
+
+
+--- !Command
+name:      OCO3_CMD_SET_SEQ_ENABLE
+opcode:    0x2002
+subsystem: CMD
+desc:      |
+  This command enables or disabled the specified sequence.  If a sequence to be
+  disabled is currently executing, it will be interrupted.
+
+arguments:
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [0,1]
+
+  - !Argument
+    name:  enable
+    desc:  Enable
+    units: none
+    type:  U8
+    bytes: 2
+    enum:
+      0: DISABLED
+      1: ENABLED
+
+
+
+--- !Command
+name:      OCO3_CMD_DOWNLOAD_SEQUENCE
+opcode:    0x2003
+subsystem: CMD
+desc:      |
+  This command downloads a command sequence.
+
+arguments:
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [0,1]
+
+
+
+--- !Command
+name:      OCO3_CMD_LIST_SEQUENCES
+opcode:    0x2004
+subsystem: CMD
+desc:      |
+  This command downloads a list of uploaded sequences.
+
+
+
+--- !Command
+name:      OCO3_CMD_DELETE_SEQUENCE
+opcode:    0x2005
+subsystem: CMD
+desc:      |
+  This command deletes the specified sequence.
+
+arguments:
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [0,1]
+
+
+
+--- !Command
+name:      OCO3_CMD_ADD_SCHEDULE_ENTRY
+opcode:    0x2006
+subsystem: CMD
+desc:      |
+  This command adds an entry to the schedule table.
+
+arguments:
+  - !Argument
+    name:  secs
+    desc:  Seconds component of time since the epoch
+    units: seconds
+    type:  MSB_U32
+    bytes: [0,3]
+
+  - !Argument
+    name:  subsecs
+    desc:  Subseconds component of time since the epoch
+    units: 256ths of a second
+    type:  U8
+    bytes: 4
+
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [5,6]
+
+
+
+--- !Command
+name:      OCO3_CORE_SET_UPLOAD_ENABLE
+opcode:    0x3001
+subsystem: CORE
+desc:      |
+  This command enables/disables uploads.
+
+arguments:
+  - !Argument
+    name:  upload_enable
+    desc:  Upload enable
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: DISABLED
+      1: ENABLED
+
+
+
+--- !Command
+name:      OCO3_CORE_START_UPLOAD
+opcode:    0x3002
+subsystem: CORE
+desc:      |
+  This command starts an upload into the staging area.
+
+
+
+--- !Command
+name:      OCO3_CORE_END_UPLOAD
+opcode:    0x3003
+subsystem: CORE
+desc:      |
+  This command ends an upload into the staging area.
+
+
+
+--- !Command
+name:      OCO3_CORE_XFER_SEQUENCE
+opcode:    0x3009
+subsystem: CORE
+desc:      |
+  This command copies a sequence from the staging area to the sequence table.
+
+
+
+--- !Command
+name:      OCO3_CORE_XFER_TABLE
+opcode:    0x300A
+subsystem: CORE
+desc:      |
+  This command loads an entire table from the staging area.
+
+arguments:
+  - !Argument
+    name:  table_type
+    desc:  Table type
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: SCHEDULE
+      1: FAULT_RESPONSE
+      3: DOWNLINK_WINDOWS
+      4: CRC
+      5: TARGET
+      6: SCRUB
+      7: KEEP_OUT_ZONES
+      8: LINE_OF_SIGHT_ERROR

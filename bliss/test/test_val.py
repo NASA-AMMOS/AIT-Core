@@ -125,5 +125,199 @@ class TestYAMLProcessor(object):
             yp.process, '/tmp/thisFileDoesntExistAndWillCauseAnError'
         )
 
+        os.remove(self.test_yaml_file)
+
+DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
+
+def val(args):
+    msgs = []
+
+    validator = bliss.val.Validator(*args)
+    v = validator.validate(messages=msgs)
+
+    return msgs, v
+
+def dispmsgs(msgs):
+    for msg in msgs:
+        bliss.log.error(msg)
+
+
+def cmdval(args):
+    msgs = []
+
+    validator = bliss.val.CmdValidator(*args)
+    v = validator.validate(messages=msgs)
+
+    return msgs, v
+
+
+def tlmval(args):
+    msgs = []
+
+    validator = bliss.val.TlmValidator(*args)
+    v = validator.validate(messages=msgs)
+
+    return msgs, v
+
+def testSchemaLoad():
+    schemaproc = bliss.val.SchemaProcessor()
+
+    # Test success
+    schema = os.path.join(DATA_PATH, "testSchemaLoad1.json")
+    schemaproc.load(schema)
+    assert schemaproc.data is not None
+    assert isinstance(schemaproc.data, dict)
+    assert schemaproc.loaded
+
+
+def testYAMLProcesserLoad():
+    ymlproc = bliss.val.YAMLProcessor()
+
+    # Test bad path
+    try:
+        ymlfile = os.path.join('invalid', 'file', 'path.yaml')
+        ymlproc.load(ymlfile)
+        assert False
+    except IOError:
+        assert True
+        assert not ymlproc.loaded
+
+    # Test valid yaml
+    ymlproc.load(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
+
+    assert ymlproc.data is not None
+    assert ymlproc.loaded
+
+
+def testYAMLProcesserProcess():
+    ymlproc = bliss.val.YAMLProcessor()
+    ymlproc.process(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
+
+    # check the document lines are correct
+    doclines = [0, 17, 34, 62, 79, 88, 105, 136, 156, 165, 174, 183, 206]
+    assert doclines == ymlproc.doclines
+
+def testValidatorCmd():
+    msgs = []
+
+    # test successful validation
+    msgs, v = val([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    assert v
+    assert len(msgs) == 0
+
+    # test failed validation
+    msgs, v = val([os.path.join(DATA_PATH,  "testInvalidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+def testCmdValidator():
+    # test successful cmd validation
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+    # test failed cmd validation - duplicate name
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test failed cmd validation - duplicate opcode
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test failed cmd validation - bad argtype
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator3.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test failed cmd validation - bad nbytes
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator4.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 2
+
+    # test failed cmd validation - bad byte order
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator5.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test failed cmd validation - bad start byte
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator6.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test success cmd validation - ensure quoted YAML booleans in enums
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator7.yaml"), bliss.cmd.getDefaultSchema()])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+    # test failed cmd validation - YAML booleans not quoted
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator8.yaml"), bliss.cmd.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 2
+
+def testTlmValidator():
+    # test successful tlm validation
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testValidTlm1.yaml"), bliss.tlm.getDefaultSchema()])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+    # test failed tlm validation - duplicate packet name
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), bliss.tlm.getDefaultSchema()])
+    assert not v
+    dispmsgs(msgs)
+    assert len(msgs) == 1
+
+    # test failed tlm validation - duplicate field name
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator2.yaml"), bliss.tlm.getDefaultSchema()])
+    assert not v
+    print len(msgs)
+    assert len(msgs) == 1
+
+    # test failed tlm validation - invalid field type
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator3.yaml"), bliss.tlm.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+
+    # test failed tlm validation - invalid field size for field type specified
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator4.yaml"), bliss.tlm.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 2
+
+    # test failed tlm validation - un-quoted YAML special variables in enumerations
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator5.yaml"), bliss.tlm.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 2
+
+
+def testCmdDictValidation():
+    '''Validation test of current command dictionary'''
+    msgs, v = cmdval([bliss.cfg.BlissConfig().cmddict.filename, bliss.cmd.getDefaultSchema()])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+
+def testTlmDictValidation():
+    '''Validation test of current telemetry dictionary'''
+    msgs, v = tlmval([bliss.cfg.BlissConfig().tlmdict.filename, bliss.tlm.getDefaultSchema()])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+
+def testEvrValidation():
+    '''Validation test of current telemetry dictionary'''
+    yml = bliss.cfg.BlissConfig().evrdict.filename
+    schema = os.path.join(os.path.dirname(yml), 'evr_schema.json')
+    msgs, v = val([yml, schema])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+
 if __name__ == '__main__':
     nose.main()
