@@ -11,6 +11,7 @@ import dtype
 import evr
 import gds
 import geom
+import gui
 import log
 import pcap
 import seq
