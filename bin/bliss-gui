@@ -10,21 +10,17 @@ Options:
   browser    GUI client browser to start (may be "none")
 """
 
-
 import socket
 import sys
 
 import docopt
-
 import gevent
 import gevent.monkey
 import geventwebsocket
 
 gevent.monkey.patch_all()
 
-
 import bliss
-
 
 try:
     bliss.log.begin()
@@ -39,16 +35,14 @@ try:
         else:
             host = socket.gethostname().split('.')[0]
 
-    app = bliss.ecostress.gui.App
+    app = bliss.gui.App
     url = 'http://%s:%d' % (host, port)
     web = gevent.pywsgi.WSGIServer(('0.0.0.0', port), app,
               handler_class=geventwebsocket.handler.WebSocketHandler)
 
-    bliss.ecostress.gui.init()
     web.start()
     bliss.gui.startBrowser(url, browser)
 
-    # bliss.log.info('Waiting for BLISS telemetry on port %d' % udp_port)
     bliss.log.info('Connect to %s' % url)
     bliss.log.info('Ctrl-C to exit')
 
