@@ -116,7 +116,7 @@ class BlissConfig (object):
     NOTE: The platform string is Python's sys.platform, i.e. 'linux2',
     'darwin', 'win32'.
     """
-    _ROOT_DIR = os.path.abspath( os.environ.get('BLISS_ROOT', os.getcwd()) )
+    _ROOT_DIR = os.path.abspath(os.environ.get('BLISS_ROOT', os.getcwd()))
 
     if 'BLISS_ROOT' not in os.environ:
         log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
@@ -127,14 +127,21 @@ class BlissConfig (object):
         the given YAML configuration file or passed-in via the given
         config dictionary.
 
-        If filename is not given, it defaults to:
+        If filename and data are not given, it defaults to the following in
+        order depending on the presence of environment variables:
 
+            ${BLISS_CONFIG}
             ${BLISS_ROOT}/config/config.yaml
+            /current_work_directory/config/config.yaml
+
         """
         self._filename = None
 
         if data is None and filename is None:
-            filename = os.path.join(self._directory, 'config.yaml')
+            if 'BLISS_CONFIG' in os.environ:
+                filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
+            else:
+                filename = os.path.join(self._directory, 'config.yaml')
 
         if config is None:
             self.reload(filename, data)
