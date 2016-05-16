@@ -1,0 +1,32 @@
+--- !Command
+name:      OCO3_DCC_RAW
+opcode:    0x1001
+subsystem: DCC
+desc:      |
+  This command sends an ASCII passthrough command to the cameras.
+
+arguments:
+  - !Argument
+    name:  raw_command
+    desc:  ASCII command to send to cameras
+    units: none
+    type:  S80
+    bytes: [0,79]
+
+
+
+# The following command as same opcode as the first
+--- !Command
+name:      OCO3_CMD_START_SEQUENCE_NOW
+opcode:    0x1001
+subsystem: CMD
+desc:      |
+  This command starts a specified command sequence.
+
+arguments:
+  - !Argument
+    name:  sequence_id
+    desc:  Sequence ID
+    units: none
+    type:  MSB_U16
+    bytes: [0,1]

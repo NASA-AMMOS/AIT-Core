@@ -1,0 +1,15 @@
+# Contains an invalid opcode value
+--- !Command
+name:      OCO3_DCC_RAW
+opcode:    BAD_OPCODE
+subsystem: DCC
+desc:      |
+  This command sends an ASCII passthrough command to the cameras.
+
+arguments:
+  - !Argument
+    name:  my_command
+    desc:  ASCII command to send to cameras
+    units: unit
+    type:  S80
+    bytes: [0,79]

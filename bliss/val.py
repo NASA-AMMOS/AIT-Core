@@ -63,19 +63,12 @@ class YAMLProcessor (object):
         try:
             # If yaml should be 'cleaned' of document references
             if self._clean:
-                # Process the yaml
                 self.data = self.process(self.ymlfile)
-                # self.data = yaml.load_all(stream)
-                # self.data = stream
             else:
                 with open(self.ymlfile, 'rb') as stream:
                     for data in yaml.load_all(stream):
-                        # if type(data) is list:
                         self.data.append(data)
 
-
-            # print self.data
-            # Set boolean that YAML has completed loading
             self.loaded = True
         except ScannerError, e:
             msg = "YAML formattting error - '" + self.ymlfile + ": '" + str(e) + "'"
@@ -94,7 +87,6 @@ class YAMLProcessor (object):
             linenum = None
             with open(ymlfile, 'r') as txt:
                 for linenum, line in enumerate(txt):
-                    #print "."
                     # Pattern to match document start lines
                     doc_pattern = re.compile('(-+) (![a-z]+)(.*$)', flags=re.I)
 
@@ -112,7 +104,7 @@ class YAMLProcessor (object):
                     output = output + line
 
             if linenum is None:
-                msg = "Empty YAML file: " + yml
+                msg = "Empty YAML file: " + ymlfile
                 raise YAMLError(msg)
             else:
                 # Append one more document to docline for the end
@@ -121,7 +113,7 @@ class YAMLProcessor (object):
             return output
 
         except IOError, e:
-            msg = "Could not process YAML file '" + self._ymlfile + "': '" + str(e) + "'"
+            msg = "Could not process YAML file '" + ymlfile + "': '" + str(e) + "'"
             raise IOError(msg)
 
 
@@ -195,18 +187,6 @@ class ErrorHandler(object):
         and designates where the error came from"""
 
         bliss.log.debug("Displaying document from lines '%i' to '%i'", start, end)
-
-        # print "Context: " + str(error.context)
-        # print "Cause: " + str(error.cause)
-        # # print "Instance: " + str(error.instance)
-        # # bliss.log.error("relative_path: " + str(error_key))
-        # print "absolute_path: " + str(error.absolute_path)
-        # print "Schema: " + str(error.schema_path)
-        # print "Validator: " + str(error.validator)
-        # print "Validator Value: " + str(error.validator_value)
-        # print "Parent: " + str(error.parent)
-        # print "Message: " + str(error.message)
-
         if len(error.relative_path) > 0:
             error_key = error.relative_path.pop()
 
@@ -221,6 +201,7 @@ class ErrorHandler(object):
                 if ":" in line:
                     key, value = line.split(":")
 
+                    # TODO:
                     # Handle maxItems TBD
                     # Handle minItems TBD
                     # Handle required TBD
@@ -335,27 +316,12 @@ class Validator(object):
 
     def display_errors(self, docnum, e, messages):
             # Display the error message
-            # if messages is not None:
             if len(e.message) < 128:
                 msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
             else:
                 msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
 
             bliss.log.error(msg)
-            # print "Context: " + str(e.context)
-            # print "Cause: " + str(e.cause)
-            # print "Instance: " + str(e.instance)
-            # print "relative_path: " + str(e.relative_path)
-            # print "absolute_path: " + str(e.absolute_path)
-            # print "Schema: " + str(e.schema_path)
-            # print "Validator: " + str(e.validator)
-            # print "Validator Value: " + str(e.validator_value)
-
-            #error.start = doc_loc[docnum]+1
-            #error.end = doc_loc[docnum+1]+1
-            #error.validator = e.validator
-            #error.instance = e.instance
-            #error.validator_value = e.validator_value
             self.ehandler.process(docnum, self._ymlproc.doclines, e, messages)
 
 
@@ -367,7 +333,6 @@ class CmdValidator (Validator):
         """Validates the Command Dictionary definitions"""
 
         schema_val = self.schema_val(messages)
-        # if len(messages) == 0:
         content_val = self.content_val(messages=messages)
 
         return schema_val and content_val
@@ -458,25 +423,7 @@ class CmdValidator (Validator):
                     msg = "Validation Failed for YAML file '" + self._yml + "'"
 
                 bliss.log.error(msg)
-
-                #print "Context: " + str(e.context)
-                #print "Cause: " + str(e.cause)
-                #print "Instance: " + str(e.instance)
-                #print "relative_path: " + str(e.relative_path)
-                #print "absolute_path: " + str(e.absolute_path)
-                #print "Schema: " + str(e.schema_path)
-                #print "Validator: " + str(e.validator)
-                #print "Validator Value: " + str(e.validator_value)
-
-                #error.start = doc_loc[docnum]+1
-                #error.end = doc_loc[docnum+1]+1
-                #error.validator = e.validator
-                #error.instance = e.instance
-                #error.validator_value = e.validator_value
                 self.ehandler.process(docnum, self.ehandler.doclines, e, messages)
-                # Display the document where error was found
-                #display_error_line(yaml_file, doc_loc[docnum]+1, doc_loc[docnum+1]+1, e.validator, e.instance, e.validator_value)
-                #raise
                 return False
 
 
@@ -553,7 +500,7 @@ class TlmValidator (Validator):
                 #
                 ###
 
-                flddefns = pktdefn.flddefns
+                flddefns = pktdefn.fields
                 for fld in flddefns:
                     # check field rules
                     for rule in fldrules:
@@ -577,25 +524,7 @@ class TlmValidator (Validator):
                     msg = "Validation Failed for YAML file '" + self._yml + "'"
 
                 bliss.log.error(msg)
-
-                #print "Context: " + str(e.context)
-                #print "Cause: " + str(e.cause)
-                #print "Instance: " + str(e.instance)
-                #print "relative_path: " + str(e.relative_path)
-                #print "absolute_path: " + str(e.absolute_path)
-                #print "Schema: " + str(e.schema_path)
-                #print "Validator: " + str(e.validator)
-                #print "Validator Value: " + str(e.validator_value)
-
-                #error.start = doc_loc[docnum]+1
-                #error.end = doc_loc[docnum+1]+1
-                #error.validator = e.validator
-                #error.instance = e.instance
-                #error.validator_value = e.validator_value
                 self.ehandler.process(self.ehandler.doclines, e, messages)
-                # Display the document where error was found
-                #display_error_line(yaml_file, doc_loc[docnum]+1, doc_loc[docnum+1]+1, e.validator, e.instance, e.validator_value)
-                #raise
                 return False
 
 

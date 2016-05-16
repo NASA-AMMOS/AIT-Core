@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "EVR Dictionary Schema",
+    "description": "EVR Dictionary Schema. See http://json-schema.org/ for more details on how to create this schema.",
+    "type": "object",
+    "patternProperties": {
+        "^[0-9]+$": {
+            "type": "string"
+        }
+    }
+}

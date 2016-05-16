@@ -1,0 +1,15 @@
+- !Packet
+  name: CCSDS_Packet
+  type: ethernet
+  desc: TBD
+  fields:
+    - !Field
+      name:       version
+      desc:       Indicates CCSDS Version-1 (does not change)
+      bytes:       0
+      type:       U8
+      mask:       0xE0
+    - !Field
+      name: SampleTime
+      type: TIME64
+      bytes: 1
