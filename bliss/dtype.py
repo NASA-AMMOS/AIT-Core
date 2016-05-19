@@ -90,7 +90,7 @@ PrimitiveTypeMap = {}
 # Maps typenames to their corresponding Python C struct format code.
 # See:
 #
-#   http://docs.python.org/lib/module-struct.html
+#   https://docs.python.org/2/library/struct.html#format-characters
 #
 PrimitiveTypeFormats = {
     "I8"     :  "b" ,
