@@ -308,7 +308,7 @@ class CmdType(PrimitiveType):
     def cmddict(self):
         """PrimitiveType base for the ComplexType"""
         if self._cmddict is None:
-            self._cmddict = bliss.cmd.getDefaultCmdDict()
+            self._cmddict = bliss.cmd.getDefaultDict()
 
         return self._cmddict
 
