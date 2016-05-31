@@ -21,6 +21,8 @@ setup(
         'jsonschema==2.5.1',
         'pyyaml==3.11',
         'requests==2.9.1',
+        'gevent==1.0.2',
+        'gevent-websocket==0.9.5',
     ],
 
     extras_require = {
