@@ -403,7 +403,7 @@ def getDefaultDict(reload=False):
 
 
 def getDefaultSchema():
-    return os.path.join(bliss.cfg.BlissConfig()._directory, 'cmd_schema.json')
+    return os.path.join(bliss.config._directory, 'cmd_schema.json')
 
 
 def getMaxCmdSize():

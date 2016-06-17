@@ -5,6 +5,7 @@ import bliss
 import mock
 import nose
 
+
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
 
 class TestYAMLProcessor(object):
@@ -375,7 +376,7 @@ def testTlmValidator():
 
 def testCmdDictValidation():
     '''Validation test of current command dictionary'''
-    msgs, v = cmdval([bliss.cfg.BlissConfig().cmddict.filename, bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([bliss.config.cmddict.filename, bliss.cmd.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -383,7 +384,7 @@ def testCmdDictValidation():
 
 def testTlmDictValidation():
     '''Validation test of current telemetry dictionary'''
-    msgs, v = tlmval([bliss.cfg.BlissConfig().tlmdict.filename, bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([bliss.config.tlmdict.filename, bliss.tlm.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -391,7 +392,7 @@ def testTlmDictValidation():
 
 def testEvrValidation():
     '''Validation test of current telemetry dictionary'''
-    yml = bliss.cfg.BlissConfig().evrdict.filename
+    yml = bliss.config.evrdict.filename
     schema = os.path.join(os.path.dirname(yml), 'evr_schema.json')
     msgs, v = val([yml, schema])
     dispmsgs(msgs)

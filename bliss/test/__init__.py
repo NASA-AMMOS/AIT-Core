@@ -15,6 +15,11 @@ U.S. Government Sponsorship acknowledged.
 import os
 import warnings
 
+import bliss
+
+
+bliss.config.reload('data/config/config.yaml')
+
 
 class TestFile:
     """TestFile

@@ -18,8 +18,6 @@ import nose
 import bliss
 
 
-bliss.config.reload('data/config/config.yaml')
-
 EVRs = { }
 with open(bliss.config.evrdict.filename) as stream:
     for line in stream.readlines():
