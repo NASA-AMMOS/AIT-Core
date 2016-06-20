@@ -5,12 +5,29 @@ import bliss
 import mock
 import nose
 
+import logging
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
 
+def setUp():
+    '''Set up tests.
+        
+    Turn logging level to CRITICAL: due to failure test cases, there
+    are many verbose log messages that are useful in context.
+    '''
+    logging.getLogger('bliss').setLevel(logging.CRITICAL)
+        
+def tearDown():
+    '''Tear down tests.
+        
+    Turn logging level back to INFO.
+    '''
+    logging.getLogger('bliss').setLevel(logging.INFO)
+
+
 class TestYAMLProcessor(object):
     test_yaml_file = '/tmp/test.yaml'
-
+    
     def test_yamlprocess_init(self):
         yp = bliss.val.YAMLProcessor()
         assert yp.loaded == False
