@@ -52,7 +52,6 @@ GitHub](https://github.jpl.nasa.gov):
 
     $ git clone https://github.jpl.nasa.gov/bliss/bliss-core.git
 
-
 First you need to make a virtual environment into which we'll install the
 `bliss-core` package and its dependencies:
 
@@ -76,6 +75,19 @@ dependencies you can do so with the below commands:
 
     # Install the base dependencies and extra unit test dependencies
     $ pip install -e .[tests]
+    
+BLISS uses two environment variables for configuration.
+
+`BLISS_ROOT` is used for project wide pathing. If you don't set this
+BLISS will attempt to do a good job of it for you. If you want to be
+safe you should set it to the project root where you checked out the code.
+
+`BLISS_CONFIG` is used for pointing BLISS at a configuration file. If you don't
+set this BLISS will fall back to `BLISS_ROOT` and try to locate a configuration
+file with that. If you're going to use the default test configuration that
+comes with `bliss-core` you should set this to:
+
+    /<project root path>/data/config/config.yaml
 
 
 Unit Tests
