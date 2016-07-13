@@ -2,6 +2,7 @@
 name:      OCO3_CMD_START_SEQUENCE_NOW
 opcode:    0x2001
 subsystem: CMD
+title:     Start Sequence
 desc:      |
   This command starts a specified command sequence.
 
@@ -19,9 +20,11 @@ arguments:
 name:      OCO3_CMD_SET_SEQ_ENABLE
 opcode:    0x2002
 subsystem: CMD
+title:     Enable / Disable Sequence
 desc:      |
-  This command enables or disabled the specified sequence.  If a sequence to be
-  disabled is currently executing, it will be interrupted.
+  This command enables or disabled the specified sequence.  If a
+  sequence to be disabled is currently executing, it will be
+  interrupted.
 
 arguments:
   - !Argument
@@ -47,6 +50,7 @@ arguments:
 name:      OCO3_CMD_DOWNLOAD_SEQUENCE
 opcode:    0x2003
 subsystem: CMD
+title:     Download Sequence
 desc:      |
   This command downloads a command sequence.
 
@@ -64,6 +68,7 @@ arguments:
 name:      OCO3_CMD_DELETE_SEQUENCE
 opcode:    0x2005
 subsystem: CMD
+title:     Delete Sequence
 desc:      |
   This command deletes the specified sequence.
 
@@ -81,6 +86,7 @@ arguments:
 name:      OCO3_CMD_ADD_SCHEDULE_ENTRY
 opcode:    0x2006
 subsystem: CMD
+title:     Add Schedule Entry
 desc:      |
   This command adds an entry to the schedule table.
 
@@ -112,6 +118,7 @@ arguments:
 name:      OCO3_CMD_SET_OVERRIDE_NEXT_CMD
 opcode:    0x2007
 subsystem: CMD
+title:     Override Next Command
 desc:      |
   This command provides an override if necessary for the next command.
 
@@ -121,6 +128,7 @@ desc:      |
 name:      OCO3_CORE_START_UPLOAD
 opcode:    0x3002
 subsystem: CORE
+title:     Start Upload
 desc:      |
   This command starts an upload into the staging area.
 
@@ -130,6 +138,7 @@ desc:      |
 name:      OCO3_CORE_END_UPLOAD
 opcode:    0x3003
 subsystem: CORE
+title:     End Upload
 desc:      |
   This command ends an upload into the staging area.
 
@@ -139,6 +148,7 @@ desc:      |
 name:      OCO3_CORE_XFER_SEQUENCE
 opcode:    0x3009
 subsystem: CORE
+title:     Transfer Sequence
 desc:      |
   This command copies a sequence from the staging area to the sequence table.
 
@@ -148,6 +158,7 @@ desc:      |
 name:      OCO3_CORE_XFER_TABLE
 opcode:    0x300a
 subsystem: CORE
+title:     Transfer Table
 desc:      |
   This command loads an entire table from the staging area.
 
@@ -165,8 +176,8 @@ arguments:
       3: CRC
       4: TARGET
       5: SCRUB
-      7: KEEP_OUT_ZONES
-      8: LINE_OF_SIGHT_ERROR
+      6: KEEP_OUT_ZONES
+      7: LINE_OF_SIGHT_ERROR
 
 
 
@@ -174,6 +185,7 @@ arguments:
 name:      OCO3_CORE_DOWNLOAD_MEMORY
 opcode:    0x300e
 subsystem: CORE
+title:     Download Memory
 desc:      |
   This command downloads an area of memory.
 
@@ -211,6 +223,7 @@ arguments:
 name:      OCO3_CORE_DOWNLOAD_TABLE
 opcode:    0x300f
 subsystem: CORE
+title:     Download Table
 desc:      |
   This command downloads a table.
 
@@ -228,10 +241,18 @@ arguments:
       3: CRC
       4: TARGET
       5: SCRUB
-      6: SEQUENCE
-      7: KEEP_OUT_ZONES
-      8: LINE_OF_SIGHT_ERROR
-      9: LOG
+      6: KEEP_OUT_ZONES
+      7: LINE_OF_SIGHT_ERROR
+
+
+
+--- !Command
+name:      OCO3_CORE_DOWNLOAD_LOG
+opcode:    0x301b
+subsystem: CORE
+title:     Download Log
+desc:      |
+  This command downloads the postmortem log.
 
 
 
@@ -239,6 +260,7 @@ arguments:
 name:      OCO3_CORE_SET_OP_MODE
 opcode:    0x3011
 subsystem: CORE
+title:     Set Operational Mode
 desc:      |
   This command sets the operational mode.
 
@@ -260,6 +282,7 @@ arguments:
 name:      OCO3_CORE_UPLOAD
 opcode:    0x3012
 subsystem: CORE
+title:     Upload
 desc:      |
   This command specifies bytes to upload to the staging area.
 
@@ -457,6 +480,7 @@ arguments:
 name:      OCO3_CORE_FLUSH_UPLOAD
 opcode:    0x3013
 subsystem: CORE
+title:     Flush Upload
 desc:      |
   This command flushes the staging area.
 
@@ -466,6 +490,7 @@ desc:      |
 name:      OCO3_CORE_NO_OP
 opcode:    0x3014
 subsystem: CORE
+title:     No Operation
 desc:      |
   Standard NO_OP command.
 
@@ -475,6 +500,7 @@ desc:      |
 name:      OCO3_CORE_START_COMPRESSED_UPLOAD
 opcode:    0x3015
 subsystem: CORE
+title:     Start Compressed Upload
 desc:      |
   This command starts a compressed upload into the staging area.
 
@@ -484,6 +510,7 @@ desc:      |
 name:      OCO3_CORE_XFER_DATA
 opcode:    0x3016
 subsystem: CORE
+title:     Transfer Data
 desc:      |
   This command copies the contents of the staging area to memory.
 
@@ -514,17 +541,10 @@ arguments:
 name:      OCO3_CORE_XFER_COMMAND
 opcode:    0x3008
 subsystem: CORE
+title:     Transfer Command
 desc:      |
   This command passes the contents of the staging area to the command processor
   for execution of commands which are too large to go over the 1553.
-
-arguments:
-  - !Argument
-    name:  opcode
-    desc:  Command opcode
-    units: none
-    type:  MSB_U16
-    bytes: [0,1]
 
 
 
@@ -532,6 +552,7 @@ arguments:
 name:      OCO3_CORE_BOOT_V5
 opcode:    0x3018
 subsystem: CORE
+title:     Boot Virtex-5
 desc:      |
   This command initializes the DPU Virtex 5 from memory.
 
@@ -556,33 +577,10 @@ arguments:
 
 
 --- !Command
-name:      OCO3_CORE_TEST_SDRAM
-opcode:    0x3019
-subsystem: CORE
-desc:      |
-  This command tests SDRAM memory.
-
-arguments:
-  - !Argument
-    name:  start_addr
-    desc:  Starting address (last 2 bits must be cleared)
-    units: none
-    type:  MSB_U32
-    bytes: [0,3]
-
-  - !Argument
-    name:  end_addr
-    desc:  Ending address (last 2 bits must be set)
-    units: none
-    type:  MSB_U32
-    bytes: [4,7]
-
-
-
---- !Command
 name:      OCO3_CORE_REBOOT
 opcode:    0x301a
 subsystem: CORE
+title:     Reboot
 desc:      This command reboots FSW.
 
 
@@ -591,6 +589,7 @@ desc:      This command reboots FSW.
 name:      OCO3_CRYO_RESET_SYSTEM
 opcode:    0x3213
 subsystem: CRYO
+title:     Reset System
 desc:      |
   Reset the processor and initiate boot process.
 
@@ -645,6 +644,7 @@ arguments:
 name:      OCO3_CRYO_RESET_TRIPS
 opcode:    0x3214
 subsystem: CRYO
+title:     Reset Trips
 desc:      |
   Sets the mode to standby and then resets all trip states.
 
@@ -685,6 +685,7 @@ arguments:
 name:      OCO3_CRYO_WRITE_CODE_TO_EEPROM
 opcode:    0x3223
 subsystem: CRYO
+title:     Write Code to EEPROM
 desc:      |
   Automatically updates the EEPROM with the program code and the configuration
   management data. This command will take 23 + 2 seconds to fully execute1:
@@ -732,6 +733,7 @@ arguments:
 name:      OCO3_CRYO_WRITE_SINGLE_WORD_TO_DATA_SPACE_RAM
 opcode:    0x3224
 subsystem: CRYO
+title:     Write Single Word
 desc:      |
   Writes a single word length value to the memory location specified in data
   space RAM.
@@ -777,6 +779,7 @@ arguments:
 name:      OCO3_CRYO_WRITE_DOUBLE_WORD_TO_DATA_SPACE_RAM
 opcode:    0x3225
 subsystem: CRYO
+title:     Write Double Word
 desc:      |
   Writes a double word length value to the memory location specified in data
   space RAM.
@@ -824,6 +827,7 @@ arguments:
 name:      OCO3_CRYO_SET_COOLER_CONTROL
 opcode:    0x3261
 subsystem: CRYO
+title:     Set Cooler Control
 desc:      |
   Sets cooler control states as specified in data field tables of Northrop
   Grumman's document, D57631 (initial revision), p. 36.
@@ -856,7 +860,7 @@ arguments:
   - !Fixed
     type:  LSB_U16
     bytes: [8,9]
-    value: 0x00000000
+    value: 0x0000
     
   - !Fixed
     type:  LSB_U16
@@ -869,6 +873,7 @@ arguments:
 name:      OCO3_CRYO_CAGE_UNCAGE
 opcode:    0x3271
 subsystem: CRYO
+title:     Cage / Uncage
 desc:      |
   Cage and Uncage the cryocooler.  Caging the cryocooler requires an override
   command (OCO3_CMD_SET_OVERRIDE_NEXT_CMD) immediately previous.
@@ -925,6 +930,7 @@ arguments:
 name:      OCO3_CRYO_REQUEST_TELEMETRY_PACKET
 opcode:    0x3283
 subsystem: CRYO
+title:     Request Telemetry Packet
 desc:      |
   Request a telemetry packet(s) from the CCS either once or set the CCE to
   autonomously output the telemetry packet(s).
@@ -1040,6 +1046,7 @@ arguments:
 name:      OCO3_CRYO_SET_COLD_HEAD_TEMP
 opcode:    0x32a1
 subsystem: CRYO
+title:     Set Cold Head Temperature
 desc:      |
   Sets the temperature setpoint.
 
@@ -1094,6 +1101,7 @@ arguments:
 name:      OCO3_CRYO_CHANGE_COOLER_OPERATING_DRIVE
 opcode:    0x32a2
 subsystem: CRYO
+title:     Change Cooler Operating Drive
 desc:      |
   Sets the fixed motor drive magnitude.  This command will temporarily
   override the temperature control if sent while the temperature control is
@@ -1150,6 +1158,7 @@ arguments:
 name:      OCO3_CRYO_CHANGE_COOLER_FREQ
 opcode:    0x32ac
 subsystem: CRYO
+title:     Change Cooler Frequency
 desc:      |
   Change cooler frequency.
 
@@ -1210,6 +1219,7 @@ arguments:
 name:      OCO3_CRYO_SAVE_AND_RESTORE_DEFAULTS
 opcode:    0x32ad
 subsystem: CRYO
+title:     Save / Restore Defaults
 desc:      |
   This command sets the system databases as follows:
 
@@ -1273,6 +1283,7 @@ arguments:
 name:      OCO3_CRYO_PEEK_DATA_VALUE
 opcode:    0x32bb
 subsystem: CRYO
+title:     Peek Data Value
 desc:      |
   Command will request the CCE to send a 12 byte diagnostic packet with 4 bytes
   of data from the specified memory location of the user database.  Where
@@ -1321,6 +1332,7 @@ arguments:
 name:      OCO3_CRYO_UPLOAD_CODE_TO_PROGRAM_RAM
 opcode:    0x3201
 subsystem: CRYO
+title:     Upload Code
 desc:      |
   Uploads code to program space. This command is only valid if sent during a
   specific period of time after a power-on event or a processor-reset event.
@@ -1796,6 +1808,7 @@ arguments:
 name:      OCO3_CRYO_SWITCH_POWER
 opcode:    0x3202
 subsystem: CRYO
+title:     Switch Power
 desc:      |
   Switches cryocooler power on or off.
 
@@ -1813,9 +1826,20 @@ arguments:
 
 
 --- !Command
+name:      OCO3_CRYO_SAFE
+opcode:    0x3203
+subsystem: CRYO
+desc:      |
+  Toggles cryocooler safe/hold line to safe cryocooler without turning power
+  off.
+
+
+
+--- !Command
 name:      OCO3_DCC_RAW
 opcode:    0x1001
 subsystem: DCC
+title:     Send Raw Command
 desc:      |
   This command sends an ASCII passthrough command to the cameras.
 
@@ -1833,6 +1857,7 @@ arguments:
 name:      OCO3_DCC_SWITCH_POWER
 opcode:    0x1002
 subsystem: DCC
+title:     Switch Power
 desc:      |
   Switches DCC power on or off.
 
@@ -1853,6 +1878,7 @@ arguments:
 name:      OCO3_ETHERNET_SET_PAYLOAD_MAC
 opcode:    0x1801
 subsystem: ETHERNET
+title:     Set Payload MAC Address
 desc:      |
   This command sets the MAC address of the OCO-3 payload.
 
@@ -1905,6 +1931,7 @@ arguments:
 name:      OCO3_ETHERNET_SET_ISS_MAC
 opcode:    0x1802
 subsystem: ETHERNET
+title:     Set ISS MAC Address
 desc:      |
   This command sets the MAC address of the ISS.
 
@@ -1957,8 +1984,9 @@ arguments:
 name:      OCO3_ETHERNET_SET_ANC_APID
 opcode:    0x1803
 subsystem: ETHERNET
+title:     Set Ancillary Data APID
 desc:      |
-  This command sets the APID for Ethernet ancillary data
+  This command sets the CCSDS APID for Ethernet ancillary data
 
 arguments:
   - !Argument
@@ -1974,6 +2002,7 @@ arguments:
 name:      OCO3_ETHERNET_SET_ICC_APID
 opcode:    0x1804
 subsystem: ETHERNET
+title:     Set Internal Context Camera APID
 desc:      |
   This command sets the APID for Ethernet ICC data
 
@@ -1991,6 +2020,7 @@ arguments:
 name:      OCO3_ETHERNET_SET_ECC_APID
 opcode:    0x1805
 subsystem: ETHERNET
+title:     Set External Context Camera APID
 desc:      |
   This command sets the APID for Ethernet ECC data
 
@@ -2005,11 +2035,12 @@ arguments:
 
 
 --- !Command
-name:      OCO3_ETHERNET_SET_REM1_APID
+name:      OCO3_ETHERNET_SET_DP1_APID
 opcode:    0x1806
 subsystem: ETHERNET
+title:     Set REM DP1 APID
 desc:      |
-  This command sets the APID for Ethernet REM-1 data
+  This command sets the APID for Ethernet DP-1 data
 
 arguments:
   - !Argument
@@ -2022,11 +2053,12 @@ arguments:
 
 
 --- !Command
-name:      OCO3_ETHERNET_SET_REM2_APID
+name:      OCO3_ETHERNET_SET_DP2_APID
 opcode:    0x1807
 subsystem: ETHERNET
+title:     Set REM DP2 APID
 desc:      |
-  This command sets the APID for Ethernet REM-2 data
+  This command sets the APID for Ethernet DP-2 data
 
 arguments:
   - !Argument
@@ -2039,11 +2071,12 @@ arguments:
 
 
 --- !Command
-name:      OCO3_ETHERNET_SET_REM3_APID
+name:      OCO3_ETHERNET_SET_DP3_APID
 opcode:    0x1808
 subsystem: ETHERNET
+title:     Set REM DP3 APID
 desc:      |
-  This command sets the APID for Ethernet REM-3 data
+  This command sets the APID for Ethernet DP-3 data
 
 arguments:
   - !Argument
@@ -2052,6 +2085,69 @@ arguments:
     units: none
     type:  MSB_U16
     bytes: [0,1]
+
+
+
+--- !Command
+name:      OCO3_ETHERNET_TEST_DOWNLINKS
+opcode:    0x1809
+subsystem: ETHERNET
+title:     Test Downlinks
+desc:      |
+  This command allows the operator to simulate ringbuffer populations.
+
+arguments:
+  - !Argument
+    name:  enable
+    desc:  Whether test mode is enabled.  If not, other parameters are ignored.
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: NORMAL_MODE
+      1: TEST_MODE
+
+  - !Argument
+    name:  anc_pop
+    desc:  Number of packets in ancillary-engineering ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [1,4]
+
+  - !Argument
+    name:  icc_pop
+    desc:  Number of packets in ICC ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [5,8]
+
+  - !Argument
+    name:  ecc_pop
+    desc:  Number of packets in ECC ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [9,12]
+
+  - !Argument
+    name:  dp1_pop
+    desc:  Number of packets in DP1 ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [13,16]
+
+  - !Argument
+    name:  dp2_pop
+    desc:  Number of packets in DP2 ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [17,20]
+
+  - !Argument
+    name:  dp3_pop
+    desc:  Number of packets in DP3 ring buffer.
+    units: none
+    type:  MSB_U32
+    bytes: [21,24]
 
 
 
@@ -2059,6 +2155,7 @@ arguments:
 name:      OCO3_FP_SET_CRC_MODE
 opcode:    0x4014
 subsystem: FP
+title:     Set CRC Mode
 desc:      |
   This command sets the CRC mode for a particular region.
 
@@ -2087,6 +2184,7 @@ arguments:
 name:      OCO3_FP_SET_EXPECTED_CRC
 opcode:    0x4015
 subsystem: FP
+title:     Set Expected CRC
 desc:      |
   This command sets the expected CRC for a particular region.
 
@@ -2111,6 +2209,7 @@ arguments:
 name:      OCO3_FP_DELETE_CRC_REGION
 opcode:    0x4016
 subsystem: FP
+title:     Delete CRC Region
 desc:      |
   This command deletes a particular CRC region.
 
@@ -2128,6 +2227,7 @@ arguments:
 name:      OCO3_FP_ADD_CRC_REGION
 opcode:    0x4005
 subsystem: FP
+title:     Add CRC Region
 desc:      |
   This command adds an entry to the CRC table.
 
@@ -2177,6 +2277,7 @@ arguments:
 name:      OCO3_FP_SET_CRC_RATE
 opcode:    0x4017
 subsystem: FP
+title:     Set CRC Rate
 desc:      |
   This command sets the number of bytes scanned per 10-millisecond slot.  Note
   that not all slots include CRC calculation.  High values may trigger asserts
@@ -2196,6 +2297,7 @@ arguments:
 name:      OCO3_FP_SET_SCRUB_ENABLE
 opcode:    0x4018
 subsystem: FP
+title:     Set Scrub Enable
 desc:      |
   This command sets the scrubbing enable for a particular region.
 
@@ -2223,6 +2325,7 @@ arguments:
 name:      OCO3_FP_DELETE_SCRUB_REGION
 opcode:    0x4019
 subsystem: FP
+title:     Delete Scrub Region
 desc:      |
   This command deletes a particular scrubbing region.
 
@@ -2240,6 +2343,7 @@ arguments:
 name:      OCO3_FP_ADD_SCRUB_REGION
 opcode:    0x4006
 subsystem: FP
+title:     Add Scrub Region
 desc:      |
   This command adds an entry to the scrub table.
 
@@ -2281,6 +2385,7 @@ arguments:
 name:      OCO3_FP_SET_SCRUB_RATE
 opcode:    0x401a
 subsystem: FP
+title:     Set Scrub Rate
 desc:      |
   This command sets the number of bytes scrubbed per 10-millisecond slot.  Note
   that not all slots include scrubbing.  High values may trigger asserts as
@@ -2300,6 +2405,7 @@ arguments:
 name:      OCO3_FP_SET_RESPONSE_PERSISTENCE
 opcode:    0x4020
 subsystem: FP
+title:     Set Response Persistence
 desc:      |
   This command sets the persistence required for a particular fault response.
 
@@ -2324,6 +2430,7 @@ arguments:
 name:      OCO3_FP_SET_RESPONSE_FLOAT_VALUES
 opcode:    0x4021
 subsystem: FP
+title:     Set Response Values (Floating-point)
 desc:      |
   This command sets floating-point constants associated with a particular
   fault response.
@@ -2356,6 +2463,7 @@ arguments:
 name:      OCO3_FP_SET_RESPONSE_UINT_VALUES
 opcode:    0x4022
 subsystem: FP
+title:     Set Response Values (Unsigned Integer)
 desc:      |
   This command sets unsigned integer constants associated with a particular
   fault response.
@@ -2388,6 +2496,7 @@ arguments:
 name:      OCO3_FP_SET_RESPONSE_INT_VALUES
 opcode:    0x4023
 subsystem: FP
+title:     Set Response Values (Signed Integer)
 desc:      |
   This command sets integer constants associated with a particular fault
   response.
@@ -2420,6 +2529,7 @@ arguments:
 name:      OCO3_FP_SET_RESPONSE_ENABLE
 opcode:    0x4007
 subsystem: FP
+title:     Set Response Enable
 desc:      |
   This command enables/disable a fault response.
 
@@ -2447,6 +2557,7 @@ arguments:
 name:      OCO3_FP_ADD_OUTSIDE_RANGE_RESPONSE
 opcode:    0x4001
 subsystem: FP
+title:     Add Outside Range Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2516,6 +2627,7 @@ arguments:
 name:      OCO3_FP_ADD_INSIDE_RANGE_RESPONSE
 opcode:    0x4008
 subsystem: FP
+title:     Add Inside-Range Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2585,6 +2697,7 @@ arguments:
 name:      OCO3_FP_ADD_GT_CONST_RESPONSE
 opcode:    0x4009
 subsystem: FP
+title:     Add Greater-Than-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2647,6 +2760,7 @@ arguments:
 name:      OCO3_FP_ADD_LT_CONST_RESPONSE
 opcode:    0x400a
 subsystem: FP
+title:     Add Less-Than-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2709,6 +2823,7 @@ arguments:
 name:      OCO3_FP_ADD_GTE_CONST_RESPONSE
 opcode:    0x400b
 subsystem: FP
+title:     Add Greater-Than-Or-Equal-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2771,6 +2886,7 @@ arguments:
 name:      OCO3_FP_ADD_LTE_CONST_RESPONSE
 opcode:    0x400c
 subsystem: FP
+title:     Add Less-Than-Or-Equal-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2833,6 +2949,7 @@ arguments:
 name:      OCO3_FP_ADD_EQ_CONST_RESPONSE
 opcode:    0x400d
 subsystem: FP
+title:     Add Equals-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2895,6 +3012,7 @@ arguments:
 name:      OCO3_FP_ADD_NE_CONST_RESPONSE
 opcode:    0x400e
 subsystem: FP
+title:     Add Not-Equals-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -2957,6 +3075,7 @@ arguments:
 name:      OCO3_FP_ADD_EQ_UINT_CONST_RESPONSE
 opcode:    0x4010
 subsystem: FP
+title:     Add Equals-Const Response (UINT)
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -3019,6 +3138,7 @@ arguments:
 name:      OCO3_FP_ADD_NE_UINT_CONST_RESPONSE
 opcode:    0x4011
 subsystem: FP
+title:     Add Not-Equals-Const Response (UINT)
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -3081,6 +3201,7 @@ arguments:
 name:      OCO3_FP_ADD_MASKED_EQ_CONST_RESPONSE
 opcode:    0x4012
 subsystem: FP
+title:     Add Masked Equals-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -3150,6 +3271,7 @@ arguments:
 name:      OCO3_FP_ADD_MASKED_NE_CONST_RESPONSE
 opcode:    0x4013
 subsystem: FP
+title:     Add Masked Not-Equals-Const Response
 desc:      |
   This command sets an entry in the fault protection table.
 
@@ -3219,6 +3341,7 @@ arguments:
 name:      OCO3_GPS_RESET
 opcode:    0x50a4
 subsystem: GPS
+title:     Reset
 desc:      |
   7.2.4.1 SGR Reset ID 0xa4 (p. 42)
 
@@ -3269,6 +3392,7 @@ arguments:
 name:      OCO3_GPS_DISABLE_SATELLITE
 opcode:    0x50a6
 subsystem: GPS
+title:     Disable Satellite
 desc:      |
   7.2.4.2 Disable Satellite ID 0xa6 (p. 42)
 
@@ -3297,6 +3421,7 @@ arguments:
 name:      OCO3_GPS_SET_ELEVATION_MASK
 opcode:    0x50a7
 subsystem: GPS
+title:     Set Elevation Mask
 desc:      |
   7.2.4.3 Elevation Mask ID 0xa7 (p. 42)
 
@@ -3323,6 +3448,7 @@ arguments:
 name:      OCO3_GPS_SET_INTEGRATED_CARRIER_SMOOTHING
 opcode:    0x50a8
 subsystem: GPS
+title:     Set Integrated Carrier Smoothing
 desc:      |
   7.2.4.4 Integrated Carrier Smoothing ID 0xa8 (p. 42)
 
@@ -3366,6 +3492,7 @@ arguments:
 name:      OCO3_GPS_INIT_POSITION
 opcode:    0x50a9
 subsystem: GPS
+title:     Initialize Position
 desc:      |
   7.2.4.5 Initialise Position ID 0xa9 (p. 43)
 
@@ -3442,6 +3569,7 @@ arguments:
 name:      OCO3_GPS_LOAD_ALMANACS
 opcode:    0x50ab
 subsystem: GPS
+title:     Load Almanacs
 desc:      |
   7.2.4.6 Load Almanacs ID 0xab (p. 43)
 
@@ -3567,6 +3695,7 @@ arguments:
 name:      OCO3_GPS_LOAD_EPHEMERIS
 opcode:    0x50ac
 subsystem: GPS
+title:     Load Ephemeris
 desc:      |
   7.2.4.7 Load Ephemeris ID 0xac (p. 43-44)
 
@@ -3825,6 +3954,7 @@ arguments:
 name:      OCO3_GPS_LOAD_IUTC
 opcode:    0x50ad
 subsystem: GPS
+title:     Load Ionospheric UTC Data
 desc:      |
   7.2.4.8 Load IUTC ID 0xad (p. 44-45)
 
@@ -3965,6 +4095,7 @@ arguments:
 name:      OCO3_GPS_SET_PPS_CONTROL
 opcode:    0x50ae
 subsystem: GPS
+title:     Set PPS Control
 desc:      |
   7.2.4.9 PPS Control ID 0xae (p. 45)
 
@@ -3994,6 +4125,7 @@ arguments:
 name:      OCO3_GPS_SET_SERIAL_PORT_CONTROL
 opcode:    0x50af
 subsystem: GPS
+title:     Set Serial Port Control
 desc:      |
   7.2.4.10 Serial Port Control ID 0xaf (p. 45)
 
@@ -4023,6 +4155,7 @@ arguments:
 name:      OCO3_GPS_ENABLE_SATELLITE
 opcode:    0x50b4
 subsystem: GPS
+title:     Enable Satellite
 desc:      |
   7.2.4.11 Re-Enable Satellite ID 0xb4 (p. 45)
 
@@ -4051,6 +4184,7 @@ arguments:
 name:      OCO3_GPS_SAVE
 opcode:    0x50b5
 subsystem: GPS
+title:     Save
 desc:      |
   7.2.4.12 Save Almanac, Ephemeris and/or IUTC ID 0xb5 (p. 45)
 
@@ -4092,6 +4226,7 @@ arguments:
 name:      OCO3_GPS_SET_ANTENNA_ALLOCATION_MODE
 opcode:    0x50b6
 subsystem: GPS
+title:     Set Antenna Allocation Mode
 desc:      |
   7.2.4.13 Antenna Allocation Mode ID 0xb6 (p. 45-46)
 
@@ -4125,6 +4260,7 @@ arguments:
 name:      OCO3_GPS_SELECT_SATELLITE
 opcode:    0x50b7
 subsystem: GPS
+title:     Select Satellite
 desc:      |
   7.2.4.14 Manual Select Satellite ID 0xb7 (p. 46)
 
@@ -4187,6 +4323,7 @@ arguments:
 name:      OCO3_GPS_SET_TIME_GREGORIAN
 opcode:    0x50b8
 subsystem: GPS
+title:     Set Time (Gregorian)
 desc:      |
   7.2.4.15 Set Time (Gregorian format) ID 0xb8 (p. 46)
 
@@ -4261,6 +4398,7 @@ arguments:
 name:      OCO3_GPS_SET_TIME_GPS
 opcode:    0x50b9
 subsystem: GPS
+title:     Set Time (GPS)
 desc:      |
   7.2.4.16 Set Time (GPS format) ID 0xb8 (p. 46-47)
 
@@ -4298,6 +4436,7 @@ arguments:
 name:      OCO3_GPS_SET_FIX_FILTER_COEFF
 opcode:    0x50bb
 subsystem: GPS
+title:     Set Fix Filter Coefficients
 desc:      |
   7.2.4.17 Set Fix Filter Coefficient ID 0xbb (p. 47)
 
@@ -4341,6 +4480,7 @@ arguments:
 name:      OCO3_GPS_SET_SATELLITE_SELECTION_MODE
 opcode:    0x50bc
 subsystem: GPS
+title:     Set Satellite Selection Mode
 desc:      |
   7.2.4.18 Satellite Selection Mode ID 0xbc (p. 47)
 
@@ -4379,6 +4519,7 @@ arguments:
 name:      OCO3_GPS_SET_TIME_OUTPUT_CONFIG
 opcode:    0x50bd
 subsystem: GPS
+title:     Set Time Output Configuration
 desc:      |
   7.2.4.19 Time Output Configuration ID 0xbd (p. 47)
 
@@ -4412,6 +4553,7 @@ arguments:
 name:      OCO3_GPS_SET_DYNAMICS_MODE
 opcode:    0x50c0
 subsystem: GPS
+title:     Set Dynamics Mode
 desc:      |
   7.2.4.20 Dynamics Mode ID 0xc0 (p. 48)
 
@@ -4445,6 +4587,7 @@ arguments:
 name:      OCO3_GPS_SET_PRESET_PROGRAMMABLE_OUTPUTS
 opcode:    0x50c1
 subsystem: GPS
+title:     Set Preset Programmable Outputs
 desc:      |
   7.2.4.21 Preset Programmable Outputs ID 0xc1 (p. 48)
 
@@ -4477,6 +4620,7 @@ arguments:
 name:      OCO3_GPS_SET_PROGRAM_INTERFACE
 opcode:    0x50c2
 subsystem: GPS
+title:     Set Program Interface
 desc:      |
   7.2.4.22 Program Interface ID 0xc2 (p. 48)
 
@@ -4503,6 +4647,28 @@ arguments:
     units: none
     type:  U8
     bytes: 1
+    enum:
+      0x09: PVT_SOLUTION_64
+      0x10: PVT_SOLUTION_32
+      0x11: PVT_ESTIMATE
+      0x12: GPS_TIME
+      0x15: SAT_SUMMARY
+      0x16: ALMANAC
+      0x17: EPHEMERIS
+      0x18: IUTC
+      0x20: RAW_DATA
+      0x21: PROCESSED_RAW
+      0x25: MULTI_ANT_PHASE
+      0x30: SGR_STATUS
+      0x32: OPER_SETTINGS
+      0x35: ACK
+      0x40: GPS_TRACKING
+      0x41: LOS_VECTORS
+      0x50: PVT_INFO
+      0x70: ORBITAL_ELTS
+      0x71: TTC_PACKET_RESP
+      0x72: COMMS_DIAGS
+      0x75: A_TO_D_RESP
 
   - !Argument
     name:  interval
@@ -4517,6 +4683,7 @@ arguments:
 name:      OCO3_GPS_SET_PVT_OUTPUT_FORMAT
 opcode:    0x50c3
 subsystem: GPS
+title:     Set PVT Output Format
 desc:      |
   7.2.4.23 PVT Output Format ID 0xc3 (p. 48)
 
@@ -4556,6 +4723,7 @@ arguments:
 name:      OCO3_GPS_SET_BYTE_STUFFING_CONTROL
 opcode:    0x50c4
 subsystem: GPS
+title:     Set Byte Stuffing Control
 desc:      |
   7.2.4.24 Byte Stuffing Control ID 0xc4 (p. 49)
 
@@ -4586,6 +4754,7 @@ arguments:
 name:      OCO3_GPS_ENTER_LOW_LEVEL
 opcode:    0x50d0
 subsystem: GPS
+title:     Enter Low Level
 desc:      |
   7.2.4.25 Enter Low Level ID 0xd0 (p. 49)
 
@@ -4607,6 +4776,7 @@ arguments:
 name:      OCO3_GPS_SEND_CAN_PACKET
 opcode:    0x50d1
 subsystem: GPS
+title:     Send CAN Packet
 desc:      |
   7.2.4.26 Send CAN Packet ID 0xd1 (p. 49)
 
@@ -4699,6 +4869,7 @@ arguments:
 name:      OCO3_GPS_SET_ORBITAL_ELEMENT_CONTROL
 opcode:    0x50d2
 subsystem: GPS
+title:     Set Orbital Element Control
 desc:      |
   7.2.4.27 Orbital Element Control ID 0xd2 (p. 49)
 
@@ -4729,6 +4900,7 @@ arguments:
 name:      OCO3_GPS_INIT_ORBITAL_ELEMENTS
 opcode:    0x50d3
 subsystem: GPS
+title:     Initialize Orbital Elements
 desc:      |
   7.2.4.28 Orbital Element Initialization ID 0xd3 (p. 49-50)
 
@@ -4807,6 +4979,7 @@ arguments:
 name:      OCO3_GPS_SET_ANTENNA_CONFIG
 opcode:    0x50d5
 subsystem: GPS
+title:     Set Antenna Configuration
 desc:      |
   7.2.4.29 Antenna Configuration ID 0xd5 (p. 50)
 
@@ -4919,6 +5092,7 @@ arguments:
 name:      OCO3_GPS_SET_MANUAL_OVERRIDE
 opcode:    0x50d6
 subsystem: GPS
+title:     Set Manual Override
 desc:      |
   7.2.4.30 Manual Override Command ID 0xd6 (p. 50)
 
@@ -4951,6 +5125,7 @@ arguments:
 name:      OCO3_GPS_SET_COVISIBLE_EXTRAVISIBLE_ANTENNA
 opcode:    0x50d7
 subsystem: GPS
+title:     Set Co-Visible Extra-Visible Antenna
 desc:      |
   7.2.4.31 Co/Extra-visible Antenna Command ID 0xd7 (p. 50-51)
 
@@ -4995,6 +5170,7 @@ arguments:
 name:      OCO3_GPS_NO_OP
 opcode:    0x50ef
 subsystem: GPS
+title:     No Operation
 desc:      |
   7.2.4.32 No-Operation Command ID 0xef (p. 51)
 
@@ -5014,6 +5190,7 @@ arguments:
 name:      OCO3_GPS_SET_AUTO_SWITCH
 opcode:    0x50f0
 subsystem: GPS
+title:     Set Auto Switch
 desc:      |
   7.2.4.33 Auto-Switch Settings ID 0xf0 (p. 51)
 
@@ -5056,6 +5233,7 @@ arguments:
 name:      OCO3_GPS_SWITCH_POWER
 opcode:    0x5001
 subsystem: GPS
+title:     Switch Power
 desc:      |
   Switches GPS power on or off.
 
@@ -5073,10 +5251,66 @@ arguments:
 
 
 --- !Command
-name:      OCO3_GPS_INIT
+name:      OCO3_GPS_SET_DEFAULTS
 opcode:    0x5002
 subsystem: GPS
-desc:      Initializes the GPS.
+title:     Set Defaults
+desc:      Sets default GPS configuration.
+
+
+
+--- !Command
+name:      OCO3_GPS_SET_READY
+opcode:    0x5003
+subsystem: GPS
+title:     Set Ready
+desc:      Indicates whether or not GPS is ready to be used for PCS.
+
+arguments:
+  - !Argument
+    name:  readiness_flag
+    desc:  Readiness flag
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: GPS_IS_NOT_READY
+      1: GPS_IS_READY
+
+
+
+--- !Command
+name:      OCO3_GPS_TEST_SERIAL_CODE
+opcode:    0x5004
+subsystem: GPS
+desc:      Induces temporary errors in serial reads from GPS.
+
+arguments:
+  - !Argument
+    name:  fault_type
+    desc:  Fault type
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: FAULTSIM_NONE
+      1: FAULTSIM_ZERO
+      2: FAULTSIM_FF
+      3: FAULTSIM_DROP_BYTE
+
+  - !Argument
+    name:  countdown
+    desc:  Number of reads before failure
+    units: bytes
+    type:  U8
+    bytes: 1
+
+  - !Argument
+    name:  duration
+    desc:  Duration of failure
+    units: bytes
+    type:  U8
+    bytes: 2
 
 
 
@@ -5084,6 +5318,7 @@ desc:      Initializes the GPS.
 name:      OCO3_IMU_GET_BIT_RESULTS
 opcode:    0xb004
 subsystem: IMU
+title:     Get Built-In Test Results
 desc:      |
   This command is used to perform a Built-In Test of the unit while it is
   running in normal (binary) mode.  This command will (as time allows, without
@@ -5108,6 +5343,7 @@ desc:      |
 name:      OCO3_IMU_SET_MODE
 opcode:    0xb005
 subsystem: IMU
+title:     Set Mode
 desc:      |
   This command places the unit into/out of Configuration Mode.
 
@@ -5128,6 +5364,7 @@ arguments:
 name:      OCO3_IMU_GET_MODE
 opcode:    0xb006
 subsystem: IMU
+title:     Get Mode
 desc:      |
   This queries the Configuration Mode status.
 
@@ -5137,6 +5374,7 @@ desc:      |
 name:      OCO3_IMU_SET_DATA_RATE
 opcode:    0xb007
 subsystem: IMU
+title:     Set Data Rate
 desc:      |
   This command sets the output data rate in Hz of the binary mode. The output
   rate must be specified between 1 and 1000 Hz. Note that not all data rates are
@@ -5180,6 +5418,7 @@ arguments:
 name:      OCO3_IMU_GET_DATA_RATE
 opcode:    0xb008
 subsystem: IMU
+title:     Get Data Rate
 desc:      |
   This queries the output data rate in Hz for when the unit is operating in
   binary mode.
@@ -5190,6 +5429,7 @@ desc:      |
 name:      OCO3_IMU_GET_FILTER_COEFFS
 opcode:    0xb00c
 subsystem: IMU
+title:     Get Filter Coefficients
 desc:      |
   This queries the accelerometer or gyro filter coefficients. The filter is a
   cascaded 2nd-order biquad filter with four cascade stages. This command does
@@ -5212,6 +5452,7 @@ arguments:
 name:      OCO3_IMU_SET_FILTER_ENABLE
 opcode:    0xb00d
 subsystem: IMU
+title:     Set Filter Enable
 desc:      |
   This command sets whether or not the filter is enabled on the output data.
 
@@ -5232,6 +5473,7 @@ arguments:
 name:      OCO3_IMU_GET_FILTER_ENABLE
 opcode:    0xb00e
 subsystem: IMU
+title:     Get Filter Enable
 desc:      |
   This queries whether or not the filter is enabled on the output data.
 
@@ -5241,6 +5483,7 @@ desc:      |
 name:      OCO3_IMU_SET_FILTER_TYPE
 opcode:    0xb00f
 subsystem: IMU
+title:     Set Filter Type
 desc:      |
   This command sets the type of filter being used. It can be used to specify a
   Chebyshev filter, Butterworth filter, or a Uniform Averager. The command acts
@@ -5279,6 +5522,7 @@ arguments:
 name:      OCO3_IMU_GET_FILTER_TYPE
 opcode:    0xb010
 subsystem: IMU
+title:     Get Filter Type
 desc:      |
   This queries the type of filter being used; it acts independently on the accel
   and gyro filters, so each must be specified as a separate command.
@@ -5300,6 +5544,7 @@ arguments:
 name:      OCO3_IMU_GET_LINEAR_FORMAT
 opcode:    0xb015
 subsystem: IMU
+title:     Get Linear Format
 desc:      |
   This queries the linear data output format, either acceleration in Gs or
   delta velocity.
@@ -5310,6 +5555,7 @@ desc:      |
 name:      OCO3_IMU_GET_LINEAR_UNITS
 opcode:    0xb017
 subsystem: IMU
+title:     Get Linear Units
 desc:      |
   This queries the linear data output units. This setting only has meaning if
   the linear data output format is changed from the default value of
@@ -5321,6 +5567,7 @@ desc:      |
 name:      OCO3_IMU_GET_SYNC_SOURCE
 opcode:    0xb019
 subsystem: IMU
+title:     Get Synchronization Source
 desc:      |
   This queries whether the system is expecting timing synchronization via the
   Master Synchronization Input, or if it internally controls the output timing.
@@ -5332,6 +5579,7 @@ desc:      |
 name:      OCO3_IMU_RESTART
 opcode:    0xb01a
 subsystem: IMU
+title:     Restart
 desc:      |
   This command restarts the system.
 
@@ -5341,6 +5589,7 @@ desc:      |
 name:      OCO3_IMU_SET_ROTATIONAL_FORMAT
 opcode:    0xb01b
 subsystem: IMU
+title:     Set Rotational Format
 desc:      |
   This command sets the rotational format being output in normal mode, either
   delta angle or rate of rotation. Reset selects the factory default as shown in
@@ -5364,6 +5613,7 @@ arguments:
 name:      OCO3_IMU_GET_ROTATIONAL_FORMAT
 opcode:    0xb01c
 subsystem: IMU
+title:     Get Rotational Format
 desc:      |
   This queries the rotational format being output in Normal Mode, either delta
   angle or rate of rotation.
@@ -5374,6 +5624,7 @@ desc:      |
 name:      OCO3_IMU_SET_ROTATIONAL_UNITS
 opcode:    0xb01d
 subsystem: IMU
+title:     Set Rotational Units
 desc:      |
   This command sets the rotational units being output in Normal Mode, either
   degrees or radians. Reset selects the factory default as shown in ICD Section
@@ -5397,6 +5648,7 @@ arguments:
 name:      OCO3_IMU_GET_ROTATIONAL_UNITS
 opcode:    0xb01e
 subsystem: IMU
+title:     Get Rotational Units
 desc:      |
   This queries the rotational units being output in Normal Mode, either degrees
   or radians.
@@ -5407,6 +5659,7 @@ desc:      |
 name:      OCO3_IMU_RESET_CONFIG
 opcode:    0xb01f
 subsystem: IMU
+title:     Reset Configuration
 desc:      |
   This command resets all configuration settings back to the factory defaults.
   The settings include the output data rate, baud rate, filter settings, output
@@ -5418,6 +5671,7 @@ desc:      |
 name:      OCO3_IMU_GET_TEMP
 opcode:    0xb020
 subsystem: IMU
+title:     Get Temperature
 desc:      |
   This queries the temperature of the system in degrees C or F, depending on the
   configuration.
@@ -5428,6 +5682,7 @@ desc:      |
 name:      OCO3_IMU_GET_VOLTAGES
 opcode:    0xb025
 subsystem: IMU
+title:     Get Voltages
 desc:      |
   This queries all of the available voltages on each of the boards.
 
@@ -5437,6 +5692,7 @@ desc:      |
 name:      OCO3_IMU_GET_SOFTWARE_VERSIONS
 opcode:    0xb026
 subsystem: IMU
+title:     Get Software Versions
 desc:      |
   This queries the software version of the DSPs and FPGAs on the ICB and GCB.
   If main DSP software is unavailable, reports the bootloader version only.
@@ -5447,6 +5703,7 @@ desc:      |
 name:      OCO3_IMU_SWITCH_POWER
 opcode:    0xb02a
 subsystem: IMU
+title:     Switch Power
 desc:      |
   Switches IMU power on or off.
 
@@ -5464,11 +5721,66 @@ arguments:
 
 
 --- !Command
-name:      OCO3_IMU_INIT
+name:      OCO3_IMU_SET_DEFAULTS
 opcode:    0xb02b
 subsystem: IMU
-desc:      |
-  Initializes IMU.
+title:     Set Defaults
+desc:      Sets default IMU configuration.
+
+
+
+--- !Command
+name:      OCO3_IMU_SET_READY
+opcode:    0xb02c
+subsystem: IMU
+title:     Set Ready
+desc:      Indicates whether or not IMU is ready to be used for PCS.
+
+arguments:
+  - !Argument
+    name:  readiness_flag
+    desc:  Readiness flag
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: IMU_IS_NOT_READY
+      1: IMU_IS_READY
+
+
+
+--- !Command
+name:      OCO3_IMU_TEST_SERIAL_CODE
+opcode:    0xb02d
+subsystem: IMU
+desc:      Induces temporary errors in serial reads from IMU.
+
+arguments:
+  - !Argument
+    name:  fault_type
+    desc:  Fault type
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: FAULTSIM_NONE
+      1: FAULTSIM_ZERO
+      2: FAULTSIM_FF
+      3: FAULTSIM_DROP_BYTE
+
+  - !Argument
+    name:  countdown
+    desc:  Number of reads before failure
+    units: bytes
+    type:  U8
+    bytes: 1
+
+  - !Argument
+    name:  duration
+    desc:  Duration of failure
+    units: bytes
+    type:  U8
+    bytes: 2
 
 
               # PCS PARAMETER SETTING (IN API ORDER)
@@ -5477,6 +5789,7 @@ desc:      |
 name:      OCO3_PCS_SET_GLINT_AVOIDANCE_ANGLE
 opcode:    0x7001
 subsystem: PCS
+title:     Set Glint Avoidance Angle
 desc:      |
   This command sets the glint avoidance angle (deg).
 
@@ -5494,6 +5807,7 @@ arguments:
 name:      OCO3_PCS_SET_SUN_AVOIDANCE_ANGLE
 opcode:    0x7003
 subsystem: PCS
+title:     Set Sun Avoidance Angle
 desc:      |
   This command sets the sun avoidance angle (deg).
 
@@ -5511,6 +5825,7 @@ arguments:
 name:      OCO3_PCS_SET_PMA_MAX_SPEED
 opcode:    0x7004
 subsystem: PCS
+title:     Set PMA Maximum Speed
 desc:      |
   This command sets maximum speed of the PMA (degs/sec).
 
@@ -5528,6 +5843,7 @@ arguments:
 name:      OCO3_PCS_SET_SMALL_ANGLE_MOVE_TIME
 opcode:    0x7005
 subsystem: PCS
+title:     Set Small Angle Move Time
 desc:      |
   This command sets timeout for small angle move.
 
@@ -5545,6 +5861,7 @@ arguments:
 name:      OCO3_PCS_SET_MEDIUM_ANGLE_MOVE_TIME
 opcode:    0x7006
 subsystem: PCS
+title:     Set Medium Angle Move Time
 desc:      |
   This command sets timeout for medium angle move.
 
@@ -5562,6 +5879,7 @@ arguments:
 name:      OCO3_PCS_SET_AZ_PAD_CONST_TIME
 opcode:    0x7007
 subsystem: PCS
+title:     Set Azimuth Pad Constant Time
 desc:      |
   This command sets constant time for azimuth pad.
 
@@ -5579,6 +5897,7 @@ arguments:
 name:      OCO3_PCS_SET_AZ_PAD_PROPORTIONAL_TIME
 opcode:    0x7008
 subsystem: PCS
+title:     Set Azimuth Pad Proportional Time
 desc:      |
   This command sets proportional time for azimuth pad.
 
@@ -5596,6 +5915,7 @@ arguments:
 name:      OCO3_PCS_SET_EL_PAD_CONST_TIME
 opcode:    0x7009
 subsystem: PCS
+title:     Set Elevation Pad Constant Time
 desc:      |
   This command sets constant time for elevation pad.
 
@@ -5613,6 +5933,7 @@ arguments:
 name:      OCO3_PCS_SET_EL_PAD_PROPORTIONAL_TIME
 opcode:    0x700A
 subsystem: PCS
+title:     Set Elevation Pad Proportional Time
 desc:      |
   This command sets proportional time for elevation pad.
 
@@ -5630,6 +5951,7 @@ arguments:
 name:      OCO3_PCS_SET_CALIBRATOR_POS
 opcode:    0x700B
 subsystem: PCS
+title:     Set Calibrator Position
 desc:      |
   This command sets calibrator position as az/el.
 
@@ -5655,6 +5977,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_DECK_SRU
 opcode:    0x700C
 subsystem: PCS
+title:     Set Quaternion Deck to SRU
 desc:      |
   This command sets deck->sru quaternion.
 
@@ -5693,6 +6016,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_DECK_PMA
 opcode:    0x700D
 subsystem: PCS
+title:     Set Quaternion Deck to PMA
 desc:      |
   This command sets deck->PMA quaternion.
 
@@ -5731,6 +6055,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_DECK_INSTR
 opcode:    0x700E
 subsystem: PCS
+title:     Set Quaternion Deck to Instrument
 desc:      |
   This command sets deck->instrument quaternion.
 
@@ -5769,6 +6094,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_DECK_ISS
 opcode:    0x700F
 subsystem: PCS
+title:     Set Quaternion Deck to ISS
 desc:      |
   This command sets deck->ISS quaternion.
 
@@ -5807,6 +6133,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_SRU_IMU
 opcode:    0x7010
 subsystem: PCS
+title:     Set Quaternion SRU to IMU
 desc:      |
   This command sets SRU->IMU quaternion.
 
@@ -5845,6 +6172,7 @@ arguments:
 name:      OCO3_PCS_SET_PROFILE_STEPSIZE
 opcode:    0x7011
 subsystem: PCS
+title:     Set Profile Step Size
 desc:      |
   This command sets profile step size.
 
@@ -5862,6 +6190,7 @@ arguments:
 name:      OCO3_PCS_SET_TIME_TO_CONVERGE
 opcode:    0x7012
 subsystem: PCS
+title:     Set Time to Converge
 desc:      |
   This command sets estimated time to converge.
 
@@ -5879,6 +6208,7 @@ arguments:
 name:      OCO3_PCS_SET_ACQUISITION_MODE_TIMEOUT
 opcode:    0x7013
 subsystem: PCS
+title:     Set Acquisition Mode Timeout
 desc:      |
   This command sets acquisition mode timeout.
 
@@ -5896,6 +6226,7 @@ arguments:
 name:      OCO3_PCS_SET_SUN_POSITION_J2000_M
 opcode:    0x7014
 subsystem: PCS
+title:     Set Sun Position (J2000; meters)
 desc:      |
   This command sets the Sun position in J2000 coordinates.
 
@@ -5927,6 +6258,7 @@ arguments:
 name:      OCO3_PCS_SET_SUN_VELOCITY_J2000_MPERS
 opcode:    0x7015
 subsystem: PCS
+title:     Set Sun Velocity (J2000; m/s)
 desc:      |
   This command sets the Sun velocity in J2000 coordinates.
 
@@ -5958,6 +6290,7 @@ arguments:
 name:      OCO3_PCS_SET_SUN_UPDATE_T0
 opcode:    0x7016
 subsystem: PCS
+title:     Set Sun Update T0
 desc:      |
   This command updates the Sun's T0 value.
 
@@ -5975,6 +6308,7 @@ arguments:
 name:      OCO3_PCS_SET_MU_SUN_PROPAGATION
 opcode:    0x7017
 subsystem: PCS
+title:     Set Mu Sun Propagation
 desc:      |
   This command sets the mu Sun propagation.
 
@@ -5992,6 +6326,7 @@ arguments:
 name:      OCO3_PCS_SET_MOON_POSITION_J2000_M
 opcode:    0x7018
 subsystem: PCS
+title:     Set Moon Position (J2000; meters)
 desc:      |
   This command sets the Moon position in J2000 coordinates.
 
@@ -6023,6 +6358,7 @@ arguments:
 name:      OCO3_PCS_SET_MOON_VELOCITY_J2000_MPERS
 opcode:    0x7019
 subsystem: PCS
+title:     Set Moon Velocity (J2000; m/s)
 desc:      |
   This command sets the Moon velocity in J2000 coordinates.
 
@@ -6054,6 +6390,7 @@ arguments:
 name:      OCO3_PCS_SET_MOON_UPDATE_T0
 opcode:    0x701A
 subsystem: PCS
+title:     Set Moon Update T0
 desc:      |
   This command updates the moon's T0 value.
 
@@ -6071,6 +6408,7 @@ arguments:
 name:      OCO3_PCS_SET_MU_MOON_PROPAGATION
 opcode:    0x701B
 subsystem: PCS
+title:     Set Mu Moon Propagation
 desc:      |
   This command sets the mu Moon propagation.
 
@@ -6088,6 +6426,7 @@ arguments:
 name:      OCO3_PCS_SET_T0_J2000
 opcode:    0x701C
 subsystem: PCS
+title:     Set T0 (J2000)
 desc:      |
   This command sets t0 J2000.
 
@@ -6105,6 +6444,7 @@ arguments:
 name:      OCO3_PCS_SET_QUAT_T0_ECEF_J2000
 opcode:    0x701D
 subsystem: PCS
+title:     Set Quaternion T0 to ECEF (J2000)
 desc:      |
         This command sets T0->ECEF-J2000 quaternion.
 
@@ -6143,6 +6483,7 @@ arguments:
 name:      OCO3_PCS_SET_ANGULAR_RATE_EARTH_T0_J2000
 opcode:    0x701E
 subsystem: PCS
+title:     Set Angular Rate Earth to J2000
 desc:      |
   This command sets ?.
 
@@ -6160,6 +6501,7 @@ arguments:
 name:      OCO3_PCS_SET_OFFSET_ISS_DECK
 opcode:    0x701F
 subsystem: PCS
+title:     Set Offset ISS Deck
 desc:      |
         This command sets the offset from ISS to the deck.
 
@@ -6191,6 +6533,7 @@ arguments:
 name:      OCO3_PCS_SET_RETARGET_RETRY_INTERVAL
 opcode:    0x7020
 subsystem: PCS
+title:     Set Retarget Retry Interval
 desc:      |
   This command indicates how long to wait (in seconds) before retrying, if the
   attempt to go to a target failed.
@@ -6209,6 +6552,7 @@ arguments:
 name:      OCO3_PCS_SET_RTI_INTERVAL
 opcode:    0x7021
 subsystem: PCS
+title:     Set RTI Interval
 desc:      |
   This command sets the duration of a single RTI in seconds.
 
@@ -6226,6 +6570,7 @@ arguments:
 name:      OCO3_PCS_SET_T_SLACK
 opcode:    0x7022
 subsystem: PCS
+title:     Set Time Slack
 desc:      |
   This command sets the margin in the estimate of PMA move time when forward
   propagating to calculate the PMA command.
@@ -6244,6 +6589,7 @@ arguments:
 name:      OCO3_PCS_SET_EARTH_RADIUS
 opcode:    0x7023
 subsystem: PCS
+title:     Set Earth Radius
 desc:      |
   This command defines the radius of the earth.
 
@@ -6261,6 +6607,7 @@ arguments:
 name:      OCO3_PCS_SET_GAIN
 opcode:    0x7024
 subsystem: PCS
+title:     Set Gain
 desc:      |
   This command sets the 3x1 Kalman filter gains for attitude error (Kth) and
   gyro bias (Kb).
@@ -6314,6 +6661,7 @@ arguments:
 name:      OCO3_PCS_SET_TIME_TO_LOSE
 opcode:    0x7026
 subsystem: PCS
+title:     Set Time To Lose
 desc:      |
   This command sets estimated time to lose.
 
@@ -6331,6 +6679,7 @@ arguments:
 name:      OCO3_PCS_SET_ANGULAR_RATE_EARTH
 opcode:    0x7027
 subsystem: PCS
+title:     Set Angular Rate Earth
 desc:      |
   This command sets ?.
 
@@ -6348,6 +6697,7 @@ arguments:
 name:      OCO3_PCS_SET_EARTH_EQUATORIAL_RADIUS
 opcode:    0x7028
 subsystem: PCS
+title:     Set Earth Equatorial Radius
 desc:      |
   This command defines the radius of the earth at the equator.
 
@@ -6365,6 +6715,7 @@ arguments:
 name:      OCO3_PCS_SET_EARTH_FLATTENING
 opcode:    0x7029
 subsystem: PCS
+title:     Set Earth Flattening
 desc:      |
   This command provides the earth oblateness measure.
 
@@ -6382,6 +6733,7 @@ arguments:
 name:      OCO3_PCS_SET_IMU_ONLY_TIME
 opcode:    0x702A
 subsystem: PCS
+title:     Set IMU Only Time
 desc:      |
   This command sets the time to propagate on IMU before faulting to a different
   estimator mode.
@@ -6400,6 +6752,7 @@ arguments:
 name:      OCO3_PCS_SET_NO_GPS_TIME
 opcode:    0x702B
 subsystem: PCS
+title:     Set No GPS Time
 desc:      |
   This command sets the time to propagate without GPS data before faulting to a 
   different estimator mode.
@@ -6418,6 +6771,7 @@ arguments:
 name:      OCO3_PCS_SET_BAD_ONLY_TIME
 opcode:    0x702C
 subsystem: PCS
+title:     Set BAD Only Time
 desc:      |
   This command sets the time to propagate without BAD data before faulting to
   STANDBY.
@@ -6436,6 +6790,7 @@ arguments:
 name:      OCO3_PCS_SET_SRU_MISS_FACTOR
 opcode:    0x702D
 subsystem: PCS
+title:     Set SRU Miss Factor
 desc:      |
   This command defines the number of RTIs to propagate without SRU data before
   faulting to a different estimator mode.
@@ -6454,6 +6809,7 @@ arguments:
 name:      OCO3_PCS_SET_IMU_MISS_FACTOR
 opcode:    0x702E
 subsystem: PCS
+title:     Set IMU Miss Factor
 desc:      |
   This command defines the number of RTIs to propagate without IMU data before
   faulting to a different estimator mode.
@@ -6472,6 +6828,7 @@ arguments:
 name:      OCO3_PCS_SET_PMA_OFFSET_AZ
 opcode:    0x7060
 subsystem: PCS
+title:     Set PMA Offset Azimuth
 desc:      |
   This command defines the gimbal encoder offset in azimuth (encoder reading
   at D-frame zero)
@@ -6490,6 +6847,7 @@ arguments:
 name:      OCO3_PCS_SET_PMA_OFFSET_EL
 opcode:    0x7061
 subsystem: PCS
+title:     Set PMA Offset Elevation
 desc:      |
   This command defines the gimbal encoder offset in elevation (encoder reading
   at D-frame zero)
@@ -6508,6 +6866,7 @@ arguments:
 name:      OCO3_PCS_SET_FLIP_LINE_LOCATION
 opcode:    0x7062
 subsystem: PCS
+title:     Set Flip Line Location
 desc:      |
   This command defines the location the flip line, in degrees in D-frame.
 
@@ -6525,6 +6884,7 @@ arguments:
 name:      OCO3_PCS_SET_ABOVE_HRZ_ANGLE
 opcode:    0x7063
 subsystem: PCS
+title:     Set Above Horizon Angle
 desc:      |
   This command sets the angle of the sun above the horizon for glint
   calculation.
@@ -6543,6 +6903,7 @@ arguments:
 name:      OCO3_PCS_SET_SUN_AVOIDANCE_GAIN
 opcode:    0x7064
 subsystem: PCS
+title:     Set Sun Avoidance Gain
 desc:      |
   Used for sun in low-horizon case.
 
@@ -6560,6 +6921,7 @@ arguments:
 name:      OCO3_PCS_SET_PPNR_ROLL_SWITCH
 opcode:    0x7065
 subsystem: PCS
+title:     Set Attitude Roll Correction Switch
 desc:      |
   This command sets attitude roll correction switch for the path planner.
 
@@ -6578,6 +6940,7 @@ arguments:
 name:      OCO3_PCS_SET_MAX_SRU_BAD_ATT_MAG
 opcode:    0x702F
 subsystem: PCS
+title:     Set Maximum SRU BAD Attitude Magnitude
 desc:      |
   This command sets the maximum allowable variation of the magnitude difference
   of SRU and BAD (ISS) attitudes.
@@ -6596,6 +6959,7 @@ arguments:
 name:      OCO3_PCS_SET_MAX_GPS_BAD_POS_MAG
 opcode:    0x7030
 subsystem: PCS
+title:     Set Maximum GPS BAD Position Magnitude
 desc:      |
   This command sets the maximum allowable variation of the magnitude difference
   of GPS and BAD (ISS) positions.
@@ -6614,6 +6978,7 @@ arguments:
 name:      OCO3_PCS_SET_PMA_AZ_TOLERANCE
 opcode:    0x7031
 subsystem: PCS
+title:     Set PMA Azimuth Tolerance
 desc:      |
   This command sets the tolerance on PMA az positioning in degrees.  If the PMA
   reports a pointing within the specified tolerance from the commanded pointing,
@@ -6633,6 +6998,7 @@ arguments:
 name:      OCO3_PCS_SET_PMA_EL_TOLERANCE
 opcode:    0x7032
 subsystem: PCS
+title:     Set PMA Elevation Tolerance
 desc:      |
   This command sets the tolerance on PMA el positioning in degrees.  If the PMA
   reports a pointing within the specified tolerance from the commanded pointing,
@@ -6653,6 +7019,7 @@ arguments:
 name:      OCO3_PCS_STANDBY_MODE
 opcode:    0x7033
 subsystem: PCS
+title:     Standby Mode
 desc:      |
   This command commands Standby mode.
 
@@ -6662,6 +7029,7 @@ desc:      |
 name:      OCO3_PCS_ACQUISITION_MODE
 opcode:    0x7034
 subsystem: PCS
+title:     Acquisition Mode
 desc:      |
   This command commands Acquisition mode.
 
@@ -6671,6 +7039,7 @@ desc:      |
 name:      OCO3_PCS_SCIREADY_MODE
 opcode:    0x7035
 subsystem: PCS
+title:     Science Ready Mode
 desc:      |
   This command commands Science Ready mode.
 
@@ -6680,6 +7049,7 @@ desc:      |
 name:      OCO3_PCS_NADIR_MODE
 opcode:    0x7036
 subsystem: PCS
+title:     Nadir Mode
 desc:      |
   This command commands Nadir mode.
 
@@ -6697,6 +7067,7 @@ arguments:
 name:      OCO3_PCS_GLINT_MODE
 opcode:    0x7037
 subsystem: PCS
+title:     Glint Mode
 desc:      |
   This command commands Glint mode.
 
@@ -6721,6 +7092,7 @@ arguments:
 name:      OCO3_PCS_TARGET_MODE
 opcode:    0x7038
 subsystem: PCS
+title:     Target Mode
 desc:      |
   This command commands Target mode.
 
@@ -6745,6 +7117,7 @@ arguments:
 name:      OCO3_PCS_CITY_MODE
 opcode:    0x7039
 subsystem: PCS
+title:     City Mode
 desc:      |
   This command commands City mode.
 
@@ -6783,6 +7156,7 @@ arguments:
 name:      OCO3_PCS_CALIBRATOR_MODE
 opcode:    0x703a
 subsystem: PCS
+title:     Calibrator Mode
 desc:      |
   This command commands Calibrator mode.
 
@@ -6792,6 +7166,7 @@ desc:      |
 name:      OCO3_PCS_JOYSTICK_MODE
 opcode:    0x703b
 subsystem: PCS
+title:     Joystick Mode
 desc:      |
   This command commands Joystick mode.
 
@@ -6823,6 +7198,7 @@ arguments:
 name:      OCO3_PCS_TEST_MODE
 opcode:    0x703c
 subsystem: PCS
+title:     Test Mode
 desc:      |
   This command commands Test mode.
 
@@ -6856,6 +7232,7 @@ arguments:
 name:      OCO3_PCS_ADD_TARGET
 opcode:    0x7040
 subsystem: PCS
+title:     Add Target
 desc:      |
   This command specifies the latitude, longitude and altitude for a new target.
 
@@ -6890,35 +7267,13 @@ arguments:
 
 
 
---- !Command
-name:      OCO3_PCS_SET_TARGET_ENABLE
-opcode:    0x7041
-subsystem: PCS
-desc:      |
-  This command enables/disables a particular target in the target table.
-
-arguments:
-  - !Argument
-    name:  id
-    desc:  Target ID
-    units: none
-    type:  MSB_U16
-    bytes: [0,1]
-
-  - !Argument
-    name:  enable
-    desc:  Enable
-    units: none
-    type:  U8
-    bytes: 2
-
-
             # INIT
 
 --- !Command
 name:      OCO3_PCS_INIT
 opcode:    0x7050
 subsystem: PCS
+title:     Initialize PCS
 desc:      |
   This command requests a reinit of the PCS module.
 
@@ -6929,6 +7284,7 @@ desc:      |
 name:      OCO3_PCS_FORCE_GPS_VALID
 opcode:    0x7051
 subsystem: PCS
+title:     Force GPS Valid
 desc:      |
   This command forces the value of "GPS valid".
 
@@ -6950,6 +7306,7 @@ arguments:
 name:      OCO3_PCS_START_TEST
 opcode:    0x7052
 subsystem: PCS
+title:     Start Test
 desc:      |
   This command starts canned data flowing through the PCS 5-Hz routine.
 
@@ -6967,6 +7324,7 @@ arguments:
 name:      OCO3_PMA_SET_RELEASE_TIMEOUT
 opcode:    0x8002
 subsystem: PMA
+title:     Set Release Timeout
 desc:      |
   This command sets the launch-lock release timeout.
 
@@ -6984,6 +7342,7 @@ arguments:
 name:      OCO3_PMA_SET_RELEASE_VOLTAGE_SENSOR
 opcode:    0x800e
 subsystem: PMA
+title:     Set Release Voltage Sensor
 desc:      |
   This command specifies the voltage sensor which will detect release.
 
@@ -7001,6 +7360,7 @@ arguments:
 name:      OCO3_PMA_SET_RELEASE_THRESHOLD
 opcode:    0x800f
 subsystem: PMA
+title:     Set Release Threshold
 desc:      |
   This command specifies the threshold DN, above which values indicate release.
 
@@ -7018,6 +7378,7 @@ arguments:
 name:      OCO3_PMA_SET_CAL_AZ
 opcode:    0x8003
 subsystem: PMA
+title:     Set Calibration Azimuth
 desc:      |
   This command sets azimuth pointing of the calibration target.
 
@@ -7035,6 +7396,7 @@ arguments:
 name:      OCO3_PMA_SET_CAL_EL
 opcode:    0x8004
 subsystem: PMA
+title:     Set Calibration Elevation
 desc:      |
   This command sets elevation pointing of the calibration target.
 
@@ -7052,6 +7414,7 @@ arguments:
 name:      OCO3_PMA_SET_MIN_AZ
 opcode:    0x8005
 subsystem: PMA
+title:     Set Minimum Azimuth
 desc:      |
   This command sets the lower limit on PMA azimuth position in encoder counts.
   Value is set in FSW and in PDE.
@@ -7070,6 +7433,7 @@ arguments:
 name:      OCO3_PMA_SET_MAX_AZ
 opcode:    0x8006
 subsystem: PMA
+title:     Set Maximum Azimuth
 desc:      |
   This command sets the upper limit on PMA azimuth position in encoder counts.
   Value is set in FSW and in PDE.
@@ -7088,6 +7452,7 @@ arguments:
 name:      OCO3_PMA_SET_MIN_EL
 opcode:    0x8007
 subsystem: PMA
+title:     Set Minimum Elevation
 desc:      |
   This command sets the lower limit on PMA elevation position in encoder counts.
   Value is set in FSW and in PDE.
@@ -7106,6 +7471,7 @@ arguments:
 name:      OCO3_PMA_SET_MAX_EL
 opcode:    0x8008
 subsystem: PMA
+title:     Set Maximum Elevation
 desc:      |
   This command sets the upper limit on PMA elevation position in encoder counts.
   Value is set in FSW and in PDE.
@@ -7124,6 +7490,7 @@ arguments:
 name:      OCO3_PMA_POINT_AZ
 opcode:    0x800a
 subsystem: PMA
+title:     Point Azimuth
 desc:      |
   This command sets the PMA azimuth position
 
@@ -7141,6 +7508,7 @@ arguments:
 name:      OCO3_PMA_POINT_EL
 opcode:    0x800b
 subsystem: PMA
+title:     Point Elevation
 desc:      |
   This command sets the PMA elevation position
 
@@ -7158,6 +7526,7 @@ arguments:
 name:      OCO3_PMA_SWITCH_POWER
 opcode:    0x800c
 subsystem: PMA
+title:     Switch Power
 desc:      |
   Switches PMA power on or off.
 
@@ -7178,6 +7547,7 @@ arguments:
 name:      OCO3_PMA_RELEASE_LOCK
 opcode:    0x800d
 subsystem: PMA
+title:     Release Lock
 desc:      |
   Releases the launch lock.
 
@@ -7208,6 +7578,7 @@ arguments:
 name:      OCO3_PMA_WRITE_REG
 opcode:    0x8010
 subsystem: PMA
+title:     Write Register
 desc:      |
   Writes a PDE register.
 
@@ -7234,6 +7605,7 @@ arguments:
 name:      OCO3_PMA_READ_REG
 opcode:    0x8011
 subsystem: PMA
+title:     Read Register
 desc:      |
   Reads a PDE register.  Register value comes back in health-and-status
   telemetry.
@@ -7252,6 +7624,7 @@ arguments:
 name:      OCO3_PMA_SEND_PING
 opcode:    0x8012
 subsystem: PMA
+title:     Send Ping
 desc:      |
   Sends ping to PDE.  PDE responds 0x01020304.
 
@@ -7261,6 +7634,7 @@ desc:      |
 name:      OCO3_PMA_SET_AZ_ELEC_OFFSET
 opcode:    0x8013
 subsystem: PMA
+title:     Set Azimuth Electrical Offset
 desc:      |
   This command sets the PDE "electrical offset" for the azimuth motor.  Value
   is set in FSW and in PDE.
@@ -7281,6 +7655,7 @@ arguments:
 name:      OCO3_PMA_SET_EL_ELEC_OFFSET
 opcode:    0x8014
 subsystem: PMA
+title:     Set Elevation Electrical Offset
 desc:      |
   This command sets the PDE "electrical offset" for the elevation motor.  Value
   is set in FSW and in PDE.
@@ -7301,6 +7676,7 @@ arguments:
 name:      OCO3_PMA_SET_AZ_VEL_LIMIT
 opcode:    0x8015
 subsystem: PMA
+title:     Set Azimuth Velocity Limit
 desc:      |
   This command sets the PDE velocity limit for the azimuth motor.  Value is set
   in FSW and in PDE.
@@ -7320,6 +7696,7 @@ arguments:
 name:      OCO3_PMA_SET_EL_VEL_LIMIT
 opcode:    0x8016
 subsystem: PMA
+title:     Set Elevation Velocity Limit
 desc:      |
   This command sets the PDE velocity limit for the elevation motor.  Value is
   set in FSW and in PDE.
@@ -7338,6 +7715,7 @@ arguments:
 name:      OCO3_PMA_SET_LIMIT_SW_ACTIONS
 opcode:    0x8017
 subsystem: PMA
+title:     Set Limit Switch Actions
 desc:      |
   This command sets PDE limit switch actions.  Value is set in FSW and in PDE.
 
@@ -7355,6 +7733,7 @@ arguments:
 name:      OCO3_PMA_SET_AZ_MECH_OFFSET
 opcode:    0x8018
 subsystem: PMA
+title:     Set Azimuth Mechanism Offset
 desc:      |
   This command sets the offset between raw encoder count and mechanism position
   for azimuth.  Value is set in FSW and in PDE.
@@ -7374,6 +7753,7 @@ arguments:
 name:      OCO3_PMA_SET_EL_MECH_OFFSET
 opcode:    0x8019
 subsystem: PMA
+title:     Set Elevation Mechanism Offset
 desc:      |
   This command sets the offset between raw encoder count and mechanism position
   for elevation.  Value is set in FSW and in PDE.
@@ -7393,6 +7773,7 @@ arguments:
 name:      OCO3_PMA_SET_ENCODER_CONFIG
 opcode:    0x801a
 subsystem: PMA
+title:     Set Encoder Configuration
 desc:      |
   This command sets the PDE encoder configuration.  Value is set in FSW and in
   PDE.
@@ -7411,6 +7792,7 @@ arguments:
 name:      OCO3_PMA_INIT
 opcode:    0x801b
 subsystem: PMA
+title:     Initialize PMA
 desc:      |
   This command performs power-on and indexing procedures, leaving PMA in idle
   mode.
@@ -7421,6 +7803,7 @@ desc:      |
 name:      OCO3_PMA_SET_AZ_INDEXING_TIMEOUT
 opcode:    0x801c
 subsystem: PMA
+title:     Set Azimuth Indexing Timeout
 desc:      |
   This command sets the maximum time required for the PMA to find the azimuth
   index during initialization.
@@ -7439,6 +7822,7 @@ arguments:
 name:      OCO3_PMA_SET_EL_INDEXING_TIMEOUT
 opcode:    0x801e
 subsystem: PMA
+title:     Set Elevation Indexing Timeout
 desc:      |
   This command sets the maximum time required for the PMA to find the elevation
   index during initialization.
@@ -7457,6 +7841,7 @@ arguments:
 name:      OCO3_PMA_SINUSOID
 opcode:    0x801d
 subsystem: PMA
+title:     Sinusoid Test
 desc:      |
   This command starts PMA sinusoid test, not expected to be used for flight.
   Test runs to completion (one hour).
@@ -7467,6 +7852,7 @@ desc:      |
 name:      OCO3_REM_PIXMAP
 opcode:    0x8801
 subsystem: REM
+title:     Pixel Map
 desc:      |
   Pixel-table entries are transmitted to the OCO-3 instrument using
   OCO3_REM_PIXMAP command messages.  There are one or more OCO3_REM_PIXMAP
@@ -8358,6 +8744,7 @@ arguments:
 name:      OCO3_REM_PIXMAP_BEGIN
 opcode:    0x8807
 subsystem: REM
+title:     Pixel Map Begin
 desc:      |
   This command is used to initiate a pixel-map update sequence.  The
   OCO3_REM_PIXMAP_BEGIN is followed by one or more OCO3_REM_PIXMAP commands.
@@ -8410,6 +8797,7 @@ arguments:
 name:      OCO3_REM_PIXMAP_COMMIT
 opcode:    0x8808
 subsystem: REM
+title:     Pixel Map Commit
 desc:      |
   This command causes an uploaded bad-pixel map to be saved to the 
   backup EEPROM bad-pixel map.
@@ -8460,6 +8848,7 @@ arguments:
 name:      OCO3_REM_PIXMAP_SWAP_UPLOAD
 opcode:    0x8809
 subsystem: REM
+title:     Pixel Map Swap Upload
 desc:      |
   This command causes the backup bad-pixel map to be copied to the primary
   bad-pixel map EEPROM.  The working bad-pixel table is updated with the 
@@ -8504,6 +8893,7 @@ arguments:
 name:      OCO3_REM_PIXMAP_DOWNLOAD
 opcode:    0x880a
 subsystem: REM
+title:     Pixel Map Download
 desc:      |
   This command causes the designated bad-pixel map to be downloaded via the
   spectrometer's science data packet.
@@ -8543,6 +8933,7 @@ arguments:
 name:      OCO3_REM_SPEC_POWER
 opcode:    0x880b
 subsystem: REM
+title:     Spectrometer Power
 desc:      |
   This command causes the immediate activation/deactivation of power to the
   designated item.  The command is used in an instrument startup script to 
@@ -8591,6 +8982,7 @@ arguments:
 name:      OCO3_REM_SPEC_CTL
 opcode:    0x880c
 subsystem: REM
+title:     Spectrometer Control
 desc:      |
   This command causes the immediate activation/deactivation of bits in the 
   Instrument Controller IC Control Register.  The command allows access to a
@@ -8634,6 +9026,7 @@ arguments:
 name:      OCO3_REM_RESIDUAL
 opcode:    0x8810
 subsystem: REM
+title:     Residual
 desc:      |
   This command transitions the instrument to Residual mode.
 
@@ -8682,6 +9075,7 @@ arguments:
 name:      OCO3_REM_STANDBY
 opcode:    0x8811
 subsystem: REM
+title:     Standby
 desc:      |
   This command transitions the instrument to Standby mode.
 
@@ -8702,7 +9096,7 @@ arguments:
     name:  mode_flag
     type:  U8
     bytes: 2
-    value: 0x60
+    value: 0x00
 
   - !Argument
     name:  mode_flag_spare
@@ -8730,6 +9124,7 @@ arguments:
 name:      OCO3_REM_EMERG_OFF
 opcode:    0x8812
 subsystem: REM
+title:     Emergency Off
 desc:      |
   This command causes the instrument to go to Emergency Off mode.  Program
   controlled heaters are disabled, lamps turned off, the calibration door
@@ -8755,6 +9150,7 @@ arguments:
 name:      OCO3_REM_READY
 opcode:    0x8813
 subsystem: REM
+title:     Ready
 desc:      |
   This command put the REM in Ready mode.  In Ready mode lamp and heater 
   operation is disabled.  Cryocooler communication is performed.  Ready mode
@@ -8780,6 +9176,7 @@ arguments:
 name:      OCO3_REM_RESTART_IC
 opcode:    0x8814
 subsystem: REM
+title:     Restart Instrument Controller
 desc:      |
   This command causes the designated controller to execute a Warmstart.
   Warmstart is a software-only restart of the given firmware.  The hardware
@@ -8806,6 +9203,7 @@ arguments:
 name:      OCO3_REM_RESTART_DPS
 opcode:    0x8815
 subsystem: REM
+title:     Restart Data Processors
 desc:      |
   This command causes the designated controller to execute a Warmstart.
   Warmstart is a software-only restart of the given firmware.  The hardware
@@ -8832,6 +9230,7 @@ arguments:
 name:      OCO3_REM_ICS_UNLOADED
 opcode:    0x8816
 subsystem: REM
+title:     Processor Load Test
 desc:      |
   This command enters a test-only mode used to evaluate processor loading
   during ground test.  Exit Unloaded mode with an OCO3_REM_STANDBY or
@@ -8859,6 +9258,7 @@ arguments:
 name:      OCO3_REM_FORCE_IC_OFF
 opcode:    0x8817
 subsystem: REM
+title:     Force Instrument Controller Off
 desc:      |
   This command causes the IC mode to change to Emergency Off.  DP processing 
   is not changed.  This command is intended to be one of the ending commands of
@@ -8883,6 +9283,7 @@ arguments:
 name:      OCO3_REM_FORCE_WD_RESET
 opcode:    0x8818
 subsystem: REM
+title:     Force Watchdog Reset
 desc:      |
   This command causes the watchdog timer to not reset.  When the watchdog timer
   is not reset, the timer will cause a hardware reset.  A hardware reset is
@@ -8907,6 +9308,7 @@ arguments:
 name:      OCO3_REM_HTRS_ALL_OFF
 opcode:    0x8819
 subsystem: REM
+title:     Heaters All Off
 desc:      |
   This command turns all heaters off at once.  The re-enable option restores
   heaters to their previous state per the existing heater-enable bitmask.
@@ -8934,6 +9336,7 @@ arguments:
 name:      OCO3_REM_HTR_ENABLE
 opcode:    0x881a
 subsystem: REM
+title:     Heater Enable
 desc:      |
   This command specifies through a bitmask which heaters are enabled.
 
@@ -8963,6 +9366,7 @@ arguments:
 name:      OCO3_REM_HEATER_UPPER_LIMIT
 opcode:    0x881b
 subsystem: REM
+title:     Heater Upper Limit
 desc:      |
   This command specifies the upper deadband limit for each heater.
 
@@ -9125,6 +9529,7 @@ arguments:
 name:      OCO3_REM_HEATER_LOWER_LIMIT
 opcode:    0x881c
 subsystem: REM
+title:     Heater Lower Limit
 desc:      |
   This command specifies the lower deadband limit for each heater.
 
@@ -9287,6 +9692,7 @@ arguments:
 name:      OCO3_REM_SC_TIME
 opcode:    0x881d
 subsystem: REM
+title:     Spacecraft Time
 desc:      |
   This command is used for test purposes only, to set the spacecraft time.
   Nominal spacecraft time update is through the 1553 time message.
@@ -9324,6 +9730,7 @@ arguments:
 name:      OCO3_REM_SUMMED
 opcode:    0x881e
 subsystem: REM
+title:     Summed
 desc:      |
   This command transitions the instrument to Summed mode.
 
@@ -9372,6 +9779,7 @@ arguments:
 name:      OCO3_REM_SINGLE
 opcode:    0x881f
 subsystem: REM
+title:     Single
 desc:      |
   This command transitions the instrument to Single mode.
 
@@ -9424,6 +9832,7 @@ arguments:
 name:      OCO3_REM_SCRIPT_PARAM
 opcode:    0x8820
 subsystem: REM
+title:     Script Parameter
 desc:      |
   This command is used to enter individual entries into the script designated by
   the Script ID, at the location designated by the Message Sequence Number.
@@ -9670,6 +10079,7 @@ arguments:
 name:      OCO3_REM_SCRIPT_COMMAND
 opcode:    0x8821
 subsystem: REM
+title:     Script Command
 desc:      |
   This command initiates the sequence of commands stored by previous 
   OCO3_REM_SCRIPT_PARAM commands.
@@ -9706,6 +10116,7 @@ arguments:
 name:      OCO3_REM_SCRIPT_TERM
 opcode:    0x8822
 subsystem: REM
+title:     Script Terminate
 desc:      |
   This command terminates the currently executing script.
 
@@ -9728,6 +10139,7 @@ arguments:
 name:      OCO3_REM_DP_DIRECT
 opcode:    0x8823
 subsystem: REM
+title:     Data Processor Direct
 desc:      |
   This command specifies ASCII characters to be sent to the data processor
   associated with the specified spectrometer.
@@ -9759,11 +10171,25 @@ arguments:
     bytes: 2
 
   - !Argument
-    name:  command
-    desc:  Command
+    name:  command_byte_1
+    desc:  Command byte 1
     units: none
-    type:  S40
-    bytes: [3,42]
+    type:  U8
+    bytes: 3
+
+  - !Argument
+    name:  command_byte_2
+    desc:  Command byte 2
+    units: none
+    type:  U8
+    bytes: 4
+
+  - !Argument
+    name:  command_byte_3
+    desc:  Command byte 3
+    units: none
+    type:  U8
+    bytes: 5
 
 
 
@@ -9771,6 +10197,7 @@ arguments:
 name:      OCO3_REM_LAMP_CMD
 opcode:    0x8824
 subsystem: REM
+title:     Lamp Command
 desc:      |
   This command turns lamps on and off.  Only one lamp can be turned on at a
   time.  If a command to turn on a lamp is received while a different lamp is
@@ -9816,6 +10243,7 @@ arguments:
 name:      OCO3_REM_LAMP_EMERG
 opcode:    0x8825
 subsystem: REM
+title:     Lamp Emergency Off
 desc:      |
   This command forces the lamps off, regardless of the lamp timer timeout.
 
@@ -9838,6 +10266,7 @@ arguments:
 name:      OCO3_REM_PIX_PARM_00
 opcode:    0x8826
 subsystem: REM
+title:     Pixel Map Parameter 00
 desc:      |
   This command is used to set many footprint parameters at once.
 
@@ -9992,6 +10421,7 @@ arguments:
 name:      OCO3_REM_PIX_PARM_01
 opcode:    0x8827
 subsystem: REM
+title:     Pixel Map Parameter 01
 desc:      |
   This command is used to set many color-slice parameters at once.
 
@@ -10167,6 +10597,7 @@ arguments:
 name:      OCO3_REM_PIX_PARM_00N
 opcode:    0x8828
 subsystem: REM
+title:     Pixel Map Parameter 00N
 desc:      |
   This command is used to set a single footprint parameter.
 
@@ -10228,6 +10659,7 @@ arguments:
 name:      OCO3_REM_PIX_PARM_01N
 opcode:    0x8829
 subsystem: REM
+title:     Pixel Map Parameter 01N
 desc:      |
   This command is used to set a single color-slice parameter.
 
@@ -10292,6 +10724,7 @@ arguments:
 name:      OCO3_REM_SUMMED_MULT
 opcode:    0x882a
 subsystem: REM
+title:     Summed Multiplier
 desc:      |
   This command specifies the multiplier for Summed mode.
 
@@ -10327,6 +10760,7 @@ arguments:
 name:      OCO3_REM_SUMMED_OFFSET
 opcode:    0x882b
 subsystem: REM
+title:     Summed Offset
 desc:      |
   This command specifies the offset for Summed mode.
 
@@ -10368,6 +10802,7 @@ arguments:
 name:      OCO3_REM_ACQ_SC_FSYNC
 opcode:    0x882c
 subsystem: REM
+title:     Acquire Spacecraft FSync
 desc:      |
   None
 
@@ -10390,6 +10825,7 @@ arguments:
 name:      OCO3_REM_CLK_CORR
 opcode:    0x882d
 subsystem: REM
+title:     Clock Correction
 desc:      |
   This command sets correction values for an individual spectrometer that can be
   used to correct for a minor degree of rotation (clocking) of the FPA for that
@@ -10436,6 +10872,7 @@ arguments:
 name:      OCO3_REM_DOOR
 opcode:    0x882e
 subsystem: REM
+title:     Door
 desc:      |
   This command sets door position.
 
@@ -10477,6 +10914,7 @@ arguments:
 name:      OCO3_REM_DOOR_EMERG
 opcode:    0x8833
 subsystem: REM
+title:     Door Emergency Off
 desc:      |
   This command moves the door to the emergency off position, regardless of the
   current operating mode.  Door ECU power must be turned on/off separately.
@@ -10500,6 +10938,7 @@ arguments:
 name:      OCO3_REM_UPLD_PREP
 opcode:    0x8834
 subsystem: REM
+title:     Prepare Upload
 desc:      |
   This command is used to initiate a memory upload sequence.  The
   OCO3_REM_UPLD_PREP command is followed by a sequence of OCO3_REM_PROG_MEM_UPLD
@@ -10538,6 +10977,7 @@ arguments:
 name:      OCO3_REM_PROG_MEM_UPLD
 opcode:    0x8835
 subsystem: REM
+title:     Program Memory Upload
 desc:      |
   This command is used to upload part of a new program.  The
   OCO3_REM_UPLD_PREP command is followed by a sequence of OCO3_REM_PROG_MEM_UPLD
@@ -11431,6 +11871,7 @@ arguments:
 name:      OCO3_REM_COMMIT_CHANGE
 opcode:    0x8836
 subsystem: REM
+title:     Commit Change
 desc:      |
   This command is used to conclude upload of a new program.  The
   OCO3_REM_UPLD_PREP command is followed by a sequence of OCO3_REM_PROG_MEM_UPLD
@@ -11490,6 +11931,7 @@ arguments:
 name:      OCO3_REM_EEPROM_DNLD
 opcode:    0x8837
 subsystem: REM
+title:     EEPROM Download
 desc:      |
   This command is used to download the contents of EEPROM.
 
@@ -11532,6 +11974,7 @@ arguments:
 name:      OCO3_REM_PROG_SRAM_DNLD
 opcode:    0x8838
 subsystem: REM
+title:     Download Program RAM
 desc:      |
   This command is used to download the contents of program RAM.
 
@@ -11574,6 +12017,7 @@ arguments:
 name:      OCO3_REM_DATA_SRAM_DNLD
 opcode:    0x8839
 subsystem: REM
+title:     Download Data RAM
 desc:      |
   This command is used to download the contents of data RAM.
 
@@ -11616,6 +12060,7 @@ arguments:
 name:      OCO3_REM_DATA_SRAM_DNLD_DP0
 opcode:    0x883a
 subsystem: REM
+title:     Download Data RAM DP 0
 desc:      |
   This command is used to download the contents of data RAM.
 
@@ -11652,6 +12097,7 @@ arguments:
 name:      OCO3_REM_DATA_SRAM_DNLD_DP1
 opcode:    0x883b
 subsystem: REM
+title:     Download Data RAM DP 1
 desc:      |
   This command is used to download the contents of data RAM.
 
@@ -11688,6 +12134,7 @@ arguments:
 name:      OCO3_REM_DATA_SRAM_DNLD_DP2
 opcode:    0x883c
 subsystem: REM
+title:     Download Data RAM DP 2
 desc:      |
   This command is used to download the contents of data RAM.
 
@@ -11724,6 +12171,7 @@ arguments:
 name:      OCO3_REM_SWITCH_POWER
 opcode:    0x8802
 subsystem: REM
+title:     Switch Power
 desc:      |
   Switches AFE/REM power on or off.
 
@@ -11741,9 +12189,39 @@ arguments:
 
 
 --- !Command
+name:      OCO3_REM_SET_MEMSEL
+opcode:    0x8803
+subsystem: REM
+desc:      |
+  Allows user to set REM memory-select discrete line.
+
+arguments:
+  - !Argument
+    name:  bank
+    desc:  Memory bank
+    units: none
+    type:  U8
+    bytes: 0
+    enum:
+      0: BANK_A
+      1: BANK_B
+
+
+
+--- !Command
+name:      OCO3_REM_SET_EMOFF
+opcode:    0x8804
+subsystem: REM
+desc:      |
+  Strobes REM emergency-off discrete line to turn REM off.
+
+
+
+--- !Command
 name:      OCO3_SRU_RESET_TRACKER
 opcode:    0x9002
 subsystem: SRU
+title:     Reset Tracker
 desc:      |
   This command forces SRU reset
 
@@ -11769,6 +12247,7 @@ arguments:
 name:      OCO3_SRU_EXEC_SURVIVAL_MODE
 opcode:    0x9003
 subsystem: SRU
+title:     Execute Survival Mode
 desc:      |
   This command forces the SRU software to execute the survival boot mode
 
@@ -11794,6 +12273,7 @@ arguments:
 name:      OCO3_SRU_STANDBY
 opcode:    0x9004
 subsystem: SRU
+title:     Standby
 desc:      |
   During the stand-by mode, the SRU is waiting for external commands.
   Only readiness tests and periodic read-out of the CCD are achieved.
@@ -11811,6 +12291,7 @@ arguments:
 name:      OCO3_SRU_SELF_TEST
 opcode:    0x9005
 subsystem: SRU
+title:     Self Test
 desc:      |
   The self test mode may be activated at any moment by external command.  The
   two tests allow to check the integration duration of the CCD (test 1) and/or
@@ -11839,6 +12320,7 @@ arguments:
 name:      OCO3_SRU_AUTONOMOUS_ACQ
 opcode:    0x9006
 subsystem: SRU
+title:     Autonomous Acquistion
 desc:      |
   This mode consists of a determination of the attitude, speed and acceleration
   by the SRU alone with no previous information ("lost in space" function).
@@ -11865,6 +12347,7 @@ arguments:
 name:      OCO3_SRU_AUTONOMOUS_TRACKING
 opcode:    0x9007
 subsystem: SRU
+title:     Autonomous Tracking
 desc:      |
   The SRU shall be able to detect and track 10 stars in the field of view by
   autonomous tracking (determination of the precise attitude and speed).
@@ -11953,6 +12436,7 @@ arguments:
 name:      OCO3_SRU_AUTONOMOUS_POINTING
 opcode:    0x9008
 subsystem: SRU
+title:     Autonomous Pointing
 desc:      |
   The pointing mode chains up automatically the acquisition mode and the 
   tracking mode.  See SED26 Software ICD for the 1553 Interface (4/5/2009) p.28
@@ -11984,6 +12468,7 @@ arguments:
 name:      OCO3_SRU_UPDATE_JULIAN_DATE
 opcode:    0x9009
 subsystem: SRU
+title:     Update Julian Date
 desc:      |
   This command updates the Julian date.
 
@@ -12011,6 +12496,7 @@ arguments:
 name:      OCO3_SRU_UPDATE_LINEAR_VELOCITY
 opcode:    0x900a
 subsystem: SRU
+title:     Update Linear Velocity
 desc:      |
   This command updates the linear velocity for aberration correction.
 
@@ -12052,8 +12538,9 @@ arguments:
 name:      OCO3_SRU_UPDATE_ORBIT_PARAMS
 opcode:    0x900b
 subsystem: SRU
+title:     Update Orbit Parameters
 desc:      |
-  This command updates the Julian date.
+  This command updates the orbit parameters.
 
 arguments:
   - !Fixed
@@ -12121,6 +12608,7 @@ arguments:
 name:      OCO3_SRU_UPDATE_REFT_SELECTION
 opcode:    0x900c
 subsystem: SRU
+title:     Update REFT Selection
 desc:      |
   This command allows selecting the REFT signal (Nominal REFT or redundant
   REFT).
@@ -12147,6 +12635,7 @@ arguments:
 name:      OCO3_SRU_TEMPERATURE
 opcode:    0x900d
 subsystem: SRU
+title:     Temperature Regulation
 desc:      |
   This command permits to apply to operating temperature order (vacuum) and to
   start Peltier regulation.  This value of temperature is modified by a 
@@ -12169,6 +12658,7 @@ arguments:
 name:      OCO3_SRU_CRC
 opcode:    0x900e
 subsystem: SRU
+title:     Calculate Memory CRC
 desc:      |
   This command requests calculation of a memory CRC.  The memory to be scanned
   must start on an even byte boundary.  The number of bytes to scan must be a
@@ -12197,6 +12687,7 @@ arguments:
 name:      OCO3_SRU_SWITCH_POWER
 opcode:    0x900f
 subsystem: SRU
+title:     Switch Power
 desc:      |
   Switches SRU power on or off.
 
@@ -12217,6 +12708,7 @@ arguments:
 name:      OCO3_SRU_WRITE_MEMORY
 opcode:    0x9081
 subsystem: SRU
+title:     Write Memory
 desc:      |
   This command writes data to a memory address.
 
@@ -12451,6 +12943,7 @@ arguments:
 name:      OCO3_SRU_LOAD_CATALOG
 opcode:    0x9082
 subsystem: SRU
+title:     Load Catalog
 desc:      |
   This command allows modification of star characteristics in the embedded
   catalog.
@@ -12686,6 +13179,7 @@ arguments:
 name:      OCO3_SRU_LOAD_CAL_PARAMS_EEPROM
 opcode:    0x9083
 subsystem: SRU
+title:     Load Calibration Parameters to EEPROM
 desc:      |
   The calibration parameters are stored in EEPROM memory with values by default.
   These parameters can be modified.  The values are defined by SODERN.  All 895
@@ -12923,6 +13417,7 @@ arguments:
 name:      OCO3_SRU_LOAD_CAL_PARAMS_RAM
 opcode:    0x9084
 subsystem: SRU
+title:     Load Calibration Parameters to RAM
 desc:      |
   The calibration parameters are stored in EEPROM memory with values by default.
   After reset they are copied and used from RAM.  These parameters can be
@@ -13161,6 +13656,7 @@ arguments:
 name:      OCO3_SRU_READ_MEMORY
 opcode:    0x9010
 subsystem: SRU
+title:     Read Memory
 desc:      |
   This command requests telemetry of memory contents.  Alignment is 2-byte for
   all but video memory; video memory is 4-byte.  Similarly, read sizes must be
@@ -13187,18 +13683,10 @@ arguments:
 
 
 --- !Command
-name:      OCO3_SRU_INIT
-opcode:    0x9011
-subsystem: SRU
-desc:      |
-  Initializes SRU.
-
-
-
---- !Command
 name:      OCO3_TEMPCTL_SET_HEATER_MODE
 opcode:    0xa004
 subsystem: TEMPCTL
+title:     Set Heater Mode
 desc:      |
   This command sets the mode parameter for a heater.
 
@@ -13232,6 +13720,7 @@ arguments:
 name:      OCO3_TEMPCTL_SET_HEATER_SENSOR
 opcode:    0xa005
 subsystem: TEMPCTL
+title:     Set Heater Sensor
 desc:      |
   This command sets the sensor parameter for a heater.
 
@@ -13301,6 +13790,7 @@ arguments:
 name:      OCO3_TEMPCTL_SET_HEATER_TARGET_DN
 opcode:    0xa007
 subsystem: TEMPCTL
+title:     Set Heater Target DN
 desc:      |
   This command sets the target DN for a heater.
 
@@ -13330,6 +13820,7 @@ arguments:
 name:      OCO3_TEMPCTL_SWITCH_TEC_POWER
 opcode:    0xa008
 subsystem: TEMPCTL
+title:     Switch Thermoelectric Cooler Power
 desc:      |
   Switches TEC power on or off.
 
