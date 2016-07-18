@@ -357,6 +357,7 @@ def testTlmValidator():
     # test failed tlm validation - duplicate field name
     msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator2.yaml"), bliss.tlm.getDefaultSchema()])
     assert not v
+    print len(msgs)
     assert len(msgs) == 1
 
     # test failed tlm validation - invalid field type
