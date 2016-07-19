@@ -115,6 +115,20 @@ def endianSwapU16(bytes):
     return bytes
 
 
+def setDictDefaults (d, defaults):
+  """Sets all defaults for the given dictionary to those contained in a
+  second defaults dictionary.  This convenience method calls:
+
+    d.setdefault(key, value)
+
+  for each key and value in the given defaults dictionary.
+  """
+  for key, val in defaults.items():
+    d.setdefault(key, val)
+
+  return d
+
+
 def getDefaultDict(module_name, config_key, loader, reload=False):
     """Returns default BLISS dictonary for module_name
 

@@ -721,6 +721,9 @@ def getDefaultDict(reload=False):
 def getDefaultSchema():
     return os.path.join(bliss.config._directory, 'tlm_schema.json')
 
+def getDefaultDictFilename():
+    return bliss.config.tlmdict.filename
+
 def YAMLCtor_PacketDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     return PacketDefinition(**fields)
