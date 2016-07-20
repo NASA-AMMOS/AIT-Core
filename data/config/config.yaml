@@ -7,3 +7,6 @@ default:
 
     tlmdict:
         filename:  tlm.yaml
+
+    bsc:
+        filename: bsc.yaml

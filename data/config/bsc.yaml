@@ -1,0 +1,41 @@
+# Example bsc configuration data. This should be customized for your
+# use case before use.
+
+capture_manager:
+    root_log_directory: /tmp
+
+    manager_server:
+        host: localhost
+        port: 8080
+
+handlers:
+    - name: test1
+      conn_type: udp
+      address: ['', 8500]
+
+      # A Handler's 'path' attribute allows for specification of
+      # handler-specific sub-folders to meet a desired nesting structure in
+      # the root log directory.
+      path: additional_dir/test/%j
+
+      # A Handlers 'file_name_pattern' attribute allows for custom file name
+      # specification. The final handler log file path is passed through
+      # strftime and format string substitution with the handler passed
+      # as the kwargs for substitution. If nothing is present for the
+      # 'file_name_pattern' a default of <timestamp>-<logger name>.pcap is used.
+      file_name_pattern: '%Y-%m-%d-randomUDPtestData-{name}.pcap'
+      rotate_log: True
+
+    - name: test2
+      conn_type: udp
+      address: ['', 8500]
+      rotate_log: True
+
+    - name: test3
+      conn_type: udp
+      address: ['', 8125]
+
+    # Example logger for monitoring raw Ethernet frames
+    # - name: ethernet_test
+      # type: ethernet
+      # address: [etho0, 0x55aa]
