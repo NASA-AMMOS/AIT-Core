@@ -6,13 +6,15 @@
 Welcome to BLISS-Core's documentation!
 ======================================
 
-Contents:
+The Bespoke Link to Instruments on Space Station (BLISS) Ground Data
+System (GDS) tools are a generalization of those developed for the
+following JPL ISS projects:
 
-.. toctree::
-   :maxdepth: 4
+* `Link Orbiting Carbon Observatory 3 (OCO-3) <http://oco.jpl.nasa.gov>`_
+* `Link Vehicle Cabin Atmosphere Monitor (VCAM) <http://www.nasa.gov/mission_pages/station/research/experiments/35.html>`_
+* `Link ECOsystem Spaceborne Thermal Radiometer Experiment on Space Station (ECOSTRESS) <http://ecostress.jpl.nasa.gov>`_
 
-   bliss.rst
-
+Visit the :doc:`Getting Started <getting_started>` guide for installation information. Visit the :doc:`BLISS API Documentation <bliss>` page to view in-depth interface documentation.
 
 Indices and tables
 ==================
