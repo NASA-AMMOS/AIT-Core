@@ -1,6 +1,9 @@
 Getting Started
 ===============
 
+Installation
+------------
+
 Before you install **bliss-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already.
 
 Clone the repository from JPL Github:
@@ -45,3 +48,28 @@ BLISS uses two environment variables for configuration.
 .. code-block:: bash
 
     /<project root path>/data/config/config.yaml
+
+Documentation
+-------------
+BLISS uses Sphinx to build its documentation. You can build the documentation that you're currently reading with:
+
+.. code-block:: bash
+
+    $ python setup.py build_sphinx
+
+To view the documentation, open doc/build/html/index.html in a web browser.
+
+If you need to update the auto-generated documentation you can run the following command to rebuild all of the bliss package documentation:
+
+.. code-block:: bash
+
+    $ sphinx-apidoc --separate --force --no-toc -o doc/source bliss bliss/test
+
+Unit Tests
+----------
+
+BLISS uses the Nose unit test framework. To run the tests in python/bliss/test use the following command:
+
+.. code-block:: bash
+
+    $ python setup.py nosetests
