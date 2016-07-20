@@ -4,6 +4,7 @@ __path__ = extend_path(__path__, __name__)
 import cfg
 config = cfg.BlissConfig()
 
+import bsc
 import cmd
 import coord
 import dmc
