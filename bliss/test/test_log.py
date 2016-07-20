@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-BLISS YAML Validation Tests
+BLISS Log Tests
 
-The bliss.tests.test_val module provides unit and functional
-tests for the bliss.val module
+The bliss.tests.test_log module provides unit and functional
+tests for the bliss.log module
 """
 
 """
