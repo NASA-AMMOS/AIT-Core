@@ -32,9 +32,8 @@ File and Directory Structure
     ├── bin          <--  Utilities and command line scripts
     ├── doc          <--  Project and API level documentation
     ├── src/doc/dict <--  Cmd/Tlm Dictionary definitions and documentation
-    ├── src/gui      <--  BLISS GUI source tree
-    ├── src/python   <--  BLISS Python source tree
-    .
+    ├── bliss        <--  BLISS Python source tree
+    ├── data/config  <--  Example project configuration files
 
 
 Developer Quickstart
