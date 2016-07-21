@@ -155,6 +155,38 @@ class TestSocketStreamCapturer(object):
         assert conf_dump[0]['address'] == addr
 
     @mock.patch('gevent.socket.socket')
+    def test_handler_stat_dump(self, socket_mock):
+        handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
+        addr = ['', 9000]
+        conn_type = 'udp'
+
+        sl = bliss.bsc.SocketStreamCapturer(handler, addr, conn_type)
+        handler = sl.capture_handlers[0]
+        new_date = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+        handler['log_rot_time'] = new_date.timetuple()
+
+        stats = sl.dump_all_handler_stats()
+
+        assert len(stats) == 1
+        assert stats[0]['name'] == 'name'
+        assert stats[0]['reads'] == 0
+        assert stats[0]['data_read_length'] == '0 bytes'
+        assert stats[0]['approx_data_rate'] == '0.0 bytes/second'
+
+
+        handler['reads'] = 2
+        handler['data_read'] = 27
+        stats = sl.dump_all_handler_stats()
+
+        print stats
+        assert len(stats) == 1
+        assert stats[0]['name'] == 'name'
+        assert stats[0]['reads'] == 2
+        assert stats[0]['data_read_length'] == '27 bytes'
+        data_rate = float(stats[0]['approx_data_rate'].split(' ')[0])
+        assert data_rate != 0.0
+
+    @mock.patch('gevent.socket.socket')
     def test_should_rotate_log(self, socket_mock):
         handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
         sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
@@ -455,6 +487,21 @@ class TestStreamCaptureManager(object):
             lm.add_logger('bar', ['', 8500], 'udp', '/tmp')
 
         logger_data = lm.get_logger_data()
+        # Note we're not going to test content of the returned data because
+        # that is handled by SocketStreamCapturer. There is an appropriate test
+        # for that in the SocketStreamCapturer section.
+        assert len(logger_data.keys()) == 2
+        assert "['', 8500]" in logger_data.keys()
+        assert "['', 9000]" in logger_data.keys()
+
+    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    def test_get_logger_stats(self, socket_log_mock):
+        lm = bliss.bsc.StreamCaptureManager(None, [])
+        with mock.patch('os.mkdir') as mkdir_mock:
+            lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
+            lm.add_logger('bar', ['', 8500], 'udp', '/tmp')
+
+        logger_data = lm.get_handler_stats()
         # Note we're not going to test content of the returned data because
         # that is handled by SocketStreamCapturer. There is an appropriate test
         # for that in the SocketStreamCapturer section.
