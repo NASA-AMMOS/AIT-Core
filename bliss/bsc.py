@@ -14,6 +14,7 @@ U.S. Government Sponsorship acknowledged.
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import calendar
 import json
 import os
 import platform
@@ -58,6 +59,10 @@ class SocketStreamCapturer(object):
             capture_handlers = [capture_handlers]
 
         self.capture_handlers = capture_handlers
+        for h in self.capture_handlers:
+            h['reads'] = 0
+            h['data_read'] = 0
+
         self.conn_type = conn_type
         self.address = address
 
@@ -99,6 +104,9 @@ class SocketStreamCapturer(object):
         data = self.socket.recv(self._buffer_size)
 
         for h in self.capture_handlers:
+            h['reads'] += 1
+            h['data_read'] += len(data)
+
             d = data
             if 'pre_write_transforms' in h:
                 for data_transform in h['pre_write_transforms']:
@@ -125,6 +133,9 @@ class SocketStreamCapturer(object):
     def add_handler(self, handler):
         ''''''
         handler['logger'] = self._get_logger(handler)
+        handler['reads'] = 0
+        handler['data_read'] = 0
+
         self.capture_handlers.append(handler)
 
     def remove_handler(self, name):
@@ -154,19 +165,36 @@ class SocketStreamCapturer(object):
                     using for its connection.
             }, ...]
         '''
-        #TODO: Fix this so we're not relying on private vars from the logger
+        ignored_keys = ['logger', 'log_rot_time', 'reads', 'data_read']
         config_data = []
         for h in self.capture_handlers:
             config_data.append({
                 'handler': {
                     k:v for k,v in h.iteritems()
-                    if k != 'logger' and k != 'log_rot_time'
+                    if k not in ignored_keys
                 },
                 'log_file_path': h['logger']._stream.name,
                 'conn_type': self.conn_type,
                 'address': self.address,
             })
         return config_data
+
+    def dump_all_handler_stats(self):
+        stats = []
+        for h in self.capture_handlers:
+            now = calendar.timegm(time.gmtime())
+            rot_time = calendar.timegm(h['log_rot_time'])
+            time_delta = now - rot_time
+            approx_data_rate = '{} bytes/second'.format(h['data_read'] / float(time_delta))
+
+            stats.append({
+                'name': h['name'],
+                'reads': h['reads'],
+                'data_read_length': '{} bytes'.format(h['data_read']),
+                'approx_data_rate': approx_data_rate
+            })
+
+        return stats
 
     def _handle_log_rotations(self):
         ''''''
@@ -401,6 +429,22 @@ class StreamCaptureManager(object):
             for address, stream_capturer in self._stream_capturers.iteritems()
         }
 
+    def get_handler_stats(self):
+        ''' Return handler read statistics
+
+        Returns a dictionary of managed handler data read statistics. The format
+        is primarily controlled by the :func:`SocketStreamCapturer.dump_all_handler_stats`
+        function:
+
+            {
+                <capture address>: <list of handler capture statistics>
+            }
+        '''
+        return {
+            address : stream_capturer[0].dump_all_handler_stats()
+            for address, stream_capturer in self._stream_capturers.iteritems()
+        }
+
     def get_capture_handler_config_by_name(self, name):
         ''' Return data for handlers of a given name.
 
@@ -463,6 +507,9 @@ class StreamCaptureManagerServer(Bottle):
         self._app.route('/',
                         method='GET',
                         callback=self._get_logger_list)
+        self._app.route('/stats',
+                        method='GET',
+                        callback=self._fetch_handler_stats)
         self._app.route('/<name>/start',
                         method='POST',
                         callback=self._add_logger_by_name)
@@ -511,9 +558,9 @@ class StreamCaptureManagerServer(Bottle):
         self._logger_manager.stop_capture_handler(name)
 
     def _get_logger_list(self):
-        ''' Retrieves a JSON object of running logger information.
+        ''' Retrieves a JSON object of running handler information.
 
-        Returns a JSON object containing formation on all the currently
+        Returns a JSON object containing config data for all the currently
         running loggers. Structure of the JSON object is controlled by the
         form of the dictionary returned from
         :func:`StreamCaptureManager.get_logger_data`
@@ -541,6 +588,15 @@ class StreamCaptureManagerServer(Bottle):
         this works as expected.
         '''
         self._logger_manager.rotate_capture_handler_log(name)
+
+    def _fetch_handler_stats(self):
+        ''' Retrieves a JSON object of running handler stats
+
+        Returns a JSON object containing data read statistics for all
+        running handlers. Structure of the JOSN objects is controlled by
+        :func:`StreamCaptureManager.dump_all_handler_stats`.
+        '''
+        return json.dumps(self._logger_manager.get_handler_stats())
 
 def identity_transform(data):
     '''Example data transformation function for a capture handler.'''
