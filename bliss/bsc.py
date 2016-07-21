@@ -1,5 +1,5 @@
 '''
-OCO-3 Binary Stream Capturer
+BLISS Binary Stream Capturer
 
 The bliss.bsc module handles logging of network data to PCAP files
 along with the server definition for RESTful manipulation of running
