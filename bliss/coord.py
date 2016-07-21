@@ -92,14 +92,9 @@ def eci2ecef (x, y, z, gmst=None):
   """Converts the given ECI coordinates to ECEF at the given Greenwich
   Mean Sidereal Time (GMST) (defaults to now).
   
-  This code was adapted from:
-
-    https://github.com/shashwatak/satellite-js/
-      blob/master/src/coordinate-transforms.js
-
-  and:
-
-    http://ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
+  This code was adapted from
+  `shashwatak/satellite-js <https://github.com/shashwatak/satellite-js/blob/master/src/coordinate-transforms.js>`_
+  and http://ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
 
   """
   if gmst is None:
@@ -117,14 +112,9 @@ def eci2geodetic (x, y, z, gmst=None, ellipsoid=None):
   given Greenwich Mean Sidereal Time (GMST) (defaults to now) and with
   the given ellipsoid (defaults to WGS84).
 
-  This code was adapted from:
-
-    https://github.com/shashwatak/satellite-js/
-      blob/master/src/coordinate-transforms.js
-
-  and:
-
-    http://www.celestrak.com/columns/v02n03/
+  This code was adapted from
+  `shashwatak/satellite-js <https://github.com/shashwatak/satellite-js/blob/master/src/coordinate-transforms.js>`_
+  and http://www.celestrak.com/columns/v02n03/
 
   """
   if gmst is None:
