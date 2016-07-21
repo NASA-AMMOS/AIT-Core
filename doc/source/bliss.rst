@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   bliss.bsc
    bliss.cfg
    bliss.cmd
    bliss.coord
@@ -14,6 +15,7 @@ Submodules
    bliss.evr
    bliss.gds
    bliss.geom
+   bliss.gui
    bliss.log
    bliss.pcap
    bliss.seq
