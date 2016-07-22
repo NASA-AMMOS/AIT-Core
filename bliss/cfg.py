@@ -128,7 +128,7 @@ class BlissConfig (object):
         config dictionary.
 
         If filename and data are not given, it defaults to the following in
-        order depending on the presence of environment variables:
+        order depending on the presence of environment variables::
 
             ${BLISS_CONFIG}
             ${BLISS_ROOT}/config/config.yaml
