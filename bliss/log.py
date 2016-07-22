@@ -201,9 +201,13 @@ def get_regex(fmt):
   """Transforms log format string into regex.
 
   Formats use the following syntax:
+
+  .. code-block:: none
+
     :variable - one or more words expected (\w+)
     @variable - syslog time expected (SYSLOG_TIME_FMT)
     #variable - any character expected (.+)
+
   """
   def replace_decimal (match):
     return "(?P<%s>.+)" % match.group(1)
