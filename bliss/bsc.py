@@ -55,6 +55,102 @@ class SocketStreamCapturer(object):
     ''' Class for logging socket data to a PCAP file. '''
 
     def __init__(self, capture_handlers, address, conn_type):
+        '''
+        Args:
+            capture_handlers:
+                A list of handler configuration dictionaries that contains the
+                following values
+
+                name
+                    A unique name for this handler
+
+                log_dir
+                    The directory path into which log files will be written.
+                    This path may include format strings which reference
+                    handler metadata (E.g., {name}) as well as
+                    `strftime format characters <https://docs.python.org/2/library/time.html#time.strftime>`
+
+                    Example::
+
+                        '/tmp/additional_dir/test/%j'
+
+                rotate_log
+                    *True* or *False* flag specifying whether logs should be
+                    rotated at a regular interval.
+
+                rotate_log_index
+                    If **rotate_log** is *True* this controls the time frame of log
+                    rotations. The below values are all the valid options. Each
+                    row's values are equivalent::
+
+                        'year',    'years',    'tm_year',
+                        'month',   'months',   'tm_mon',
+                        'day',     'days',     'tm_mday',
+                        'hour',    'hours',    'tm_hour',
+                        'minute',  'minutes',  'tm_min',
+                        'second',  'seconds',  'tm_sec',
+
+                    Default::
+
+                        'day'
+
+                rotate_log_delta
+                    If **rotate_log** is *True* this controls the
+                    **rotate_log_index** delta between the current time at log
+                    rotation check versus the time the log file was open
+                    necessary to trigger a rotation.
+
+                    Default::
+
+                        1
+
+                file_name_pattern (optional)
+                    The pattern to use for the log file name. This will be
+                    joined with the **log_dir** option to generate the full
+                    log file path. This may also include format strings like
+                    *log_dir*.
+
+                    Example::
+
+                        '%Y-%m-%d-randomUDPtestData-{name}.pcap'
+
+                    Default::
+
+                        '%Y-%m-%d-%H-%M-%S-{name}.pcap'
+
+                pre_write_transforms (optional)
+                    A list of *callables* to be run prior to data output for
+                    this handler. The currently captured data is passed through
+                    each transformation in order supplied with the output of
+                    the previous being used as the input for the next.
+
+            address:
+                The address to which a socket connection should be made. What is
+                considered a valid address depends on the **conn_type** value.
+
+                udp::
+
+                    [host, port number]
+
+                    E.g., ['', 8500]
+
+                ethernet::
+
+                    ['interface name', protocol number]
+
+                    E.g., ['p2p2', 0]
+
+                tcp::
+
+                    [host, port]
+
+                    E.g., ['127.0.0.1', 8125]
+
+            conn_type:
+                A string identifying the connection type. Valid options are
+                *udp*, *ethernet*, and *tcp*.
+
+        '''
         if type(capture_handlers) != type(list()):
             capture_handlers = [capture_handlers]
 
@@ -97,6 +193,7 @@ class SocketStreamCapturer(object):
 
     @property
     def handler_count(self):
+        ''' Return the number of active capture handlers. '''
         return len(self.capture_handlers)
 
     def capture_packet(self):
@@ -131,7 +228,15 @@ class SocketStreamCapturer(object):
             self.clean_up()
 
     def add_handler(self, handler):
-        ''''''
+        ''' Add an additional handler
+
+        Args:
+            handler:
+                A dictionary of handler configuration for the handler
+                that should be added. See :func:`__init__` for details
+                on valid parameters.
+        
+        '''
         handler['logger'] = self._get_logger(handler)
         handler['reads'] = 0
         handler['data_read'] = 0
@@ -139,7 +244,16 @@ class SocketStreamCapturer(object):
         self.capture_handlers.append(handler)
 
     def remove_handler(self, name):
-        ''''''
+        ''' Remove a handler given a name
+
+        Note, if multiple handlers have the same name the last matching
+        instance in the handler list will be removed.
+
+        Args:
+            name:
+                The name of the handler to remove
+        
+        '''
         index = None
         for i, h in enumerate(self.capture_handlers):
             if h['name'] == name:
@@ -154,16 +268,22 @@ class SocketStreamCapturer(object):
 
         Return a dictionary of capture handler configuration data of the form:
 
+        .. code-block:: none
+
             [{
-                'handler': handler configuration dictionary,
-                'log_file_path': Path to the current log file that the logger
-                    is writing. Note that if rotation is used it's possible
-                    this data will be stale eventually.
-                'conn_type': The string defining the connection type of the
-                    logger.
-                'address': The list containing address info that the logger is
-                    using for its connection.
+                'handler': <handler configuration dictionary>,
+
+                'log_file_path': <Path to the current log file that the logger
+                    is writing. Note that if rotation is used it\'s possible
+                    this data will be stale eventually.>,
+
+                'conn_type': <The string defining the connection type of the
+                    logger.>,
+
+                'address': <The list containing address info that the logger is
+                    using for its connection.>
             }, ...]
+
         '''
         ignored_keys = ['logger', 'log_rot_time', 'reads', 'data_read']
         config_data = []
@@ -180,6 +300,23 @@ class SocketStreamCapturer(object):
         return config_data
 
     def dump_all_handler_stats(self):
+        ''' Return handler capture statistics
+
+        Return a dictionary of capture handler statistics of the form:
+
+        .. code-block:: none
+
+            [{
+                'name': The handler's name,
+
+                'reads': The number of packet reads this handler has received
+
+                'data_read_length': The total length of the data received
+
+                'approx_data_rate': The approximate data rate for this handler
+            }, ...]
+
+        '''
         stats = []
         for h in self.capture_handlers:
             now = calendar.timegm(time.gmtime())
@@ -275,22 +412,29 @@ class StreamCaptureManager(object):
     def __init__(self, mngr_conf, lgr_conf):
         '''
         Args:
-            mngr_conf: Configuration dictionary for the manager. At
+            mngr_conf: 
+                Configuration dictionary for the manager. At
                 the minimum this should contain the following:
 
+                .. code-block:: none
+
                     {
-                        'root_log_directory': <Root directory for log data>
+                        'root_log_directory': '<Root directory for log data>'
                     }
 
-            lgr_conf: Configuration data for all the logger instances that
+            lgr_conf:
+                Configuration data for all the logger instances that
                 should be created by default. Additional information on
                 parameters that are required for logger initialization can be
                 found in :func:`add_logger`. Data should be of the form:
+
+                .. code-block:: none
 
                     [
                         (name, address, conn_type, log_dir_path, misc_conf_dict),
                         (name, address, conn_type, log_dir_path, misc_conf_dict),
                     ]
+
         '''
         self._logger_data = {}
         self._stream_capturers = {}
@@ -310,12 +454,20 @@ class StreamCaptureManager(object):
         new handler will be added to it.
 
         Args:
-            name: A string defining the new capturer's name.
-            address: A tuple containing address data for the capturer. Check the
+            name:
+                A string defining the new capturer's name.
+
+            address:
+                A tuple containing address data for the capturer. Check the
                 :class:`SocketStreamCapturer` documentation for what is required.
-            conn_type: A string defining the connection type. Check the
-                :class:`SocketStreamCapturer` documentation for a list of valid options.
-            log_dir_path: An optional path defining the directory where the
+
+            conn_type:
+                A string defining the connection type. Check the
+                :class:`SocketStreamCapturer` documentation for a list of valid
+                options.
+
+            log_dir_path:
+                An optional path defining the directory where the
                 capturer should write its files. If this isn't provided the root
                 log directory from the manager configuration is used.
 
@@ -367,7 +519,12 @@ class StreamCaptureManager(object):
         self._pool.add(greenlet)
 
     def stop_capture_handler(self, name):
-        ''' Remove all handlers with a given name. '''
+        ''' Remove all handlers with a given name
+
+        Args:
+            name:
+                The name of the handler(s) to remove.
+        '''
         empty_capturers_indeces = []
         for k, sc in self._stream_capturers.iteritems():
             stream_capturer = sc[0]
@@ -384,14 +541,16 @@ class StreamCaptureManager(object):
         ''' Stop a capturer that the manager controls.
 
         Args:
-            address: An address array of the form ['host', 'port'] or similar
+            address:
+                An address array of the form ['host', 'port'] or similar
                 depending on the connection type of the stream capturer being
                 terminated. The capturer for the address will be terminated
                 along with all handlers for that capturer if the address is
                 that of a managed capturer.
 
         Raises:
-            ValueError: The provided address doesn't match a capturer that is
+            ValueError:
+                The provided address doesn't match a capturer that is
                 currently managed.
         '''
         address = str(address)
@@ -406,7 +565,8 @@ class StreamCaptureManager(object):
         ''' Force a rotation of a handler's log file
 
         Args:
-            name: The name of the handler who's log file should be rotated.
+            name:
+                The name of the handler who's log file should be rotated.
         '''
         for sc_key, sc in self._stream_capturers.iteritems():
             for h in sc[0].capture_handlers:
@@ -417,12 +577,13 @@ class StreamCaptureManager(object):
         ''' Return data on managed loggers.
 
         Returns a dictionary of managed logger configuration data. The format
-        is primarily controlled by the :func:`SocketStreamCapturer.get_logger_data`
-        function:
+        is primarily controlled by the
+        :func:`SocketStreamCapturer.dump_handler_config_data` function::
 
             {
                 <capture address>: <list of handler config for data capturers>
             }
+
         '''
         return {
             address : stream_capturer[0].dump_handler_config_data()
@@ -433,12 +594,13 @@ class StreamCaptureManager(object):
         ''' Return handler read statistics
 
         Returns a dictionary of managed handler data read statistics. The format
-        is primarily controlled by the :func:`SocketStreamCapturer.dump_all_handler_stats`
-        function:
+        is primarily controlled by the
+        :func:`SocketStreamCapturer.dump_all_handler_stats` function::
 
             {
                 <capture address>: <list of handler capture statistics>
             }
+
         '''
         return {
             address : stream_capturer[0].dump_all_handler_stats()
@@ -449,11 +611,12 @@ class StreamCaptureManager(object):
         ''' Return data for handlers of a given name.
 
         Args:
-            name: Name of the capture handler(s) to return config data for.
+            name:
+                Name of the capture handler(s) to return config data for.
 
         Returns:
             Dictionary dump from the named capture handler as given by
-            the meth:`SocketStreamCapturer.dump_handler_config_data method`.
+            the :func:`SocketStreamCapturer.dump_handler_config_data` method.
         '''
         handler_confs = []
         for address, stream_capturer in self._stream_capturers.iteritems():
@@ -487,10 +650,15 @@ class StreamCaptureManagerServer(Bottle):
     def __init__(self, logger_manager, host, port):
         '''
         Args:
-            logger_manager: Instance of :class:`StreamCaptureManager` which the
+            logger_manager:
+                Instance of :class:`StreamCaptureManager` which the
                 server will use to manage logger instances.
-            host: The host for webserver configuration.
-            port: The port for webserver configuration.
+
+            host:
+                The host for webserver configuration.
+
+            port:
+                The port for webserver configuration.
         '''
         self._host = host
         self._port = port
@@ -536,7 +704,9 @@ class StreamCaptureManagerServer(Bottle):
         port = port / protocol
         conn_type = udp or ethernet
 
-        Raises: ValueError if the port or connection type are not supplied.
+        Raises:
+            ValueError:
+                if the port or connection type are not supplied.
         '''
         data = dict(request.forms)
         loc = data.pop('loc', '')
