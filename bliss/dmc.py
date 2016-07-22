@@ -68,11 +68,11 @@ def toc ():
 
   >>> assert abs(elapsed - 1.2) <= 1e-2
 
-  NOTE: The tic() and toc() functions are simplistic and may introduce
-  significant overhead, especially in tight loops.  Their use should
-  be limited to one-off experiments and rough numbers.  The Python
-  profile package (i.e. 'import profile') should be used for serious
-  and detailed profiling.
+  .. note:: The tic() and toc() functions are simplistic and may introduce
+      significant overhead, especially in tight loops.  Their use should
+      be limited to one-off experiments and rough numbers.  The Python
+      profile package (i.e. 'import profile') should be used for serious
+      and detailed profiling.
   """
   end = datetime.datetime.now()
   return totalSeconds( end - TICs.pop() ) if len(TICs) else None
@@ -99,14 +99,16 @@ def getUTCtoGPSLeapSeconds(timestamp=None):
     """ Get the number of leap seconds for UTC->GPS conversion
 
     Args:
-        timestamp: A UTC datetime object (defaults to current time)
+        timestamp:
+            A UTC datetime object (defaults to current time)
 
     Returns:
         Integer value specifying how many leap seconds to use for
-          conversion of the timestamp.
+        conversion of the timestamp.
 
     Raises:
-        ValueError: If the timestamp provided occurs before 01-01-1980.
+        ValueError:
+            If the timestamp provided occurs before 01-01-1980.
     """
     if timestamp is None:
         timestamp = datetime.datetime.utcnow()
