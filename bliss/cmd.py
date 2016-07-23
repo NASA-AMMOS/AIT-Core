@@ -398,6 +398,10 @@ class CmdDict(dict):
         return data
 
 
+def getDefaultCmdDict(reload=False):
+    return getDefaultDict(reload=reload)
+
+
 def getDefaultDict(reload=False):
     return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
 
