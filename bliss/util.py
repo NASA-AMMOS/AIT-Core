@@ -297,6 +297,13 @@ def toDict(obj):
     value = getattr(obj, attr)
     key = attr[1:] if attr.startswith("_") else attr
 
+    # FIXME: This is a hacky fix for the issue of when clauses being serialized
+    # with the code expression included, which breaks json.dumps. This all needs
+    # to be handled in a cleaner way.
+    if key == 'when':
+        data[key] = str(obj)
+        return data
+
     if value is not None:
       if isinstance(value, (list, tuple, set)) and len(value) > 0:
         # Check the first object in the list to see if it is primitive
