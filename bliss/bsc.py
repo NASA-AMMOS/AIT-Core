@@ -1,3 +1,6 @@
+# Copyright 2008 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 '''
 BLISS Binary Stream Capturer
 
@@ -6,46 +9,37 @@ along with the server definition for RESTful manipulation of running
 loggers.
 '''
 
-'''
-Copyright 2008 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-'''
-
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import calendar
 import json
 import os
-import platform
 import socket
 import time
 
-from bliss import pcap, log
-
+from bottle import request, Bottle
 import gevent
+import gevent.monkey
 import gevent.pool
 import gevent.socket
 
-from bottle import run, request, Bottle
+from bliss import pcap, log
+
+gevent.monkey.patch_all()
 
 RAW_SOCKET_FD = None
 try:
     import rawsocket
     RAW_SOCKET_FD = rawsocket.rawsocket_fd()
 except ImportError:
-    msg = (
+    log.info(
         'The rawsocket library cannot be imported. '
         'Defaulting to the non-rawsocket approach.'
     )
-    log.info(msg)
 except IOError:
-    msg = (
+    log.info(
         'Unable to spawn rawsocket-helper. '
         'This may be a permissions issue (not SUID root?). '
         'Defaulting to non-rawsocket approach.'
     )
-    log.info(msg)
 
 ETH_P_IP = 0x0800
 ETH_P_ALL = 0x0003
@@ -68,7 +62,8 @@ class SocketStreamCapturer(object):
                     The directory path into which log files will be written.
                     This path may include format strings which reference
                     handler metadata (E.g., {name}) as well as
-                    `strftime format characters <https://docs.python.org/2/library/time.html#time.strftime>`
+                    `strftime format characters
+                    <https://docs.python.org/2/library/time.html#time.strftime>`
 
                     Example::
 
@@ -79,9 +74,9 @@ class SocketStreamCapturer(object):
                     rotated at a regular interval.
 
                 rotate_log_index
-                    If **rotate_log** is *True* this controls the time frame of log
-                    rotations. The below values are all the valid options. Each
-                    row's values are equivalent::
+                    If **rotate_log** is *True* this controls the time frame of
+                    log rotations. The below values are all the valid options.
+                    Each row's values are equivalent::
 
                         'year',    'years',    'tm_year',
                         'month',   'months',   'tm_mon',
@@ -151,7 +146,7 @@ class SocketStreamCapturer(object):
                 *udp*, *ethernet*, and *tcp*.
 
         '''
-        if type(capture_handlers) != type(list()):
+        if not isinstance(capture_handlers, list):
             capture_handlers = [capture_handlers]
 
         self.capture_handlers = capture_handlers
@@ -169,7 +164,10 @@ class SocketStreamCapturer(object):
             # TODO: Make this configurable
             self._buffer_size = 65565
         elif conn_type == 'ethernet':
-            socket_family = getattr(gevent.socket, 'AF_PACKET', gevent.socket.AF_INET)
+            socket_family = getattr(gevent.socket,
+                                    'AF_PACKET',
+                                    gevent.socket.AF_INET)
+
             if RAW_SOCKET_FD:
                 self.socket = gevent.socket.fromfd(RAW_SOCKET_FD,
                                                    socket_family,
@@ -235,7 +233,6 @@ class SocketStreamCapturer(object):
                 A dictionary of handler configuration for the handler
                 that should be added. See :func:`__init__` for details
                 on valid parameters.
-        
         '''
         handler['logger'] = self._get_logger(handler)
         handler['reads'] = 0
@@ -252,7 +249,6 @@ class SocketStreamCapturer(object):
         Args:
             name:
                 The name of the handler to remove
-        
         '''
         index = None
         for i, h in enumerate(self.capture_handlers):
@@ -290,7 +286,7 @@ class SocketStreamCapturer(object):
         for h in self.capture_handlers:
             config_data.append({
                 'handler': {
-                    k:v for k,v in h.iteritems()
+                    k:v for k, v in h.iteritems()
                     if k not in ignored_keys
                 },
                 'log_file_path': h['logger']._stream.name,
@@ -334,12 +330,13 @@ class SocketStreamCapturer(object):
         return stats
 
     def _handle_log_rotations(self):
-        ''''''
+        ''' Rotate each handler's log file if necessary '''
         for h in self.capture_handlers:
             if self._should_rotate_log(h):
                 self._rotate_log(h)
 
     def _should_rotate_log(self, handler):
+        ''' Determine if a log file rotation is necessary '''
         if handler['rotate_log']:
             rotate_time_index = handler.get('rotate_log_index', 'day')
             try:
@@ -355,7 +352,7 @@ class SocketStreamCapturer(object):
         return False
 
     def _decode_time_rotation_index(self, time_rot_index):
-        ''''''
+        ''' Return the time struct index to use for log rotation checks '''
         time_index_decode_table = {
             'year': 0,    'years': 0,    'tm_year': 0,
             'month': 1,   'months': 1,   'tm_mon': 1,
@@ -371,12 +368,18 @@ class SocketStreamCapturer(object):
         return time_index_decode_table[time_rot_index]
 
     def _rotate_log(self, handler):
-        ''''''
+        ''' Rotate a handlers log file '''
         handler['logger'].close()
         handler['logger'] = self._get_logger(handler)
 
     def _get_log_file(self, handler):
-        ''''''
+        ''' Generate log file path for a given handler
+
+        Args:
+            handler:
+                The handler configuration dictionary for which a log file
+                path should be generated.
+        '''
         if 'file_name_pattern' not in handler:
             filename = '%Y-%m-%d-%H-%M-%S-{name}.pcap'
         else:
@@ -394,7 +397,7 @@ class SocketStreamCapturer(object):
         return log_file
 
     def _get_logger(self, handler):
-        ''' Initialize a PCAP stream for logging data. '''
+        ''' Initialize a PCAP stream for logging data '''
         log_file = self._get_log_file(handler)
 
         if not os.path.isdir(os.path.dirname(log_file)):
@@ -404,15 +407,18 @@ class SocketStreamCapturer(object):
         return pcap.open(log_file, mode='a')
 
     def _init_log_file_handlers(self):
+        ''' Initialize log file handles '''
         for handler in self.capture_handlers:
             handler['logger'] = self._get_logger(handler)
 
 
 class StreamCaptureManager(object):
+    ''' Manage handlers for binary data capture and logging '''
+
     def __init__(self, mngr_conf, lgr_conf):
         '''
         Args:
-            mngr_conf: 
+            mngr_conf:
                 Configuration dictionary for the manager. At
                 the minimum this should contain the following:
 
@@ -431,8 +437,8 @@ class StreamCaptureManager(object):
                 .. code-block:: none
 
                     [
-                        (name, address, conn_type, log_dir_path, misc_conf_dict),
-                        (name, address, conn_type, log_dir_path, misc_conf_dict),
+                       name, address, conn_type, log_dir_path, misc_conf_dict),
+                       name, address, conn_type, log_dir_path, misc_conf_dict),
                     ]
 
         '''
@@ -459,7 +465,8 @@ class StreamCaptureManager(object):
 
             address:
                 A tuple containing address data for the capturer. Check the
-                :class:`SocketStreamCapturer` documentation for what is required.
+                :class:`SocketStreamCapturer` documentation for what is
+                required.
 
             conn_type:
                 A string defining the connection type. Check the
@@ -487,11 +494,14 @@ class StreamCaptureManager(object):
         transforms = []
         if 'pre_write_transforms' in capture_handler_conf:
             for transform in capture_handler_conf['pre_write_transforms']:
-                if type(transform) == type(''):
+                if isinstance(transform, str):
                     if globals().has_key(transform):
                         transforms.append(globals().get(transform))
                     else:
-                        msg = 'Unable to load data transformation "{}" for handler "{}"'.format(
+                        msg = (
+                            'Unable to load data transformation '
+                            '"{}" for handler "{}"'
+                        ).format(
                             transform,
                             capture_handler_conf['name']
                         )
@@ -499,7 +509,9 @@ class StreamCaptureManager(object):
                 elif hasattr(transform, '__call__'):
                     transforms.append(transform)
                 else:
-                    msg = 'Unable to determine how to load data transform "{}"'.format(transform)
+                    msg = (
+                        'Unable to determine how to load data transform "{}"'
+                    ).format(transform)
                     log.warn(msg)
         capture_handler_conf['pre_write_transforms'] = transforms
 
@@ -509,7 +521,9 @@ class StreamCaptureManager(object):
             capturer.add_handler(capture_handler_conf)
             return
 
-        socket_logger = SocketStreamCapturer(capture_handler_conf, address, conn_type)
+        socket_logger = SocketStreamCapturer(capture_handler_conf,
+                                             address,
+                                             conn_type)
         greenlet = gevent.spawn(socket_logger.socket_monitor_loop)
 
         self._stream_capturers[address_key] = (
@@ -593,8 +607,8 @@ class StreamCaptureManager(object):
     def get_handler_stats(self):
         ''' Return handler read statistics
 
-        Returns a dictionary of managed handler data read statistics. The format
-        is primarily controlled by the
+        Returns a dictionary of managed handler data read statistics. The
+        format is primarily controlled by the
         :func:`SocketStreamCapturer.dump_all_handler_stats` function::
 
             {
