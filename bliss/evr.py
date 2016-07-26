@@ -54,7 +54,7 @@ class EVRReader(object):
 
 
 def getDefaultSchema():
-    return os.path.join(bliss.config._directory, 'cmd_schema.json')
+    return os.path.join(bliss.config._directory, 'evr_schema.json')
 
 def getDefaultDict(reload=False):
     d = bliss.util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)
