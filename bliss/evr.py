@@ -1,3 +1,6 @@
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS EVR Reader (EVR)
 
@@ -7,14 +10,6 @@ Also includes deprecated EVRParser class for parsing the EVR
 information from the FSW EVR classes.
 
 """
-
-"""
-Authors: Ben Bornstein, Jordan Padams
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import re

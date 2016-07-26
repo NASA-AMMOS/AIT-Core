@@ -1,17 +1,12 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS (ECOSTRESS) Commands
 
 The bliss.cmd module provides commands and command dictionaries.
 Dictionaries contain command and argument definitions.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import struct

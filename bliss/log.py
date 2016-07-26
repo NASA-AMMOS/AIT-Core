@@ -1,17 +1,12 @@
+# Copyright 2008 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Logging
 
 The bliss.log module logs warnings, errors, and other information to
 standard output and via syslog.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2008 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import sys
 import socket

@@ -1,3 +1,6 @@
+# Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 import os
 import jsonschema
 

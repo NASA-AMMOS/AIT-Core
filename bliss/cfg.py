@@ -1,3 +1,6 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Configuration
 
@@ -5,14 +8,6 @@ The bliss.config module provides classes and functions to manage
 (re)configurable aspects of BLISS via a YAML configuration file.
 
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import platform

@@ -1,15 +1,11 @@
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS YAML Validator
 
 The bliss.val module provides validation of content for YAML
 files based on specified schema
-"""
-
-"""
-Authors: Jordan Padams
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
 """
 
 import os

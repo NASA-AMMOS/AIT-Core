@@ -1,5 +1,10 @@
 #!/usr/bin/env python
+#
+# Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 ''''''
+
 import gevent.monkey
 gevent.monkey.patch_all()
 

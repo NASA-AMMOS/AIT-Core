@@ -1,17 +1,12 @@
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS GUI
 
 The bliss.gui module provides the web-based (HTML5/CSS/Javascript)
 BLISS Graphical User Interface (GUI).
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import collections
 import copy

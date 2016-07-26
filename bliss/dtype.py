@@ -1,3 +1,6 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Primitive Data Types (PDT)
 
@@ -51,14 +54,6 @@ tuples, for succinctness:
     error: float '1e+06' cannot be represented as an integer.
 
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import datetime
 import dmc
