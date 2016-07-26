@@ -88,7 +88,7 @@ def hexdump (bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
   """hexdump(bytes[, addr[, preamble[, printfunc[, stepsize=16]]]])
 
   Outputs bytes in hexdump format lines similar to the following (here
-  preamble='Bank1', stepsize=8, and len(bytes) == 15):
+  preamble='Bank1', stepsize=8, and len(bytes) == 15)::
 
     Bank1: 0xFD020000: 7f45  4c46  0102  0100  *.ELF....*
     Bank1: 0xFD020008: 0000  0000  0000  00    *....... *

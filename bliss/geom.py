@@ -3,7 +3,7 @@
 This module contains basic 2D and 3D geometry classes (Point, Line,
 Polygon, Rectangle) with arithmetic operator, containment, and
 sequence/iterator methods.  These methods allow for natural and
-convenient Python expressions such as:
+convenient Python expressions such as::
 
   # Translate point by five units in both x and y.
   point + 5
@@ -31,7 +31,7 @@ U.S. Government Sponsorship acknowledged.
 
 class Point (object):
   """Point is a simple 2D Cartesian point object with public 'x' and
-  'y' coordinate fields.  The operators +, -, +=, -=, *, *=, /, /=, ==
+  'y' coordinate fields.  The operators +, -, +=, -=, \*, \*=, /, /=, ==
   and !=.
   """
 

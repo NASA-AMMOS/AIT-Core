@@ -413,7 +413,7 @@ def getDefaultSchema():
 def getMaxCmdSize():
     """ Returns the maximum size TReK command in bytes
 
-    Converts from words to bytes (hence the *2) and
+    Converts from words to bytes (hence the \*2) and
     removes 1 word for CCSDS header (-1)
     """
     return (MAX_CMD_WORDS - 1) * 2
