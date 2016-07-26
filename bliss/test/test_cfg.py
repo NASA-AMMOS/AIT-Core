@@ -1,18 +1,13 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 BLISS EVR Parser Tests
 
 Provides unit and functional tests for the bliss.evr module.
 """
-
-"""
-Authors: Jordan Padams
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import sys
 import os

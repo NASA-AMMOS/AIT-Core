@@ -1,3 +1,6 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """BLISS DeLorean Motor Company (DMC)
 
 The bliss.dmc module provides functions to represent, translate, and
@@ -10,14 +13,6 @@ Many functions assume the GPS (and ISS) epoch: January 6, 1980 at
 midnight.
 
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import calendar
 import datetime

@@ -1,4 +1,5 @@
-from __future__ import absolute_import
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 BLISS Sequences
@@ -6,13 +7,7 @@ BLISS Sequences
 The bliss.seq module provides sequences of commands.
 """
 
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
+from __future__ import absolute_import
 
 import os
 import math

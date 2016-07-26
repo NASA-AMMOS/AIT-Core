@@ -1,3 +1,6 @@
+# Copyright 2009 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """BLISS 2D/3D Geometry
 
 This module contains basic 2D and 3D geometry classes (Point, Line,
@@ -20,14 +23,6 @@ This module was originally written as a support library for AEGIS
 ground processing code and its precursors (e.g. OASIS).  It dates back
 to at least 2009 and probably even earlier.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2009 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 class Point (object):
   """Point is a simple 2D Cartesian point object with public 'x' and

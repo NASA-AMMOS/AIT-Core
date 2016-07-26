@@ -1,17 +1,12 @@
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Telemetry
 
 The bliss.tlm module provides telemetry fields and telemetry dictionaries.
 Dictionaries contain packet, header, data, and field definitions.
 """
-
-"""
-Authors: Jordan Padams, Ben Bornstein
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import yaml

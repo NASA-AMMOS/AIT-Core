@@ -1,17 +1,13 @@
 #!/usr/bin/env python
+#
+# Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 BLISS Log Tests
 
 The bliss.tests.test_log module provides unit and functional
 tests for the bliss.log module
-"""
-
-"""
-Authors: Jordan Padams
-
-Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
 """
 
 import unittest

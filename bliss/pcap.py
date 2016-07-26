@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 This module, pcap.py, is a library to read/write PCAP-formatted files with

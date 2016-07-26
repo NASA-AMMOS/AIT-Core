@@ -1,17 +1,12 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Ground Data System
 
 The BLISS.gds module provides utility functions specific to OCO-3 GDS
 command-line tools.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import sys

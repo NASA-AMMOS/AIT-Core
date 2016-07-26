@@ -1,17 +1,13 @@
 #!/usr/bin/env python
+#
+# Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 OCO-3 Data Type Unit Tests
 
 Provides unit and functional tests for the bliss.dtype module.
 Assumes these tests will be run in POSIX environment.
-"""
-
-"""
-Authors: Jordan Padams
-
-Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
 """
 
 import base64

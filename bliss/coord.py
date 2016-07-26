@@ -1,17 +1,12 @@
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Coordinate Functions
 
 The bliss.coord module provides various coordinate manpulation and
 transformation functions.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import datetime
 import math

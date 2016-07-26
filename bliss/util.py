@@ -1,18 +1,13 @@
 #!/usr/bin/env python
+#
+# Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 BLISS Utilities
 
 The bliss.util module provides general utility functions.
 """
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
-"""
-
 
 import os
 import stat

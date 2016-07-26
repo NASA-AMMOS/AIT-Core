@@ -1,16 +1,12 @@
 #!/usr/bin/env python
+#
+# Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
 
 """
 BLISS PCap Unit Tests
 
 Provides unit and functional tests for the bliss.pcap module.
-"""
-
-"""
-Authors: Ben Bornstein
-
-Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
 """
 
 import datetime
