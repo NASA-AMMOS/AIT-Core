@@ -43,7 +43,7 @@ The handler configuration section allows you to set up one or more handlers to b
       conn_type: udp
       address: ['', 8500]
       path: additional_dir/test/%j
-      file_name_pattern: '%Y-%m-%d-randomUDPtestData-{name}.pcap'
+      file_name_pattern: %Y-%m-%d-randomUDPtestData-{name}.pcap
       rotate_log: True
       rotate_log_index: day
       rotate_log_delta: 1
