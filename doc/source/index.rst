@@ -19,6 +19,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
 
    getting_started
    bliss_submodule_highlights
+   command_line
    BLISS API Documentation <bliss>
    configuration_intro
    command_intro
