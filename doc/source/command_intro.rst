@@ -1,2 +1,146 @@
 BLISS Command Dictionary Introduction
 =====================================
+
+BLISS provides support for YAML-based configuration of commands with enough detail to provide verification of information (E.g., units) and encoding/decoding. The commands are constrained by the ISS 1553B command word design (64 total words with 11 reserved).
+
+.. code-block:: yaml
+
+    # An example command for setting the operation
+    # mode of an instrument.
+    --- !Command
+    name:      CORE_SET_OP_MODE
+    opcode:    0x0001
+    subsystem: CORE
+    desc:      |
+      This command sets the operational mode.
+
+    arguments:
+      - !Argument
+        name:  mode
+        desc:  Mode
+        units: none
+        type:  U8
+        bytes: 0
+        enum:
+          0: SAFE
+          1: IDLE
+          2: SCANNING
+          3: SCIENCE
+
+All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. By default this called **cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
+
+.. code-block:: javascript
+
+    {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Command Dictionary Schema",
+        "description": "Command Dictionary Schema",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "opcode"],
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "opcode": {
+                "type": "integer"
+            },
+            "subsystem": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "arguments": {
+                ... Nested Argument Schema Snipped
+            }
+        }
+    }
+
+BLISS also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``./bliss-yaml-validate.py`` it will check this for you.
+
+.. code-block:: bash
+    
+    $ ./bliss-yaml-validate.py --cmd
+    016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
+
+----
+
+!Command
+--------
+
+The base BLISS command constructor allows for 5 properties of which 2 are required.
+
+name:
+    A **string** denoting the name of this command
+
+opcode:
+    The number assigned to this opcode. This is usually given in hexadecimal.
+
+subsystem (optional):
+    A **string** denoting the subsystem associated with this command.
+
+desc (optional):
+    A **string** for providing a description of the command.
+
+arguments (optional):
+    A **list** of *!Argument* or *!Fixed* objects
+
+----
+
+!Argument
+---------
+
+The argument constructor allows for a number of parameter to specify options for a command. By default an argument needs to include a name, data type, and byte information.
+
+name:
+    A **string** denoting the name of this argument
+
+type:
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.dtype.PrimitiveTypes``.
+
+bytes:
+    Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+
+desc (opitonal):
+    A **string** for providing a description of the argument.
+
+units (optional):
+    A **string** denoting the argument's units.
+
+range (optional):
+    A **list** of 2 items specifying the range of acceptable values for the argument.
+
+enum (optional):
+    A **dict** of key, value pairs listing the enumeration of valid values for the argument. The **key** matches with the value in the command. The **value** is a **string** describing what the value in the enumeration represents.
+
+.. warning::
+
+    Note, the *value* parameter for an argument is made largely redundant by the !Fixed constructor described below. You should default to using it instead.
+value (optional):
+    A number that specifies the fixed value for this argument. This is useful if an argument needs to be set to a constant value.
+
+----
+
+!Fixed
+------
+
+The fixed constructor allows you to define constant values in your command.
+
+name:
+    A **string** denoting the name of this constant.
+
+bytes:
+    Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+
+value:
+    A number specifying the value for this constant.
+
+desc (optional):
+    A **string** for providing a description of the constant.
+
+units (optional):
+    A **string** denoting the constant's units.
+
+bytes (optional):
+    Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
