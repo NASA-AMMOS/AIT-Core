@@ -117,6 +117,7 @@ enum (optional):
 .. warning::
 
     Note, the *value* parameter for an argument is made largely redundant by the !Fixed constructor described below. You should default to using it instead.
+
 value (optional):
     A number that specifies the fixed value for this argument. This is useful if an argument needs to be set to a constant value.
 
@@ -144,3 +145,57 @@ units (optional):
 
 bytes (optional):
     Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+
+----
+
+Example Command Definition
+--------------------------
+
+Below is an example of what you might have defined for a command. It uses most of the options mentioned above.
+
+.. code-block:: yaml
+
+    --- !Command
+    name:      EXAMPLE_RESET_SYSTEM
+    opcode:    0x1337
+    subsystem: ExampleSubSystem
+    title:     Example Reset System
+    desc:      |
+      Reset the processor and initiate boot process.
+    arguments:
+      - !Fixed
+        type:  LSB_U16
+        bytes: [0, 1]
+        value: 0x92ea
+        
+      - !Fixed
+        type:  LSB_U16
+        bytes: [2, 3]
+        value: 0x3010
+
+      - !Argument
+        name:  reset_type
+        desc:  |
+          Reset type
+          PROM_REBOOT: Nominal reboot
+          DIAG_RAM_REBOOT: Diagnostic reboot
+        units: none
+        type:  LSB_U16
+        bytes: [4, 5]
+        enum:
+          0x1000: PROM_REBOOT
+          0x0001: DIAG_RAM_REBOOT
+        
+      - !Fixed
+        type:  LSB_U16
+        bytes: [6, 7]
+        value: 0x0000
+        
+      - !Fixed
+        type:  LSB_U16
+        bytes: [8, 9]
+        value: 0x0000
+        
+      - !Fixed
+        type:  LSB_U16
+        bytes: [10, 11]
