@@ -20,6 +20,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
    command_intro
    telemetry_intro
    c_and_dh_intro
+   bsc_intro
 
 Indices and tables
 ==================
