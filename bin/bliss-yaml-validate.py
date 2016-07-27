@@ -79,7 +79,7 @@ def main(options):
     else:
 
         if cmd:
-            yml = bliss.cmd.getDefaultCmdDictFilename()
+            yml = bliss.cmd.getDefaultDictFilename()
             schema = bliss.cmd.getDefaultSchema()
             validator = bliss.val.CmdValidator
         elif evr:

@@ -401,6 +401,10 @@ def getDefaultDict(reload=False):
     return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
 
 
+def getDefaultDictFilename():
+    return bliss.config.cmddict.filename
+
+
 def getDefaultSchema():
     return os.path.join(bliss.config._directory, 'cmd_schema.json')
 
