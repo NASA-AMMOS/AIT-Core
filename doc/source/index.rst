@@ -13,6 +13,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
    :maxdepth: 2
 
    getting_started
+   bliss_gui
    bliss_submodule_highlights
    command_line
    BLISS API Documentation <bliss>
