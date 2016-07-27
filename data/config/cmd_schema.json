@@ -51,10 +51,6 @@
 						"enum": {
 							"type": "object",
 							"description": "TODO: Does not check valid enumeration"
-						},
-						"value": {
-							"type": "number",
-							"description": "TODO: Does not check valid enumeration"
 						}
 					}
 				},
@@ -80,10 +76,6 @@
 							"description": "TODO: Need to update the min/max when NOT a list",
 							"maxItems": 2,
 							"items": { "type": "integer" }
-						},
-						"enum": {
-							"type": "object",
-							"description": "TODO: Does not check valid enumeration"
 						},
 						"value": {
 							"type": "number",
