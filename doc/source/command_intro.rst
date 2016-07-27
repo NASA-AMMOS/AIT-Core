@@ -114,13 +114,6 @@ range (optional):
 enum (optional):
     A **dict** of key, value pairs listing the enumeration of valid values for the argument. The **key** matches with the value in the command. The **value** is a **string** describing what the value in the enumeration represents.
 
-.. warning::
-
-    Note, the *value* parameter for an argument is made largely redundant by the !Fixed constructor described below. You should default to using it instead.
-
-value (optional):
-    A number that specifies the fixed value for this argument. This is useful if an argument needs to be set to a constant value.
-
 ----
 
 !Fixed
