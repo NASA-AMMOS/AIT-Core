@@ -17,9 +17,9 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
    command_line
    BLISS API Documentation <bliss>
    configuration_intro
-   command_intro
-   telemetry_intro
-   c_and_dh_intro
+   Command Dictionary Introduction <command_intro>
+   Telemetry Dictionary Introduction <telemetry_intro>
+   Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
 
 Indices and tables

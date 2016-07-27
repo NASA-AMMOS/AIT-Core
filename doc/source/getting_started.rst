@@ -7,7 +7,10 @@ Installation
 Before you install **bliss-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already.
 
 Clone the repository from JPL Github:
-$ git clone https://github.jpl.nasa.gov/bliss/bliss-core.git
+
+.. code-block:: bash
+
+    $ git clone https://github.jpl.nasa.gov/bliss/bliss-core.git
 
 First you need to make a virtual environment into which we'll install the bliss-core package and its dependencies:
 

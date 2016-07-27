@@ -1,2 +1,2 @@
-Introduction to BLISS C&DH Tables and Products
-==============================================
+Introduction to BLISS Command & Data Handling Tables and Products
+=================================================================
