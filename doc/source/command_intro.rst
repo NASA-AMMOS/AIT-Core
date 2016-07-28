@@ -69,7 +69,7 @@ BLISS also provides a command line utility for verifying that your command dicti
 !Command
 --------
 
-The base BLISS command constructor allows for 5 properties of which 2 are required.
+The BLISS command constructor is the parent construct for all BLISS command definitions. It encapsulates optional arguments and contains metadata critical to the command.
 
 name:
     A **string** denoting the name of this command
