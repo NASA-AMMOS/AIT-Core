@@ -706,7 +706,7 @@ class StreamCaptureManagerServer(Bottle):
                         callback=self._rotate_capturer_log)
 
     def _add_logger_by_name(self, name):
-        ''' Handles GET requests for adding a new logger.
+        ''' Handles POST requests for adding a new logger.
 
         Expects logger configuration to be passed in the request's query string.
         The logger name is included in the URL and the address components and
