@@ -82,3 +82,163 @@ pre_write_transforms (optional):
     .. note::
 
         At the moment you can only specify functions that are global to the ``bliss.bsc`` module. This will be changed in the future.
+
+----
+
+REST API
+--------
+
+The BSC service provides REST services for starting, stopping, and manipulating capture handlers.
+
+.. http:get:: /
+   
+   Returns a JSON object containing the configuration information for all active capture handlers. The configuration is grouped by address.
+
+   **Example Response**:
+
+   .. code-block:: http
+
+      {
+          ['', 8500]: [
+              {
+                  conn_type: "udp",
+                  handler: {
+                      pre_write_transforms: [],
+                      file_name_pattern: "%Y-%m-%d-randomUDPtestData-{name}.pcap",
+                      rotate_log: true,
+                      name: "test1",
+                      log_dir: "/tmp/additional_dir/test/%j"
+                  },
+                  log_file_path: "/tmp/additional_dir/test/211/2016-07-29-randomUDPtestData-test1.pcap",
+                  address: ["", 8500]
+              },
+              {
+                  conn_type: "udp",
+                  handler: {
+                      pre_write_transforms: [],
+                      rotate_log: true,
+                      name: "test2",
+                      log_dir: "/tmp"
+                  },
+                  log_file_path: "/tmp/2016-07-29-19-42-17-test2.pcap",
+                  address: ["", 8500]
+              }
+          ],
+          ['', 8125]: [
+              {
+                  conn_type: "udp",
+                  handler: {
+                      pre_write_transforms: [],
+                      rotate_log: true,
+                      name: "test3",
+                      log_dir: "/tmp"
+                  },
+                  log_file_path: "/tmp/2016-07-29-19-42-17-test3.pcap",
+                  address: ["", 8125]
+              }
+          ]
+      }
+
+.. http:get:: /stats
+
+   Return capture stats for all handlers.
+
+   **Example Response**:
+
+   .. code-block:: http
+
+      {
+          ['', 8500]: [
+              {
+                  approx_data_rate: "0.0 bytes/second",
+                  reads: 0,
+                  name: "test1",
+                  data_read_length: "0 bytes"
+              },
+              {
+                  approx_data_rate: "0.0 bytes/second",
+                  reads: 0,
+                  name: "test2",
+                  data_read_length: "0 bytes"
+              }
+          ],
+          ['', 8125]: [
+              {
+                  approx_data_rate: "1.66666666667 bytes/second",
+                  reads: 1,
+                  name: "test3",
+                  data_read_length: "5 bytes"
+              }
+          ]
+      }
+
+   .. note::
+
+      The approximate data is calculated using the last log rotation time compared to the current time. As such it is not accurate if the hanlder isn't reading data regularly.
+
+.. http:post:: /<name>/start
+
+   Create a new handler called *name*.
+
+   **Handler Attributes**:
+
+   See the `Handler Configuration`_ section for details on what can be included here. Note that the *address* field is split into two components (loc and port) for the REST service. The below options are required for proper functionality!
+
+   port:
+       The port/protocol for the connection.
+
+   conn_type:
+       The type of connection the handler will make. One of *udp*, *ethernet*, or *tcp*.
+
+   **Example Post Data**:
+
+   .. code-block:: http
+
+      {
+         'loc': '',
+         'port': 8125,
+         'conn_type': 'udp'
+      }
+
+.. http:delete:: /<name>/stop
+
+   Stop all handlers that match a given *name*.
+
+   .. warning::
+
+      There isn't a requirement that handlers have unique names. As such, if multiple handlers have the same name they will all be terminated!
+
+.. http:get:: /<name>/config
+
+   Returns a configuration dictionary for handlers with a given *name*.
+
+   **Example Response**:
+
+   .. code-block:: http
+
+      [
+          {
+              conn_type: "udp",
+              handler: {
+                  pre_write_transforms: [],
+                  file_name_pattern: "%Y-%m-%d-randomUDPtestData-{name}.pcap",
+                  rotate_log: true,
+                  name: "test1",
+                  log_dir: "/tmp/additional_dir/test/%j"
+              },
+              log_file_path: "/tmp/additional_dir/test/211/2016-07-29-randomUDPtestData-test1.pcap",
+              address: ["", 8500]
+          }
+      ]
+
+   .. note::
+
+      There isn't a requirement that handlers have unique names. As such, if multiple handlers have the same name you will receive muliple handler's configuration dictionaries.
+
+.. http:POST:: /<name>/rotate
+
+   Trigger log rotation for a given handler name.
+
+   .. warning::
+
+      Note that if the file name pattern provided isn't sufficient for a rotation to occur with a new unique file name you will not see a log rotation . Be sure to timestamp your files in such a way to ensure that this isn't the case! The default file name pattern includes year, month, day, hours, minutes, and seconds to make sure this works as expected.
