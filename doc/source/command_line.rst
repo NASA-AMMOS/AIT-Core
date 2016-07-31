@@ -69,6 +69,19 @@ Send a given command and its arguments to a UDP port. This is useful for uploadi
 
 ----
 
+BSC Utilities
+-------------
+
+bliss-bsc-create-handler
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A helper script for creating a handler via the BSC's RESTful interface.
+
+bliss-bsc-stop-handler
+^^^^^^^^^^^^^^^^^^^^^^
+
+A helper script for stopping a handler via the BSC's RESTful interface.
+
 Miscellaneous Utilities
 -----------------------
 
