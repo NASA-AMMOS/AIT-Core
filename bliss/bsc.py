@@ -735,6 +735,9 @@ class StreamCaptureManagerServer(Bottle):
         if 'rotate_log' in data:
             data['rotate_log'] = True if data == 'true' else False
 
+        if 'rotate_log_delta' in data:
+            data['rotate_log_delta'] = int(data['rotate_log_delta'])
+
         self._logger_manager.add_logger(name, address, conn_type, **data)
 
     def _stop_logger_by_name(self, name):
