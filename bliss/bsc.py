@@ -10,6 +10,7 @@ loggers.
 '''
 
 import calendar
+import datetime
 import json
 import os
 import socket
@@ -346,8 +347,21 @@ class SocketStreamCapturer(object):
 
             rotate_time_delta = handler.get('rotate_log_delta', 1)
 
-            time_delta = time.gmtime()[rotate_time_index] - handler['log_rot_time'][rotate_time_index]
-            return time_delta >= rotate_time_delta
+            cur_t = time.gmtime()
+            first_different_index = 9
+            for i in range(9):
+                if cur_t[i] != handler['log_rot_time'][i]:
+                    first_different_index = i
+                    break
+
+            if first_different_index < rotate_time_index:
+                # If the time deltas differ by a time step greater than what we
+                # have set for the rotation (I.e., months instead of days) we will
+                # automatically rotate.
+                return True
+            else:
+                time_delta = cur_t[rotate_time_index] - handler['log_rot_time'][rotate_time_index]
+                return time_delta >= rotate_time_delta
 
         return False
 
