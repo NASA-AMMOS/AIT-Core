@@ -84,18 +84,17 @@ class YAMLProcessor (object):
             with open(ymlfile, 'r') as txt:
                 for linenum, line in enumerate(txt):
                     # Pattern to match document start lines
-                    doc_pattern = re.compile('(-+) (![a-z]+)(.*$)', flags=re.I)
+                    doc_pattern = re.compile('(---) (![a-z]+)(.*$)', flags=re.I)
 
                     # Pattern to match sequence start lines
-                    seq_pattern = re.compile('(\s+)(-+) !([a-z]+)(.*$)', flags=re.I)
+                    seq_pattern = re.compile('(\s*)(-+) !([a-z]+)(.*$)', flags=re.I)
 
                     # If we find a document, remove the tag
                     if doc_pattern.match(line):
                         line = doc_pattern.sub(r"---", line).lower()
                         self.doclines.append(linenum)
                     elif seq_pattern.match(line):
-                        # Replace sequence tags with mappings
-                        line = seq_pattern.sub(r"\1\3:", line).lower()
+                        line = seq_pattern.sub(r"\1\2 \3: object", line).lower()
 
                     output = output + line
 
