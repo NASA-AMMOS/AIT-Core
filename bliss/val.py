@@ -367,7 +367,7 @@ class CmdValidator (Validator):
             rules.append(UniquenessRule('opcode', "Duplicate opcode: %s", messages))
             #
             ###
-            for cmdcnt, cmddefn in enumerate(cmddict):
+            for cmdcnt, cmddefn in enumerate(cmddict[0]):
                 # check the command rules
                 for rule in rules:
                     rule.check(cmddefn)

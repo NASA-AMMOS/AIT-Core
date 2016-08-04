@@ -1,40 +1,40 @@
---- !Command
-name:      OCO3_GPS_INTEGRATED_CARRIER_SMOOTHING
-opcode:    0x50A8
-subsystem: GPS
-desc:      |
-  7.2.4.4 Integrated Carrier Smoothing ID 0xa8 (p. 42)
+- !Command
+  name:      OCO3_GPS_INTEGRATED_CARRIER_SMOOTHING
+  opcode:    0x50A8
+  subsystem: GPS
+  desc:      |
+    7.2.4.4 Integrated Carrier Smoothing ID 0xa8 (p. 42)
 
-  This command enables the use of accumulated (integrated) carrier
-  phase measurements to smooth the code pseudoranges. This smoothes
-  some of the noise on the pseudoranges, but does not necessarily
-  reduce the offset error sources that affect the pseudoranges
-  (e.g. ionospheric errors, ephemeris errors). The centering filter is
-  used to centre the smoothed solution at the middle of the
-  pseudorange noise, and the recommended value is 25 seconds. The
-  smoothing control Byte in the packet allows the filter to be turned
-  off without changing the filter parameters.
+    This command enables the use of accumulated (integrated) carrier
+    phase measurements to smooth the code pseudoranges. This smoothes
+    some of the noise on the pseudoranges, but does not necessarily
+    reduce the offset error sources that affect the pseudoranges
+    (e.g. ionospheric errors, ephemeris errors). The centering filter is
+    used to centre the smoothed solution at the middle of the
+    pseudorange noise, and the recommended value is 25 seconds. The
+    smoothing control Byte in the packet allows the filter to be turned
+    off without changing the filter parameters.
 
-arguments:
-  - !Fixed
-    name:  op_id
-    type:  U8
-    bytes: 0
-    value: 0xa8
+  arguments:
+    - !Fixed
+      name:  op_id
+      type:  U8
+      bytes: 0
+      value: 0xa8
 
-  - !Argument
-    name:  smoothing_control
-    desc:  Smoothing Control (on/off)
-    units: none
-    type:  U8
-    bytes: 1
-    enum:
-      0: 'OFF'
-      1: 'ON'
+    - !Argument
+      name:  smoothing_control
+      desc:  Smoothing Control (on/off)
+      units: none
+      type:  U8
+      bytes: 1
+      enum:
+        0: 'OFF'
+        1: 'ON'
 
-  - !Argument
-    name:  time_period
-    desc:  Centering filter time period (recommended value is 250; 0 - not set)
-    units: 1/10 seconds
-    type:  LSB_U16
-    bytes: [2, 3]
+    - !Argument
+      name:  time_period
+      desc:  Centering filter time period (recommended value is 250; 0 - not set)
+      units: 1/10 seconds
+      type:  LSB_U16
+      bytes: [2, 3]

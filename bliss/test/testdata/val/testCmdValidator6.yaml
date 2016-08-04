@@ -1,25 +1,25 @@
---- !Command
-name:      OCO3_CMD_SET_SEQ_ENABLE
-opcode:    0x2002
-subsystem: CMD
-desc:      |
-  This command enables or disabled the specified sequence.  If a sequence to be
-  disabled is currently executing, it will be interrupted.
+- !Command
+  name:      OCO3_CMD_SET_SEQ_ENABLE
+  opcode:    0x2002
+  subsystem: CMD
+  desc:      |
+    This command enables or disabled the specified sequence.  If a sequence to be
+    disabled is currently executing, it will be interrupted.
 
-arguments:
-  - !Argument
-    name:  sequence_id
-    desc:  Sequence ID
-    units: none
-    type:  MSB_U16
-    bytes: [1,2]
+  arguments:
+    - !Argument
+      name:  sequence_id
+      desc:  Sequence ID
+      units: none
+      type:  MSB_U16
+      bytes: [1,2]
 
-  - !Argument
-    name:  enable
-    desc:  Enable
-    units: none
-    type:  U8
-    bytes: 3
-    enum:
-      0: DISABLED
-      1: ENABLED
+    - !Argument
+      name:  enable
+      desc:  Enable
+      units: none
+      type:  U8
+      bytes: 3
+      enum:
+        0: DISABLED
+        1: ENABLED

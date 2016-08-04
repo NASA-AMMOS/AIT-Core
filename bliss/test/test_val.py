@@ -275,12 +275,12 @@ def testYAMLProcesserLoad():
     assert ymlproc.loaded
 
 
-def testYAMLProcesserProcess():
+def testYAMLProcessorProcess():
     ymlproc = bliss.val.YAMLProcessor()
     ymlproc.process(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
 
     # check the document lines are correct
-    doclines = [0, 17, 34, 62, 79, 88, 105, 136, 156, 165, 174, 183, 206]
+    doclines = [206]
     assert doclines == ymlproc.doclines
 
 def testValidatorCmd():
