@@ -30,7 +30,7 @@ All the valid parameters and attributes that can be present in the telemetry dic
 
 .. code-block:: bash
 
-    $ ./bliss-yaml-validate.py --cmd
+    $ ./bliss-yaml-validate.py --tlm
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
 ----
