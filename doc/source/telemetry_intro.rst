@@ -164,6 +164,13 @@ dntoeu (optional):
            units:    volts
            when:     history.VX0 > 2000
 
+when (optional):
+    An expression defining when a !Field's value is valid.
+
+    .. code-block:: yaml
+
+       when: HKMux1 == 0
+
 ----
 
 Example Telemetry Packet Definition
