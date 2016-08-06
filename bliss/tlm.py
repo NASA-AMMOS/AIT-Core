@@ -469,17 +469,13 @@ class PacketDefinition(object):
     @property
     def nbytes(self):
         """The number of bytes for this telemetry packet"""
-        nbytes = 0
-        
+        max_byte = -1
+
         for defn in self.fields:
-            bytes = defn.bytes
-            value = (bytes if type(bytes) is int else bytes[-1]) + defn.nbytes
+            byte = defn.bytes if type(defn.bytes) is int else max(defn.bytes)
+            max_byte = max(max_byte, byte)
 
-        if value > nbytes:
-            nbytes = value
-
-        return nbytes
-
+        return max_byte + 1
 
     def validate(self, pkt, messages=None):
         """Returns True if the given Packet is valid, False otherwise.
