@@ -64,6 +64,32 @@ BLISS also provides a command line utility for verifying that your command dicti
     $ ./bliss-yaml-validate.py --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
+BLISS provides command encoding/decoding via :class:`bliss.cmd.CmdDict`.
+
+    >>> cmddict = bliss.cmd.getDefaultDict()
+    >>> type(cmddict)
+    <class 'bliss.cmd.CmdDict'>
+
+You can create and encode a command directly from the command dictionary.
+
+    >>> noop = cmddict.create('NO_OP')
+    >>> type(noop)
+    <class 'bliss.cmd.Cmd'>
+    >>> noop
+    NO_OP
+    >>> bin_noop = noop.encode()
+    >>> bin_noop
+    bytearray(b'\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+
+Get a binary blob, you can also decode into a command.
+
+    >>> decoded_cmd = cmddict.decode(bin_noop)
+    >>> type(decoded_cmd)
+    <class 'bliss.cmd.Cmd'>
+    >>> decoded_cmd
+    NO_OP
+
+
 ----
 
 !Command
