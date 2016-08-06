@@ -1,2 +1,0 @@
-BLISS Feature Highlights
-========================
