@@ -33,6 +33,59 @@ All the valid parameters and attributes that can be present in the telemetry dic
     $ ./bliss-yaml-validate.py --tlm
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
+BLISS provides telemetry dictionary processing via :class:`bliss.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.tlm.PacketDefinition` instances.
+
+    >>> tlmdict = bliss.tlm.getDefaultDict()
+    >>> type(tlmdict)
+    <class 'bliss.tlm.TlmDict'>
+    >>> tlmdict.keys()
+    ['CCSDS']
+    >>> type(tlmdict['CCSDS'])
+    <class 'bliss.tlm.PacketDefinition'>
+
+We can look at a specific field via a :class:`PacketDefinition`. For instance, we can look at the **version** field from the CCSDS packet defined in `Example Telemetry Packet Definition`
+
+    >>> ccsds_pkt = tlmdict['CCSDS']
+    >>> ccsds_pkt.fieldmap['version']
+    FieldDefinition(bytes=0, desc='CCSDS Version', dntoeu=None, enum=None, expr=None, mask=224, name='version', shift=5, _type=PrimitiveType('U8'), units=None, when=None)
+
+
+Decoding binary into a :class:`Packet` allows us to easily decode downlink data and check values. Let's look at an example CCSDS Primary Packet Header:
+
+    .. code-block:: none
+
+       version:                000                 # Set to '000' per the CCSDS spec
+       packet type:            0                   # Set per the CCSDS spec
+       secondary header flag:  1
+       apid:                   01011100111
+       sequence flag:          01                  # Indicate this is 'first' segment of a sequence
+       sequence count:         00000000000000      # Since it's the first segment, the count is 0
+       packet length:          0000010010101111    # '1200' byte packet encoded as 1199 per the CCSDS spec
+
+We'll create a packet from this binary using the CCSDS Primary Packet Header :class:`bliss.tlm.PacketDefinition` that we were using earlier.
+
+    >>> type(ccsds_pkt)
+    <class 'bliss.tlm.PacketDefinition'>
+    >>> data = bytearray(b'\x0A\xE7\x40\x00\x04\xAF')
+    >>> pkt = bliss.tlm.Packet(ccsds_pkt, data=data)
+
+With the :class:`bliss.tlm.Packet` object we can check each of those values above.
+
+    >>> pkt.version
+    0
+    >>> pkt.packet_type
+    0
+    >>> pkt.secondary_header_flag
+    'Present'
+    >>> pkt.apid
+    743
+    >>> pkt.sequence_flags
+    'First Segment'
+    >>> pkt.sequence_count
+    0
+    >>> pkt.packet_length
+    1199
+
 ----
 
 !Packet
