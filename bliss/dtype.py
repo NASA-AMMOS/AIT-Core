@@ -338,7 +338,7 @@ class EVRType(PrimitiveType):
     This type is used to take a 4-byte error code and return the corresponding
     EVR name
     """
-    BASEPDT = "MSB_U32"
+    BASEPDT = "MSB_U16"
 
     def __init__(self):
         super(EVRType, self).__init__(self.BASEPDT)
