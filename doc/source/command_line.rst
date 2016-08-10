@@ -90,7 +90,7 @@ bliss-orbits
 
 Generates predicted or actual ISS orbit times and numbers given JSC ISS Attitutde and Pointing Nadir reports or ISS Ephemeris data.
 
-bliss-zlip-upload
+bliss-zlib-upload
 ^^^^^^^^^^^^^^^^^
 
 Compresses and uploads a file to the ISS Simulator. This is primarily used for Flight Software Testing.
