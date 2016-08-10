@@ -2,25 +2,30 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Telemetry Dictionary Schema",
     "description": "Telemetry Dictionary Schema",
-    "type": "object",
-    "required": [ "fields" ],
-    "additionalProperties": false,
-    "properties": {
-        "name": {
-            "type": "string"
-        },
-        "desc": {
-            "type": "string"
-        },
-        "fields": {
-            "type": "object",
-            "properties": {
-                "field": {
+    "type": "array",
+    "items": {
+        "required": ["packet", "fields"],
+        "additionalProperties": false,
+        "properties": {
+            "packet": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "fields": {
+                "type": "array",
+                "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": [ "name", "type" ],
-                    "additionalProperties": false,
+                    "required": ["field", "name", "type"],
                     "properties": {
+                        "field": {
+                            "type": "string"
+                        },
                         "name": {
                             "type": "string"
                         },
