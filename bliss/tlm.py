@@ -219,12 +219,12 @@ class FieldDefinition(object):
                 messages.append(msg)
 
         if self.enum:
-            if value not in self.enum.keys():
+            if value not in self.enum.values():
                 valid = False
                 flds = (self.name, str(value))
                 log("%s value '%s' not in allowed enumerated values." % flds)
             else:
-                primitive = int(self.enum[value])
+                primitive = int(self.enum.keys()[self.enum.values().index(value)])
 
         if self.type:
             if self.type.validate(primitive, messages, self.name) is False:
@@ -332,7 +332,7 @@ class Packet(object):
         Validation error messages are appended to an optional messages
         array.
         """
-        return self.defn.validate(self, messages)
+        return self._defn.validate(self, messages)
 
 
     def toDict(self):
@@ -488,16 +488,19 @@ class PacketDefinition(object):
         """
         valid = True
 
-        if len(self.fields) != len(pkt.flds):
-            valid = False
-            if messages is not None:
-                msg = "Telemetry field length mismatch for packet '%s'.  "
-                msg += "Expected %d, but received %d."
-                values = self.name, len(self.fields), len(pkt.flds)
-                messages.append(msg % values)
+        for f in self.fields:
+            try:
+                value = getattr(pkt, f.name)
+            except AttributeError:
+                valid = False
+                if messages is not None:
+                    msg = "Telemetry field mismatch for packet '%s'.  "
+                    msg += "Unable to retrieve value for %s in Packet."
+                    values = self.name, f.name
+                    messages.append(msg % values)
+                break
 
-        for defn, value in zip(self.fields, pkt.flds):
-            if defn.validate(value, messages) is False:
+            if f.validate(value, messages) is False:
                 valid = False
 
         return valid
