@@ -1,6 +1,5 @@
 - !Packet
   name: CCSDS_Packet
-  type: ethernet
   desc: TBD
   fields:
     - !Field
