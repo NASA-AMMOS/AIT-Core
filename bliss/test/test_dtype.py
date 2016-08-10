@@ -19,13 +19,13 @@ import nose
 import bliss
 
 
-def testEVR32():
-    """Test EVR32 complex data type"""
+def testEVR16():
+    """Test EVR16 complex data type"""
     dtype = bliss.dtype.EVRType()
-    code = 0
+    code = 0x0000
     name = "NO_ERROR"
 
-    rawdata = bytearray(struct.pack('>I', code))
+    rawdata = bytearray(struct.pack('>H', code))
 
     assert dtype.decode(rawdata) == name
     assert dtype.encode(name) == rawdata
