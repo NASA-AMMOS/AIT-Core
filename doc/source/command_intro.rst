@@ -27,7 +27,7 @@ BLISS provides support for YAML-based configuration of commands with enough deta
           2: SCANNING
           3: SCIENCE
 
-All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. By default this called **cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
+All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. By default this is called **cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
 
 .. code-block:: javascript
 
@@ -35,24 +35,29 @@ All the valid parameters and attributes that you can have in your command dictio
         "$schema": "http://json-schema.org/draft-04/schema#",
         "title": "Command Dictionary Schema",
         "description": "Command Dictionary Schema",
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["name", "opcode"],
-        "properties": {
-            "name": {
-                "type": "string"
-            },
-            "opcode": {
-                "type": "integer"
-            },
-            "subsystem": {
-                "type": "string"
-            },
-            "desc": {
-                "type": "string"
-            },
-            "arguments": {
-                ... Nested Argument Schema Snipped
+        "type": "array",
+        "items": {
+            "required": ["command", "name", "opcode"],
+            "additionalProperties": false,
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "opcode": {
+                    "type": "integer"
+                },
+                "subsystem": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "arguments": {
+                    ... Nested Argument and Fixed Field Schemas snipped
+                }
             }
         }
     }
