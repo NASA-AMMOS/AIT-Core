@@ -102,6 +102,35 @@ name (optional):
 desc (optional):
     A **string** for providing a description of the packet.
 
+constants (optional):
+    A **dict** mapping constant names to values to be referenced in the packet and its fields.
+
+    .. code-block:: yaml
+
+       constants:
+           A:   371.81
+           B:  -4.850e-2
+           C:   1.086e-5
+           D:  -1.239e-9
+
+functions (optional):
+    A **dict** mapping function names to their expressions. Function bodies can reference constants and history values.
+
+    .. code-block:: yaml
+
+       functions:
+           R(dn): RL + (dn - history.RT0) * (RH - RL) / (history.RT1 - history.RT0)
+           T(dn): A + (B * R(dn)) + (C * R(dn)**2) + (D * R(dn)**3)
+
+history (optional):
+    A **list** of *!Field* names for which previous values should be stored. The previous value of a !Field can be reference via ``history.fieldName``.
+
+    .. code-block:: yaml
+
+       history:
+           - VX0
+           - VX1
+           - VX2
 ----
 
 !Field
@@ -124,6 +153,23 @@ bytes (optional):
 
 enum (optional):
     A **dict** of key, value pairs listing the enumeration of values for the field. The **key** matches with the value in the field. The **value** is a **string** describing what the value in the enumeration represents.
+
+dntoeu (optional):
+    Specify the equation and units for Data Number to Engineering Unit conversion for the **!Field**.
+
+    .. code-block:: yaml
+
+       dntoeu:
+           equation: -4.652 * raw.VX2 / history.VX0
+           units:    volts
+           when:     history.VX0 > 2000
+
+when (optional):
+    An expression defining when a !Field's value is valid.
+
+    .. code-block:: yaml
+
+       when: HKMux1 == 0
 
 ----
 

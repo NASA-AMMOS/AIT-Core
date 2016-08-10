@@ -16,6 +16,18 @@
             "desc": {
                 "type": "string"
             },
+            "constants": {
+                "type": "object",
+                "description": "Key:Value pairs that define a constant and its value."
+            },
+            "functions": {
+                "type": "object",
+                "description": "Function name to function mappings. The function name should be of the form 'R(dn)'. The function body can reference history values and constant values."
+            },
+            "history": {
+                "type": "array",
+                "description": "A list of field names for which history values should be stored."
+            },
             "fields": {
                 "type": "array",
                 "items": {
@@ -47,6 +59,26 @@
                         "enum": {
                             "type": "object",
                             "description": "TODO: Does not check valid enumeration"
+                        },
+                        "when": {
+                            "type": "string",
+                            "description": "An expression defining when a !Field's value is valid."
+                        },
+                        "dntoeu": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["equation", "units", "when"],
+                            "properties": {
+                                "equation": {
+                                    "type": "string"
+                                },
+                                "units": {
+                                    "type": "string"
+                                },
+                                "when": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
