@@ -39,6 +39,8 @@ src/doc/dict/cmd/cmddict-07-cmddefs.tex
 # Temporary files
 *~
 
-
 # Unignore (hack)
 !build/clean.py
+
+# Nosetests ouptut file
+nosetests.xml
