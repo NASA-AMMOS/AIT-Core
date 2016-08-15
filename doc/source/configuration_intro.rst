@@ -32,7 +32,7 @@ BLISS uses **config.yaml** to load configuration data for the command, telemetry
         bsc:
             filename: bsc.yaml
 
-BLISS loads **config.yaml** on import. If you want to look at the contents of the file programmatically you can access it with::
+BLISS loads **config.yaml** on import. If you want to look at the contents of the file programmatically you can access it with:
 
     >>> bliss.config
     BlissConfig(...)
