@@ -26,7 +26,7 @@ The capture manager defaults are fairly sane. However, you will most likely want
             port: 8080
 
 root_log_directory:
-    Specifies the path that should be treated as the root directory for writing log files. Each of the handlers can nest their log data under this directory in customized folders, but all BSC will be a child of this root folder.
+    Specifies the path that should be treated as the root directory for writing log files. Each of the handlers can nest their log data under this directory in customized folders, but all BSC log files will be children of this root folder.
 
 The ``manager_server`` settings are used to control where the RESTful endpoint webserver runs. In general, you'll only need to adjust the ``port`` setting to deal with potential clashes with other services that you may be running.
 
