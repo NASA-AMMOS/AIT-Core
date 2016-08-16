@@ -1,7 +1,7 @@
 BLISS Command Line Utilities
 ============================
 
-BLISS provides a number of command line utilities from performing common operations and component initialization. Below is a breakdown of these utilities with a brief explanation of how they work and why you my use them.
+BLISS provides a number of command line utilities for performing common operations and component initialization. Below is a breakdown of these utilities with a brief explanation of how they work and why you might use them.
 
 ----
 
@@ -18,7 +18,7 @@ Starts up the Binary Stream Capture components along with a webserver for manipu
 bliss-gui
 ^^^^^^^^^
 
-Start up the BLISS GUI and opens your browser to the primary landing page.
+Starts up the BLISS GUI and opens your browser to the primary landing page.
 
 ----
 
@@ -75,12 +75,12 @@ BSC Utilities
 bliss-bsc-create-handler
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-A helper script for creating a handler via the BSC's RESTful interface.
+A helper script for creating a handler via the BSC's REST interface.
 
 bliss-bsc-stop-handler
 ^^^^^^^^^^^^^^^^^^^^^^
 
-A helper script for stopping a handler via the BSC's RESTful interface.
+A helper script for stopping a handler via the BSC's REST interface.
 
 Miscellaneous Utilities
 -----------------------
