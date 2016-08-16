@@ -3,14 +3,14 @@ Introduction to BLISS Configuration
 
 BLISS uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup Language) and JSON files for project configuration.
 
-In order to help BLISS properly configuration your project, you should ensure that the *BLISS_CONFIG* environment variable to your **config.yaml** file. Given the default BLISS project structure you would have the following setup. This assumes you've set *BLISS_ROOT* to the project's root directory::
+In order to help BLISS properly configure your project, you should ensure that the *BLISS_CONFIG* environment variable points to your **config.yaml** file. Given the default BLISS project structure you would have the following setup. This assumes you've set *BLISS_ROOT* to the project's root directory::
 
     export BLISS_CONFIG=$BLISS_ROOT/data/config/config.yaml
 
 What is YAML?
 -------------
 
-YAML is a data serialization language with a heavy focus on maintaining human-readability. the `YAML Getting Started <http://www.yaml.org/start.html>`_ provides an overview of the structures supported.
+YAML is a data serialization language with a heavy focus on maintaining human-readability. The `YAML Getting Started <http://www.yaml.org/start.html>`_ provides an overview of the structures supported.
 
 config.yaml
 -----------
