@@ -52,15 +52,15 @@ We can look at a specific field via a :class:`PacketDefinition`. For instance, w
 
 Decoding binary into a :class:`Packet` allows us to easily decode downlink data and check values. Let's look at an example CCSDS Primary Packet Header:
 
-    .. code-block:: none
+.. code-block:: none
 
-       version:                000                 # Set to '000' per the CCSDS spec
-       packet type:            0                   # Set per the CCSDS spec
-       secondary header flag:  1
-       apid:                   01011100111
-       sequence flag:          01                  # Indicate this is 'first' segment of a sequence
-       sequence count:         00000000000000      # Since it's the first segment, the count is 0
-       packet length:          0000010010101111    # '1200' byte packet encoded as 1199 per the CCSDS spec
+   version:                000                 # Set to '000' per the CCSDS spec
+   packet type:            0                   # Set per the CCSDS spec
+   secondary header flag:  1
+   apid:                   01011100111
+   sequence flag:          01                  # Indicate this is 'first' segment of a sequence
+   sequence count:         00000000000000      # Since it's the first segment, the count is 0
+   packet length:          0000010010101111    # '1200' byte packet encoded as 1199 per the CCSDS spec
 
 We'll create a packet from this binary using the CCSDS Primary Packet Header :class:`bliss.tlm.PacketDefinition` that we were using earlier.
 
@@ -121,6 +121,21 @@ functions (optional):
        functions:
            R(dn): RL + (dn - history.RT0) * (RH - RL) / (history.RT1 - history.RT0)
            T(dn): A + (B * R(dn)) + (C * R(dn)**2) + (D * R(dn)**3)
+
+    Functions can then be referenced throughout the telemetry definitions. For instance, the following shows the ``T(n)`` function being used as part of a field's ``dntoeu`` attribute:
+
+    .. code-block:: yaml
+
+       - !Field
+         name:   RT2
+         bytes:  '@prev'
+         desc:   Noise source coupler (external) (Assembly Drawing 10335041)
+         dntoeu:
+           equation: T(raw.RT2)
+           units:    Kelvin
+           when:     (history.RT1 - history.RT0) > 3000
+         type:   LSB_U16
+         when:   HKMux1 == 18
 
 history (optional):
     A **list** of *!Field* names for which previous values should be stored. The previous value of a !Field can be reference via ``history.fieldName``.
