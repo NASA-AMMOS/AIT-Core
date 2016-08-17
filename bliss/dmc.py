@@ -25,245 +25,260 @@ GPS_Epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
 TICs      = [ ]
 TwoPi     = 2 * math.pi
 
-
-def getTimestampUTC ():
-  """getTimestampUTC() -> (ts_sec, ts_usec)
-
-  Returns the current UTC time in seconds and microseconds.
-  """
-  utc     = datetime.datetime.utcnow()
-  ts_sec  = calendar.timegm( utc.timetuple() )
-  ts_usec = utc.microsecond
-  return ts_sec, ts_usec
+DOY_Format = '%Y:%j:%H:%M:%S'
 
 
-def tic ():
-  """tic()
+def getTimestampUTC():
+    """getTimestampUTC() -> (ts_sec, ts_usec)
 
-  Records the current time for benchmarking purposes.  See also toc().
-  """
-  global TICs
-  begin = datetime.datetime.now()
-  TICs.append(begin)
-
-
-def toc ():
-  """toc() -> float | None
-
-  Returns the total elapsed seconds since the most recent tic(), or
-  None if tic() was not called.
-
-  Examples:
-
-  >>> import time
-
-  >>> tic()
-  >>> time.sleep(1.2)
-  >>> elapsed = toc()
-
-  >>> assert abs(elapsed - 1.2) <= 1e-2
-
-  .. note:: The tic() and toc() functions are simplistic and may introduce
-      significant overhead, especially in tight loops.  Their use should
-      be limited to one-off experiments and rough numbers.  The Python
-      profile package (i.e. 'import profile') should be used for serious
-      and detailed profiling.
-  """
-  end = datetime.datetime.now()
-  return totalSeconds( end - TICs.pop() ) if len(TICs) else None
+    Returns the current UTC time in seconds and microseconds.
+    """
+    utc     = datetime.datetime.utcnow()
+    ts_sec  = calendar.timegm( utc.timetuple() )
+    ts_usec = utc.microsecond
+    return ts_sec, ts_usec
 
 
-def toGPSWeekAndSecs (timestamp=None):
-  """Converts the given UTC timestamp (defaults to the current time) to
-  a two-tuple, (GPS week number, GPS seconds within the week).
-  """
-  if timestamp is None:
-    timestamp = datetime.datetime.utcnow()
+def getUTCDatetimeDOY(slack=0):
+    """getUTCDatetimeDOY -> datetime
 
-  leap = getUTCtoGPSLeapSeconds(timestamp)
+    Returns the UTC current datetime with the input slack time
+    added in DOY format:
 
-  secsInWeek = 604800
-  delta      = totalSeconds(timestamp - GPS_Epoch) + leap
-  seconds    = delta % secsInWeek
-  week       = int( math.floor(delta / secsInWeek) ) 
+        YYYY:DDD:HH:MM:SS
 
-  return (week, seconds)
+    """
+    timestamp = datetime.datetime.utcnow() + datetime.timedelta(days=slack)
+    return time.strftime(DOY_Format, timestamp.timetuple())
 
 
-def getUTCtoGPSLeapSeconds(timestamp=None):
-    """ Get the number of leap seconds for UTC->GPS conversion
+def tic():
+    """tic()
 
-    Args:
-        timestamp:
-            A UTC datetime object (defaults to current time)
+    Records the current time for benchmarking purposes.  See also toc().
+    """
+    global TICs
+    begin = datetime.datetime.now()
+    TICs.append(begin)
 
-    Returns:
-        Integer value specifying how many leap seconds to use for
-        conversion of the timestamp.
 
-    Raises:
-        ValueError:
-            If the timestamp provided occurs before 01-01-1980.
+def toc():
+    """toc() -> float | None
+
+    Returns the total elapsed seconds since the most recent tic(), or
+    None if tic() was not called.
+
+    Examples:
+
+    >>> import time
+
+    >>> tic()
+    >>> time.sleep(1.2)
+    >>> elapsed = toc()
+
+    >>> assert abs(elapsed - 1.2) <= 1e-2
+
+    .. note:: The tic() and toc() functions are simplistic and may introduce
+            significant overhead, especially in tight loops.  Their use should
+            be limited to one-off experiments and rough numbers.  The Python
+            profile package (i.e. 'import profile') should be used for serious
+            and detailed profiling.
+    """
+    end = datetime.datetime.now()
+    return totalSeconds( end - TICs.pop() ) if len(TICs) else None
+
+
+def toGPSWeekAndSecs(timestamp=None):
+    """Converts the given UTC timestamp (defaults to the current time) to
+    a two-tuple, (GPS week number, GPS seconds within the week).
     """
     if timestamp is None:
         timestamp = datetime.datetime.utcnow()
 
-    if timestamp < datetime.datetime(1980, 1, 6):
-        e = "The timestamp date is before the GPS epoch"
-        raise ValueError(e)
-    elif datetime.datetime(1980, 1, 6) <= timestamp < datetime.datetime(1981, 7, 1):
-        return 0
-    elif datetime.datetime(1981, 7, 1) <= timestamp < datetime.datetime(1982, 7, 1):
-        return 1
-    elif datetime.datetime(1982, 7, 1) <= timestamp < datetime.datetime(1983, 7, 1):
-        return 2
-    elif datetime.datetime(1983, 7, 1) <= timestamp < datetime.datetime(1985, 7, 1):
-        return 3
-    elif datetime.datetime(1985, 7, 1) <= timestamp < datetime.datetime(1988, 1, 1):
-        return 4
-    elif datetime.datetime(1988, 1, 1) <= timestamp < datetime.datetime(1990, 1, 1):
-        return 5
-    elif datetime.datetime(1990, 1, 1) <= timestamp < datetime.datetime(1991, 1, 1):
-        return 6
-    elif datetime.datetime(1991, 1, 1) <= timestamp < datetime.datetime(1992, 7, 1):
-        return 7
-    elif datetime.datetime(1992, 7, 1) <= timestamp < datetime.datetime(1993, 7, 1):
-        return 8
-    elif datetime.datetime(1993, 7, 1) <= timestamp < datetime.datetime(1994, 7, 1):
-        return 9
-    elif datetime.datetime(1994, 7, 1) <= timestamp < datetime.datetime(1996, 1, 1):
-        return 10
-    elif datetime.datetime(1996, 1, 1) <= timestamp < datetime.datetime(1997, 7, 1):
-        return 11
-    elif datetime.datetime(1997, 7, 1) <= timestamp < datetime.datetime(1999, 1, 1):
-        return 12
-    elif datetime.datetime(1999, 1, 1) <= timestamp < datetime.datetime(2006, 1, 1):
-        return 13
-    elif datetime.datetime(2006, 1, 1) <= timestamp < datetime.datetime(2009, 1, 1):
-        return 14
-    elif datetime.datetime(2009, 1, 1) <= timestamp < datetime.datetime(2012, 7, 1):
-        return 15
-    elif datetime.datetime(2012, 7, 1) <= timestamp < datetime.datetime(2015, 7, 1):
-        return 16
-    elif timestamp >= datetime.datetime(2015, 7, 1):
-        return 17
+    leap = getUTCtoGPSLeapSeconds(timestamp)
+
+    secsInWeek = 604800
+    delta      = totalSeconds(timestamp - GPS_Epoch) + leap
+    seconds    = delta % secsInWeek
+    week       = int( math.floor(delta / secsInWeek) )
+
+    return (week, seconds)
 
 
-def toGPSSeconds (timestamp):
-  """toGPSSeconds(timestamp) -> integer
+def getUTCtoGPSLeapSeconds(timestamp=None):
+        """ Get the number of leap seconds for UTC->GPS conversion
 
-  Converts the given Python datetime object to the number of seconds
-  since the GPS Epoch (midnight on January 6th, 1980).
+        Args:
+                timestamp:
+                        A UTC datetime object (defaults to current time)
 
-  Examples:
+        Returns:
+                Integer value specifying how many leap seconds to use for
+                conversion of the timestamp.
 
-  >>> import datetime
+        Raises:
+                ValueError:
+                        If the timestamp provided occurs before 01-01-1980.
+        """
+        if timestamp is None:
+                timestamp = datetime.datetime.utcnow()
 
-  >>> toGPSSeconds( datetime.datetime(1980, 1, 6) )
-  0
-
-  >>> toGPSSeconds( datetime.datetime(1980, 1, 7) )
-  86400
-  """
-  delta = timestamp - GPS_Epoch
-  return (delta.days * 24 * 3600) + delta.seconds
-
-
-def toGMST (dt=None):
-  """Converts the given Python datetime or Julian date (float) to
-  Greenwich Mean Sidereal Time (GMST) (in radians) using the formula
-  from D.A. Vallado (2004).
-
-  See:
-
-    D.A. Vallado, Fundamentals of Astrodynamics and Applications, p. 192
-    http://books.google.com/books?id=PJLlWzMBKjkC&lpg=PA956&vq=192&pg=PA192
-  """
-  if dt is None or type(dt) is datetime.datetime:
-    jd = toJulian(dt)
-  else:
-    jd = dt
-
-  tUT1  = (jd - 2451545.0) / 36525.0
-  gmst  = 67310.54841 + (876600 * 3600 + 8640184.812866) * tUT1
-  gmst += 0.093104 * tUT1**2
-  gmst -= 6.2e-6   * tUT1**3
-
-  # Convert from seconds to degrees, i.e.
-  # 86400 seconds / 360 degrees = 240 seconds / degree
-  gmst /= 240.
-
-  # Convert to radians
-  gmst  = math.radians(gmst) % TwoPi
-
-  if gmst < 0:
-    gmst += TwoPi
-
-  return gmst
-
-
-def toJulian (dt=None):
-  """Converts a Python datetime to a Julian date, using the formula from
-  Meesus (1991).  This formula is reproduced in D.A. Vallado (2004).
-
-  See:
-
-    D.A. Vallado, Fundamentals of Astrodynamics and Applications, p. 187
-    http://books.google.com/books?id=PJLlWzMBKjkC&lpg=PA956&vq=187&pg=PA187
-  """
-  if dt is None:
-    dt = datetime.datetime.utcnow()
-
-  if dt.month < 3:
-    year  = dt.year  -  1
-    month = dt.month + 12
-  else:
-    year  = dt.year
-    month = dt.month
-
-  A   = int(year / 100.0)
-  B   = 2 - A + int(A / 4.0)
-  C   = ( (dt.second / 60.0 + dt.minute) / 60.0 + dt.hour ) / 24.0
-  jd  = int(365.25  * (year + 4716))
-  jd += int(30.6001 * (month + 1)) + dt.day + B - 1524.5 + C
-
-  return jd
+        if timestamp < datetime.datetime(1980, 1, 6):
+                e = "The timestamp date is before the GPS epoch"
+                raise ValueError(e)
+        elif datetime.datetime(1980, 1, 6) <= timestamp < datetime.datetime(1981, 7, 1):
+                return 0
+        elif datetime.datetime(1981, 7, 1) <= timestamp < datetime.datetime(1982, 7, 1):
+                return 1
+        elif datetime.datetime(1982, 7, 1) <= timestamp < datetime.datetime(1983, 7, 1):
+                return 2
+        elif datetime.datetime(1983, 7, 1) <= timestamp < datetime.datetime(1985, 7, 1):
+                return 3
+        elif datetime.datetime(1985, 7, 1) <= timestamp < datetime.datetime(1988, 1, 1):
+                return 4
+        elif datetime.datetime(1988, 1, 1) <= timestamp < datetime.datetime(1990, 1, 1):
+                return 5
+        elif datetime.datetime(1990, 1, 1) <= timestamp < datetime.datetime(1991, 1, 1):
+                return 6
+        elif datetime.datetime(1991, 1, 1) <= timestamp < datetime.datetime(1992, 7, 1):
+                return 7
+        elif datetime.datetime(1992, 7, 1) <= timestamp < datetime.datetime(1993, 7, 1):
+                return 8
+        elif datetime.datetime(1993, 7, 1) <= timestamp < datetime.datetime(1994, 7, 1):
+                return 9
+        elif datetime.datetime(1994, 7, 1) <= timestamp < datetime.datetime(1996, 1, 1):
+                return 10
+        elif datetime.datetime(1996, 1, 1) <= timestamp < datetime.datetime(1997, 7, 1):
+                return 11
+        elif datetime.datetime(1997, 7, 1) <= timestamp < datetime.datetime(1999, 1, 1):
+                return 12
+        elif datetime.datetime(1999, 1, 1) <= timestamp < datetime.datetime(2006, 1, 1):
+                return 13
+        elif datetime.datetime(2006, 1, 1) <= timestamp < datetime.datetime(2009, 1, 1):
+                return 14
+        elif datetime.datetime(2009, 1, 1) <= timestamp < datetime.datetime(2012, 7, 1):
+                return 15
+        elif datetime.datetime(2012, 7, 1) <= timestamp < datetime.datetime(2015, 7, 1):
+                return 16
+        elif timestamp >= datetime.datetime(2015, 7, 1):
+                return 17
 
 
-def toLocalTime (seconds, microseconds=0):
-  """toLocalTime(seconds, microseconds=0) -> datetime
+def toGPSSeconds(timestamp):
+    """toGPSSeconds(timestamp) -> integer
 
-  Converts the given number of seconds since the GPS Epoch (midnight
-  on January 6th, 1980) to this computer's local time.  Returns a
-  Python datetime object.
+    Converts the given Python datetime object to the number of seconds
+    since the GPS Epoch (midnight on January 6th, 1980).
 
-  Examples:
+    Examples:
 
-  >>> toLocalTime(0)
-  datetime.datetime(1980, 1, 6, 0, 0)
+    >>> import datetime
 
-  >>> toLocalTime(25 * 86400)
-  datetime.datetime(1980, 1, 31, 0, 0)
-  """
-  delta = datetime.timedelta(seconds=seconds, microseconds=microseconds)
-  return GPS_Epoch + delta
+    >>> toGPSSeconds( datetime.datetime(1980, 1, 6) )
+    0
+
+    >>> toGPSSeconds( datetime.datetime(1980, 1, 7) )
+    86400
+    """
+    delta = timestamp - GPS_Epoch
+    return (delta.days * 24 * 3600) + delta.seconds
 
 
-def totalSeconds (td):
-  """totalSeconds(td) -> float
+def toGMST(dt=None):
+    """Converts the given Python datetime or Julian date (float) to
+    Greenwich Mean Sidereal Time (GMST) (in radians) using the formula
+    from D.A. Vallado (2004).
 
-  Return the total number of seconds contained in the given Python
-  datetime.timedelta object.  Python 2.6 and earlier do not have
-  timedelta.total_seconds().
+    See:
 
-  Examples:
+        D.A. Vallado, Fundamentals of Astrodynamics and Applications, p. 192
+        http://books.google.com/books?id=PJLlWzMBKjkC&lpg=PA956&vq=192&pg=PA192
+    """
+    if dt is None or type(dt) is datetime.datetime:
+        jd = toJulian(dt)
+    else:
+        jd = dt
 
-  >>> totalSeconds( toLocalTime(86400.123) - toLocalTime(0.003) )
-  86400.12
-  """
-  if hasattr(td, "total_seconds"):
-    ts = td.total_seconds()
-  else:
-    ts = (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 1e6) / 1e6
+    tUT1  = (jd - 2451545.0) / 36525.0
+    gmst  = 67310.54841 + (876600 * 3600 + 8640184.812866) * tUT1
+    gmst += 0.093104 * tUT1**2
+    gmst -= 6.2e-6   * tUT1**3
 
-  return ts
+    # Convert from seconds to degrees, i.e.
+    # 86400 seconds / 360 degrees = 240 seconds / degree
+    gmst /= 240.
+
+    # Convert to radians
+    gmst  = math.radians(gmst) % TwoPi
+
+    if gmst < 0:
+        gmst += TwoPi
+
+    return gmst
+
+
+def toJulian(dt=None):
+    """Converts a Python datetime to a Julian date, using the formula from
+    Meesus (1991).  This formula is reproduced in D.A. Vallado (2004).
+
+    See:
+
+        D.A. Vallado, Fundamentals of Astrodynamics and Applications, p. 187
+        http://books.google.com/books?id=PJLlWzMBKjkC&lpg=PA956&vq=187&pg=PA187
+    """
+    if dt is None:
+        dt = datetime.datetime.utcnow()
+
+    if dt.month < 3:
+        year  = dt.year  -  1
+        month = dt.month + 12
+    else:
+        year  = dt.year
+        month = dt.month
+
+    A   = int(year / 100.0)
+    B   = 2 - A + int(A / 4.0)
+    C   = ( (dt.second / 60.0 + dt.minute) / 60.0 + dt.hour ) / 24.0
+    jd  = int(365.25  * (year + 4716))
+    jd += int(30.6001 * (month + 1)) + dt.day + B - 1524.5 + C
+
+    return jd
+
+
+def toLocalTime(seconds, microseconds=0):
+    """toLocalTime(seconds, microseconds=0) -> datetime
+
+    Converts the given number of seconds since the GPS Epoch (midnight
+    on January 6th, 1980) to this computer's local time.  Returns a
+    Python datetime object.
+
+    Examples:
+
+    >>> toLocalTime(0)
+    datetime.datetime(1980, 1, 6, 0, 0)
+
+    >>> toLocalTime(25 * 86400)
+    datetime.datetime(1980, 1, 31, 0, 0)
+    """
+    delta = datetime.timedelta(seconds=seconds, microseconds=microseconds)
+    return GPS_Epoch + delta
+
+
+def totalSeconds(td):
+    """totalSeconds(td) -> float
+
+    Return the total number of seconds contained in the given Python
+    datetime.timedelta object.  Python 2.6 and earlier do not have
+    timedelta.total_seconds().
+
+    Examples:
+
+    >>> totalSeconds( toLocalTime(86400.123) - toLocalTime(0.003) )
+    86400.12
+    """
+    if hasattr(td, "total_seconds"):
+        ts = td.total_seconds()
+    else:
+        ts = (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 1e6) / 1e6
+
+    return ts
