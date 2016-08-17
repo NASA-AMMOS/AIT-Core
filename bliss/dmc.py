@@ -39,16 +39,16 @@ def getTimestampUTC():
     return ts_sec, ts_usec
 
 
-def getUTCDatetimeDOY(slack=0):
+def getUTCDatetimeDOY(seconds=0):
     """getUTCDatetimeDOY -> datetime
 
-    Returns the UTC current datetime with the input slack time
+    Returns the UTC current datetime with the input slack time (seconds)
     added in DOY format:
 
         YYYY:DDD:HH:MM:SS
 
     """
-    timestamp = datetime.datetime.utcnow() + datetime.timedelta(days=slack)
+    timestamp = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
     return time.strftime(DOY_Format, timestamp.timetuple())
 
 
