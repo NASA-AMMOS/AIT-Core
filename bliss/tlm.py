@@ -10,6 +10,7 @@ Dictionaries contain packet, header, data, and field definitions.
 
 import os
 import yaml
+import csv
 
 import bliss
 
@@ -577,8 +578,7 @@ class PacketFunction(object):
         self._args = signature[lparen:rparen].split(',')
         self._name = signature[:lparen]
         self._code = compile(defn, '<string>', mode='eval')
-
-    
+ 
 
 class PacketHistory(object):
     """PacketHistory
@@ -709,14 +709,58 @@ class TlmDict(dict):
         return data
 
 
+class TlmDictWriter(object):
+    """TlmDictWriter
+
+    Writes telemetry dictionary to a file in selected formats
+    """
+    def __init__(self, tlmdict=None):
+        self.tlmdict = tlmdict or getDefaultDict()
+
+    def writeToCSV(self, output_path=bliss.config._directory):
+        '''writeToCSV - write the telemetry dictionary to csv
+        '''
+        header = ['Name', 'First Byte', 'Last Byte', 'Bit Mask', 'Endian',
+                  'Type', 'Description', 'Values']
+
+        for pkt_name in self.tlmdict:
+            filename = os.path.join(output_path, pkt_name + '.csv')
+
+            with open(filename, 'wb') as output:
+                csvwriter = csv.writer(output, quoting=csv.QUOTE_ALL)
+                csvwriter.writerow(header)
+
+                for fld in self.tlmdict[pkt_name].fields:
+                    # Pre-process some fields
+
+                    # Description
+                    desc = fld.desc.replace('\n', ' ') if fld.desc is not None else ""
+
+                    # Mask
+                    mask = hex(fld.mask) if fld.mask is not None else ""
+
+                    # Enumerations
+                    enums = '\n'.join("%s: %s" % (k, fld.enum[k])
+                            for k in fld.enum) if fld.enum is not None else ""
+
+                    # Set row
+                    row = [fld.name, fld.slice().start, fld.slice().stop,
+                           mask, fld.type.endian, fld.type.name, desc, enums]
+
+                    csvwriter.writerow(row)
+
+
 def getDefaultDict(reload=False):
     return bliss.util.getDefaultDict(__name__, 'tlmdict', TlmDict, reload)
+
 
 def getDefaultSchema():
     return os.path.join(bliss.config._directory, 'tlm_schema.json')
 
+
 def getDefaultDictFilename():
     return bliss.config.tlmdict.filename
+
 
 def YAMLCtor_PacketDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
@@ -728,4 +772,4 @@ def YAMLCtor_FieldDefinition(loader, node):
     return FieldDefinition(**fields)
 
 yaml.add_constructor('!Packet', YAMLCtor_PacketDefinition)
-yaml.add_constructor('!Field' , YAMLCtor_FieldDefinition )
+yaml.add_constructor('!Field', YAMLCtor_FieldDefinition)
