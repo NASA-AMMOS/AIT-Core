@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+'''
+Usage:
+    bliss-create-dirs [options]
+
+Arguments:
+    -c FILE, --config=<file>  File path to config file
+                              [default: BLISS_CONFIG/cm.yaml]
+    -s DAYS, --slack=<days>   Number of slack days in advance of a date to
+                              create the directory structure [default: 1]
+
+Description:
+  BLISS Create Directory Structure
+
+  Starts a daemon to create daily directories for the GDS
+
+'''
+
+from docopt import docopt
+import bliss
+import time
+
+# configurable sleep time between directory creation
+# assumes daily but could be added to cm.yaml
+SLEEP = 86400
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+
+    config = arguments.pop('--config')
+    if config == 'BLISS_CONFIG/cm.yaml':
+        config = None
+
+    slack = arguments.pop('--slack')
+
+try:
+    while True:
+        utc = bliss.dmc.getUTCDatetimeDOY(int(slack)*24*60*60)
+
+        doy = utc.split(':')
+        bliss.log.info('Creating GDS directories for %s:%s' % (doy[0], doy[1]))
+
+        bliss.cm.createDirStruct(filename=config, datetime=utc)
+        time.sleep(SLEEP)
+
+except KeyboardInterrupt:
+    bliss.log.info('Received Ctrl-C.  Stopping BLISS Create Directories.')
+
+except Exception as e:
+    bliss.log.error('BLISS Create Directories error: %s' % str(e))

@@ -10,3 +10,6 @@ default:
 
     bsc:
         filename: bsc.yaml
+
+    cm:
+        filename: cm.yaml
