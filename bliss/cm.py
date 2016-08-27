@@ -21,21 +21,9 @@ class CMConfig(object):
 
     Maintains the configuration management configuration
     '''
-    def __init__(self, filename=None, datetime=None):
-        try:
-            if filename is None:
-                self.filename = bliss.config.cm.filename
-            else:
-                self.filename = filename
-
-            self.datetime = datetime
-
-            self.config = self.load(self.filename)
-
-            self.paths = self.config['paths']
-        except IOError, e:
-            msg = "Could not load YAML '%s': '%s'"
-            bliss.log.error(msg, filename, str(e))
+    def __init__(self, paths=None, datetime=None):
+        self.datetime = datetime
+        self.paths = paths or bliss.config._config['gds_paths']
 
     def load(self, filename):
         if self.filename is None:
@@ -82,40 +70,27 @@ class CMConfig(object):
                 self._paths[k] = v.replace('YYYY', self._year).replace('DDD', self._day)
 
 
-# TODO
-# def getDefaultSchema():
-#     return os.path.join(bliss.config._directory, 'cm_schema.json')
-
-
-def getDefaultDict(reload=False):
-    return bliss.util.getDefaultDict(__name__, 'cm', CMConfig, reload)
-
-
-def getDefaultDictFilename():
-    return bliss.config.cm.filename
-
-
-def getPath(key, filename=None, datetime=None):
+def getPath(key, paths=None, datetime=None):
     '''Returns the filepath of the key specified
 
     Can be used by processor applications to determine default
     output paths
     '''
     try:
-        return CMConfig(filename=filename, datetime=datetime).paths[key]
+        return CMConfig(paths=paths, datetime=datetime).paths[key]
     except Exception:
-        bliss.log.error('"%s" does not exist in %s' % (key, getDefaultDictFilename()))
+        bliss.log.error('"%s" does not exist in %s' % (key, bliss.config._filename))
         return None
 
 
-def createDirStruct(filename=None, datetime=None):
+def createDirStruct(paths=None, datetime=None):
     '''Loops through the paths in the CM config and creates all of the
     directories.
 
     Replaces YYYY and DDD with the respective year and day-of-year.
     If neither are given as arguments, current UTC day and year are used.
     '''
-    config = CMConfig(filename=filename, datetime=datetime)
+    config = CMConfig(paths=paths, datetime=datetime)
     for k, path in config.paths.items():
         try:
             os.makedirs(path)

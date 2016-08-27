@@ -133,18 +133,19 @@ class BlissConfig (object):
         self._filename = None
 
         if data is None and filename is None:
-            if 'BLISS_CONFIG' in os.environ:
-                filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
-            else:
-                msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
-                log.warn(msg)
-                filename = os.path.join(self._directory, 'config.yaml')
+            filename = self.getDefaultFilename()
+            # if 'BLISS_CONFIG' in os.environ:
+            #     filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
+            # else:
+            #     msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
+            #     log.warn(msg)
+            #     filename = os.path.join(self._directory, 'config.yaml')
 
         if config is None:
             self.reload(filename, data)
         else:
             self._config   = config
-            self._filename = filename    
+            self._filename = filename
 
 
     def __contains__ (self, name):
@@ -180,12 +181,12 @@ class BlissConfig (object):
 
         if self._filename:
             args.append('filename="%s"' % self._filename)
-        
+
         args.append('data=%s' % self._config)
         return '%s(%s)' % (self.__class__.__name__, ', '.join(args))
 
 
-    def __str__ (self):        
+    def __str__ (self):
         """Return a string representation of this BlissConfig."""
         return self.__repr__()
 
@@ -241,3 +242,14 @@ class BlissConfig (object):
             expandConfigPaths(self._config, self._directory)
         else:
             self._config = { }
+
+
+    def getDefaultFilename(self):
+        if 'BLISS_CONFIG' in os.environ:
+            filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
+        else:
+            msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
+            log.warn(msg)
+            filename = os.path.join(self._directory, 'config.yaml')
+
+        return filename
