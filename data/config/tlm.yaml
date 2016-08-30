@@ -1,6 +1,7 @@
 - !Packet
   name: CCSDS
   fields:
+    - !include ccsds.yaml
     - !Field
       name:   version
       desc:   CCSDS Version

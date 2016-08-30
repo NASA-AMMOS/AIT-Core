@@ -398,6 +398,21 @@ class PacketDefinition(object):
             self.fields   = [ ]
             self.fieldmap = { }
         else:
+            field_list_found = None
+            for fd in self.fields:
+                if isinstance(fd,list):
+                   field_list_found = "true"
+            if field_list_found is not None:
+                newdefns = []
+                for fd in self.fields:
+                    if isinstance(fd,list):
+                        incdefns = []
+                        for incfd in fd:
+                            incdefns.append(incfd)
+                        newdefns = newdefns + incdefns
+                    else:
+                        newdefns.append(fd)
+                self.fields = newdefns
             self.fieldmap = dict((defn.name, defn) for defn in self.fields)
 
         self._update_globals()
@@ -435,6 +450,7 @@ class PacketDefinition(object):
         slice notation, i.e. [start, stop).  This would correspond to
         the *start* of the next FieldDefinition, if it existed.
         """
+
         pos = slice(start, start)
         for fd in defns:
             if fd.bytes == '@prev' or fd.bytes is None:
@@ -771,5 +787,17 @@ def YAMLCtor_FieldDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     return FieldDefinition(**fields)
 
+
+def yaml_include(loader, node):
+    # Get the path out of the yaml file
+    name = os.path.join(os.path.dirname(loader.name), node.value)
+    data = None
+    with open(name,'r') as f:
+        data = yaml.load(f)
+    return data
+
+
 yaml.add_constructor('!Packet', YAMLCtor_PacketDefinition)
 yaml.add_constructor('!Field', YAMLCtor_FieldDefinition)
+yaml.add_constructor('!include', yaml_include)
+
