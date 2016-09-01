@@ -94,9 +94,15 @@ The BSC service provides REST services for starting, stopping, and manipulating 
    
    Returns a JSON object containing the configuration information for all active capture handlers. The configuration is grouped by address.
 
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl http://localhost:8080/
+
    **Example Response**:
 
-   .. code-block:: http
+   .. code-block:: javascript
 
       {
           ['', 8500]: [
@@ -143,9 +149,15 @@ The BSC service provides REST services for starting, stopping, and manipulating 
 
    Return capture stats for all handlers.
 
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl http://localhost:8080/stats
+
    **Example Response**:
 
-   .. code-block:: http
+   .. code-block:: javascript
 
       {
           ['', 8500]: [
@@ -192,7 +204,7 @@ The BSC service provides REST services for starting, stopping, and manipulating 
 
    **Example Post Data**:
 
-   .. code-block:: http
+   .. code-block:: javascript
 
       {
          'loc': '',
@@ -200,9 +212,21 @@ The BSC service provides REST services for starting, stopping, and manipulating 
          'conn_type': 'udp'
       }
 
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl --form "port=8125" --form "conn_type=udp" http://localhost:8080/mytesthandler/start
+
 .. http:delete:: /<name>/stop
 
    Stop all handlers that match a given *name*.
+
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl -X DELETE http://localhost:8080/mytesthandler/stop
 
    .. warning::
 
@@ -212,9 +236,15 @@ The BSC service provides REST services for starting, stopping, and manipulating 
 
    Returns a configuration dictionary for handlers with a given *name*.
 
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl http://localhost:8080/mytesthandler/config
+
    **Example Response**:
 
-   .. code-block:: http
+   .. code-block:: javascript
 
       [
           {
@@ -223,7 +253,7 @@ The BSC service provides REST services for starting, stopping, and manipulating 
                   pre_write_transforms: [],
                   file_name_pattern: "%Y-%m-%d-randomUDPtestData-{name}.pcap",
                   rotate_log: true,
-                  name: "test1",
+                  name: "mytesthandler",
                   log_dir: "/tmp/additional_dir/test/%j"
               },
               log_file_path: "/tmp/additional_dir/test/211/2016-07-29-randomUDPtestData-test1.pcap",
@@ -238,6 +268,12 @@ The BSC service provides REST services for starting, stopping, and manipulating 
 .. http:POST:: /<name>/rotate
 
    Trigger log rotation for a given handler name.
+
+   **Example Request**:
+
+   .. code-block:: bash
+
+      curl -X POST http://localhost:8080/mytesthandler/rotate
 
    .. warning::
 
