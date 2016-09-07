@@ -74,7 +74,11 @@ dependencies you can do so with the below commands:
 
     # Install the base dependencies and extra unit test dependencies
     $ pip install -e .[tests]
-    
+
+BLISS' BSC module supports the use of the [rawsocket](https://github.com/mwalle/rawsocket) library so you can limit raw socket access on machines to specific users. If you need this functionality you will need to manually install the dependency with
+
+    $ pip install rawsocket
+
 BLISS uses two environment variables for configuration.
 
 `BLISS_ROOT` is used for project wide pathing. If you don't set this
