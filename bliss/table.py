@@ -125,7 +125,7 @@ class FSWTab (object):
     Commands reference their Command Definition and may contain arguments.
     """
     def __init__ (self, defn, *args):
-        """Creates a new OCO-3 Command based on the given command definition
+        """Creates a new Command based on the given command definition
         and command arguments.
         """
         self.defn = defn
@@ -556,7 +556,7 @@ class FSWTabDict (dict):
         self.colnames[defn.name] = defn
 
     def create (self, name, *args):
-        """Creates a new OCO-3 command with the given arguments."""
+        """Creates a new command with the given arguments."""
         tab  = None
         defn = self.get(name, None)
         if defn:

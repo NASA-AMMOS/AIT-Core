@@ -4,7 +4,7 @@
 ##
 ## usage: bliss-table-upload.py output/targets_table.bin
 ##
-## Uploads the given OCO-3 binary relative time command sequence.
+## Uploads the given binary relative time command sequence.
 ##
 ## Options:
 ##

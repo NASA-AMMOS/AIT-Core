@@ -4,7 +4,7 @@
 ##
 ## usage: bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
 ##
-## Decodes the given OCO-3 FSW binary table to text.
+## Decodes the given FSW binary table to text.
 ##
 ## Examples:
 ##
