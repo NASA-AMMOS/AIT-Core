@@ -56,5 +56,91 @@ class TestTlmDictWriter(object):
         os.remove(self.test_yaml_file)
         os.remove(expected_csv)
 
+
+class TestTlmConfig(object):
+    test_yaml_inc1 = '/tmp/test_inc1.yaml'
+    test_yaml_inc2 = '/tmp/test_inc2.yaml'
+    test_yaml_main = '/tmp/test_main.yaml'
+    test_pkl_main = '/tmp/test_main.pkl'
+
+    yaml_docs_inc1 = (
+        '- !Field\n'
+        '  name:  field_A\n'
+        '  type:  U8\n'
+        '- !Field\n'
+        '  name:  field_B\n'
+        '  type:  U8\n'
+    )
+    yaml_docs_inc2 = (
+        '- !Field\n'
+        '  name:  field_Y\n'
+        '  type:  U8\n'
+        '- !Field\n'
+        '  name:  field_Z\n'
+        '  type:  U8\n'
+    )
+
+    def setUp(self):
+        with open(self.test_yaml_inc1, 'wb') as out:
+            out.write(self.yaml_docs_inc1)
+
+        with open(self.test_yaml_inc2, 'wb') as out:
+            out.write(self.yaml_docs_inc2)
+
+    def tearDown(self):
+        os.remove(self.test_yaml_inc1)
+        os.remove(self.test_yaml_inc2)
+
+    def test_yaml_fld_includes(self):
+        yaml_docs_main = (
+            '- !Packet\n'
+            '  name: OCO3_1553_EHS\n'
+            '  fields:\n'
+            '    - !include /tmp/test_inc1.yaml\n'
+            '    - !Field\n'
+            '      name: field_1\n'
+            '      type: MSB_U16\n'
+        )
+
+        with open(self.test_yaml_main, 'wb') as out:
+            out.write(yaml_docs_main)
+
+        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        assert len(tlmdict['OCO3_1553_EHS'].fields) == 3
+        assert tlmdict['OCO3_1553_EHS'].fields[1].name == 'field_B'
+        assert tlmdict['OCO3_1553_EHS'].fields[1].bytes == 1
+
+        try:
+            os.remove(self.test_yaml_main)
+            os.remove(self.test_pkl_main)
+        except OSError:
+            None
+
+    def test_yaml_fld_includesx2(self):
+        yaml_docs_main = (
+            '- !Packet\n'
+            '  name: OCO3_1553_EHS\n'
+            '  fields:\n'
+            '    - !include /tmp/test_inc1.yaml\n'
+            '    - !Field\n'
+            '      name: field_1\n'
+            '      type: MSB_U16\n'
+            '    - !include /tmp/test_inc2.yaml\n'
+        )
+
+        with open(self.test_yaml_main, 'wb') as out:
+            out.write(yaml_docs_main)
+
+        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
+        assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
+        assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
+
+        try:
+            os.remove(self.test_yaml_main)
+            os.remove(self.test_pkl_main)
+        except OSError:
+            None
+
 if __name__ == '__main__':
     nose.main()
