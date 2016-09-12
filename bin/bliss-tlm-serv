@@ -57,7 +57,7 @@ if __name__ == '__main__':
         port = int(args.pop('--port'))
         verbose = args.pop('--verbose')
 
-        host = '0.0.0.0'
+        host = 'localhost'
 
         if not verbose:
             bliss.log.info('Will only report every 10 telemetry packets')
