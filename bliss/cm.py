@@ -83,17 +83,28 @@ def getPath(key, paths=None, datetime=None):
         return None
 
 
-def createDirStruct(paths=None, datetime=None):
+def createDirStruct(paths=None, datetime=None, verbose=False):
     '''Loops through the paths in the CM config and creates all of the
     directories.
 
     Replaces YYYY and DDD with the respective year and day-of-year.
     If neither are given as arguments, current UTC day and year are used.
+
+    Args:
+        paths:
+            [optional] list of directory paths you would like to create.
+            DDD and YYYY will be replaced by the datetime day and year, respectively.
+
+        datetime:
+            UTC Datetime string in DOY Format YYYY:DDD:HH:MM:SS
+
     '''
-    config = CMConfig(paths=paths, datetime=datetime)
+    config = CMConfig(paths, datetime)
     for k, path in config.paths.items():
         try:
             os.makedirs(path)
+            if verbose:
+                bliss.log.info(path)
         except OSError, e:
             if e.errno == errno.EEXIST and os.path.isdir(path):
                 pass
