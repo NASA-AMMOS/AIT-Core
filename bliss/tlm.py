@@ -82,7 +82,7 @@ class DNToEUConversion(object):
         """
         result = None
         terms  = None
-        
+
         if self._when is None or self._when.eval(packet):
             result = self._equation.eval(packet)
 
@@ -398,21 +398,7 @@ class PacketDefinition(object):
             self.fields   = [ ]
             self.fieldmap = { }
         else:
-            field_list_found = None
-            for fd in self.fields:
-                if isinstance(fd,list):
-                   field_list_found = "true"
-            if field_list_found is not None:
-                newdefns = []
-                for fd in self.fields:
-                    if isinstance(fd,list):
-                        incdefns = []
-                        for incfd in fd:
-                            incdefns.append(incfd)
-                        newdefns = newdefns + incdefns
-                    else:
-                        newdefns.append(fd)
-                self.fields = newdefns
+            self.fields = handle_includes(self.fields)
             self.fieldmap = dict((defn.name, defn) for defn in self.fields)
 
         self._update_globals()
@@ -594,7 +580,7 @@ class PacketFunction(object):
         self._args = signature[lparen:rparen].split(',')
         self._name = signature[:lparen]
         self._code = compile(defn, '<string>', mode='eval')
- 
+
 
 class PacketHistory(object):
     """PacketHistory
@@ -713,6 +699,7 @@ class TlmDict(dict):
             self.filename = filename
             with open(self.filename, 'rb') as stream:
                 pkts = yaml.load(stream)
+                pkts = handle_includes(pkts)
                 for pkt in pkts:
                     self.add(pkt)
 
@@ -778,6 +765,21 @@ def getDefaultDictFilename():
     return bliss.config.tlmdict.filename
 
 
+def handle_includes(defns):
+    '''Recursive handling of includes for any input list of defns.
+    The assumption here is that when an include is handled by the
+    pyyaml reader, it adds them as a list, which is stands apart from the rest
+    of the expected YAML definitions.
+    '''
+    newdefns = []
+    for d in defns:
+        if isinstance(d,list):
+            newdefns.extend(handle_includes(d))
+        else:
+            newdefns.append(d)
+
+    return newdefns
+
 def YAMLCtor_PacketDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     return PacketDefinition(**fields)
@@ -788,7 +790,7 @@ def YAMLCtor_FieldDefinition(loader, node):
     return FieldDefinition(**fields)
 
 
-def yaml_include(loader, node):
+def YAMLCtor_include(loader, node):
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
@@ -799,5 +801,5 @@ def yaml_include(loader, node):
 
 yaml.add_constructor('!Packet', YAMLCtor_PacketDefinition)
 yaml.add_constructor('!Field', YAMLCtor_FieldDefinition)
-yaml.add_constructor('!include', yaml_include)
+yaml.add_constructor('!include', YAMLCtor_include)
 
