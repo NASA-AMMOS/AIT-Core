@@ -115,7 +115,6 @@ class BlissConfig (object):
     _ROOT_DIR = os.path.abspath(os.environ.get('BLISS_ROOT', os.getcwd()))
 
     if 'BLISS_ROOT' not in os.environ:
-        print 'BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR
         log.warning('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
 
