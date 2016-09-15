@@ -104,7 +104,7 @@ class FieldDefinition(object):
 
     __slots__ = [
         "bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
-        "_type", "units", "when"
+        "_type", "units", "when", "title"
     ]
 
     def __init__(self, *args, **kwargs):
