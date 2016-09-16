@@ -15,26 +15,38 @@ YAML is a data serialization language with a heavy focus on maintaining human-re
 config.yaml
 -----------
 
-BLISS uses **config.yaml** to load configuration data for the command, telemetry, Event Verification Record, and Binary Stream Capture components. The filename paths for each component should be considered relative to the location of **config.yaml**. If you have **hostname** specific configuration you can add another block of data. The **default** block is the fall back if a match cannot be found. Below is an example **config.yaml** file that defines the default configuration files for BLISS.
+BLISS uses **config.yaml** to load configuration data for the command (cmddict), telemetry (tlmdict), Event Verification Record (evrdict), Binary Stream Capture (bsc), and Logging (logging) components.
+
+* cmddict - defines the location of the Command Dictionary YAML file
+* evrdict - defines the location of the Event Verification Record (EVR) Dictionary YAML file
+* tlmdict - defines the location of the Telemetry Dictionary YAML file
+* bsc - defines the location of the Binary Stream Capture (BSC) YAML configuration file.
+* logging - defines the name to be associated with the Logger component (defaults to 'bliss') and the host to push the output syslog information (defaults to 'localhost')
+
+The filename paths should be considered relative to the location of **config.yaml**. If you have **hostname** specific configuration you can add another block of data. The **default** block is the fall back if a match cannot be found. Below is an example **config.yaml** file that defines the default configuration files for BLISS.
 
 .. code-block:: none
 
     default:
         cmddict:
-            filename:  cmd.yaml
+            filename: cmd.yaml
 
         evrdict:
-            filename:  evr.yaml
+            filename: evr.yaml
 
         tlmdict:
-            filename:  tlm.yaml
+            filename: tlm.yaml
 
         bsc:
             filename: bsc.yaml
+
+        logging:
+            name: bliss
+            hostname: bliss.jpl.nasa.gov
 
 BLISS loads **config.yaml** on import. If you want to look at the contents of the file programmatically you can access it with:
 
     >>> bliss.config
     BlissConfig(...)
 
-You can read more about each component's configuration and configuration-schema files in the component-specific pages. 
+You can read more about each component's configuration and configuration-schema files in the component-specific pages.
