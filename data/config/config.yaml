@@ -11,6 +11,10 @@ default:
     bsc:
         filename: bsc.yaml
 
+    logging:
+        name: bliss
+        hostname: bliss.jpl.nasa.gov
+
     gds_paths:
         '1553':     /gds/dev/data/YYYY/DDD/downlink/1553
         bad:        /gds/dev/data/YYYY/DDD/downlink/bad

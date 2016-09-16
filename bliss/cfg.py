@@ -15,8 +15,9 @@ import sys
 
 import yaml
 
-from bliss import log
+import logging
 
+log = logging.getLogger('bliss')
 
 def expandConfigPaths (config, prefix=None, *keys):
     """Updates all relative configuration paths in dictionary config,
@@ -114,7 +115,7 @@ class BlissConfig (object):
     _ROOT_DIR = os.path.abspath(os.environ.get('BLISS_ROOT', os.getcwd()))
 
     if 'BLISS_ROOT' not in os.environ:
-        log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
+        log.warning('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
 
     def __init__ (self, filename=None, data=None, config=None):
@@ -133,13 +134,12 @@ class BlissConfig (object):
         self._filename = None
 
         if data is None and filename is None:
-            filename = self.getDefaultFilename()
-            # if 'BLISS_CONFIG' in os.environ:
-            #     filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
-            # else:
-            #     msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
-            #     log.warn(msg)
-            #     filename = os.path.join(self._directory, 'config.yaml')
+            if 'BLISS_CONFIG' in os.environ:
+                filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
+            else:
+                msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
+                log.warning(msg)
+                filename = os.path.join(self._directory, 'config.yaml')
 
         if config is None:
             self.reload(filename, data)
