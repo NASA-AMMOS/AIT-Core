@@ -10,3 +10,7 @@ default:
 
     bsc:
         filename: bsc.yaml
+
+    logging:
+        name: bliss
+        hostname: bliss.jpl.nasa.gov

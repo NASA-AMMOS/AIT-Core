@@ -15,8 +15,9 @@ import sys
 
 import yaml
 
-from bliss import log
+import logging
 
+log = logging.getLogger('bliss')
 
 def expandConfigPaths (config, prefix=None, *keys):
     """Updates all relative configuration paths in dictionary config,
@@ -114,7 +115,7 @@ class BlissConfig (object):
     _ROOT_DIR = os.path.abspath(os.environ.get('BLISS_ROOT', os.getcwd()))
 
     if 'BLISS_ROOT' not in os.environ:
-        log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
+        log.warning('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
 
     def __init__ (self, filename=None, data=None, config=None):
@@ -137,14 +138,14 @@ class BlissConfig (object):
                 filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
             else:
                 msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
-                log.warn(msg)
+                log.warning(msg)
                 filename = os.path.join(self._directory, 'config.yaml')
 
         if config is None:
             self.reload(filename, data)
         else:
             self._config   = config
-            self._filename = filename    
+            self._filename = filename
 
 
     def __contains__ (self, name):
@@ -180,12 +181,12 @@ class BlissConfig (object):
 
         if self._filename:
             args.append('filename="%s"' % self._filename)
-        
+
         args.append('data=%s' % self._config)
         return '%s(%s)' % (self.__class__.__name__, ', '.join(args))
 
 
-    def __str__ (self):        
+    def __str__ (self):
         """Return a string representation of this BlissConfig."""
         return self.__repr__()
 
