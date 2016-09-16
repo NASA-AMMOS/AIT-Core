@@ -14,3 +14,18 @@ default:
     logging:
         name: bliss
         hostname: bliss.jpl.nasa.gov
+
+    gds_paths:
+        '1553':     /gds/dev/data/YYYY/DDD/downlink/1553
+        bad:        /gds/dev/data/YYYY/DDD/downlink/bad
+        lehx:       /gds/dev/data/YYYY/DDD/downlink/lehx
+        cal:        /gds/dev/data/YYYY/DDD/planning/cal
+        gds:        /gds/dev/data/YYYY/DDD/planning/gds
+        hosc:       /gds/dev/data/YYYY/DDD/planning/hosc
+        pointing:   /gds/dev/data/YYYY/DDD/planning/pointing
+        science:    /gds/dev/data/YYYY/DDD/planning/science
+        topo:       /gds/dev/data/YYYY/DDD/planning/topo
+        sdos:       /gds/dev/data/YYYY/DDD/sdos
+        uplink:     /gds/dev/data/YYYY/DDD/uplink
+        daily_ats:  /gds/dev/data/YYYY/DDD/ats/daily
+        weekly_ats: /gds/dev/data/YYYY/DDD/ats/weekly

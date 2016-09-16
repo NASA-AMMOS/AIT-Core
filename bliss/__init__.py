@@ -5,6 +5,7 @@ import cfg
 config = cfg.BlissConfig()
 
 import bsc
+import cm
 import cmd
 import coord
 import dmc

@@ -242,3 +242,14 @@ class BlissConfig (object):
             expandConfigPaths(self._config, self._directory)
         else:
             self._config = { }
+
+
+    def getDefaultFilename(self):
+        if 'BLISS_CONFIG' in os.environ:
+            filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
+        else:
+            msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
+            log.warn(msg)
+            filename = os.path.join(self._directory, 'config.yaml')
+
+        return filename
