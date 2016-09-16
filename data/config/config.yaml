@@ -12,5 +12,5 @@ default:
         filename: bsc.yaml
 
     logging:
-        name: oco3
-        hostname: oco3-tb.jpl.nasa.gov
+        name: bliss
+        hostname: bliss.jpl.nasa.gov
