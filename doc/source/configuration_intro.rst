@@ -28,7 +28,7 @@ The filename paths should be considered relative to the location of **config.yam
 
 BLISS loads **config.yaml** on import.
 
-Here is an example **config.yaml***:
+Here is an example **config.yaml**:
 
 .. code-block:: none
 
