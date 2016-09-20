@@ -86,7 +86,7 @@ Miscellaneous Utilities
 -----------------------
 
 bliss-create-dirs
-^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 Generates GDS directory structure based on the **gds_paths** specified in **config.yaml**.
 

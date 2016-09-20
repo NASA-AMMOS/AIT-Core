@@ -278,3 +278,30 @@ The BSC service provides REST services for starting, stopping, and manipulating 
    .. warning::
 
       Note that if the file name pattern provided isn't sufficient for a rotation to occur with a new unique file name you will not see a log rotation . Be sure to timestamp your files in such a way to ensure that this isn't the case! The default file name pattern includes year, month, day, hours, minutes, and seconds to make sure this works as expected.
+
+----
+
+Convenience Scripts
+-------------------
+
+Create Handler
+^^^^^^^^^^^^^^
+
+The **bliss-bsc-create-handler** bin script provides a wrapper around the BSC REST endpoint for creating a log handler. It requires a name for the new handler, a hostname/interface name, port/protocol number, and the connection time (one of 'udp', 'tcp', or 'ethernet').
+
+**Example:**
+
+.. code-block:: bash
+
+   ./bliss-bsc-create-handler new_handler '' 8123 udp
+
+Stop Handler
+^^^^^^^^^^^^
+
+The **bliss-bsc-stop-handler** bin script provides a wrapper around the BSC REST endpoint for stopping a log handler. It requires the handlers name that you wish to stop.
+
+**Example:**
+
+.. code-block:: bash
+
+   ./bliss-bsc-stop-handler new_handler
