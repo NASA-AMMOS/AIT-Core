@@ -20,24 +20,25 @@ tools, but as the OCO-3 tools are generalized and made more
 configurable, they'll be brought over to this repository.
 
 
-Build Status
-------------
+Getting Started
+---------------
 
-See the [BLISS Buildbot]().
+You can read through the [new project getting started page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/project_setup.html) for
+instructions on how to use BLISS on your next project.
 
 
 File and Directory Structure
 ----------------------------
 
     ├── bin          <--  Utilities and command line scripts
-    ├── doc          <--  Project and API level documentation
+    ├── doc          <--  Project and API documentation
     ├── src/doc/dict <--  Cmd/Tlm Dictionary definitions and documentation
     ├── bliss        <--  BLISS Python source tree
     ├── data/config  <--  Example project configuration files
 
 
 Developer Quickstart
---------------------
+====================
 
 Before you install `bliss-core` you should install
 [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) to properly
