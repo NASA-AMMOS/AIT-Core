@@ -15,14 +15,11 @@ default:
         name: bliss
         hostname: bliss.jpl.nasa.gov
 
-    data:
-        venues: [ 'sim1', 'sim2', 'sim3']
-
-        paths:
-            '1553':    /gds/dev/data/$venues/$year/$doy/downlink/1553
-            bad:       /gds/dev/data/$venues/$year/$doy/downlink/bad
-            lehx:      /gds/dev/data/$venues/$year/$doy/downlink/lehx
-            planning:  /gds/dev/data/$venues/$year/$doy/planning
-            sdos:      /gds/dev/data/$venues/$year/$doy/sdos
-            uplink:    /gds/dev/data/$venues/$year/$doy/uplink
-            ats:       /gds/dev/data/$venues/$year/$doy/ats
+    gds_paths:
+        '1553':    /gds/dev/data/YYYY/DDD/downlink/1553
+        bad:       /gds/dev/data/YYYY/DDD/downlink/bad
+        lehx:      /gds/dev/data/YYYY/DDD/downlink/lehx
+        planning:  /gds/dev/data/YYYY/DDD/planning
+        sdos:      /gds/dev/data/YYYY/DDD/sdos
+        uplink:    /gds/dev/data/YYYY/DDD/uplink
+        ats:       /gds/dev/data/YYYY/DDD/ats
