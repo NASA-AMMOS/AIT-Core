@@ -12,6 +12,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
 .. toctree::
    :maxdepth: 2
 
+   project_setup
    getting_started
    bliss_gui
    command_line
