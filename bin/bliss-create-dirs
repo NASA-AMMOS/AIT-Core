@@ -13,12 +13,12 @@ Arguments:
                                     path2: /path/to/path2
                                     path3: /path/to/path3
 
-    -s DAYS, --slack=<days> Number of slack days in advance of today's
+    -d DAYS, --days=<days>  Number of days in advance of today's
                             date to create the directory structure.
                             Dependent on DDD or YYYY being specified in
                             configuration.
 
-                            i.e. If today is 09/01/2016, slack=1, then this
+                            i.e. If today is 09/01/2016, days=1, then this
                             script will create directories for 09/02/2016.
                             [default: 1]
 
@@ -45,10 +45,6 @@ Description:
 from docopt import docopt
 import bliss
 import yaml
-import sys
-
-# One day in seconds
-SECONDS=86400
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
@@ -60,7 +56,7 @@ if __name__ == '__main__':
         with open(config, 'rb') as f:
             paths = yaml.load(f)
 
-    slack = int(arguments.pop('--slack'))
+    days = int(arguments.pop('--days'))
 
     length = int(arguments.pop('--length'))
 
@@ -68,14 +64,14 @@ if __name__ == '__main__':
 
 try:
 
-    start = slack
-    end = slack + length
+    start = days
+    end = days + length
 
     print start
     print end
 
     for d in range(start, end):
-        utc = bliss.dmc.getUTCDatetimeDOY(d * SECONDS)
+        utc = bliss.dmc.getUTCDatetimeDOY(d)
 
         doy = utc.split(':')
         bliss.log.info('Creating GDS directories for %s:%s' % (doy[0], doy[1]))

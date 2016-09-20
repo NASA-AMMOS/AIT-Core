@@ -39,7 +39,7 @@ def getTimestampUTC():
     return ts_sec, ts_usec
 
 
-def getUTCDatetimeDOY(seconds=0):
+def getUTCDatetimeDOY(days=0):
     """getUTCDatetimeDOY -> datetime
 
     Returns the UTC current datetime with the input slack time (seconds)
@@ -48,8 +48,7 @@ def getUTCDatetimeDOY(seconds=0):
         YYYY:DDD:HH:MM:SS
 
     """
-    timestamp = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
-    return time.strftime(DOY_Format, timestamp.timetuple())
+    return (datetime.datetime.utcnow() + datetime.timedelta(days=days)).strftime(DOY_Format)
 
 
 def tic():
