@@ -104,7 +104,7 @@ class FieldDefinition(object):
 
     __slots__ = [
         "bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
-        "_type", "units", "when", "title"
+        "_type", "units", "when", "_title"
     ]
 
     def __init__(self, *args, **kwargs):
@@ -143,6 +143,18 @@ class FieldDefinition(object):
             return self.type.nbytes
         else:
             return 0
+
+    @property
+    def title(self):
+        """The argument title."""
+        if not self._title:
+            return self.name
+        else:
+            return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
 
     @property
     def type(self):

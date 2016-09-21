@@ -56,6 +56,50 @@ class TestTlmDictWriter(object):
         os.remove(self.test_yaml_file)
         os.remove(expected_csv)
 
+class TestFieldDefinition(object):
+    test_yaml_test1 = '/tmp/test_test1.yaml'
+
+    yaml_docs_test1 = (
+        '- !Packet\n'
+        '  name: OCO3_1553_EHS\n'
+        '  fields:\n'
+        '    - !Field\n'
+        '      name: field_1\n'
+        '      title: Field 1\n'
+        '      type: MSB_U16\n'
+    )
+
+    def setUp(self):
+        with open(self.test_yaml_test1, 'wb') as out:
+            out.write(self.yaml_docs_test1)
+
+    def tearDown(self):
+        os.remove(self.test_yaml_test1)
+
+    def test_field_definition(self):
+        tlmdict = bliss.tlm.TlmDict(self.test_yaml_test1)
+        assert tlmdict['OCO3_1553_EHS'].fields[0].name == 'field_1'
+        assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'Field 1'
+
+    def test_fld_defn_notitle(self):
+        test_yaml_test2 = '/tmp/test_test2.yaml'
+        yaml_docs_test2 = (
+            '- !Packet\n'
+            '  name: OCO3_1553_EHS\n'
+            '  fields:\n'
+            '    - !Field\n'
+            '      name: field_1\n'
+            '      type: MSB_U16\n'
+        )
+
+        with open(test_yaml_test2, 'wb') as out:
+            out.write(yaml_docs_test2)
+
+        tlmdict = bliss.tlm.TlmDict(test_yaml_test2)
+
+        assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'field_1'
+
+        os.remove(test_yaml_test2)
 
 class TestTlmConfig(object):
     test_yaml_inc1 = '/tmp/test_inc1.yaml'
