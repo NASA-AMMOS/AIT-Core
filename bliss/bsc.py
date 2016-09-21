@@ -31,7 +31,7 @@ try:
     import rawsocket
     RAW_SOCKET_FD = rawsocket.rawsocket_fd()
 except ImportError:
-    log.info(
+    log.debug(
         'The rawsocket library cannot be imported. '
         'Defaulting to the non-rawsocket approach.'
     )

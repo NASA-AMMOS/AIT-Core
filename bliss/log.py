@@ -19,6 +19,7 @@ import logging.handlers
 
 import bliss
 
+
 NOTICE  = logging.INFO + 1
 COMMAND = logging.INFO + 2
 PROGRAM = logging.INFO + 3
@@ -71,8 +72,8 @@ class SysLogFormatter (logging.Formatter):
     BSD_DATEFMT = '%b %d %H:%M:%S'
 
     SYS_DATEFMT = '%Y-%m-%dT%H:%M:%S.%fZ'
-    SYSLOG_FMT = ('1 %(asctime)s %(hostname)s %(name)s %(process)d %(levelname)s - '
-                                '%(message)s')
+    SYSLOG_FMT = ('1 %(asctime)s %(hostname)s %(name)s %(process)d '
+                  '%(levelname)s - %(message)s')
 
 
     def __init__ (self, bsd=False):
@@ -167,35 +168,72 @@ class SysLogParser(object):
         return match.groupdict()
 
 
-def addHandlers (logger):
-    """Adds handlers to the given Logger."""
-    termlog  = logging.StreamHandler()
-    handlers = [ termlog, SysLogHandler(), SysLogHandler( ('localhost', 2514) ) ]
+def addLocalHandlers (logger):
+    """Adds logging handlers to logger to log to the following local
+    resources:
 
+        1.  The terminal
+        2.  localhost:514  (i.e. syslogd)
+        3.  localhost:2514 (i.e. the BLISS GUI syslog-like handler)
+    """
+    termlog = logging.StreamHandler()
     termlog.setFormatter( LogFormatter() )
 
-    try:
-        try:
-            hostname = bliss.config.logging.hostname
-        except Exception:
-            hostname = 'localhost'
+    logger.addHandler( termlog )
+    logger.addHandler( SysLogHandler() )
+    logger.addHandler( SysLogHandler(('localhost', 2514)) )
 
-        # We skip logging to hostname if:
-        #
-        #   1.  The hostname cannot be resolved (socket.gethostbyname()
-        #       throws socket.gaierror), or
-        #   2.  The host is the same as localhost, since that's covered by
-        #       SysLogHandler() above.  That is, we don't want to log
-        #       messages to localhost:514 (syslogd) twice.
+
+def addRemoteHandlers (logger):
+    """Adds logging handlers to logger to remotely log to:
+
+        bliss.config.logging.hostname:514  (i.e. syslogd)
+
+    If not set or hostname cannot be resolved, this method has no
+    effect.
+    """
+    try:
+        hostname = bliss.config.logging.hostname
+
+        # Do not "remote" log to this host, as that's already covered
+        # by addLocalHandlers().
         if socket.getfqdn() != hostname:
             socket.gethostbyname(hostname)
-            handlers.append( SysLogHandler( (hostname,  514) ) )
+            logger.addHandler( SysLogHandler( (hostname,  514) ) )
+
+    except AttributeError:
+        pass  # No bliss.config.logging.hostname
 
     except socket.gaierror:
-        pass
+        pass  # hostname cannot be resolved (e.g. no Internet)
 
-    for h in handlers:
-        logger.addHandler(h)
+
+def init ():
+    global logger, crit, debug, error, info, warn
+
+    try:
+        name = bliss.config.logging.name
+    except AttributeError:
+        name = 'bliss'
+
+    if logging.getLogger(name) == logger:
+        for h in logger.handlers[:]:
+            logger.removeHandler(h)
+
+    logger = logging.getLogger(name)
+    crit   = logger.critical
+    debug  = logger.debug
+    error  = logger.error
+    info   = logger.info
+    warn   = logger.warning
+
+    logger.setLevel(logging.INFO)
+
+    addLocalHandlers (logger)
+    addRemoteHandlers(logger)
+
+reinit = init
+
 
 def get_regex(fmt):
     """Transforms log format string into regex.
@@ -245,16 +283,11 @@ def program(*args, **kwargs):
     logger.log(PROGRAM, *args, **kwargs)
 
 
-try:
-    logger = logging.getLogger(bliss.config.logging.name)
-except Exception:
-    logger = logging.getLogger('bliss')
+logger = None
+crit   = None
+debug  = None
+error  = None
+info   = None
+warn   = None
 
-crit   = logger.critical
-debug  = logger.debug
-error  = logger.error
-info   = logger.info
-warn   = logger.warning
-
-addHandlers(logger)
-logger.setLevel(logging.INFO)
+init()
