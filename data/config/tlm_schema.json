@@ -33,12 +33,18 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["field", "name", "type"],
+                    "required": [],
                     "properties": {
+                        "include": {
+                            "type": "string"
+                        },
                         "field": {
                             "type": "string"
                         },
                         "name": {
+                            "type": "string"
+                        },
+                        "title": {
                             "type": "string"
                         },
                         "type": {
