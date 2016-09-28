@@ -19,6 +19,7 @@ import gevent
 import gevent.event
 import gevent.monkey
 import geventwebsocket
+import requests
 
 gevent.monkey.patch_all()
 
@@ -264,3 +265,58 @@ def handle ():
 @App.route('/<pathname:path>')
 def handle (pathname):
     return bottle.static_file(pathname, root=HTMLRoot)
+
+@App.route('/bsc/handlers', method='GET')
+def handle():
+    try:
+        r = requests.get('http://{}:{}'.format(
+            bliss.config._config['gui']['bsc_host'],
+            bliss.config._config['gui']['bsc_port']))
+        data = r.json()
+    except requests.ConnectionError:
+        data = {}
+
+    capturers = []
+    for address, handlers in data.iteritems():
+        for handler in handlers:
+            host, port = handler['address']
+            if host == '':
+                host = bliss.config._config['gui']['bsc_host'],
+            capturers.append([
+                handler['handler']['name'],
+                handler['conn_type'],
+                '{}:{}'.format(host, port)
+            ])
+
+    return {'capturers': capturers}
+
+@App.route('/bsc/create', method='POST')
+def handle():
+    try:
+        r = requests.post(
+            'http://{}:{}/{}/start'.format(
+                bliss.config._config['gui']['bsc_host'],
+                bliss.config._config['gui']['bsc_port'],
+                bottle.request.POST.name),
+            data={
+                'loc': bliss.config._config['gui']['bsc_handler_host'],
+                'port': bliss.config._config['gui']['bsc_handler_port'],
+                'conn_type': bliss.config._config['gui']['bsc_handler_conn_type'],
+            }
+        )
+
+        bottle.response.status = r.status_code
+    except requests.ConnectionError:
+        bottle.response.status = 500
+
+@App.route('/bsc/remove', method='POST')
+def handle():
+    try:
+        r = requests.delete('http://{}:{}/{}/stop'.format(
+                bliss.config._config['gui']['bsc_host'],
+                bliss.config._config['gui']['bsc_port'],
+                bottle.request.POST.name))
+
+        bottle.response.status = r.status_code
+    except requests.ConnectionError:
+        bottle.response.status = 500

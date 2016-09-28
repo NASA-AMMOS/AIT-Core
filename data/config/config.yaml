@@ -23,3 +23,10 @@ default:
         sdos:      /gds/dev/data/YYYY/DDD/sdos
         uplink:    /gds/dev/data/YYYY/DDD/uplink
         ats:       /gds/dev/data/YYYY/DDD/ats/
+
+    gui:
+        bsc_host: localhost
+        bsc_port: 8080
+        bsc_handler_host: localhost
+        bsc_handler_port: 8888
+        bsc_handler_conn_type: udp
