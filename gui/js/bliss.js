@@ -277,4 +277,86 @@
 
     window.oco3.tlm.updateUI = updateUI;
 
+    /*
+     * Handle removal of BSC handlers
+     *
+     * Calls backend service for removing of selected handler 
+     * and handles UI alerts for success/failure.
+     */
+    removeBSCHandler = function(event) {
+      name_div = $(event.target).siblings()[0]
+      name = name_div.innerText
+
+      $(name_div).addClass('btn-warning')
+      $(event.target).html('Removing ...')
+      $(event.target).addClass('disabled')
+
+      $.post('/bsc/remove', {name: name})
+          .fail(function() {
+            $(event.target).html('ERROR: Unable to remove handler')
+            $(name_div).removeClass('btn-warning').addClass('btn-danger').delay(500).queue(function(next) {
+                $(this).removeClass('btn-danger')
+                $(this).dequeue();
+            })
+          })
+          .done(function() {
+              $(event.target).delay(500).queue(function(n){
+                  $(this).parent().remove()
+                  $(this).dequeue();
+              })
+          });
+
+    }
+
+    /*
+     * Update BSC handlers list
+     *
+     * Query backend services for a list of running handlers,
+     * generate HTML structure, and set event listeners.
+     */
+    updateBSCHandlerList = function() {
+        $.getJSON('/bsc/handlers', function(data) {
+            data = data['capturers']
+            var handlers = []
+            $.each(data, function(h) {
+                h = data[h]
+                handlers.push(
+                  "<li class='row bsc-handler-row'>" +
+                      "<div class='col-sm-2 btn disabled'>" +
+                          h[0] +
+                      "</div>" +
+                      "<div class='col-sm-2 btn text-danger remove-link'>" +
+                          "&times; Remove" +
+                      "</div>" +
+                  "</li>");
+            })
+
+            $('#bsc-handlers').html($("<ul/>", {html: handlers.join(""), class: 'list-unstyled'}))
+            $('.remove-link').click(removeBSCHandler);
+        });
+    };
+
+    /*
+     * Set custom form submit for BSC handler creation.
+     */
+    $('#form-bsc').submit(function(e) {
+        e.preventDefault();
+        var handler_name = $('#handler-name').val()
+        $('#handler-name').val('')
+        $.post('/bsc/create', {name: handler_name})
+            .fail(function() {
+              $('#form-bsc').addClass('has-error').delay(1000).queue(function() {
+                  $(this).removeClass('has-error')
+                  $(this).dequeue();
+              })
+            })
+            .done(function() {
+              $('#form-bsc').addClass('has-success').delay(1000).queue(function() {
+                  $(this).removeClass('has-success')
+                  $(this).dequeue();
+              })
+            });
+
+        updateBSCHandlerList();
+    });
 })(window, document);
