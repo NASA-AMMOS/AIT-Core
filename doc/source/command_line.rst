@@ -82,6 +82,28 @@ bliss-bsc-stop-handler
 
 A helper script for stopping a handler via the BSC's REST interface.
 
+----
+
+Command Table Utilities
+-----------------------
+
+bliss-table-decode
+^^^^^^^^^^^^^^^^^^
+
+Decodes a given binary data blob to text using a flight software table dictionary format file.
+
+bliss-table-encode
+^^^^^^^^^^^^^^^^^^
+
+Encodes a given text flight software table file into a binary blob using a flight software table dictionary format file.
+
+bliss-table-upload
+^^^^^^^^^^^^^^^^^^
+
+Uploads a given binary flight software table.
+
+----
+
 Miscellaneous Utilities
 -----------------------
 
