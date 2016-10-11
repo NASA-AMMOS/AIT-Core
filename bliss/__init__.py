@@ -20,6 +20,7 @@ import geom
 import gui
 import pcap
 import seq
+import table
 import tlm
 import util
 import val
