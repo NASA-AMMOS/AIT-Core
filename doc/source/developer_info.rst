@@ -9,7 +9,7 @@ Prepare Repo for Release
 
 First you need to determine the version number for the release. **bliss-core** uses standard semantic versioning (Major.Minor.Patch). Major bumps are for large, non-backwards compatible changes; Minor bumps are for backwards compatible changes; Patch bumps are for incremental bug fixes, small releases, and end-of-sprint releases.
 
-Update the project documentation to use the correct version names. The `conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ file contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. Commit and push these changes to master.
+Update the project documentation to use the correct version names. The `conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ file contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. The appropriate version number must also be set in the project's **setup.py** file. Commit and push these changes to master.
 
 Generate Release Notes
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -62,3 +62,22 @@ If deemed appropriate, prepare an email to all projects / parties known to be us
    
    Thank you!
    BLISS Development Team
+
+Pointing to a Release
+---------------------
+
+To use BLISS in your project you'll want to point to a specific release in your project's requirements file. We recommending installing all project dependencies into a virtualenv environment to ensure a properly isolated Python environment. You can specify a BLISS release in your **requirements.txt** file with the below snippet. You should replace the version number as appropriate.
+
+.. code-block:: none
+
+   git+ssh://git@github.jpl.nasa.gov/bliss/bliss-core.git@0.2.0# here>#egg=bliss-core[tests,docs]
+
+
+Upgrading an Existing Environment
+---------------------------------
+
+When a new BLISS release is pushed you will most likely want to upgrade the dependency for any projects that build off of BLISS. You'll want to update the project's requirement file to point to the new release. You can then install / update dependencies with:
+
+.. code-block:: bash
+
+   pip install -r requirements.txt --upgrade
