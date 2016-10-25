@@ -70,7 +70,7 @@ To use BLISS in your project you'll want to point to a specific release in your 
 
 .. code-block:: none
 
-   git+ssh://git@github.jpl.nasa.gov/bliss/bliss-core.git@0.2.0# here>#egg=bliss-core[tests,docs]
+   git+ssh://git@github.jpl.nasa.gov/bliss/bliss-core.git@<version # here>#egg=bliss-core[tests,docs]
 
 
 Upgrading an Existing Environment
@@ -81,3 +81,12 @@ When a new BLISS release is pushed you will most likely want to upgrade the depe
 .. code-block:: bash
 
    pip install -r requirements.txt --upgrade
+
+Installing from a Downloaded Release
+------------------------------------
+
+If you prefer to install releases from downloaded source (or are required to for technical reasons), you can download the relevant release from the `BLISS release page <https://github.jpl.nasa.gov/bliss/bliss-core/releases>`_ when a new release is made available. Un-zip or un-tar the file and run the following command from the root of the release folder:
+
+.. code-block:: bash
+
+   pip install . --upgrade
