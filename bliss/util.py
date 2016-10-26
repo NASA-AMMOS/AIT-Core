@@ -124,7 +124,7 @@ def setDictDefaults (d, defaults):
   return d
 
 
-def getDefaultDict(module_name, config_key, loader, reload=False):
+def getDefaultDict(module_name, config_key, loader, reload=False, filename=None):
     """Returns default BLISS dictonary for module_name
 
     This helper function encapulates the core logic necessary to
@@ -136,12 +136,12 @@ def getDefaultDict(module_name, config_key, loader, reload=False):
     """
     module   = sys.modules[module_name]
     default  = getattr(module, 'DefaultDict', None)
-    filename = None
 
-    try:
-        filename = bliss.config[config_key].filename
-    except (AttributeError, KeyError), e:
-        bliss.log.error('Missing "%s.filename" in config.yaml', config_key)
+    if filename is None:
+        try:
+            filename = bliss.config[config_key].filename
+        except (AttributeError, KeyError), e:
+            bliss.log.error('Missing "%s.filename" in config.yaml', config_key)
 
     if filename is not None and (default is None or reload is True):
         try:

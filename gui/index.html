@@ -30,6 +30,7 @@
         <ul class="nav nav-tabs" role="tablist">
           <li role="presentation" class="active"><a href="#cmd-tab" aria-controls="cmd-tab" role="tab" data-toggle="tab">Commanding</a></li>
           <li role="presentation"><a href="#seq-tab" aria-controls="seq-tab" role="tab" data-toggle="tab">Sequences</a></li>
+          <li role="presentation"><a href="#bsc-tab" aria-controls="bsc-tab" role="tab" data-toggle="tab">BSC</a></li>
         </ul>
         <br />
         <div class="col-sm-6 tab-content">
@@ -59,6 +60,20 @@
                   <button id="send-seq-btn" type="submit" class="btn btn-success">Send</button>
                 </div>
               </form>
+          </div> <!-- /.tabpanel -->
+          <div role="tabpanel" class="tab-pane" id="bsc-tab">
+            <form class="form-horizontal" role="form" id="form-bsc">
+              <label class="control-label" for="handler-name">Create BSC Data Capturer:</label>
+              <div id="bsc-input-group" class="input-group">
+                <input type="text" id="handler-name" name="handler-name" placeholder="New Handler Name" class="form-control">
+                <span class="input-group-btn">
+                  <button id="send-handler-create" type="submit" class="btn btn-success">Create</button>
+                </span>
+              </div>
+              <small class="control-label">(or Ctrl-Enter to Create)</small>
+            </form>
+            <div  style="padding-top: 20px" id="bsc-handlers">
+            <div>
           </div> <!-- /.tabpanel -->
 
         </div> <!-- /.col-sm-12 .tab-content -->
@@ -149,6 +164,7 @@ var chart = new Highcharts.Chart({
     var init = function () {
         $('[data-field]').text('N/A');
         populateSeqList();
+        updateBSCHandlerList();
     }
 
 

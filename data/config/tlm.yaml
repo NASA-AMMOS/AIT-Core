@@ -1,8 +1,10 @@
 - !Packet
   name: CCSDS
   fields:
+    - !include ccsds.yaml
     - !Field
       name:   version
+      title:   Version
       desc:   CCSDS Version
       bytes:  0
       type:   U8
@@ -10,12 +12,14 @@
 
     - !Field
       name:   packet_type
+      title:  Packet Type
       bytes:  0
       type:   U8
       mask:   0x10
 
     - !Field
       name:   secondary_header_flag
+      title:  Secondary Header Flag
       desc:   |
         Indicates whether, or not, a Secondary Header follows the primary
         header (always set to 1)
@@ -28,6 +32,7 @@
 
     - !Field
       name:   apid
+      title:  APID
       desc:   |
         Used in conjunction with packet_type to define the Logical
         Data Path
@@ -37,6 +42,7 @@
 
     - !Field
       name:   sequence_flags
+      title:  Sequence Flags
       desc:   |
         When sending commands, the sequence flags must be marked as
         unsegmented data. All other PL packets may be per source/destination
@@ -52,6 +58,7 @@
 
     - !Field
       name:   sequence_count
+      title:  Sequence Count
       desc:   |
         Sequential count which numbers each packet on a Logical Data Path,
         i.e. a separate counter is maintained for each source-destination
@@ -62,6 +69,7 @@
 
     - !Field
       name:   packet_length
+      title:  Packet Length
       desc:   |
         Sequential count which expresses the length of the remainder of the
         packet including checkword if present. The value is the number of

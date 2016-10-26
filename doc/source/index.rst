@@ -12,6 +12,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
 .. toctree::
    :maxdepth: 2
 
+   project_setup
    getting_started
    bliss_gui
    command_line
@@ -21,6 +22,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
    Telemetry Dictionary Introduction <telemetry_intro>
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
+   developer_info
 
 Indices and tables
 ==================

@@ -17,9 +17,8 @@ import re
 
 import yaml
 
-import logging
+from bliss import log
 
-log = logging.getLogger('bliss')
 
 DEFAULT_PATH_VARS = {
     'year' : datetime.datetime.utcnow().strftime('%Y'),
@@ -162,7 +161,7 @@ class BlissConfig (object):
     _ROOT_DIR = os.path.abspath(os.environ.get('BLISS_ROOT', os.getcwd()))
 
     if 'BLISS_ROOT' not in os.environ:
-        log.warning('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
+        log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
     def __init__ (self, filename=None, data=None, config=None, pathvars=None):
         """Creates a new BlissConfig object with configuration data read from
@@ -185,7 +184,7 @@ class BlissConfig (object):
                 filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
             else:
                 msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
-                log.warning(msg)
+                log.warn(msg)
                 filename = os.path.join(self._directory, 'config.yaml')
 
         if config is None:
