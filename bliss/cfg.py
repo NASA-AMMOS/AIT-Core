@@ -42,7 +42,6 @@ def expandConfigPaths (config, prefix=None, pathvars=None, *keys):
             expanded = expandPath(value, prefix)
             cleaned = replaceVariables(expanded, pathvars)
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
-            # config[name] = expanded
         elif type(value) is dict:
             expandConfigPaths(value, prefix, pathvars, *keys)
 
