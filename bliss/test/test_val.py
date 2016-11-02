@@ -405,5 +405,15 @@ def testEvrValidation():
     assert len(msgs) == 0
 
 
+def testTableValidation():
+    '''Validation test of current table configuration'''
+    yml = bliss.config.table.filename
+    schema = os.path.join(os.path.dirname(yml), 'table_schema.json')
+    msgs, v = val([yml, schema])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+
 if __name__ == '__main__':
     nose.main()

@@ -8,6 +8,9 @@ default:
     tlmdict:
         filename:  tlm.yaml
 
+    table:
+        filename: table.yaml
+
     bsc:
         filename: bsc.yaml
 
