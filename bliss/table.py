@@ -569,10 +569,12 @@ class FSWTabDict (dict):
         """
         if self.filename is None:
             self.filename = filename
-            stream        = open(self.filename, "rb")
-            for tab in yaml.load_all(stream):
-                self.add(tab)
-            stream.close()
+
+        stream = open(self.filename, "rb")
+        for doc in yaml.load_all(stream):
+            for table in doc:
+                self.add(table)
+        stream.close()
 
 
 class FSWTabDictCache (object):
