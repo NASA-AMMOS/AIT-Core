@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bin/bliss-table-decode.py --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
+usage: bin/bliss_table_decode.py --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
 
 Decodes the given FSW binary table to text.
 
@@ -24,7 +24,7 @@ defaults = {
   "binfile": None
 }
 
-def main()
+def main():
     bliss.log.begin()
     options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-seq-upload.py oco3_seq_SSS_NNN_desc.bin
+usage: bliss_seq_upload.py oco3_seq_SSS_NNN_desc.bin
 
 Uploads the given binary relative time command sequence.
 

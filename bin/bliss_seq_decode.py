@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 
-usage: bliss-seq-decode.py oco3_seq_SSS_NNN_desc.bin
+usage: bliss_seq_decode.py oco3_seq_SSS_NNN_desc.bin
 
 Decodes the given relative time command sequence to text.
 

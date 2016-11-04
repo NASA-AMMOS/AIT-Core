@@ -2,7 +2,7 @@
 
 '''
 Usage:
-    bliss-bsc-stop-handler [options] <name>
+    bliss_bsc_stop_handler.py [options] <name>
 
 --service-host=<host> The host for the BSC REST service connection
                       [default: localhost]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 Usage:
-        bliss-dict-writer [options] (--tlm | --cmd)
+        bliss_dict_writer.py [options] (--tlm | --cmd)
 
 --tlm               Run dictionary processor for Telemetry dictionary.
 --cmd               Run dictionary processor for Command dictionary.

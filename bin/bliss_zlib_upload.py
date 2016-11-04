@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-zlib-upload.py filename
+usage: bliss_zlib_upload.py filename
 
 Uploads the given file to the ISS sim, compressing it with zlib first.
 

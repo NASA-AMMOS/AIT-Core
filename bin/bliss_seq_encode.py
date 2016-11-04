@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 '''
-usage: bliss-seq-print.py oco3_seq_SSS_NNN_desc.bin
+usage: bliss_seq_encode.py oco3_seq_SSS_NNN_desc.txt 
 
-Prints the given binary relative time command sequence to standard
-output as text.
+Encodes the given relative time command sequence to binary.
 
 Examples:
 
-  $ bliss-seq-print.py seq/oco3_seq_gps_001_reset.bin
+  $ bliss-seq-encode.py seq/oco3_seq_gps_001_reset.txt 
 
 Authors: Ben Bornstein
 '''
@@ -20,7 +19,6 @@ import bliss
 def main():
     defaults = { }
 
-
     bliss.log.begin()
     options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
 
@@ -30,16 +28,20 @@ def main():
     filename  = os.path.abspath(args[0])
     extension = os.path.splitext(filename)[1]
 
-    if extension.lower() != '.bin':
-      bliss.log.warn("Filename '%s' does not have a '.bin' extension", filename)
+    if extension.lower() != '.txt':
+      bliss.log.warn("Filename '%s' does not have a '.txt' extension", filename)
 
     sequence = bliss.seq.Seq(filename)
 
     if not sequence.validate():
-      for msg in sequence.messages:
+      for msg in sequence.log.messages:
         bliss.log.error(msg)
+    else:
+      binpath = sequence.binpath
+      seqid   = sequence.seqid
 
-    sequence.printText()
+      bliss.log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
+      sequence.writeBinary()
 
     bliss.log.end()
 

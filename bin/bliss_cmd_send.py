@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-cmd-send.py [options] command arg1 ... argN
+usage: bliss_cmd_send.py [options] command arg1 ... argN
 
 Sends the given command and its arguments to the ISS
 simulator via UDP.
@@ -25,7 +25,7 @@ import bliss
 
 def main():
     defaults = {
-      "port"   : 3075
+      "port"   : 3075,
       "verbose": 0
     }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-table-upload.py output/targets_table.bin
+usage: bliss_table_upload.py output/targets_table.bin
 
 Uploads the given binary relative time command sequence.
 

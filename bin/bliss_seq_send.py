@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 '''
-usage: bliss-seq-send.py [options] filename.rts
+usage: bliss_seq_send.py [options] filename.rts
 
 Sends the given relative timed sequence via UDP.
 
-  --port=number    Port on which to send data  (default: 3075)
-  --verbose=0|1    Hexdump data                (default:    0)
+--port=number    Port on which to send data  (default: 3075)
+--verbose=0|1    Hexdump data                (default:    0)
 
 Examples:
 

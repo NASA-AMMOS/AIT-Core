@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-yaml-validate.py
+usage: bliss_yaml_validate.py
 
 Validate YAML files with applicable schema and/or advanced
 content validation for CMD and TLM dictionaries.
