@@ -1,24 +1,20 @@
 #!/usr/bin/env python
+'''
+usage: bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
 
+Encodes the given FSW text table to binary.
 
-##
-## usage: bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
-##
-## Encodes the given FSW text table to binary.
-##
-## Examples:
-##
-##   $ bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
-##
-## Authors: Ben Bornstein, Alice Stanboli
-##
+Examples:
 
+  $ bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
+
+Authors: Ben Bornstein, Alice Stanboli
+'''
 
 import os
 import sys
 
 import bliss
-
 
 defaults = {
   "verbose": 0,
@@ -27,32 +23,35 @@ defaults = {
   "tabfile": None
 }
 
-bliss.log.begin()
-options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+def main():
+    bliss.log.begin()
+    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
 
-# Set the verbosity
-verbose  = options['verbose']
-dictpath = options['fswtabdict']
-tabletype = options['tabletype']
-tabfile = options['tabfile']
+    # Set the verbosity
+    verbose  = options['verbose']
+    dictpath = options['fswtabdict']
+    tabletype = options['tabletype']
+    tabfile = options['tabfile']
 
-# Grab default command dictionary
-if dictpath is not None:
-  dictCache = bliss.table.FSWTabDictCache(filename=dictpath)
+    # Grab default command dictionary
+    if dictpath is not None:
+      dictCache = bliss.table.FSWTabDictCache(filename=dictpath)
 
-  try:
-    filename = dictCache.filename
-  except IOError, e:
-    msg = "Could not load default command dictionary '%s': %s'"
-    bliss.log.error(msg, filename, str(e))
+      try:
+        filename = dictCache.filename
+      except IOError, e:
+        msg = "Could not load default command dictionary '%s': %s'"
+        bliss.log.error(msg, filename, str(e))
 
-fswtabdict  = bliss.table.getDefaultFSWTabDict()
+    fswtabdict  = bliss.table.getDefaultFSWTabDict()
 
-# Check if cmddict exists
-if fswtabdict is not None:
-  # Write out the table file using the command dictionary
-  bliss.table.writeToBinary(fswtabdict,tabletype,tabfile,verbose)
+    # Check if cmddict exists
+    if fswtabdict is not None:
+      # Write out the table file using the command dictionary
+      bliss.table.writeToBinary(fswtabdict,tabletype,tabfile,verbose)
 
-print
-bliss.log.end()
+    print
+    bliss.log.end()
 
+if __name__ == '__main__':
+    main()

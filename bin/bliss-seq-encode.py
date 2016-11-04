@@ -1,48 +1,49 @@
 #!/usr/bin/env python
-##
-## usage: bliss-seq-encode.py oco3_seq_SSS_NNN_desc.txt 
-##
-## Encodes the given relative time command sequence to binary.
-##
-## Examples:
-##
-##   $ bliss-seq-encode.py seq/oco3_seq_gps_001_reset.txt 
-##
-## Authors: Ben Bornstein
-##
+'''
+usage: bliss-seq-encode.py oco3_seq_SSS_NNN_desc.txt 
 
+Encodes the given relative time command sequence to binary.
+
+Examples:
+
+  $ bliss-seq-encode.py seq/oco3_seq_gps_001_reset.txt 
+
+Authors: Ben Bornstein
+'''
 
 import os
 import sys
 
 import bliss
 
+def main():
+    defaults = { }
 
-defaults = { }
+    bliss.log.begin()
+    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
 
+    if len(args) == 0:
+      bliss.gds.usage(exit=True)
 
-bliss.log.begin()
-options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+    filename  = os.path.abspath(args[0])
+    extension = os.path.splitext(filename)[1]
 
-if len(args) == 0:
-  bliss.gds.usage(exit=True)
+    if extension.lower() != '.txt':
+      bliss.log.warn("Filename '%s' does not have a '.txt' extension", filename)
 
-filename  = os.path.abspath(args[0])
-extension = os.path.splitext(filename)[1]
+    sequence = bliss.seq.Seq(filename)
 
-if extension.lower() != '.txt':
-  bliss.log.warn("Filename '%s' does not have a '.txt' extension", filename)
+    if not sequence.validate():
+      for msg in sequence.log.messages:
+        bliss.log.error(msg)
+    else:
+      binpath = sequence.binpath
+      seqid   = sequence.seqid
 
-sequence = bliss.seq.Seq(filename)
+      bliss.log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
+      sequence.writeBinary()
 
-if not sequence.validate():
-  for msg in sequence.log.messages:
-    bliss.log.error(msg)
-else:
-  binpath = sequence.binpath
-  seqid   = sequence.seqid
+    bliss.log.end()
 
-  bliss.log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
-  sequence.writeBinary()
-
-bliss.log.end()
+if __name__ == '__main__':
+    main()
