@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--user', help='Username to use for authentication')
 parser.add_argument('--pass', help='Password to use for authentication')
 parser.add_argument('--start-time', help='Start date range for tickets to find. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.')
-parser.add_argument('--end-time', default=datetime.datetime.now(), help='End date range for tickets to find. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.')
+parser.add_argument('--end-time', default=datetime.datetime.utcnow(), help='End date range for tickets to find. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.')
 args = vars(parser.parse_args())
 
 un = args['user']

@@ -10,15 +10,13 @@ Component Initialization Utilities
 
 The following commands are used to start up BLISS services or components.
 
-bliss-bsc
+bliss_bsc
 ^^^^^^^^^
+.. automodule:: bliss_bsc
 
-Starts up the Binary Stream Capture components along with a webserver for manipulation of active capture handlers via a RESTful interface. For additional information on ``bliss.bsc`` usage and configuration check out the :doc:`BSC Introduction <bsc_intro>` page.
-
-bliss-gui
+bliss_gui
 ^^^^^^^^^
-
-Starts up the BLISS GUI and opens your browser to the primary landing page.
+.. automodule:: bliss_gui
 
 ----
 
@@ -27,103 +25,87 @@ Sequence Utilities
 
 Utilities for the manipulation of command sequences.
 
-bliss-seq-encode
+bliss_seq_encode
 ^^^^^^^^^^^^^^^^
+.. automodule:: bliss_seq_encode
 
-Encodes a given command sequence file into binary.
-
-bliss-seq-decode
+bliss_seq_decode
 ^^^^^^^^^^^^^^^^
+.. automodule:: bliss_seq_decode
 
-Decodes a given command sequence binary blob into a text file.
-
-bliss-seq-send
+bliss_seq_send
 ^^^^^^^^^^^^^^
+.. automodule:: bliss_seq_send
 
-Sends a given command sequence to a UDP port. This is useful for uploading command sequences to simulators.
-
-bliss-seq-print
+bliss_seq_print
 ^^^^^^^^^^^^^^^
+.. automodule:: bliss_seq_print
 
-Pretty print a given command sequence binary blob to standard out.
-
-----
+____
 
 Telemetry Utilities
--------------------
+___________________
 
-bliss-tlm-send
+bliss_tlm_serv
 ^^^^^^^^^^^^^^
+.. automodule:: bliss_tlm_serv
 
-Upload a given telemetry PCap file to a UDP port. This is useful for uploading telemetry to simulators.
-
-----
+____
 
 Command Utilities
------------------
+_________________
 
-bliss-cmd-send
+bliss_cmd_send
 ^^^^^^^^^^^^^^
+.. automodule:: bliss_cmd_send
 
-Send a given command and its arguments to a UDP port. This is useful for uploading commands to simulators.
-
-----
+____
 
 BSC Utilities
--------------
+_____________
 
-bliss-bsc-create-handler
+bliss_bsc_create_handler
 ^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_bsc_create_handler
 
-A helper script for creating a handler via the BSC's REST interface.
-
-bliss-bsc-stop-handler
+bliss_bsc_stop_handler
 ^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_bsc_stop_handler
 
-A helper script for stopping a handler via the BSC's REST interface.
-
-----
+____
 
 Command Table Utilities
------------------------
+_______________________
 
-bliss-table-decode
+bliss_table_decode
 ^^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_table_decode
 
-Decodes a given binary data blob to text using a flight software table dictionary format file.
-
-bliss-table-encode
+bliss_table_encode
 ^^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_table_encode
 
-Encodes a given text flight software table file into a binary blob using a flight software table dictionary format file.
-
-bliss-table-upload
+bliss_table_upload
 ^^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_table_upload
 
-Uploads a given binary flight software table.
-
-----
+____
 
 Miscellaneous Utilities
------------------------
+_______________________
 
-bliss-create-dirs
+bliss_create_dirs
 ^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_create_dirs
 
-Generates GDS directory structure based on the **gds_paths** specified in **config.yaml**.
-
-
-bliss-orbits
+bliss_orbits
 ^^^^^^^^^^^^
+.. automodule:: bliss_orbits
 
-Generates predicted or actual ISS orbit times and numbers given JSC ISS Attitutde and Pointing Nadir reports or ISS Ephemeris data.
-
-bliss-zlib-upload
+bliss_zlib_upload
 ^^^^^^^^^^^^^^^^^
+.. automodule:: bliss_zlib_upload
 
-Compresses and uploads a file to the ISS Simulator. This is primarily used for Flight Software Testing.
-
-bliss-yaml-validate
+bliss_yaml_validate
 ^^^^^^^^^^^^^^^^^^^
-
-Validates YAML files against an applicable schema. This is useful for ensuring that your YAML configuration files match the expected schema.
+.. automodule:: bliss_yaml_validate

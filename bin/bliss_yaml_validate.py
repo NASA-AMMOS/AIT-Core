@@ -1,43 +1,41 @@
 #!/usr/bin/env python
-##
-## usage: bliss-yaml-validate.py
-##
-## Validate YAML files with applicable schema and/or advanced
-## content validation for CMD and TLM dictionaries.
-##
-## YAML validation is done through a combination of JSON Schema
-## (http://json-schema.org/) and Python-coded content validation.
-## The JSON Schema is used to validate general format of the YAML,
-## i.e dictionaries contain the expected keys, values are the
-## expected type, etc.
-##
-## Why JSON Schema? All of the available YAML validators did not
-## meet the robustness expected for this tool. Since JSON and YAML
-## are stored similarly in memory, the JSON Schema became an option.
-## The only difference between YAML and JSON is the use of multiple
-## documents in the same YAML file. The val.py module handles this
-## implication. See TBD wiki page for more details on developing
-## JSON schema for an applicable YAML file.
-##
-## Examples:
-##
-##   $ bliss-yaml-validate.py --cmd
-##   $ bliss-yaml-validate.py --tlm
-##   $ bliss-yaml-validate.py --evr
-##   $ bliss-yaml-validate.py --cmd --yaml /path/to/cmd.yaml
-##   $ bliss-yaml-validate.py --tlm --yaml /path/to/tlm.yaml
-##   $ bliss-yaml-validate.py --yaml /path/to/yaml --schema /path/to/schema
-##
-## Authors: Jordan Padams
-##
+'''
+usage: bliss_yaml_validate.py
 
+Validate YAML files with applicable schema and/or advanced
+content validation for CMD and TLM dictionaries.
+
+YAML validation is done through a combination of JSON Schema
+(http://json-schema.org/) and Python-coded content validation.
+The JSON Schema is used to validate general format of the YAML,
+i.e dictionaries contain the expected keys, values are the
+expected type, etc.
+
+Why JSON Schema? All of the available YAML validators did not
+meet the robustness expected for this tool. Since JSON and YAML
+are stored similarly in memory, the JSON Schema became an option.
+The only difference between YAML and JSON is the use of multiple
+documents in the same YAML file. The val.py module handles this
+implication. See TBD wiki page for more details on developing
+JSON schema for an applicable YAML file.
+
+Examples:
+
+  $ bliss-yaml-validate.py --cmd
+  $ bliss-yaml-validate.py --tlm
+  $ bliss-yaml-validate.py --evr
+  $ bliss-yaml-validate.py --cmd --yaml /path/to/cmd.yaml
+  $ bliss-yaml-validate.py --tlm --yaml /path/to/tlm.yaml
+  $ bliss-yaml-validate.py --yaml /path/to/yaml --schema /path/to/schema
+
+Authors: Jordan Padams
+'''
 
 import sys
 import os
 import argparse
 
 import bliss
-
 
 def validate(validator, yml, schema):
     msgs = []

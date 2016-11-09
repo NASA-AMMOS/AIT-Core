@@ -2,7 +2,7 @@
 
 """
 Usage:
-  bliss-gui [<port> --host=<host> --browser=<browser>]
+  bliss_gui.py [<port> --host=<host> --browser=<browser>]
 
 Options:
   port       GUI client HTTP connections port

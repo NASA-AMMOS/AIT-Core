@@ -2,7 +2,7 @@
 
 '''
 Usage:
-    bliss-tlm-serve [options] <pcap-filename>
+    bliss_tlm_serve.py [options] <pcap-filename>
 
 Arguments:
     -p, --port=<number>     Port to serve up telemetry data [default: 3076]
@@ -18,7 +18,7 @@ Description:
 
 Examples:
 
-    $ bliss-tlm-serve test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
+    $ bliss-tlm-serve.py test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
 
 '''
 
