@@ -62,6 +62,7 @@ def expandPath (pathname, prefix=None):
 
     return os.path.abspath(expanded)
 
+
 def replaceVariables(path, pathvars=None):
     """Return absolute path with path variables replaced as applicable"""
 
@@ -99,6 +100,7 @@ def replaceVariables(path, pathvars=None):
             paths = newpaths
 
     return paths
+
 
 def flatten (d, *keys):
     """Flattens the dictionary d by merging keys in order such that later
