@@ -9,7 +9,6 @@ config = cfg.BlissConfig()
 log.reinit()
 
 import bsc
-import cm
 import cmd
 import coord
 import dmc

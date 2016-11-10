@@ -25,14 +25,14 @@ def test_getUTCDatetimeDOY():
     assert str(exp_day) == dtime[1]
 
 
-def test_getUTCDatetimeDOY_w_slack():
-    slack = 864000
-    t = datetime.datetime.utcnow() + datetime.timedelta(seconds=slack)
+def test_getUTCDatetimeDOY_w_days():
+    days = 1
+    t = datetime.datetime.utcnow() + datetime.timedelta(days=days)
     timestamp = t.timetuple()
     exp_year = timestamp.tm_year
     exp_day = timestamp.tm_yday
 
-    dtime = bliss.dmc.getUTCDatetimeDOY(slack).split(':')
+    dtime = bliss.dmc.getUTCDatetimeDOY(days).split(':')
 
     assert str(exp_year) == dtime[0]
     assert str(exp_day) == dtime[1]

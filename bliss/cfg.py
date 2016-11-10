@@ -12,13 +12,20 @@ The bliss.config module provides classes and functions to manage
 import os
 import platform
 import sys
+import datetime
+import re
 
 import yaml
 
 from bliss import log
 
 
-def expandConfigPaths (config, prefix=None, *keys):
+DEFAULT_PATH_VARS = {
+    'year' : datetime.datetime.utcnow().strftime('%Y'),
+    'doy' : datetime.datetime.utcnow().strftime('%j')
+}
+
+def expandConfigPaths (config, prefix=None, pathvars=None, *keys):
     """Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
@@ -32,9 +39,11 @@ def expandConfigPaths (config, prefix=None, *keys):
 
     for name, value in config.items():
         if name in keys and type(name) is str:
-            config[name] = expandPath(value, prefix)
+            expanded = expandPath(value, prefix)
+            cleaned = replaceVariables(expanded, pathvars)
+            config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
         elif type(value) is dict:
-            expandConfigPaths(value, prefix, *keys)
+            expandConfigPaths(value, prefix, pathvars, *keys)
 
 
 def expandPath (pathname, prefix=None):
@@ -52,6 +61,45 @@ def expandPath (pathname, prefix=None):
         expanded = os.path.join(prefix, pathname)
 
     return os.path.abspath(expanded)
+
+
+def replaceVariables(path, pathvars=None):
+    """Return absolute path with path variables replaced as applicable"""
+
+    # if path variables is None, let's use the default
+    if pathvars is None:
+        pathvars = DEFAULT_PATH_VARS
+
+    paths = [ path ]
+
+    # Replace all path variables with their specified values
+    regex = re.compile('\$\{(.*?)\}')
+
+    # Find all the variables in path using the regex
+    for k in regex.findall(path):
+        # Check if the key is in path variables map
+        if k in pathvars:
+            # get the str or list of values
+            v = pathvars[k]
+
+            # new path list for this variable
+            newpaths = [ ]
+
+            # Value of variable must be in (string, integer, list)
+            if type(v) is dict:
+                msg = "Path variable must refer to string, integer, or list"
+                raise TypeError(msg)
+
+            # start with a list
+            valuelist = v if type(v) is list else [ v ]
+
+            for p in paths:
+                for v in valuelist:
+                    newpaths.append(p.replace('${%s}' % k, str(v)))
+
+            paths = newpaths
+
+    return paths
 
 
 def flatten (d, *keys):
@@ -116,8 +164,7 @@ class BlissConfig (object):
     if 'BLISS_ROOT' not in os.environ:
         log.warn('BLISS_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
-
-    def __init__ (self, filename=None, data=None, config=None):
+    def __init__ (self, filename=None, data=None, config=None, pathvars=None):
         """Creates a new BlissConfig object with configuration data read from
         the given YAML configuration file or passed-in via the given
         config dictionary.
@@ -131,6 +178,8 @@ class BlissConfig (object):
 
         """
         self._filename = None
+        self._data = data
+        self._pathvars = pathvars
 
         if data is None and filename is None:
             if 'BLISS_CONFIG' in os.environ:
@@ -146,19 +195,15 @@ class BlissConfig (object):
             self._config   = config
             self._filename = filename
 
-
     def __contains__ (self, name):
         """Returns True if name is in this BlissConfig, False otherwise."""
         return name in self._config
 
-
     def __eq__ (self, other):
         return isinstance(other, BlissConfig) and self._config == other._config
 
-
     def __ne__ (self, other):
         return not self == other
-
 
     def __getattr__ (self, name):
         """Returns the attribute value BlissConfig.name."""
@@ -166,13 +211,11 @@ class BlissConfig (object):
             raise AttributeError('No attribute "%s" in BlissConfig.' % name)
         return self._getattr_(name)
 
-
     def __getitem__ (self, name):
         """Returns the value of BlissConfig[name]."""
         if name not in self:
             raise KeyError('No key "%s" in BlissConfig.' % name)
         return self._getattr_(name)
-
 
     def __repr__ (self):
         """Return a printable representation of this BlissConfig."""
@@ -184,11 +227,9 @@ class BlissConfig (object):
         args.append('data=%s' % self._config)
         return '%s(%s)' % (self.__class__.__name__, ', '.join(args))
 
-
     def __str__ (self):
         """Return a string representation of this BlissConfig."""
         return self.__repr__()
-
 
     def _getattr_ (self, name):
         """Internal method.  Used by __getattr__() and __getitem__()."""
@@ -199,7 +240,6 @@ class BlissConfig (object):
 
         return value
 
-
     @property
     def _directory (self):
         """The directory for this BlissConfig."""
@@ -208,18 +248,25 @@ class BlissConfig (object):
         else:
             return os.path.dirname(self._filename)
 
-
     @property
     def _hostname (self):
         """The hostname for this BlissConfig."""
         return platform.node().split('.')[0]
-
 
     @property
     def _platform (self):
         """The platform for this BlissConfig."""
         return sys.platform
 
+    @property
+    def _datapaths(self):
+        """Returns a simple key-value map for easy access to data paths"""
+        paths = { }
+        data = self._config['data']
+        for k in data:
+            paths[k] = data[k]['path']
+
+        return paths
 
     def reload (self, filename=None, data=None):
         """Reloads the a BLISS configuration.
@@ -238,10 +285,18 @@ class BlissConfig (object):
         if self._config is not None:
             keys         = 'default', self._platform, self._hostname
             self._config = flatten(self._config, *keys)
-            expandConfigPaths(self._config, self._directory)
+
+            # on reload, if pathvars have not been set, we want to start
+            # with the defaults, add the platform and hostname, and
+            # merge in all of the information provided in the config
+            if self._pathvars is None:
+                self._pathvars = self.getDefaultPathVariables()
+
+            expandConfigPaths(self._config, self._directory,
+                              merge(self._config, self._pathvars))
+
         else:
             self._config = { }
-
 
     def getDefaultFilename(self):
         if 'BLISS_CONFIG' in os.environ:
@@ -252,3 +307,17 @@ class BlissConfig (object):
             filename = os.path.join(self._directory, 'config.yaml')
 
         return filename
+
+    def getDefaultPathVariables(self):
+        pathvars = DEFAULT_PATH_VARS
+        pathvars['platform'] = self._platform
+        pathvars['hostname'] = self._hostname
+        return pathvars
+
+    def addPathVariables(self, pathvars):
+        """ Adds path variables to the pathvars map property"""
+        if type(pathvars) is dict:
+            self._pathvars = merge(self._pathvars, pathvars)
+
+        # Need to reload the config with the new variables
+        self.reload(self._filename, self._data)

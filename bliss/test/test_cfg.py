@@ -11,6 +11,7 @@ Provides unit and functional tests for the bliss.evr module.
 
 import sys
 import os
+import datetime
 
 import nose
 import bliss
@@ -31,6 +32,12 @@ def YAML ():
             desc:    ISS PL/MDM Simulator
             path:    bin/bliss-orbits
             rtaddr:  15
+
+        data:
+            test1:
+                path: /gds/${year}/${year}-${doy}/test1
+            test2:
+                path: /gds/${year}/${year}-${doy}/test2
 
     PLATFORM:
         ISS:
@@ -76,7 +83,28 @@ def test_expandConfigPaths ():
         }
     }
 
-    bliss.cfg.expandConfigPaths(actual, prefix, 'file', 'filename')
+    bliss.cfg.expandConfigPaths(actual, prefix, None, 'file', 'filename')
+    assert actual == expected
+
+def test_expandConfigPaths_w_variables ():
+    prefix   = os.path.join('/', 'bliss')
+    pathvars = {
+        'x': 'test-x',
+        'y': 'test-y',
+        'hostname': hostname()
+    }
+    actual   = {
+        'desc'    : 'Test bliss.cfg.expandConfigPaths() with variables',
+        'file'    : os.path.join('bin', '${x}', 'bliss-orbits'),
+        'filename': os.path.join('bin', '${y}', 'bliss-orbits')
+    }
+    expected = {
+        'desc'    : 'Test bliss.cfg.expandConfigPaths() with variables',
+        'file'    : os.path.join(prefix, 'bin', 'test-x', 'bliss-orbits'),
+        'filename': os.path.join(prefix, 'bin', 'test-y', 'bliss-orbits')
+    }
+
+    bliss.cfg.expandConfigPaths(actual, prefix, pathvars, 'file', 'filename')
     assert actual == expected
 
 
@@ -95,6 +123,52 @@ def test_expandPath ():
     expected = os.path.join(prefix, pathname)
     assert bliss.cfg.expandPath(pathname, prefix) == expected
 
+
+def test_replaceVariables ():
+    # Test expandPath with simple custom path variable
+    pathvars = {
+        'x' : 'test'
+    }
+    pathname = os.path.join('/' , '${x}', 'bliss-orbits')
+    expected = [ os.path.join('/', pathvars['x'], 'bliss-orbits') ]
+    assert bliss.cfg.replaceVariables(pathname, pathvars) == expected
+
+    # Test expandPath with more complex path variable with multiple
+    # permutations
+    pathvars = {
+        'x' : 'x1',
+        'y' : ['y1', 'y2'],
+        'z' : ['z1', 'z2']
+    }
+    pathname = os.path.join('/' , '${x}', '${y}', '${z}','bliss-orbits')
+    expected = [
+        os.path.join('/', pathvars['x'], pathvars['y'][0],
+                     pathvars['z'][0], 'bliss-orbits'),
+        os.path.join('/', pathvars['x'], pathvars['y'][0],
+                     pathvars['z'][1], 'bliss-orbits'),
+        os.path.join('/', pathvars['x'], pathvars['y'][1],
+                     pathvars['z'][0], 'bliss-orbits'),
+        os.path.join('/', pathvars['x'], pathvars['y'][1],
+                     pathvars['z'][1], 'bliss-orbits')
+    ]
+    assert bliss.cfg.replaceVariables(pathname, pathvars) == expected
+
+def test_addPathVariables ():
+    config = bliss.cfg.BlissConfig(data=YAML())
+    before = config._pathvars
+    before_len = len(before.keys())
+
+    pathvars = {
+        'x': 'test-x',
+        'y': 'test-y'
+    }
+    config.addPathVariables(pathvars)
+    after = config._pathvars
+    after_len = len(after.keys())
+
+    assert before_len < after_len
+    assert 'x' in after.keys()
+    assert 'y' in after.keys()
 
 def test_flatten ():
     d = { 'a': { 'foo': 'a' }, 'b': { 'foo': 'b' } }
@@ -130,6 +204,12 @@ def assert_BlissConfig (config, path, filename=None):
 
     assert config     != config.ISS
     assert config.ISS == config['ISS']
+
+    year = datetime.datetime.utcnow().strftime('%Y')
+    doy = datetime.datetime.utcnow().strftime('%j')
+    base = '/gds/%s/%s-%s/' % (year, year, doy)
+    assert config.data.test1.path == base + 'test1'
+    assert config.data.test2.path == base + 'test2'
 
     assert 'foo' not in config
     try:
