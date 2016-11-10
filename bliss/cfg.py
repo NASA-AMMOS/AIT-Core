@@ -178,7 +178,8 @@ class BlissConfig (object):
 
         """
         self._filename = None
-        self._pathvars = None
+        self._data = data
+        self._pathvars = pathvars
 
         if data is None and filename is None:
             if 'BLISS_CONFIG' in os.environ:
@@ -258,21 +259,6 @@ class BlissConfig (object):
         return sys.platform
 
     @property
-    def pathvars (self):
-        """The path variables key-value map to be used to replace special
-        keywords in the paths. Any variable in the config or default variable
-        map can be used.
-        """
-        return self._pathvars
-
-    @pathvars.setter
-    def pathvars (self, value):
-        """Set the path variables key-value map for manipulating the paths in
-        this BlissConfig.
-        """
-        self._pathvars = value
-
-    @property
     def _datapaths(self):
         """Returns a simple key-value map for easy access to data paths"""
         paths = { }
@@ -303,15 +289,12 @@ class BlissConfig (object):
             # on reload, if pathvars have not been set, we want to start
             # with the defaults, add the platform and hostname, and
             # merge in all of the information provided in the config
-            if self.pathvars is None:
-                self.pathvars = DEFAULT_PATH_VARS
-                self.pathvars['platform'] = self._platform
-                self.pathvars['hostname'] = self._hostname
-                self.pathvars = merge(self.pathvars, self._config)
-            else:
-                self.addPathVariables(self._config)
+            if self._pathvars is None:
+                self._pathvars = self.getDefaultPathVariables()
 
-            expandConfigPaths(self._config, self._directory, self.pathvars)
+            expandConfigPaths(self._config, self._directory,
+                              merge(self._config, self._pathvars))
+
         else:
             self._config = { }
 
@@ -325,7 +308,16 @@ class BlissConfig (object):
 
         return filename
 
+    def getDefaultPathVariables(self):
+        pathvars = DEFAULT_PATH_VARS
+        pathvars['platform'] = self._platform
+        pathvars['hostname'] = self._hostname
+        return pathvars
+
     def addPathVariables(self, pathvars):
         """ Adds path variables to the pathvars map property"""
         if type(pathvars) is dict:
-            self.pathvars = merge(self.pathvars, pathvars)
+            self._pathvars = merge(self._pathvars, pathvars)
+
+        # Need to reload the config with the new variables
+        self.reload(self._filename, self._data)
