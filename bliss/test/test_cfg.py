@@ -33,6 +33,12 @@ def YAML ():
             path:    bin/bliss-orbits
             rtaddr:  15
 
+        data:
+            test1:
+                path: /gds/${year}/${year}-${doy}/test1
+            test2:
+                path: /gds/${year}/${year}-${doy}/test2
+
     PLATFORM:
         ISS:
             bticard: 6
@@ -149,7 +155,7 @@ def test_replaceVariables ():
 
 def test_addPathVariables ():
     config = bliss.cfg.BlissConfig(data=YAML())
-    before = config.pathvars
+    before = config._pathvars
     before_len = len(before.keys())
 
     pathvars = {
@@ -157,7 +163,7 @@ def test_addPathVariables ():
         'y': 'test-y'
     }
     config.addPathVariables(pathvars)
-    after = config.pathvars
+    after = config._pathvars
     after_len = len(after.keys())
 
     assert before_len < after_len
@@ -199,6 +205,12 @@ def assert_BlissConfig (config, path, filename=None):
     assert config     != config.ISS
     assert config.ISS == config['ISS']
 
+    year = datetime.datetime.utcnow().strftime('%Y')
+    doy = datetime.datetime.utcnow().strftime('%j')
+    base = '/gds/%s/%s-%s/' % (year, year, doy)
+    assert config.data.test1.path == base + 'test1'
+    assert config.data.test2.path == base + 'test2'
+
     assert 'foo' not in config
     try:
         config.foo
@@ -226,6 +238,7 @@ def test_BlissConfig ():
 
         config.reload()
         assert_BlissConfig(config, path, filename)
+
 
 if __name__ == '__main__':
     nose.main()
