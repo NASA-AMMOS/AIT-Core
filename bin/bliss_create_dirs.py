@@ -15,9 +15,9 @@ Arguments:
                             Dependent on DDD or YYYY being specified in
                             configuration.
 
-                            i.e. If today is 09/01/2016, days=1, then this
-                            script will create directories for 09/02/2016.
-                            [default: 1]
+                            i.e. If today is 09/01/2016, and days=1, then this
+                            script will create directories for tomorrow,
+                            09/02/2016. [default: 0]
 
     -l LENGTH, --length=<days>  Number of days of directories to create
                                 [default: 1]
@@ -230,9 +230,6 @@ if __name__ == '__main__':
 
             # Add the updated path variables for the date
             bliss.config.addPathVariables(pathvars)
-
-            # Reload the config with the new variables
-            bliss.config.reload()
 
             # Create the directory
             createDirStruct(bliss.config._datapaths, verbose)
