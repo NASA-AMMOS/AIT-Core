@@ -25,7 +25,7 @@ gevent.monkey.patch_all()
 
 import bliss
 
-conf = bliss.cfg.BlissConfig()
+conf = bliss.config
 if 'gui' in conf and 'html_root' in conf.gui:
     cfg_path = conf.gui.html_root
     cfg_path = os.path.expanduser(cfg_path)
