@@ -25,19 +25,19 @@ gevent.monkey.patch_all()
 
 import bliss
 
-conf = bliss.config
-if 'gui' in conf and 'html_root' in conf.gui:
-    cfg_path = conf.gui.html_root
+
+if 'gui' in bliss.config and 'html_root' in bliss.config.gui:
+    cfg_path = bliss.config.gui.html_root
     cfg_path = os.path.expanduser(cfg_path)
 
     if os.path.isabs(cfg_path):
         HTMLRoot = cfg_path
     else:
-        HTMLRoot = os.path.join(conf._ROOT_DIR, cfg_path)
+        HTMLRoot = os.path.join(bliss.config._ROOT_DIR, cfg_path)
 
     HTMLRoot = os.path.normpath(HTMLRoot)
 else:
-    HTMLRoot = os.path.join(conf._ROOT_DIR, 'gui')
+    HTMLRoot = os.path.join(bliss.config._ROOT_DIR, 'gui')
 
 App      = bottle.Bottle()
 
