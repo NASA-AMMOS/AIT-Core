@@ -382,7 +382,7 @@ class CmdDict(dict):
         if self.filename is None:
             self.filename = filename
         with open(self.filename, 'rb') as stream:
-            for cmd in yaml.load_all(stream):
+            for cmd in yaml.load(stream):
                 self.add(cmd)
 
     def toDict(self):
