@@ -23,7 +23,6 @@ Description:
 
         Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
         U.S. Government Sponsorship acknowledged.
-
 '''
 
 from docopt import docopt

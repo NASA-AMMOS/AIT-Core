@@ -8,9 +8,6 @@ Decodes the given relative time command sequence to text.
 Examples:
 
   $ bliss-seq-decode.py seq/oco3_seq_gps_001_reset.bin
-
-Authors: Ben Bornstein
-
 '''
 
 import os

@@ -19,8 +19,6 @@ Options:
 Examples:
 
   $ bliss-zlib-upload.py filename
-
-Authors: Ben Bornstein
 '''
 
 import os

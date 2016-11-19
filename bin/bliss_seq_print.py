@@ -8,8 +8,6 @@ output as text.
 Examples:
 
   $ bliss-seq-print.py seq/oco3_seq_gps_001_reset.bin
-
-Authors: Ben Bornstein
 '''
 
 import os
