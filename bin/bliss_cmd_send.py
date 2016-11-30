@@ -18,51 +18,53 @@ import sys
 import socket
 import time
 
-import bliss
+from bliss.core import cmd, gds, log, util
+
 
 def main():
-    defaults = {
-      "port"   : 3075,
-      "verbose": 0
-    }
+    log.begin()
 
-
-    bliss.log.begin()
-    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+    defaults      = { "port": 3075, "verbose": 0 }
+    options, args = gds.parseArgs(sys.argv[1:], defaults)
 
     if len(args) == 0:
-      bliss.gds.usage(exit=True)
+        gds.usage(exit=True)
 
     host     = "127.0.0.1"
     port     = options['port']
     sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     verbose  = options['verbose']
-    cmddict  = bliss.cmd.getDefaultCmdDict()
+    cmddict  = cmd.getDefaultCmdDict()
 
     if cmddict is not None:
-      name     = args[0]
-      args     = [ bliss.util.toNumber(t, t) for t in args[1:] ]
-      cmd      = cmddict.create(name, *args)
-      messages = [ ]
+        name     = args[0]
+        args     = [ util.toNumber(t, t) for t in args[1:] ]
+        command  = cmddict.create(name, *args)
+        messages = [ ]
 
-      if cmd is None:
-        bliss.log.error("unrecognized command: %s" % name)
-      elif not cmd.validate(messages):
-        for msg in messages:
-          bliss.log.error(msg)
-      else:
-        if verbose:
-          size = len(cmd.name)
-          pad = (size - len(cmd.name) + 1) * " "
-          bliss.gds.hexdump( cmd.encode(), preamble=cmd.name + ":" + pad)
+        if command is None:
+            log.error("unrecognized command: %s" % name)
+        elif not command.validate(messages):
+            for msg in messages:
+                log.error(msg)
+        else:
+            encoded = command.encode()
 
-        try:
-          bliss.log.info("Sending to %s:%d: %s", host, port, cmd.name)
-          sock.sendto(cmd.encode(), (host, port))
-        except socket.error, err:
-          bliss.log.error( str(err) )
+            if verbose:
+                size     = len(command.name)
+                pad      = (size - len(command.name) + 1) * " "
+                preamble = command.name + ":" + pad
+                gds.hexdump(encoded, preamble=preamble)
 
-    bliss.log.end()
+            try:
+                msg = "Sending to %s:%d: %s"
+                log.info(msg, host, port, command.name)
+                sock.sendto(encoded, (host, port))
+            except socket.error, err:
+                log.error( str(err) )
+
+    log.end()
+
 
 if __name__ == '__main__':
     main()

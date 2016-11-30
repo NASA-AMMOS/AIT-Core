@@ -2,9 +2,9 @@
 # U.S. Government Sponsorship acknowledged.
 
 """
-BLISS (ECOSTRESS) Commands
+BLISS Commands
 
-The bliss.cmd module provides commands and command dictionaries.
+The bliss.core.cmd module provides commands and command dictionaries.
 Dictionaries contain command and argument definitions.
 """
 
@@ -13,6 +13,7 @@ import struct
 import yaml
 
 import bliss
+from bliss.core import log, util
 
 
 MAX_CMD_WORDS = 54
@@ -43,7 +44,7 @@ class ArgDefn(object):
             setattr(self, name, kwargs.get(name, None))
 
     def __repr__(self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     @property
     def enum(self):
@@ -68,7 +69,8 @@ class ArgDefn(object):
 
     @type.setter
     def type(self, value):
-        self._type = bliss.dtype.get(value) if type(value) is str else value
+        from bliss.core import dtype
+        self._type = dtype.get(value) if type(value) is str else value
 
     @property
     def startword(self):
@@ -148,7 +150,7 @@ class ArgDefn(object):
         return valid
 
     def toDict(self):
-        return {self.name: bliss.util.toDict(self)}
+        return { self.name: util.toDict(self) }
 
 
 class Cmd(object):
@@ -255,7 +257,7 @@ class CmdDefn(object):
 
 
     def __repr__(self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     @property
     def nargs(self):
@@ -288,7 +290,7 @@ class CmdDefn(object):
         maxbytes = getMaxCmdSize()
         if self.argsize > maxbytes:
             msg = "Command %s larger than %d bytes. Staging required."
-            bliss.log.debug(msg, self.name, maxbytes)
+            log.debug(msg, self.name, maxbytes)
             return False
         else:
             return True
@@ -315,7 +317,7 @@ class CmdDefn(object):
         return valid
 
     def toDict(self):
-        return { self._opcode: bliss.util.toDict(self) }
+        return { self._opcode: util.toDict(self) }
 
 
 class CmdDict(dict):
@@ -398,7 +400,7 @@ def getDefaultCmdDict(reload=False):
 
 
 def getDefaultDict(reload=False):
-    return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
+    return util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
 
 
 def getDefaultDictFilename():

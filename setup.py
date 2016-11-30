@@ -4,11 +4,12 @@ import os
 
 setup(
     name         = 'bliss-core',
-    version      = '0.4.0',
+    version      = '0.5.0a',
     packages     = [ 'bliss' ],
     author       = 'BLISS-Core Development Team',
     author_email = 'bliss@jpl.nasa.gov',
 
+    namespace_packages   = [ 'bliss' ],
     include_package_data = True,
 
     scripts = [

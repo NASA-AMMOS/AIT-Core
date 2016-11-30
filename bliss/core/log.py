@@ -4,7 +4,7 @@
 """
 BLISS Logging
 
-The bliss.log module logs warnings, errors, and other information to
+The bliss.core.log module logs warnings, errors, and other information to
 standard output and via syslog.
 """
 
@@ -18,6 +18,7 @@ import logging
 import logging.handlers
 
 import bliss
+import bliss.core
 
 
 NOTICE  = logging.INFO + 1
@@ -262,15 +263,15 @@ def get_regex(fmt):
     return regex;
 
 def begin ():
-    """Command-line tools should begin logging with bliss.log.begin() to
+    """Command-line tools should begin logging with core.log.begin() to
     log the command name and arguments.
     """
     logger.log(PROGRAM, " ".join(sys.argv))
 
 
 def end ():
-    """Command-line tools should end logging with bliss.log.end() to
-    log the completion of the command.
+    """Command-line tools should end logging with log.end() to log the
+    completion of the command.
     """
     logger.log(PROGRAM, "done.")
     logging.shutdown()

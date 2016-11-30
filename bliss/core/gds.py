@@ -4,7 +4,7 @@
 """
 BLISS Ground Data System
 
-The BLISS.gds module provides utility functions specific to OCO-3 GDS
+The bliss.core.gds module provides utility functions specific to GDS
 command-line tools.
 """
 
@@ -14,7 +14,7 @@ import getopt
 import zlib
 import socket
 
-import bliss
+from bliss.core import log, util
 
 
 def compress (input_filename, output_filename=None, verbose=False):
@@ -27,8 +27,8 @@ def compress (input_filename, output_filename=None, verbose=False):
   The input file is compressed in one fell swoop.  The output_filename
   defaults to input_filename + ".bliss-zlib".
 
-  If verbose is True, compress() will use bliss.log.info() to report
-  compression statistics.
+  If verbose is True, compress() will use bliss.core.log.info() to
+  report compression statistics.
   """
   input_size  = 0
   output_size = 0
@@ -43,7 +43,7 @@ def compress (input_filename, output_filename=None, verbose=False):
     input_size = len(bytes)
 
     if verbose:
-      bliss.log.info("Compressing %s (%d bytes).", input_filename, input_size)
+      log.info("Compressing %s (%d bytes).", input_filename, input_size)
 
     compressed  = zlib.compress(bytes, 3)
     output_size = len(compressed)
@@ -55,11 +55,11 @@ def compress (input_filename, output_filename=None, verbose=False):
     percent = (1.0 - (output_size / float(input_size) )) * 100
 
     if verbose:
-      bliss.log.info("Wrote %s (%d bytes).", output_filename, output_size)
-      bliss.log.info("Compressed %6.2f percent", percent)
+      log.info("Wrote %s (%d bytes).", output_filename, output_size)
+      log.info("Compressed %6.2f percent", percent)
 
   except (IOError, OSError), e:
-    bliss.log.error(str(e) + ".")
+    log.error(str(e) + ".")
 
   return output_size
 
@@ -67,7 +67,7 @@ def compress (input_filename, output_filename=None, verbose=False):
 def exit (status=None):
   """exit([status])
 
-  Calls bliss.log.end()
+  Calls bliss.core.log.end()
 
   Exit the interpreter by raising SystemExit(status).  If the status
   is omitted or None, it defaults to zero (i.e., success).  If the
@@ -75,7 +75,7 @@ def exit (status=None):
   is another kind of object, it will be printed and the system exit
   status will be one (i.e., failure).
   """
-  bliss.log.end()
+  log.end()
   sys.exit(status)
 
 
@@ -160,7 +160,7 @@ def parseArgs (argv, defaults):
   Parses command-line arguments according to the given defaults.  For
   every key in defaults, an argument of the form --key=value will be
   parsed.  Numeric arguments are converted from strings with errors
-  reported via bliss.log.error() and default values used instead.
+  reported via bliss.core.log.error() and default values used instead.
 
   Returns a copy of defaults with parsed option values and a list of
   any non-flag arguments.
@@ -178,17 +178,17 @@ def parseArgs (argv, defaults):
         key = key[2:]
       options[key] = value
   except getopt.GetoptError, err:
-    bliss.log.error( str(err)  )
-    bliss.gds.usage( exit=True )
+    log.error( str(err)  )
+    usage( exit=True )
 
   for key in numeric:
     value = options[key]
     if type(value) is str:
-      options[key] = bliss.util.toNumber(value)
+      options[key] = util.toNumber(value)
 
     if options[key] is None:
       msg = "Option '%s': '%s' is not a number, using default '%s' instead."
-      bliss.log.error(msg, key, value, defaults[key])
+      log.error(msg, key, value, defaults[key])
       options[key] = defaults[key]
 
   return options, args

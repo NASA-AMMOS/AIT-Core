@@ -4,7 +4,7 @@
 """
 BLISS Sequences
 
-The bliss.seq module provides sequences of commands.
+The bliss.core.seq module provides sequences of commands.
 """
 
 from __future__ import absolute_import
@@ -15,7 +15,7 @@ import struct
 import sys
 import time
 
-import bliss
+from bliss.core import cmd, util
 
 
 def setBit (value, bit, bitval):
@@ -38,12 +38,12 @@ class Seq (object):
     """Creates a new BLISS Command Sequence
 
     Creates an empty sequence which will be encoded and decoded based
-    on the given command dictionary (default: bliss.cmd.DefaultCmdDict).
-    If the optional pathname is given, the command sequence (text or
+    on the given command dictionary (default: cmd.DefaultCmdDict).  If
+    the optional pathname is given, the command sequence (text or
     binary) will be read from it.
     """
     self.pathname  = pathname
-    self.cmddict   = cmddict or bliss.cmd.getDefaultCmdDict()
+    self.cmddict   = cmddict or cmd.getDefaultCmdDict()
     self.crc32     = None
     self.seqid     = id
     self.lines     = [ ]
@@ -68,7 +68,7 @@ class Seq (object):
       else:
         for expected in ['seqid', 'version']:
           if name == expected:
-            value = bliss.util.toNumber(tokens[1], None)
+            value = util.toNumber(tokens[1], None)
             if value is None:
               msg = 'Parameter "%s" value "%s" is not a number.'
               log.error(msg % (name, tokens[1]), poss)
@@ -85,7 +85,7 @@ class Seq (object):
   @cmddict.setter
   def cmddict (self, value):
     if value is None:
-      value = bliss.cmd.getDefaultCmdDict()
+      value = cmd.getDefaultCmdDict()
     self._cmddict = value
 
 
@@ -269,7 +269,7 @@ class Seq (object):
       for line in self.lines:
         output.write( line.encode() )
 
-    self.crc32 = bliss.util.crc32File(filename, 6)
+    self.crc32 = util.crc32File(filename, 6)
 
     with open(filename, 'r+b') as output:
       output.seek(2)
@@ -440,7 +440,7 @@ class SeqCmd (SeqAtom):
       msg = 'Command argument size mismatch: expected %d, but encountered %d.'
       log.error(msg % (cmddict[name].nargs, len(args)), pos)
 
-    args   = [ bliss.util.toNumber(a, a) for a in args ]
+    args   = [ util.toNumber(a, a) for a in args ]
     cmd    = cmddict.create(name, *args)
 
     return cls(cmd, delay, attrs, comment, pos)

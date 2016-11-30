@@ -160,10 +160,15 @@ Description:
 '''
 
 from docopt import docopt
-import bliss
+
 import os
 import errno
+import traceback
 import yaml
+
+import bliss
+from bliss.core import dmc, log
+
 
 def createDirStruct(paths, verbose=False):
     '''Loops bliss.config._datapaths from BLISS_CONFIG and creates a directory.
@@ -187,7 +192,7 @@ def createDirStruct(paths, verbose=False):
             for p in pathlist:
                 os.makedirs(p)
                 if verbose:
-                    bliss.log.info(p)
+                    log.info(p)
         except OSError, e:
             if e.errno == errno.EEXIST and os.path.isdir(path):
                 pass
@@ -219,10 +224,10 @@ if __name__ == '__main__':
         end = days + length
 
         for d in range(start, end):
-            utc = bliss.dmc.getUTCDatetimeDOY(d)
+            utc = dmc.getUTCDatetimeDOY(d)
 
             doy = utc.split(':')
-            bliss.log.info('Creating GDS directories for %s:%s' % (doy[0], doy[1]))
+            log.info('Creating GDS directories for %s:%s' % (doy[0], doy[1]))
 
             pathvars['year'] = doy[0]
             pathvars['doy'] = doy[1]
@@ -234,9 +239,8 @@ if __name__ == '__main__':
             createDirStruct(bliss.config._datapaths, verbose)
 
     except KeyboardInterrupt:
-        bliss.log.info('Received Ctrl-C.  Stopping BLISS Create Directories.')
+        log.info('Received Ctrl-C.  Stopping BLISS Create Directories.')
 
     except Exception as e:
         print e
-        bliss.log.error('BLISS Create Directories error: %s' % str(e))
-
+        log.error('BLISS Create Directories error: %s' % traceback.format_exc())

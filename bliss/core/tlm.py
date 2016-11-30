@@ -4,8 +4,9 @@
 """
 BLISS Telemetry
 
-The bliss.tlm module provides telemetry fields and telemetry dictionaries.
-Dictionaries contain packet, header, data, and field definitions.
+The bliss.core.tlm module provides telemetry fields and telemetry
+dictionaries.  Dictionaries contain packet, header, data, and field
+definitions.
 """
 
 import os
@@ -13,6 +14,7 @@ import yaml
 import csv
 
 import bliss
+from bliss.core import dtype, log, util
 
 
 class wordarray(object):
@@ -133,7 +135,7 @@ class FieldDefinition(object):
 
 
     def __repr__(self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
 
     @property
@@ -163,11 +165,11 @@ class FieldDefinition(object):
 
     @type.setter
     def type(self, value):
-        if type(value) is str and bliss.dtype.get(value) is not None:
-            self._type = bliss.dtype.get(value)
+        if type(value) is str and dtype.get(value) is not None:
+            self._type = dtype.get(value)
         else:
             self._type = value
-            bliss.log.error("Invalid field type '%s' " % value)
+            log.error("Invalid field type '%s' " % value)
 
 
     def decode(self, bytes, raw=False):
@@ -181,11 +183,11 @@ class FieldDefinition(object):
         # Apply bit mask if needed
         if self.mask is not None:
             value &= self.mask
-            #bliss.log.info("mask out: " + bin(value))
+            #log.info("mask out: " + bin(value))
 
         if self.shift > 0:
             value >>= self.shift
-            #bliss.log.info("shift out: " + bin(value))
+            #log.info("shift out: " + bin(value))
 
         if not raw and self.enum is not None:
             value = self.enum.get(value, value)
@@ -246,7 +248,7 @@ class FieldDefinition(object):
         return valid
 
     def toDict(self):
-        return {self.name: bliss.util.toDict(self)}
+        return { self.name: util.toDict(self) }
 
 
 
@@ -349,7 +351,7 @@ class Packet(object):
 
 
     def toDict(self):
-        return bliss.util.toDict(self)
+        return util.toDict(self)
 
 
 
@@ -418,7 +420,7 @@ class PacketDefinition(object):
 
 
     def __repr__(self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     def __getstate__(self):
         state            = dict((s, getattr(self, s)) for s in self.__slots__)
@@ -517,7 +519,7 @@ class PacketDefinition(object):
         return valid
 
     def toDict(self):
-        return { self.name: bliss.util.toDict(self) }
+        return { self.name: util.toDict(self) }
 
 
 
@@ -692,7 +694,7 @@ class TlmDict(dict):
             self[defn.name]          = defn
             self.pktnames[defn.name] = defn
         else:
-            bliss.log.error("Duplicate packet name '%s'" % defn.name)
+            log.error("Duplicate packet name '%s'" % defn.name)
 
     def create(self, name, data=None):
         """Creates a new packet with the given definition and raw data.
@@ -732,11 +734,14 @@ class TlmDictWriter(object):
     def __init__(self, tlmdict=None):
         self.tlmdict = tlmdict or getDefaultDict()
 
-    def writeToCSV(self, output_path=bliss.config._directory):
+    def writeToCSV(self, output_path=None):
         '''writeToCSV - write the telemetry dictionary to csv
         '''
         header = ['Name', 'First Byte', 'Last Byte', 'Bit Mask', 'Endian',
                   'Type', 'Description', 'Values']
+
+        if output_path is None:
+            output_path = bliss.config._directory
 
         for pkt_name in self.tlmdict:
             filename = os.path.join(output_path, pkt_name + '.csv')
@@ -766,7 +771,7 @@ class TlmDictWriter(object):
 
 
 def getDefaultDict(reload=False):
-    return bliss.util.getDefaultDict(__name__, 'tlmdict', TlmDict, reload)
+    return util.getDefaultDict(__name__, 'tlmdict', TlmDict, reload)
 
 
 def getDefaultSchema():

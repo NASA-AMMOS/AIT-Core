@@ -26,9 +26,10 @@ Description:
 '''
 
 from docopt import docopt
-
-import bliss
 import sys
+
+from bliss.core import log, tlm
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
@@ -41,15 +42,15 @@ if __name__ == '__main__':
 
     # initialize telemetry dictionary writer
     if arguments.pop('--tlm'):
-        writer = bliss.tlm.TlmDictWriter()
+        writer = tlm.TlmDictWriter()
 
     # initialize command dictionary writer
     if arguments.pop('--cmd'):
-        bliss.log.error("Not yet supported")
+        log.error("Not yet supported")
         sys.exit()
 
     # write to csv
     if format == 'csv':
         writer.writeToCSV(output_path=path)
     else:
-        bliss.log.error("Invalid <format> specified.")
+        log.error("Invalid <format> specified.")

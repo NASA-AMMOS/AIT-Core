@@ -2,9 +2,9 @@
 # U.S. Government Sponsorship acknowledged.
 
 """
-BLISS EVR Reader (EVR)
+BLISS Event Record (EVR) Reader
 
-The bliss.evr module is used to read the EVRs from a YAML file.
+The bliss.core.evr module is used to read the EVRs from a YAML file.
 
 Also includes deprecated EVRParser class for parsing the EVR
 information from the FSW EVR classes.
@@ -16,6 +16,7 @@ import re
 import yaml
 
 import bliss
+from bliss.core import log, util
 
 
 class EVRReader(object):
@@ -36,7 +37,7 @@ class EVRReader(object):
 
         except IOError, e:
             msg = "Could not load EVR YAML '%s': '%s'"
-            bliss.log.error(msg, filename, str(e))
+            log.error(msg, filename, str(e))
 
     def read(self, filename):
         if self.filename is None:
@@ -52,7 +53,7 @@ def getDefaultSchema():
     return os.path.join(bliss.config._directory, 'evr_schema.json')
 
 def getDefaultDict(reload=False):
-    d = bliss.util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)
+    d = util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)
     return d.evrs
 
 def getDefaultEVRs():

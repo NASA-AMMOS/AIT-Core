@@ -1,21 +1,16 @@
-#!/usr/bin/env python
-#
+#!/usr/bin/env python2.7
+
 # Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
-"""
-BLISS EVR Parser Tests
-
-Provides unit and functional tests for the bliss.evr module.
-"""
 
 import sys
 import os
 import datetime
 
 import nose
-import bliss
 
+from bliss.core import cfg
 
 from . import TestFile
 
@@ -63,7 +58,7 @@ def platform ():
 def test_expandConfigPaths ():
     prefix   = os.path.join('/', 'bliss')
     actual   = {
-        'desc'    : 'Test bliss.cfg.expandConfigPaths()',
+        'desc'    : 'Test cfg.expandConfigPaths()',
         'file'    : os.path.join('bin', 'bliss-orbits'),
         'filename': os.path.join('bin', 'bliss-orbits'),
         'nested'  : {
@@ -73,7 +68,7 @@ def test_expandConfigPaths ():
         }
     }
     expected = {
-        'desc'    : 'Test bliss.cfg.expandConfigPaths()',
+        'desc'    : 'Test cfg.expandConfigPaths()',
         'file'    : os.path.join(prefix, 'bin', 'bliss-orbits'),
         'filename': os.path.join(prefix, 'bin', 'bliss-orbits'),
         'nested'  : {
@@ -83,7 +78,7 @@ def test_expandConfigPaths ():
         }
     }
 
-    bliss.cfg.expandConfigPaths(actual, prefix, None, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, None, 'file', 'filename')
     assert actual == expected
 
 def test_expandConfigPaths_w_variables ():
@@ -94,34 +89,34 @@ def test_expandConfigPaths_w_variables ():
         'hostname': hostname()
     }
     actual   = {
-        'desc'    : 'Test bliss.cfg.expandConfigPaths() with variables',
+        'desc'    : 'Test cfg.expandConfigPaths() with variables',
         'file'    : os.path.join('bin', '${x}', 'bliss-orbits'),
         'filename': os.path.join('bin', '${y}', 'bliss-orbits')
     }
     expected = {
-        'desc'    : 'Test bliss.cfg.expandConfigPaths() with variables',
+        'desc'    : 'Test cfg.expandConfigPaths() with variables',
         'file'    : os.path.join(prefix, 'bin', 'test-x', 'bliss-orbits'),
         'filename': os.path.join(prefix, 'bin', 'test-y', 'bliss-orbits')
     }
 
-    bliss.cfg.expandConfigPaths(actual, prefix, pathvars, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, pathvars, 'file', 'filename')
     assert actual == expected
 
 
 def test_expandPath ():
     pathname = os.path.join('~', 'bin', 'bliss-orbits')
-    assert bliss.cfg.expandPath(pathname) == os.path.expanduser(pathname)
+    assert cfg.expandPath(pathname) == os.path.expanduser(pathname)
 
     pathname = os.path.join('/', 'bin', 'bliss-orbits')
-    assert bliss.cfg.expandPath(pathname) == pathname
+    assert cfg.expandPath(pathname) == pathname
 
     pathname = os.path.join('' , 'bin', 'bliss-orbits')
-    assert bliss.cfg.expandPath(pathname) == os.path.abspath(pathname)
+    assert cfg.expandPath(pathname) == os.path.abspath(pathname)
 
     pathname = os.path.join('' , 'bin', 'bliss-orbits')
     prefix   = os.path.join('/', 'bliss')
     expected = os.path.join(prefix, pathname)
-    assert bliss.cfg.expandPath(pathname, prefix) == expected
+    assert cfg.expandPath(pathname, prefix) == expected
 
 
 def test_replaceVariables ():
@@ -131,7 +126,7 @@ def test_replaceVariables ():
     }
     pathname = os.path.join('/' , '${x}', 'bliss-orbits')
     expected = [ os.path.join('/', pathvars['x'], 'bliss-orbits') ]
-    assert bliss.cfg.replaceVariables(pathname, pathvars) == expected
+    assert cfg.replaceVariables(pathname, pathvars) == expected
 
     # Test expandPath with more complex path variable with multiple
     # permutations
@@ -151,10 +146,10 @@ def test_replaceVariables ():
         os.path.join('/', pathvars['x'], pathvars['y'][1],
                      pathvars['z'][1], 'bliss-orbits')
     ]
-    assert bliss.cfg.replaceVariables(pathname, pathvars) == expected
+    assert cfg.replaceVariables(pathname, pathvars) == expected
 
 def test_addPathVariables ():
-    config = bliss.cfg.BlissConfig(data=YAML())
+    config = cfg.BlissConfig(data=YAML())
     before = config._pathvars
     before_len = len(before.keys())
 
@@ -172,23 +167,23 @@ def test_addPathVariables ():
 
 def test_flatten ():
     d = { 'a': { 'foo': 'a' }, 'b': { 'foo': 'b' } }
-    assert bliss.cfg.flatten(dict(d), 'a', 'b') == { 'foo': 'b' }
-    assert bliss.cfg.flatten(dict(d), 'b', 'a') == { 'foo': 'a' }
+    assert cfg.flatten(dict(d), 'a', 'b') == { 'foo': 'b' }
+    assert cfg.flatten(dict(d), 'b', 'a') == { 'foo': 'a' }
 
 
 def test_loadYAML ():
     with TestFile(data=YAML()) as filename:
-        assert bliss.cfg.loadYAML(filename) == bliss.cfg.loadYAML(data=YAML())
+        assert cfg.loadYAML(filename) == cfg.loadYAML(data=YAML())
 
 
 def test_merge ():
     d = { 'foo': 'bar' }
     o = { 'foo': 'baz' }
-    assert bliss.cfg.merge(d, o) == o
+    assert cfg.merge(d, o) == o
 
     d = { 'foo': 'bar' }
     o = { 'baz': 'bop' }
-    assert bliss.cfg.merge(d, o) == { 'foo': 'bar', 'baz': 'bop' }
+    assert cfg.merge(d, o) == { 'foo': 'bar', 'baz': 'bop' }
 
 
 def assert_BlissConfig (config, path, filename=None):
@@ -228,12 +223,12 @@ def assert_BlissConfig (config, path, filename=None):
 
 
 def test_BlissConfig ():
-    config = bliss.cfg.BlissConfig(data=YAML())
+    config = cfg.BlissConfig(data=YAML())
     path   = 'bin/bliss-orbits'
     assert_BlissConfig(config, path)
 
     with TestFile(data=YAML()) as filename:
-        config = bliss.cfg.BlissConfig(filename)
+        config = cfg.BlissConfig(filename)
         assert_BlissConfig(config, path, filename)
 
         config.reload()

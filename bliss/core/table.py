@@ -1,12 +1,10 @@
+# Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
+# U.S. Government Sponsorship acknowledged.
+
 """
 BLISS Table Converter
 
-The bliss.table module provides the dictionary for translating tables
-"""
-
-"""
-Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
-U.S. Government Sponsorship acknowledged.
+The bliss.core.table module provides the dictionary for translating tables.
 """
 
 import cPickle
@@ -17,7 +15,8 @@ import binascii
 import array
 import hashlib
 
-import bliss
+from bliss.core import dtype, log, util
+
 
 class FSWColDefn (object):
     """FSWColDefn - Argument Definition
@@ -41,7 +40,7 @@ class FSWColDefn (object):
 
 
     def __repr__ (self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     @property
     def enum(self):
@@ -114,7 +113,7 @@ class FSWColDefn (object):
             self._bytes = value
 
     def toDict(self):
-        return {self.name: bliss.util.toDict(self)}
+        return {self.name: util.toDict(self)}
 
 
 class FSWTab (object):
@@ -190,7 +189,7 @@ class FSWTabDefn (object):
 
 
     def __repr__ (self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     def toText(self, stream, fswtab_f, verbose, version):
         out = ""
@@ -208,7 +207,7 @@ class FSWTabDefn (object):
                 #print "name: " + name
                 colfmt = str(fswcoldefn.format)
                 #print "format: " + colfmt
-                colpk = bliss.dtype.get(fswcoldefn.type)
+                colpk = dtype.get(fswcoldefn.type)
                 #print "packing: " + str(colpk)
                 coltype = fswcoldefn.type
                 #print "type: " + coltype
@@ -295,7 +294,7 @@ class FSWTabDefn (object):
                #print "name: " + name
                colfmt = str(fswcoldefn.format)
                #print "format: " + colfmt
-               colpk = bliss.dtype.get(fswcoldefn.type)
+               colpk = dtype.get(fswcoldefn.type)
                #print "packing: " + str(colpk)
                coltype = fswcoldefn.type
                #print "type: " + coltype
@@ -441,7 +440,7 @@ class FSWTabDefn (object):
                     fswcoldefn = coldef[1]
                     name = fswcoldefn.name
                     #print "name: " + name
-                    colpk = bliss.dtype.get(fswcoldefn.type)
+                    colpk = dtype.get(fswcoldefn.type)
                     #print "packing: " + str(colpk)
                     units = fswcoldefn.units
                     #print "units: " + units
@@ -513,7 +512,7 @@ class FSWTabDefn (object):
         #Now calculate and update CRC field in the FSW header
         fswbin_f.close()
         fname = fswbin_f.name
-        crc32 = bliss.util.crc32File(fname, 0)
+        crc32 = util.crc32File(fname, 0)
         if verbose is not None and verbose != 0:
             print "CRC: %x"%crc32
         #print "fname: "+fname+", crc32: "+str(crc32)
@@ -603,7 +602,7 @@ class FSWTabDictCache (object):
 
     def update (self):
         msg = "Saving updates from more recent '%s' to '%s'"
-        bliss.log.info(msg, self.filename, self.pcklname)
+        log.info(msg, self.filename, self.pcklname)
         with open(self.pcklname, "wb") as output:
             cPickle.dump(self.fswtabdict, output, -1)
 
@@ -618,7 +617,7 @@ def getDefaultFSWTabDict ():
         fswtabdict  = _DefaultFSWTabDictCache.load()
     except IOError, e:
         msg = "Could not load default command dictionary '%s': %s'"
-        bliss.log.error(msg, filename, str(e))
+        log.error(msg, filename, str(e))
 
     return fswtabdict
 

@@ -1,13 +1,8 @@
-#!/usr/bin/env python
-#
+#!/usr/bin/env python2.7
+
 # Copyright 2015 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
-"""
-BLISS PCap Unit Tests
-
-Provides unit and functional tests for the bliss.pcap module.
-"""
 
 import datetime
 import os
@@ -16,7 +11,8 @@ import time
 import warnings
 
 import nose
-import bliss
+
+from bliss.core import dmc, pcap
 
 
 TmpFilename = None
@@ -27,7 +23,7 @@ with warnings.catch_warnings():
 
 
 def testPCapGlobalHeader ():
-    header = bliss.pcap.PCapGlobalHeader()
+    header = pcap.PCapGlobalHeader()
     assert header.magic_number  == 0xA1B2C3D4
     assert header.version_major == 2
     assert header.version_minor == 4
@@ -41,7 +37,7 @@ def testPCapGlobalHeader ():
 
 
 def testPCapPacketHeader ():
-    header = bliss.pcap.PCapPacketHeader()
+    header = pcap.PCapPacketHeader()
     assert time.time() - header.ts <= 1
     assert header.incl_len == 0
     assert header.orig_len == 0
@@ -59,7 +55,7 @@ def testReadBigEndian ():
         stream.write(bytes)
 
     # Read pcap using API
-    with bliss.pcap.open(TmpFilename, 'r') as stream:
+    with pcap.open(TmpFilename, 'r') as stream:
         assert stream.header.magic_number  == 0xA1B2C3D4
         assert stream.header.version_major == 2
         assert stream.header.version_minor == 4
@@ -92,7 +88,7 @@ def testReadLittleEndian ():
         stream.write(bytes)
 
     # Read pcap using API
-    with bliss.pcap.open(TmpFilename, 'r') as stream:
+    with pcap.open(TmpFilename, 'r') as stream:
         assert stream.header.magic_number  == 0xA1B2C3D4
         assert stream.header.version_major == 2
         assert stream.header.version_minor == 4
@@ -119,7 +115,7 @@ def testWrite ():
     ts    = time.time()
 
     # Write pcap using API
-    with bliss.pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, 'w') as stream:
         assert stream.write(bytes) == len(bytes)
 
     # Read pcap file
@@ -141,11 +137,11 @@ def testWrite ():
 def testWriteRead ():
     packets = 'When a packet hits a pocket on a socket on a port.'.split()
 
-    with bliss.pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, 'w') as stream:
         for p in packets:
             stream.write(p)
 
-    with bliss.pcap.open(TmpFilename, 'r') as stream:
+    with pcap.open(TmpFilename, 'r') as stream:
         index   = 0
         prev_ts = 0
 
@@ -168,7 +164,7 @@ def testWriteRead ():
 
 
 def testPCapPacketHeaderInit ():
-    header = bliss.pcap.PCapPacketHeader()
+    header = pcap.PCapPacketHeader()
     assert header._format == 'IIII'
     assert header._size == 16
     assert header.incl_len == 0
@@ -176,7 +172,7 @@ def testPCapPacketHeaderInit ():
     assert header._data == str(header)
     assert header._swap == '@'
 
-    ts, usec = bliss.dmc.getTimestampUTC()
+    ts, usec = dmc.getTimestampUTC()
     header.ts_sec, header.ts_usec = ts, usec
 
     float_ts = float(ts) + (float(usec) / 1e6)

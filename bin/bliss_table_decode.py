@@ -12,46 +12,47 @@ Examples:
 import os
 import sys
 
-import bliss
+from bliss.core import gds, log, table
+
 
 defaults = {
-  "verbose": 0,
-  "version": 0,
-  "fswtabdict": None,
-  "tabletype": "targets",
-  "binfile": None
+    "binfile"   : None,
+    "fswtabdict": None,
+    "tabletype" : "targets",
+    "verbose"   : 0,
+    "version"   : 0
 }
 
+
 def main():
-    bliss.log.begin()
-    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+    log.begin()
 
-    # Set the verbosity
-    verbose  = options['verbose']
-    version  = options['version']
-    dictpath = options['fswtabdict']
-    tabletype = options['tabletype']
-    binfile = options['binfile']
+    options, args = gds.parseArgs(sys.argv[1:], defaults)
+    binfile       = options['binfile']
+    dictpath      = options['fswtabdict']
+    tabletype     = options['tabletype']
+    verbose       = options['verbose']
+    version       = options['version']
 
-    # Grab default command dictionary
+    # Grab default table dictionary
     if dictpath is not None:
-      dictCache = bliss.table.FSWTabDictCache(filename=dictpath)
+        dictCache = table.FSWTabDictCache(filename=dictpath)
 
-      try:
-        filename = dictCache.filename
-      except IOError, e:
-        msg = "Could not load default command dictionary '%s': %s'"
-        bliss.log.error(msg, filename, str(e))
+        try:
+            filename = dictCache.filename
+        except IOError, e:
+            msg = 'Could not load default table dictionary "%s": %s'
+            log.error(msg, filename, str(e))
 
-    fswtabdict  = bliss.table.getDefaultFSWTabDict()
+    fswtabdict  = table.getDefaultFSWTabDict()
 
     # Check if cmddict exists
     if fswtabdict is not None:
-      # Write out the table file using the command dictionary
-      bliss.table.writeToText(fswtabdict,tabletype,binfile,verbose,version)
+        # Write out the table file using the command dictionary
+        table.writeToText(fswtabdict, tabletype, binfile, verbose, version)
 
-    print
-    bliss.log.end()
+    log.end()
+
 
 if __name__ == '__main__':
     main()

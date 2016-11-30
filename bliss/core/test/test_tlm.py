@@ -1,16 +1,20 @@
+#!/usr/bin/env python2.7
+
 # Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
+
 
 import os
 import csv
 
-import bliss
 import nose
+
+from bliss.core import tlm
 
 
 class TestTlmDictWriter(object):
     test_yaml_file = '/tmp/test.yaml'
-    test_outpath = '/tmp'
+    test_outpath   = '/tmp'
 
     def test_writeToCSV(self):
         yaml_doc = """
@@ -36,9 +40,9 @@ class TestTlmDictWriter(object):
         with open(self.test_yaml_file, 'wb') as out:
             out.write(yaml_doc)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_file)
+        tlmdict = tlm.TlmDict(self.test_yaml_file)
 
-        writer = bliss.tlm.TlmDictWriter(tlmdict=tlmdict)
+        writer = tlm.TlmDictWriter(tlmdict=tlmdict)
         writer.writeToCSV(self.test_outpath)
 
         expected_csv = os.path.join(self.test_outpath, 'Packet1.csv')
@@ -55,6 +59,7 @@ class TestTlmDictWriter(object):
 
         os.remove(self.test_yaml_file)
         os.remove(expected_csv)
+
 
 class TestFieldDefinition(object):
     test_yaml_test1 = '/tmp/test_test1.yaml'
@@ -77,7 +82,7 @@ class TestFieldDefinition(object):
         os.remove(self.test_yaml_test1)
 
     def test_field_definition(self):
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_test1)
+        tlmdict = tlm.TlmDict(self.test_yaml_test1)
         assert tlmdict['OCO3_1553_EHS'].fields[0].name == 'field_1'
         assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'Field 1'
 
@@ -95,17 +100,18 @@ class TestFieldDefinition(object):
         with open(test_yaml_test2, 'wb') as out:
             out.write(yaml_docs_test2)
 
-        tlmdict = bliss.tlm.TlmDict(test_yaml_test2)
+        tlmdict = tlm.TlmDict(test_yaml_test2)
 
         assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'field_1'
 
         os.remove(test_yaml_test2)
 
+
 class TestTlmConfig(object):
     test_yaml_inc1 = '/tmp/test_inc1.yaml'
     test_yaml_inc2 = '/tmp/test_inc2.yaml'
     test_yaml_main = '/tmp/test_main.yaml'
-    test_pkl_main = '/tmp/test_main.pkl'
+    test_pkl_main  = '/tmp/test_main.pkl'
 
     yaml_docs_inc1 = (
         '- !Field\n'
@@ -149,7 +155,7 @@ class TestTlmConfig(object):
         with open(self.test_yaml_main, 'wb') as out:
             out.write(yaml_docs_main)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        tlmdict = tlm.TlmDict(self.test_yaml_main)
         assert len(tlmdict['OCO3_1553_EHS'].fields) == 3
         assert tlmdict['OCO3_1553_EHS'].fields[1].name == 'field_B'
         assert tlmdict['OCO3_1553_EHS'].fields[1].bytes == 1
@@ -175,7 +181,7 @@ class TestTlmConfig(object):
         with open(self.test_yaml_main, 'wb') as out:
             out.write(yaml_docs_main)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        tlmdict = tlm.TlmDict(self.test_yaml_main)
         assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
         assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
         assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
@@ -209,7 +215,7 @@ class TestTlmConfig(object):
         with open(self.test_yaml_main, 'wb') as out:
             out.write(yaml_docs_main)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        tlmdict = tlm.TlmDict(self.test_yaml_main)
         assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
         assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
         assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
@@ -255,7 +261,7 @@ class TestTlmConfig(object):
         with open(self.test_yaml_main, 'wb') as out:
             out.write(yaml_docs_main)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        tlmdict = tlm.TlmDict(self.test_yaml_main)
         assert len(tlmdict['OCO3_1553_EHS'].fields) == 6
         assert tlmdict['OCO3_1553_EHS'].fields[5].name == 'field_FOO'
         assert tlmdict['OCO3_1553_EHS'].fields[5].bytes == [6, 7]
@@ -307,7 +313,7 @@ class TestTlmConfig(object):
         with open(self.test_yaml_main, 'wb') as out:
             out.write(yaml_docs_main)
 
-        tlmdict = bliss.tlm.TlmDict(self.test_yaml_main)
+        tlmdict = tlm.TlmDict(self.test_yaml_main)
         assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
         assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
         assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
