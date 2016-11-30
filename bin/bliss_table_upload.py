@@ -12,8 +12,6 @@ Options:
 Examples:
 
   $ bliss-table-upload.py output/targets_table.bin
-
-Authors: Ben Bornstein, Alice Stanboli
 '''
 
 import os

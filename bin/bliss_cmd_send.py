@@ -11,9 +11,6 @@ simulator via UDP.
 Examples:
 
   $ bliss-cmd-send.py OCO3_CMD_START_SEQUENCE_NOW 1
-
-Authors: Ben Bornstein
-
 '''
 
 

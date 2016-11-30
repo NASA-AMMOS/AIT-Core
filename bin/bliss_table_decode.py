@@ -7,8 +7,6 @@ Decodes the given FSW binary table to text.
 Examples:
 
   $ bin/bliss-table-decode.py --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
-
-Authors: Ben Bornstein, Alice Stanboli
 '''
 
 import os

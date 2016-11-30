@@ -19,7 +19,6 @@ Description:
 Examples:
 
     $ bliss-tlm-serve.py test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
-
 '''
 
 from docopt import docopt

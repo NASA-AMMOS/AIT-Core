@@ -5,8 +5,6 @@ The bliss.table module provides the dictionary for translating tables
 """
 
 """
-Authors: Alice Stanboli
-
 Copyright 2014 California Institute of Technology.  ALL RIGHTS RESERVED.
 U.S. Government Sponsorship acknowledged.
 """

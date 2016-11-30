@@ -27,8 +27,6 @@ Examples:
   $ bliss-yaml-validate.py --cmd --yaml /path/to/cmd.yaml
   $ bliss-yaml-validate.py --tlm --yaml /path/to/tlm.yaml
   $ bliss-yaml-validate.py --yaml /path/to/yaml --schema /path/to/schema
-
-Authors: Jordan Padams
 '''
 
 import sys

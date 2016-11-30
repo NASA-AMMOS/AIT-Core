@@ -7,8 +7,6 @@ Encodes the given FSW text table to binary.
 Examples:
 
   $ bin/bliss-table-encode.py --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
-
-Authors: Ben Bornstein, Alice Stanboli
 '''
 
 import os

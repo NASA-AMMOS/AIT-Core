@@ -157,7 +157,6 @@ Description:
     Create directories starting 3 days from now for 90 days
 
         $ bliss-create-dirs -d 3 -l 90
-
 '''
 
 from docopt import docopt

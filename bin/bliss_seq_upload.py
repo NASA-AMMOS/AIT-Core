@@ -12,8 +12,6 @@ Options:
 Examples:
 
   $ bliss-seq-upload.py seq/oco3_seq_gps_001_reset.bin
-
-Authors: Ben Bornstein
 '''
 
 import os

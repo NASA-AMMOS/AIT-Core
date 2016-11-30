@@ -10,9 +10,6 @@ Sends the given relative timed sequence via UDP.
 Examples:
 
   $ bliss-seq-send.py test.rts
-
-Authors: Ben Bornstein
-
 '''
 
 import os
