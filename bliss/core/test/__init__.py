@@ -12,23 +12,24 @@ import warnings
 import logging
 
 import bliss
+import bliss.core
 
 
 bliss.config.reload('data/config/config.yaml')
 
 def setUp():
-    '''Set up tests.
+    """Set up tests.
 
     Turn logging level to CRITICAL: due to failure test cases, there
     are many verbose log messages that are useful in context.
-    '''
+    """
     logging.getLogger('bliss').setLevel(logging.CRITICAL)
 
 def tearDown():
-    '''Tear down tests.
+    """Tear down tests.
 
     Turn logging level back to INFO.
-    '''
+    """
     logging.getLogger('bliss').setLevel(logging.INFO)
 
 

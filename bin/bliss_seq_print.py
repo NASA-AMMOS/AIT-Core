@@ -13,33 +13,34 @@ Examples:
 import os
 import sys
 
-import bliss
+from bliss.core import gds, log, seq
+
 
 def main():
-    defaults = { }
+    log.begin()
 
-
-    bliss.log.begin()
-    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+    defaults      = { }
+    options, args = gds.parseArgs(sys.argv[1:], defaults)
 
     if len(args) == 0:
-      bliss.gds.usage(exit=True)
+        gds.usage(exit=True)
 
     filename  = os.path.abspath(args[0])
     extension = os.path.splitext(filename)[1]
 
     if extension.lower() != '.bin':
-      bliss.log.warn("Filename '%s' does not have a '.bin' extension", filename)
+        log.warn("Filename '%s' does not have a '.bin' extension", filename)
 
-    sequence = bliss.seq.Seq(filename)
+    sequence = seq.Seq(filename)
 
     if not sequence.validate():
-      for msg in sequence.messages:
-        bliss.log.error(msg)
+        for msg in sequence.messages:
+            log.error(msg)
 
     sequence.printText()
 
-    bliss.log.end()
+    log.end()
+
 
 if __name__ == '__main__':
     main()

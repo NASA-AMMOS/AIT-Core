@@ -22,52 +22,52 @@ Examples:
 '''
 
 from docopt import docopt
-
-# import socket
 import gevent
 
-import bliss
+from bliss.core import log, pcap
 
-clients = { }
+
+Clients = { }
+
 
 def send(data):
-    """Sends data to all registered clients.  Deregisters clients on I/O error."""
-    for address, socket in clients.items():
+    """Sends data to all registered clients.  Deregisters clients on I/O
+    error.
+    """
+    for address, socket in Clients.items():
         try:
             socket.sendall(data)
             failed = 0
         except IOError:
-            del clients[address]
+            del Clients[address]
             failed = failed + 1
+
 
 def on_connect(socket, address):
     """Registers newly connected clients to receive data via send()."""
-    global clients
-    clients[address] = socket
+    global Clients
+    Clients[address] = socket
 
-if __name__ == '__main__':
+
+def main(options=None):
     args = docopt(__doc__)
 
     try:
-
-        bliss.log.begin()
+        log.begin()
 
         filename = args.pop('<pcap-filename>')
-        port = int(args.pop('--port'))
-        verbose = args.pop('--verbose')
-
-        host = 'localhost'
+        port     = int(args.pop('--port'))
+        verbose  = args.pop('--verbose')
+        host     = 'localhost'
 
         if not verbose:
-            bliss.log.info('Will only report every 10 telemetry packets')
-            bliss.log.info('Will only report long telemetry send delays')
+            log.info('Will only report every 10 telemetry packets')
+            log.info('Will only report long telemetry send delays')
 
-        print host
-        print port
         server = gevent.server.StreamServer((host, port), on_connect)
         server.start()
 
-        with bliss.pcap.open(filename, 'r') as stream:
+        with pcap.open(filename, 'r') as stream:
             npackets = 0
             prev_ts  = None
 
@@ -78,18 +78,18 @@ if __name__ == '__main__':
                 delay = header.ts - prev_ts
 
                 if delay >= 2:
-                    bliss.log.info('Next telemetry in %1.2f seconds' % delay)
+                    log.info('Next telemetry in %1.2f seconds' % delay)
 
                 gevent.sleep(delay)
 
                 nbytes = len(packet)
 
                 if npackets == 0:
-                    bliss.log.info('Sent first telemetry packet (%d bytes)' % nbytes)
+                    log.info('Sent first telemetry packet (%d bytes)' % nbytes)
                 elif verbose:
-                    bliss.log.info('Sent telemetry (%d bytes)' % nbytes)
+                    log.info('Sent telemetry (%d bytes)' % nbytes)
                 elif npackets % 10 == 0:
-                    bliss.log.info('Sent 10 telemetry packets')
+                    log.info('Sent 10 telemetry packets')
 
                 send(packet)
 
@@ -97,9 +97,13 @@ if __name__ == '__main__':
                 prev_ts   = header.ts
 
     except KeyboardInterrupt:
-        bliss.log.info('Received Ctrl-C.  Stopping telemetry stream.')
+        log.info('Received Ctrl-C.  Stopping telemetry stream.')
 
     except Exception as e:
-        bliss.log.error('TLM send error: %s' % str(e))
+        log.error('TLM send error: %s' % str(e))
 
-    bliss.log.end()
+    log.end()
+
+
+if __name__ == '__main__':
+    main()

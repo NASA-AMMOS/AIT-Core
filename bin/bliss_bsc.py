@@ -12,6 +12,8 @@ import threading
 import yaml
 
 import bliss
+from bliss.core import bsc
+
 
 config_file = bliss.config.bsc.filename
 
@@ -51,8 +53,8 @@ def main():
                 handler_conf
             ))
 
-    lgr_mngr = bliss.bsc.StreamCaptureManager(mngr_conf, handler_configs)
-    manager_server = bliss.bsc.StreamCaptureManagerServer(logger_manager=lgr_mngr, host=host, port=port)
+    lgr_mngr = bsc.StreamCaptureManager(mngr_conf, handler_configs)
+    manager_server = bsc.StreamCaptureManagerServer(logger_manager=lgr_mngr, host=host, port=port)
 
     t = threading.Thread(target=manager_server.start)
     t.setDaemon(True)

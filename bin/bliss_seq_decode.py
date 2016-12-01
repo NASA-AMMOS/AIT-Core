@@ -13,37 +13,41 @@ Examples:
 import os
 import sys
 
-import bliss
+from bliss.core import gds, log, seq
+
 
 def main():
-    defaults = { }
+    log.begin()
 
-    bliss.log.begin()
-    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
+    defaults      = { }
+    options, args = gds.parseArgs(sys.argv[1:], defaults)
 
     if len(args) == 0:
-      bliss.gds.usage(exit=True)
+        gds.usage(exit=True)
 
     filename  = os.path.abspath(args[0])
     extension = os.path.splitext(filename)[1]
 
     if extension.lower() != '.bin':
-      bliss.log.warn("Filename '%s' does not have a '.bin' extension", filename)
+        log.warn("Filename '%s' does not have a '.bin' extension", filename)
 
-    sequence = bliss.seq.Seq(filename)
+    sequence = seq.Seq(filename)
 
     if not sequence.validate():
-      for msg in sequence.messages:
-        bliss.log.error(msg)
+        for msg in sequence.messages:
+            log.error(msg)
     else:
-      txtpath = sequence.txtpath
-      seqid   = sequence.seqid
-      version = sequence.version
+        txtpath = sequence.txtpath
+        seqid   = sequence.seqid
+        version = sequence.version
 
-      bliss.log.info("Writing %s (seqid=0x%04x, version=%u).", txtpath, seqid, version)
-      sequence.writeText()
+        msg = "Writing %s (seqid=0x%04x, version=%u)."
+        log.info(msg, txtpath, seqid, version)
 
-    bliss.log.end()
+        sequence.writeText()
+
+    log.end()
+
 
 if __name__ == '__main__':
     main()

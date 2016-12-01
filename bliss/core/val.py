@@ -4,8 +4,8 @@
 """
 BLISS YAML Validator
 
-The bliss.val module provides validation of content for YAML
-files based on specified schema
+The bliss.core.val module provides validation of content for YAML
+files based on specified schema.
 """
 
 import os
@@ -18,7 +18,7 @@ import linecache
 import jsonschema
 import collections
 
-import bliss
+from bliss.core import dtype, log
 
 
 class YAMLProcessor (object):
@@ -181,7 +181,7 @@ class ErrorHandler(object):
         """Pretties up the output error message so it is readable
         and designates where the error came from"""
 
-        bliss.log.debug("Displaying document from lines '%i' to '%i'", start, end)
+        log.debug("Displaying document from lines '%i' to '%i'", start, end)
         if len(error.relative_path) > 0:
             error_key = error.relative_path.pop()
 
@@ -280,7 +280,7 @@ class Validator(object):
 
         valid = True
 
-        bliss.log.debug("BEGIN: Schema-based validation for YAML '%s' with schema '%s'", self._ymlfile, self._schemafile)
+        log.debug("BEGIN: Schema-based validation for YAML '%s' with schema '%s'", self._ymlfile, self._schemafile)
 
         # Make sure the yml and schema have been loaded
         if self._ymlproc.loaded and self._schemaproc.loaded:
@@ -306,7 +306,7 @@ class Validator(object):
         elif not self._schemaproc.loaded:
             raise jsonschema.SchemaError("Schema must be loaded in order to validate.")
 
-        bliss.log.debug("END: Schema-based validation complete for '%s'", self._ymlfile)
+        log.debug("END: Schema-based validation complete for '%s'", self._ymlfile)
         return valid
 
     def display_errors(self, docnum, e, messages):
@@ -316,7 +316,7 @@ class Validator(object):
             else:
                 msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
 
-            bliss.log.error(msg)
+            log.error(msg)
             self.ehandler.process(docnum, self._ymlproc.doclines, e, messages)
 
 
@@ -339,7 +339,7 @@ class CmdValidator (Validator):
         self._ymlproc = YAMLProcessor(self._ymlfile, False)
 
         # Turn off the YAML Processor
-        bliss.log.debug("BEGIN: Content-based validation of Command dictionary")
+        log.debug("BEGIN: Content-based validation of Command dictionary")
         if ymldata is not None:
             cmddict = ymldata
         elif ymldata is None and self._ymlproc.loaded:
@@ -404,12 +404,12 @@ class CmdValidator (Validator):
                 if not all(r.valid is True for r in argrules):
                     argsvalid = False
 
-            bliss.log.debug("END: Content-based validation complete for '%s'", self._ymlfile)
+            log.debug("END: Content-based validation complete for '%s'", self._ymlfile)
 
             # check validity of all command rules and argument validity
             return all(rule.valid is True for rule in rules) and argsvalid
 
-        except bliss.val.YAMLValidationError, e:
+        except YAMLValidationError, e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
@@ -417,7 +417,7 @@ class CmdValidator (Validator):
                 else:
                     msg = "Validation Failed for YAML file '" + self._yml + "'"
 
-                bliss.log.error(msg)
+                log.error(msg)
                 self.ehandler.process(docnum, self.ehandler.doclines, e, messages)
                 return False
 
@@ -442,7 +442,7 @@ class TlmValidator (Validator):
         self._ymlproc = YAMLProcessor(self._ymlfile, False)
 
         # Turn off the YAML Processor
-        bliss.log.debug("BEGIN: Content-based validation of Command dictionary")
+        log.debug("BEGIN: Content-based validation of Command dictionary")
         if ymldata is not None:
             tlmdict = ymldata
         elif ymldata is None and self._ymlproc.loaded:
@@ -505,12 +505,12 @@ class TlmValidator (Validator):
                 if not all(r.valid is True for r in fldrules):
                     fldsvalid = False
 
-            bliss.log.debug("END: Content-based validation complete for '%s'", self._ymlfile)
+            log.debug("END: Content-based validation complete for '%s'", self._ymlfile)
 
             # check validity of all packet rules and field validity
             return all(rule.valid is True for rule in rules) and fldsvalid
 
-        except bliss.val.YAMLValidationError, e:
+        except YAMLValidationError, e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
@@ -518,7 +518,7 @@ class TlmValidator (Validator):
                 else:
                     msg = "Validation Failed for YAML file '" + self._yml + "'"
 
-                bliss.log.error(msg)
+                log.error(msg)
                 self.ehandler.process(self.ehandler.doclines, e, messages)
                 return False
 
@@ -552,7 +552,7 @@ class UniquenessRule(ValidationRule):
             self.valid = False
         elif val is not None:
             self.val_list.append(val)
-            bliss.log.debug(self.val_list)
+            log.debug(self.val_list)
 
 
 class TypeRule(ValidationRule):
@@ -569,8 +569,7 @@ class TypeRule(ValidationRule):
 
         Assumes the defn has 'type' and 'name' attributes
         """
-        dtype = defn.type
-        if not isinstance(dtype, bliss.dtype.PrimitiveType):
+        if not isinstance(defn.type, dtype.PrimitiveType):
             self.messages.append(self.msg % str(defn.name))
             # self.messages.append("TBD location message")
             self.valid = False
@@ -591,16 +590,15 @@ class TypeSizeRule(ValidationRule):
 
         Assumes the defn has 'type' and 'name' attributes, and a slice() method
         """
-        dtype = defn.type
-        if isinstance(dtype, bliss.dtype.PrimitiveType):
+        if isinstance(defn.type, dtype.PrimitiveType):
             # Check the nbytes designated in the YAML match the PDT
-            nbytes = dtype.nbytes
+            nbytes = defn.type.nbytes
             defnbytes = defn.slice().stop - defn.slice().start
             if nbytes != defnbytes:
                 self.messages.append(self.msg % defn.name)
                 self.messages.append("Definition size of (" + str(defnbytes) +
                                      " bytes) does not match size of data" +
-                                     " type " +str(dtype.name) + " (" +
+                                     " type " +str(defn.type.name) + " (" +
                                      str(nbytes) + " byte(s))")
                 # TODO self.messages.append("TBD location message")
                 self.valid = False
@@ -661,7 +659,7 @@ class YAMLValidationError(Exception):
         # Set some exception infomation
         self.msg = arg
 
-        bliss.log.error(self.msg)
+        log.error(self.msg)
 
 
 class YAMLError(Exception):
@@ -669,4 +667,4 @@ class YAMLError(Exception):
         # Set some exception infomation
         self.msg = arg
 
-        bliss.log.error(self.msg)
+        log.error(self.msg)

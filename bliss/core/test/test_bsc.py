@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-#
+#!/usr/bin/env python2.7
+
 # Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
-''''''
 
 import gevent.monkey
 gevent.monkey.patch_all()
@@ -20,13 +19,14 @@ import gevent
 import nose
 import nose.tools
 
-import bliss.bsc
+from bliss.core import bsc, pcap
+
 
 class TestSocketStreamCapturer(object):
     @mock.patch('gevent.socket.socket')
     def test_mocked_udp_socket(self, socket_mock):
         handler = {'name':'name', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
         socket_mock.assert_called_with(gevent.socket.AF_INET,
                                        gevent.socket.SOCK_DGRAM)
         assert sl.conn_type == 'udp'
@@ -36,22 +36,22 @@ class TestSocketStreamCapturer(object):
         socket_family = getattr(gevent.socket,
                                 'AF_PACKET',
                                 gevent.socket.AF_INET)
-        proto = bliss.bsc.ETH_PROTOCOL
+        proto = bsc.ETH_PROTOCOL
         handler = {'name':'name', 'log_dir':'/tmp'}
-        bliss.bsc.RAW_SOCKET_FD = 'foobar'
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['eho0', 0], 'ethernet')
+        bsc.RAW_SOCKET_FD = 'foobar'
+        sl = bsc.SocketStreamCapturer([handler], ['eho0', 0], 'ethernet')
         # We need to test a different load if the rawsocket package is used
-        if not bliss.bsc.RAW_SOCKET_FD:
+        if not bsc.RAW_SOCKET_FD:
             socket_mock.socket.assert_called_with(socket_family,
                                                   gevent.socket.SOCK_RAW,
                                                   socket.htons(proto))
         else:
-            socket_mock.fromfd.assert_called_with(bliss.bsc.RAW_SOCKET_FD,
+            socket_mock.fromfd.assert_called_with(bsc.RAW_SOCKET_FD,
                                                   socket_family,
                                                   gevent.socket.SOCK_RAW,
                                                   socket.htons(proto))
         assert sl.conn_type == 'ethernet'
-        bliss.bsc.RAW_SOCKET_FD = None
+        bsc.RAW_SOCKET_FD = None
 
     @mock.patch('gevent.socket')
     def test_mocked_eth_socket_with_rawsocket(self, socket_mock):
@@ -59,35 +59,35 @@ class TestSocketStreamCapturer(object):
                                 'AF_PACKET',
                                 gevent.socket.AF_INET)
 
-        rawsocket_is_installed = True if bliss.bsc.RAW_SOCKET_FD else False
+        rawsocket_is_installed = True if bsc.RAW_SOCKET_FD else False
         if not rawsocket_is_installed:
             rawsocket_fd = 'fake_rawsocket_fd'
-            bliss.bsc.RAW_SOCKET_FD = rawsocket_fd
+            bsc.RAW_SOCKET_FD = rawsocket_fd
         else:
-            rawsocket_fd = bliss.bsc.RAW_SOCKET_FD
+            rawsocket_fd = bsc.RAW_SOCKET_FD
 
         handler = {'name':'name', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['eho0', 0], 'ethernet')
+        sl = bsc.SocketStreamCapturer([handler], ['eho0', 0], 'ethernet')
         # We need to test a different load if the rawsocket package is used
         socket_mock.fromfd.assert_called_with(rawsocket_fd,
                                               socket_family,
                                               gevent.socket.SOCK_RAW,
-                                              socket.htons(bliss.bsc.ETH_PROTOCOL))
+                                              socket.htons(bsc.ETH_PROTOCOL))
         assert sl.conn_type == 'ethernet'
 
         if not rawsocket_is_installed:
-            bliss.bsc.RAW_SOCKET_FD = None
+            bsc.RAW_SOCKET_FD = None
 
-    @mock.patch('bliss.pcap.PCapStream')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.PCapStream')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_packet_log(self, socket_mock, pcap_open_mock, pcap_stream_mock):
         socket_mock.return_value = mock.MagicMock()
-        pcap_open_mock.return_value = bliss.pcap.PCapStream()
+        pcap_open_mock.return_value = pcap.PCapStream()
 
         # Verify UDP packet log
         handler = {'name':'name', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
         logger = sl.capture_handlers[0]['logger']
         sl.socket.recv.return_value = 'udp_data'
         sl.capture_packet()
@@ -96,20 +96,20 @@ class TestSocketStreamCapturer(object):
         logger.write.assert_called_with('udp_data')
 
         # Verify Ethernet log
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['etho0', 0], 'ethernet')
+        sl = bsc.SocketStreamCapturer([handler], ['etho0', 0], 'ethernet')
         logger = sl.capture_handlers[0]['logger']
         logger.write.reset_mock()
         sl.socket.recv.return_value = 'eth_data'
         sl.capture_packet()
         logger.write.assert_called_with('eth_data')
 
-    @mock.patch('bliss.pcap.PCapStream')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.PCapStream')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_packet_log_mutliple_handlers(self, socket_mock, pcap_open_mock, pcap_stream_mock):
         h1 = {'name':'h1', 'log_dir':'/tmp'}
         h2 = {'name':'h2', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer([h1, h2], ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer([h1, h2], ['', 9000], 'udp')
 
         sl.capture_handlers[0]['logger'] = mock.MagicMock()
         sl.capture_handlers[1]['logger'] = mock.MagicMock()
@@ -121,8 +121,8 @@ class TestSocketStreamCapturer(object):
         assert logger1.write.call_count == 1
         assert logger2.write.call_count == 1
 
-    @mock.patch('bliss.pcap.PCapStream')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.PCapStream')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_capture_with_data_manip(self, socket_mock, pcap_open_mock, pcap_stream_mock):
         transform_mock = mock.Mock(side_effect=['transformed data'])
@@ -131,7 +131,7 @@ class TestSocketStreamCapturer(object):
             'log_dir': '/tmp',
             'pre_write_transforms': [transform_mock]
         }
-        sl = bliss.bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer([handler], ['', 9000], 'udp')
         logger = sl.capture_handlers[0]['logger']
         sl.socket.recv.return_value = 'udp_data'
         sl.capture_packet()
@@ -145,7 +145,7 @@ class TestSocketStreamCapturer(object):
         addr = ['', 9000]
         conn_type = 'udp'
 
-        sl = bliss.bsc.SocketStreamCapturer(handler, addr, conn_type)
+        sl = bsc.SocketStreamCapturer(handler, addr, conn_type)
         conf_dump = sl.dump_handler_config_data()
 
         handler = sl.capture_handlers[0]
@@ -165,7 +165,7 @@ class TestSocketStreamCapturer(object):
         addr = ['', 9000]
         conn_type = 'udp'
 
-        sl = bliss.bsc.SocketStreamCapturer(handler, addr, conn_type)
+        sl = bsc.SocketStreamCapturer(handler, addr, conn_type)
         handler = sl.capture_handlers[0]
         new_date = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
         handler['log_rot_time'] = new_date.timetuple()
@@ -194,11 +194,11 @@ class TestSocketStreamCapturer(object):
     @mock.patch('gevent.socket.socket')
     def test_should_rotate_log(self, socket_mock):
         handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
         h = sl.capture_handlers[0]
         assert sl._should_rotate_log(h) == False
 
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
         h = sl.capture_handlers[0]
         new_date = datetime.datetime.now() - datetime.timedelta(days=1)
         h['log_rot_time'] = new_date.timetuple()
@@ -214,7 +214,7 @@ class TestSocketStreamCapturer(object):
             'rotate_log_delta': 2
         }
 
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
         h = sl.capture_handlers[0]
 
         assert sl._should_rotate_log(h) == False
@@ -230,14 +230,14 @@ class TestSocketStreamCapturer(object):
         h['log_rot_time'] = new_date.timetuple()
         assert sl._should_rotate_log(h) == True
 
-    @mock.patch('bliss.pcap.PCapStream')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.PCapStream')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_log_rotation(self, socket_mock, pcap_open_mock, pcap_stream_mock):
-        pcap_open_mock.return_value = bliss.pcap.PCapStream()
+        pcap_open_mock.return_value = pcap.PCapStream()
 
         handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
         handler = sl.capture_handlers[0]
 
         log_path = sl._get_log_file(handler)
@@ -279,7 +279,7 @@ class TestSocketStreamCapturer(object):
     @mock.patch('gevent.socket.socket')
     def test_time_rotation_index_decoding(self, socket_mock):
         handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
 
         # We expect an error when we input a bad time index value
         nose.tools.assert_raises(
@@ -290,7 +290,7 @@ class TestSocketStreamCapturer(object):
 
         assert 2 == sl._decode_time_rotation_index('tm_mday')
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_get_log_file(self, socket_mock, pcap_open_mock):
         h = {
@@ -299,7 +299,7 @@ class TestSocketStreamCapturer(object):
             'path':'foobarbaz/%j/',
             'file_name_pattern': 'extrafolder/%j/%Y-%m-%d-%H-%M-randomUDPtestData-{name}.pcap'
         }
-        sl = bliss.bsc.SocketStreamCapturer(h, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(h, ['', 9000], 'udp')
         handler = sl.capture_handlers[0]
 
         # Check log path generation with user specified handler-specific path
@@ -312,38 +312,39 @@ class TestSocketStreamCapturer(object):
         assert log_path == expected_path
 
         h = {'name':'name', 'log_dir': '/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer(h, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(h, ['', 9000], 'udp')
         handler = sl.capture_handlers[0]
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_get_logger(self, socket_mock, pcap_open_mock):
         handler = {'name':'name', 'log_dir':'/tmp', 'rotate_log':True}
-        sl = bliss.bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
         # We expect _get_logger to generate the file path for the PCapStream
-        # and call the bliss.pcap.open static function to generate the stream.
+        # and call the bliss.core.pcap.open static function to generate the
+        # stream.
         handler = sl.capture_handlers[0]
         log_path = sl._get_log_file(handler)
         pcap_open_mock.assert_called_with(log_path, mode='a')
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_add_handler(self, socket_mock, pcap_open_mock):
         h1 = {'name':'h1', 'log_dir':'/tmp'}
         h2 = {'name':'h2', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer(h1, ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer(h1, ['', 9000], 'udp')
 
         assert len(sl.capture_handlers) == 1
         sl.add_handler(h2)
         assert len(sl.capture_handlers) == 2
         assert pcap_open_mock.call_count == 2
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_remove_handler(self, socket_mock, pcap_open_mock):
         h1 = {'name':'h1', 'log_dir':'/tmp'}
         h2 = {'name':'h2', 'log_dir':'/tmp'}
-        sl = bliss.bsc.SocketStreamCapturer([h1, h2], ['', 9000], 'udp')
+        sl = bsc.SocketStreamCapturer([h1, h2], ['', 9000], 'udp')
 
         assert len(sl.capture_handlers) == 2
         sl.remove_handler('h2')
@@ -351,14 +352,14 @@ class TestSocketStreamCapturer(object):
         assert sl.capture_handlers[0]['name'] == 'h1'
 
 class TestStreamCaptureManager(object):
-    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    @mock.patch('bliss.core.bsc.SocketStreamCapturer')
     def test_log_manager_init(self, socket_log_mock):
         loggers = [
             ('foo', ['', 9000], 'udp', '/tmp', {'rotate_log': True}),
             ('bar', ['', 8125], 'udp', '/tmp', {}),
         ]
         fake_mngr_conf = 'mngr_conf'
-        lm = bliss.bsc.StreamCaptureManager(fake_mngr_conf, loggers)
+        lm = bsc.StreamCaptureManager(fake_mngr_conf, loggers)
 
         assert lm._mngr_conf == fake_mngr_conf
         assert len(lm._stream_capturers.keys()) == 2
@@ -366,13 +367,13 @@ class TestStreamCaptureManager(object):
         assert "['', 8125]" in lm._stream_capturers.keys()
 
     @mock.patch('os.makedirs')
-    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    @mock.patch('bliss.core.bsc.SocketStreamCapturer')
     def test_add_logger(self, socket_log_mock, mkdirs_mock):
         mngr_conf = {'root_log_directory': '/totally/a/../fake/dir/../name'}
         # We'll use this to make sure directory paths are cleaned
         cleaned_dir_path = os.path.normpath(mngr_conf['root_log_directory'])
 
-        lm = bliss.bsc.StreamCaptureManager(mngr_conf, [])
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
         lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
 
         assert len(lm._stream_capturers.keys()) == 1
@@ -403,12 +404,12 @@ class TestStreamCaptureManager(object):
             }, ['', 1234], 'udp'
         )
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('os.makedirs')
     @mock.patch('gevent.socket.socket')
     def test_pre_write_transform_load(self, socket_mock, mkdirs_mock, pcap_open_mock):
         mngr_conf = {'root_log_directory': '/tmp'}
-        lm = bliss.bsc.StreamCaptureManager(mngr_conf, [])
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
 
         kwargs = {
             'pre_write_transforms': [
@@ -429,15 +430,15 @@ class TestStreamCaptureManager(object):
         assert 'identity_transform' == handler['pre_write_transforms'][0].__name__
         assert 1 == handler['pre_write_transforms'][1]('bogus input')
 
-    @mock.patch('bliss.log.warn')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.log.warn')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('os.makedirs')
     @mock.patch('gevent.socket.socket')
     def test_bad_builtin_transform_load(self, socket_mock, mkdirs_mock, open_mock, log_mock):
         logging.getLogger('bliss').setLevel(logging.INFO)
 
         mngr_conf = {'root_log_directory': '/tmp'}
-        lm = bliss.bsc.StreamCaptureManager(mngr_conf, [])
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
 
         bad_func_name = 'this function name doesnt exist'
         kwargs = {
@@ -454,15 +455,15 @@ class TestStreamCaptureManager(object):
 
         logging.getLogger('bliss').setLevel(logging.CRITICAL)
 
-    @mock.patch('bliss.log.warn')
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.log.warn')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('os.makedirs')
     @mock.patch('gevent.socket.socket')
     def test_bad_type_transform_load(self, socket_mock, mkdirs_mock, open_mock, log_mock):
         logging.getLogger('bliss').setLevel(logging.INFO)
 
         mngr_conf = {'root_log_directory': '/tmp'}
-        lm = bliss.bsc.StreamCaptureManager(mngr_conf, [])
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
 
         bad_func_name = ('foobarbaz',)
         kwargs = {
@@ -476,17 +477,17 @@ class TestStreamCaptureManager(object):
 
         logging.getLogger('bliss').setLevel(logging.CRITICAL)
 
-    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    @mock.patch('bliss.core.bsc.SocketStreamCapturer')
     def test_remove_logger(self, socket_log_mock):
-        lm = bliss.bsc.StreamCaptureManager(None, [])
+        lm = bsc.StreamCaptureManager(None, [])
         lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
 
         lm.stop_capture_handler('foo')
         assert mock.call().remove_handler('foo') in socket_log_mock.mock_calls
 
-    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    @mock.patch('bliss.core.bsc.SocketStreamCapturer')
     def test_get_logger_data(self, socket_log_mock):
-        lm = bliss.bsc.StreamCaptureManager(None, [])
+        lm = bsc.StreamCaptureManager(None, [])
         with mock.patch('os.mkdir') as mkdir_mock:
             lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
             lm.add_logger('bar', ['', 8500], 'udp', '/tmp')
@@ -499,9 +500,9 @@ class TestStreamCaptureManager(object):
         assert "['', 8500]" in logger_data.keys()
         assert "['', 9000]" in logger_data.keys()
 
-    @mock.patch('bliss.bsc.SocketStreamCapturer')
+    @mock.patch('bliss.core.bsc.SocketStreamCapturer')
     def test_get_logger_stats(self, socket_log_mock):
-        lm = bliss.bsc.StreamCaptureManager(None, [])
+        lm = bsc.StreamCaptureManager(None, [])
         with mock.patch('os.mkdir') as mkdir_mock:
             lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
             lm.add_logger('bar', ['', 8500], 'udp', '/tmp')
@@ -514,11 +515,11 @@ class TestStreamCaptureManager(object):
         assert "['', 8500]" in logger_data.keys()
         assert "['', 9000]" in logger_data.keys()
 
-    @mock.patch('bliss.pcap.open')
+    @mock.patch('bliss.core.pcap.open')
     @mock.patch('gevent.socket.socket')
     def test_forced_log_rotation(self, socket_mock, pcap_open_mock):
         ''''''
-        lm = bliss.bsc.StreamCaptureManager(None, [])
+        lm = bsc.StreamCaptureManager(None, [])
         with mock.patch('os.mkdir') as mkdir_mock:
             lm.add_logger('foo', ['', 9000], 'udp', '/tmp')
             lm.add_logger('bar', ['', 8500], 'udp', '/tmp')

@@ -12,44 +12,45 @@ Examples:
 import os
 import sys
 
-import bliss
+from bliss.core import gds, log, table
+
 
 defaults = {
-  "verbose": 0,
-  "fswtabdict": None,
-  "tabletype": "targets",
-  "tabfile": None
+    "fswtabdict": None,
+    "tabfile"   : None,
+    "tabletype" : "targets",
+    "verbose"   : 0
 }
 
-def main():
-    bliss.log.begin()
-    options, args = bliss.gds.parseArgs(sys.argv[1:], defaults)
 
-    # Set the verbosity
-    verbose  = options['verbose']
-    dictpath = options['fswtabdict']
-    tabletype = options['tabletype']
-    tabfile = options['tabfile']
+def main():
+    log.begin()
+
+    options, args = gds.parseArgs(sys.argv[1:], defaults)
+    dictpath      = options['fswtabdict']
+    tabfile       = options['tabfile']
+    tabletype     = options['tabletype']
+    verbose       = options['verbose']
 
     # Grab default command dictionary
     if dictpath is not None:
-      dictCache = bliss.table.FSWTabDictCache(filename=dictpath)
+        dictCache = table.FSWTabDictCache(filename=dictpath)
 
-      try:
-        filename = dictCache.filename
-      except IOError, e:
-        msg = "Could not load default command dictionary '%s': %s'"
-        bliss.log.error(msg, filename, str(e))
+        try:
+            filename = dictCache.filename
+        except IOError, e:
+            msg = 'Could not load default table dictionary "%s": %s'
+            log.error(msg, filename, str(e))
 
-    fswtabdict  = bliss.table.getDefaultFSWTabDict()
+    fswtabdict  = table.getDefaultFSWTabDict()
 
     # Check if cmddict exists
     if fswtabdict is not None:
-      # Write out the table file using the command dictionary
-      bliss.table.writeToBinary(fswtabdict,tabletype,tabfile,verbose)
+        # Write out the table file using the command dictionary
+        table.writeToBinary(fswtabdict, tabletype, tabfile, verbose)
 
-    print
-    bliss.log.end()
+    log.end()
+
 
 if __name__ == '__main__':
     main()

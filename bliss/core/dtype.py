@@ -1,25 +1,25 @@
 # Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
-"""
-BLISS Primitive Data Types (PDT)
+"""BLISS Primitive Data Types (PDT)
 
-The bliss.dtype module provides definitions and functions for primitive
-data types used in the construction and manipulation of OCO-3 commands
-and telemetry.  Originally, this module was named bliss.types, but
-types.py conflicts with Python's builtin module of the same name,
-which causes all sorts of subtle import issues and conflicts.
+The bliss.core.dtype module provides definitions and functions for
+primitive data types used in the construction and manipulation of
+OCO-3 commands and telemetry.  Originally, this module was named
+bliss.core.types, but types.py conflicts with Python's builtin module
+of the same name, which causes all sorts of subtle import issues and
+conflicts.
 
-Supported PrimitiveType names (which may be passed to bliss.dtype.get())
-are listed in bliss.dtype.PrimitiveTypes.
+Supported PrimitiveType names (which may be passed to
+bliss.core.dtype.get()) are listed in bliss.core.dtype.PrimitiveTypes.
 
 The following code, shown via the interactive Python prompt,
 demonstrates attributes and methods of the 'LSB_U16' PrimitiveType.
 Several related statements are combined into a single line, forming
 tuples, for succinctness:
 
-    >>> import bliss
-    >>> t = bliss.dtype.get('LSB_U16')
+    >>> from bliss.core import dtype
+    >>> t = dtype.get('LSB_U16')
 
     >>> t.name, t.endian, t.format, t.nbits, t.nbytes
     ('LSB_U16', 'LSB', '<H', 16, 2)
@@ -56,11 +56,11 @@ tuples, for succinctness:
 """
 
 import datetime
-import dmc
 import struct
 import sys
 
-import bliss
+from bliss.core import cmd, dmc, evr, log, util
+
 
 # PrimitiveTypes
 #
@@ -74,8 +74,9 @@ PrimitiveTypes = None
 
 # PrimitiveTypeMap
 #
-# Maps typenames to PrimitiveType.  Use bliss.dtype.get(typename).
-# (Populated below based on information in PrimitiveTypeFormats).
+# Maps typenames to PrimitiveType.  Use
+# bliss.core.dtype.get(typename).  (Populated below based on
+# information in PrimitiveTypeFormats).
 #
 PrimitiveTypeMap = {}
 
@@ -303,7 +304,7 @@ class CmdType(PrimitiveType):
     def cmddict(self):
         """PrimitiveType base for the ComplexType"""
         if self._cmddict is None:
-            self._cmddict = bliss.cmd.getDefaultDict()
+            self._cmddict = cmd.getDefaultDict()
 
         return self._cmddict
 
@@ -356,7 +357,7 @@ class EVRType(PrimitiveType):
     def evrs(self):
         """Getter EVRs dictionary"""
         if self._evrs is None:
-            self._evrs = bliss.evr.getDefaultDict()
+            self._evrs = evr.getDefaultDict()
 
         return self._evrs
 
@@ -376,7 +377,7 @@ class EVRType(PrimitiveType):
         code = [k for k, v in self._evrs.items() if v == value]
 
         if not code:
-            bliss.log.error(str(value) + " not found as EVR. Cannot encode.")
+            log.error(str(value) + " not found as EVR. Cannot encode.")
             return None
         else:
             return super(EVRType, self).encode(code[0])
@@ -467,7 +468,7 @@ class Time32Type(PrimitiveType):
         definition.
         """
         sec = super(Time32Type, self).decode(bytes)
-        return bliss.dmc.toLocalTime(sec)
+        return dmc.toLocalTime(sec)
 
 class Time40Type(PrimitiveType):
     """Time40Type
@@ -544,7 +545,7 @@ class Time64Type(PrimitiveType):
         t = value.split('.')
 
         raw = Time32Type().encode(t[0])
-        raw.extend( get('MSB_U32').encode( bliss.util.toNumber(t[1]) ) )
+        raw.extend( get('MSB_U32').encode( util.toNumber(t[1]) ) )
         return raw
 
     def decode(self, bytes):
@@ -560,7 +561,7 @@ class Time64Type(PrimitiveType):
 
 # # ComplexTypeMap
 # #
-# # Maps typenames to ComplexType.  Use bliss.dtype.get(typename).
+# # Maps typenames to ComplexType.  Use bliss.core.dtype.get(typename).
 #
 ComplexTypeNames = {
     "CMD16": CmdType,
@@ -587,14 +588,6 @@ DataTypeMap.update(PrimitiveTypeMap)
 DataTypeMap.update(ComplexTypeMap)
 
 DataTypes = sorted(PrimitiveTypeMap.keys() + ComplexTypeMap.keys())
-
-
-# # Load Command Dictionary for querying command names
-# #
-# # Pre-load the Command Dictionary so we only have to do it once when
-# # the software is loaded, versus each time the type is instantiated
-# #
-# CmdDict = bliss.cmd.getDefaultCmdDict()
 
 
 def getPDT(typename):

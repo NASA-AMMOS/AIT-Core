@@ -4,14 +4,14 @@
 """
 BLISS Coordinate Functions
 
-The bliss.coord module provides various coordinate manpulation and
-transformation functions.
+The bliss.core.coord module provides various coordinate manpulation
+and transformation functions.
 """
 
 import datetime
 import math
 
-import bliss
+from bliss.core import dmc
 
 
 class Ellipsoid (object):
@@ -93,7 +93,7 @@ def eci2ecef (x, y, z, gmst=None):
 
   """
   if gmst is None:
-    gmst = bliss.dmc.toGMST()
+    gmst = dmc.toGMST()
 
   X = (x * math.cos(gmst))    + (y * math.sin(gmst))
   Y = (x * (-math.sin(gmst))) + (y * math.cos(gmst))
@@ -113,7 +113,7 @@ def eci2geodetic (x, y, z, gmst=None, ellipsoid=None):
 
   """
   if gmst is None:
-    gmst = bliss.dmc.toGMST()
+    gmst = dmc.toGMST()
 
   if ellipsoid is None:
     ellipsoid = WGS84

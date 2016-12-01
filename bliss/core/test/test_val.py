@@ -1,14 +1,19 @@
+#!/usr/bin/env python2.7
+
 # Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
+
 import os
 import jsonschema
+import logging
 
-import bliss
 import mock
 import nose
 
-import logging
+import bliss
+from bliss.core import cmd, log, tlm, val
+
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
 
@@ -17,23 +22,23 @@ class TestYAMLProcessor(object):
     test_yaml_file = '/tmp/test.yaml'
     
     def test_yamlprocess_init(self):
-        yp = bliss.val.YAMLProcessor()
+        yp = val.YAMLProcessor()
         assert yp.loaded == False
         assert yp.data == []
         assert yp.doclines == []
         assert yp._clean
         assert yp.ymlfile is None
 
-    @mock.patch('bliss.val.YAMLProcessor.load')
+    @mock.patch('bliss.core.val.YAMLProcessor.load')
     def test_ymlfile_setter(self, yaml_load_mock):
-        yp = bliss.val.YAMLProcessor()
+        yp = val.YAMLProcessor()
         assert yaml_load_mock.call_count == 0 
         yp.ymlfile = 'something that is not None'
         assert yaml_load_mock.call_count == 1 
 
-    @mock.patch('bliss.val.YAMLProcessor.process')
+    @mock.patch('bliss.core.val.YAMLProcessor.process')
     def test_yaml_load_with_clean(self, process_mock):
-        yp = bliss.val.YAMLProcessor()
+        yp = val.YAMLProcessor()
         yp.load()
         assert process_mock.called
         assert yp.loaded
@@ -49,7 +54,7 @@ class TestYAMLProcessor(object):
         with open(self.test_yaml_file, 'wb') as out:
             out.write(yaml_docs)
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         yp.load(self.test_yaml_file)
         assert len(yp.data) == 2
         assert yp.data[0]['a'] == 'hello'
@@ -67,9 +72,9 @@ class TestYAMLProcessor(object):
         with open(self.test_yaml_file, 'wb') as out:
             out.write(yaml_docs)
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
-            bliss.val.YAMLError,
+            val.YAMLError,
             yp.load, self.test_yaml_file
         )
 
@@ -85,7 +90,7 @@ class TestYAMLProcessor(object):
         with open(self.test_yaml_file, 'w') as out:
             out.write(yaml_docs)
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         out = yp.process(self.test_yaml_file)
 
         assert len(yp.doclines) == 2
@@ -102,7 +107,7 @@ class TestYAMLProcessor(object):
         with open(self.test_yaml_file, 'w') as out:
             out.write(yaml_docs)
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         out = yp.process(self.test_yaml_file)
 
         assert "bar:" in out
@@ -111,9 +116,9 @@ class TestYAMLProcessor(object):
     def test_empty_file_process(self):
         open(self.test_yaml_file, 'w').close()
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
-            bliss.val.YAMLError,
+            val.YAMLError,
             yp.process, self.test_yaml_file
         )
 
@@ -128,7 +133,7 @@ class TestYAMLProcessor(object):
         """
         open(self.test_yaml_file, 'w').close()
 
-        yp = bliss.val.YAMLProcessor(clean=False)
+        yp = val.YAMLProcessor(clean=False)
         nose.tools.assert_raises(
             IOError,
             yp.process, '/tmp/thisFileDoesntExistAndWillCauseAnError'
@@ -140,7 +145,7 @@ class TestYAMLProcessor(object):
 class TestSchemaProcessor(object):
     def test_schema_load(self):
         """ Test variable settings from proper schema loading. """
-        schemaproc = bliss.val.SchemaProcessor()
+        schemaproc = val.SchemaProcessor()
 
         # Test success
         schema = os.path.join(DATA_PATH, "testSchemaLoad1.json")
@@ -152,7 +157,7 @@ class TestSchemaProcessor(object):
 
     def test_schema_load_failure_bad_file(self):
         """ Test Exception raise on not existent file load. """
-        schemaproc = bliss.val.SchemaProcessor()
+        schemaproc = val.SchemaProcessor()
 
         schema = os.path.join('not', 'a', 'valid', 'path.json')
         nose.tools.assert_raises(
@@ -164,7 +169,7 @@ class TestSchemaProcessor(object):
         test_file_path = '/tmp/test.json'
         open(test_file_path, 'w').close()
 
-        schemaproc = bliss.val.SchemaProcessor()
+        schemaproc = val.SchemaProcessor()
 
         nose.tools.assert_raises(
             jsonschema.SchemaError,
@@ -176,13 +181,13 @@ class TestSchemaProcessor(object):
 
 class TestErrorHandler(object):
     def test_error_handler_init(self):
-        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
         assert eh.error == 'error'
         assert eh.ymlfile == 'ymlfile'
         assert eh.schemafile == 'schemafile'
 
     def test_process_bad_root_object(self):
-        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
         messages = []
         error = mock.MagicMock()
         error.message = "this is not of type u'object'"
@@ -190,9 +195,9 @@ class TestErrorHandler(object):
         assert len(messages) == 1
         assert messages[0] == "Invalid root object in YAML. Check format."
 
-    @mock.patch('bliss.val.ErrorHandler.pretty')
+    @mock.patch('bliss.core.val.ErrorHandler.pretty')
     def test_process_docline_docnum_mismatch(self, pretty_mock):
-        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
         messages = []
         error = mock.MagicMock()
         error.message = "Some error message"
@@ -201,9 +206,9 @@ class TestErrorHandler(object):
         pretty_mock.assert_called_with(3, 4, error, messages)
 
 
-    @mock.patch('bliss.val.ErrorHandler.pretty')
+    @mock.patch('bliss.core.val.ErrorHandler.pretty')
     def test_procces_with_single_doc(self, pretty_mock):
-        eh = bliss.val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
         messages = []
         error = mock.MagicMock()
         error.message = "Some error message"
@@ -212,37 +217,37 @@ class TestErrorHandler(object):
         pretty_mock.assert_called_with(1, 3, error, messages)
 
 
-@mock.patch('bliss.log.error')
+@mock.patch('bliss.core.log.error')
 def test_YAMLValidationError_exception(log_mock):
     msg = 'foo'
-    e = bliss.val.YAMLValidationError(msg)
+    e = val.YAMLValidationError(msg)
     assert msg == e.msg
     log_mock.assert_called_with(msg)
 
-@mock.patch('bliss.log.error')
+@mock.patch('bliss.core.log.error')
 def test_YAMLError_exception(log_mock):
     msg = 'foo'
-    e = bliss.val.YAMLError(msg)
+    e = val.YAMLError(msg)
     assert msg == e.msg
     log_mock.assert_called_with(msg)
 
-def val(args):
+def validate(args):
     msgs = []
 
-    validator = bliss.val.Validator(*args)
+    validator = val.Validator(*args)
     v = validator.validate(messages=msgs)
 
     return msgs, v
 
 def dispmsgs(msgs):
     for msg in msgs:
-        bliss.log.error(msg)
+        log.error(msg)
 
 
 def cmdval(args):
     msgs = []
 
-    validator = bliss.val.CmdValidator(*args)
+    validator = val.CmdValidator(*args)
     v = validator.validate(messages=msgs)
 
     return msgs, v
@@ -251,13 +256,13 @@ def cmdval(args):
 def tlmval(args):
     msgs = []
 
-    validator = bliss.val.TlmValidator(*args)
+    validator = val.TlmValidator(*args)
     v = validator.validate(messages=msgs)
 
     return msgs, v
 
 def testYAMLProcesserLoad():
-    ymlproc = bliss.val.YAMLProcessor()
+    ymlproc = val.YAMLProcessor()
 
     # Test bad path
     try:
@@ -276,7 +281,7 @@ def testYAMLProcesserLoad():
 
 
 def testYAMLProcessorProcess():
-    ymlproc = bliss.val.YAMLProcessor()
+    ymlproc = val.YAMLProcessor()
     ymlproc.process(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
 
     # check the document lines are correct
@@ -287,101 +292,101 @@ def testValidatorCmd():
     msgs = []
 
     # test successful validation
-    msgs, v = val([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = validate([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), cmd.getDefaultSchema()])
     assert v
     assert len(msgs) == 0
 
     # test failed validation
-    msgs, v = val([os.path.join(DATA_PATH,  "testInvalidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = validate([os.path.join(DATA_PATH,  "testInvalidCmd1.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
 def testCmdValidator():
     # test successful cmd validation
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), cmd.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     # test failed cmd validation - duplicate name
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test failed cmd validation - duplicate opcode
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test failed cmd validation - bad argtype
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator3.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator3.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test failed cmd validation - bad nbytes
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator4.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator4.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 2
 
     # test failed cmd validation - bad byte order
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator5.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator5.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test failed cmd validation - bad start byte
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator6.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator6.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test success cmd validation - ensure quoted YAML booleans in enums
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator7.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator7.yaml"), cmd.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     # test failed cmd validation - YAML booleans not quoted
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator8.yaml"), bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator8.yaml"), cmd.getDefaultSchema()])
     assert not v
     assert len(msgs) == 2
 
 def testTlmValidator():
     # test successful tlm validation
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testValidTlm1.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testValidTlm1.yaml"), tlm.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     # test failed tlm validation - duplicate packet name
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), tlm.getDefaultSchema()])
     assert not v
     dispmsgs(msgs)
     assert len(msgs) == 1
 
     # test failed tlm validation - duplicate field name
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator2.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator2.yaml"), tlm.getDefaultSchema()])
     assert not v
     print len(msgs)
     assert len(msgs) == 1
 
     # test failed tlm validation - invalid field type
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator3.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator3.yaml"), tlm.getDefaultSchema()])
     assert not v
     assert len(msgs) == 1
 
     # test failed tlm validation - invalid field size for field type specified
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator4.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator4.yaml"), tlm.getDefaultSchema()])
     assert not v
     assert len(msgs) == 2
 
     # test failed tlm validation - un-quoted YAML special variables in enumerations
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator5.yaml"), bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator5.yaml"), tlm.getDefaultSchema()])
     assert not v
     assert len(msgs) == 2
 
 
 def testCmdDictValidation():
     '''Validation test of current command dictionary'''
-    msgs, v = cmdval([bliss.config.cmddict.filename, bliss.cmd.getDefaultSchema()])
+    msgs, v = cmdval([bliss.config.cmddict.filename, cmd.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -389,7 +394,7 @@ def testCmdDictValidation():
 
 def testTlmDictValidation():
     '''Validation test of current telemetry dictionary'''
-    msgs, v = tlmval([bliss.config.tlmdict.filename, bliss.tlm.getDefaultSchema()])
+    msgs, v = tlmval([bliss.config.tlmdict.filename, tlm.getDefaultSchema()])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -399,7 +404,7 @@ def testEvrValidation():
     '''Validation test of current telemetry dictionary'''
     yml = bliss.config.evrdict.filename
     schema = os.path.join(os.path.dirname(yml), 'evr_schema.json')
-    msgs, v = val([yml, schema])
+    msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -409,7 +414,7 @@ def testTableValidation():
     '''Validation test of current table configuration'''
     yml = bliss.config.table.filename
     schema = os.path.join(os.path.dirname(yml), 'table_schema.json')
-    msgs, v = val([yml, schema])
+    msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0

@@ -4,7 +4,7 @@
 """
 BLISS Configuration
 
-The bliss.config module provides classes and functions to manage
+The bliss.core.cfg module provides classes and functions to manage
 (re)configurable aspects of BLISS via a YAML configuration file.
 
 """
@@ -17,11 +17,11 @@ import re
 
 import yaml
 
-from bliss import log
+from bliss.core import log
 
 
 DEFAULT_PATH_VARS = {
-    'year' : datetime.datetime.utcnow().strftime('%Y'),
+    'year': datetime.datetime.utcnow().strftime('%Y'),
     'doy' : datetime.datetime.utcnow().strftime('%j')
 }
 
@@ -119,7 +119,7 @@ def loadYAML (filename=None, data=None):
     """Loads either the given YAML configuration file or YAML data.
 
     Returns None if there was an error reading from the configuration
-    file and logs an error message via bliss.log.error().
+    file and logs an error message via bliss.core.log.error().
     """
     config = None
 
@@ -321,3 +321,10 @@ class BlissConfig (object):
 
         # Need to reload the config with the new variables
         self.reload(self._filename, self._data)
+
+
+# Create a singleton BlissConfig accessible via bliss.config
+sys.modules['bliss'].config = BlissConfig()
+
+# Re-initialize logging now that bliss.config.logging.* parameters may exist.
+log.reinit()

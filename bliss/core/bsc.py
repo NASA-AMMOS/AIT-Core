@@ -22,7 +22,7 @@ import gevent.monkey
 import gevent.pool
 import gevent.socket
 
-from bliss import pcap, log
+from bliss.core import pcap, log
 
 gevent.monkey.patch_all()
 

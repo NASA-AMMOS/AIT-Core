@@ -13,7 +13,6 @@ Usage:
 from docopt import docopt
 import requests
 
-import bliss
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)

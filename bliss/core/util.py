@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-#
+#!/usr/bin/env python2.7
+
 # Copyright 2013 California Institute of Technology.  ALL RIGHTS RESERVED.
 # U.S. Government Sponsorship acknowledged.
 
 """
 BLISS Utilities
 
-The bliss.util module provides general utility functions.
+The bliss.core.util module provides general utility functions.
 """
 
 import os
@@ -19,6 +19,7 @@ import types
 import cPickle
 
 import bliss
+from bliss.core import log
 
 
 class ObjectCache (object):
@@ -64,7 +65,7 @@ class ObjectCache (object):
     def cache(self):
       """Caches the result of loader(filename) to cachename."""
       msg = 'Saving updates from more recent "%s" to "%s"'
-      bliss.log.info(msg, self.filename, self.cachename)
+      log.info(msg, self.filename, self.cachename)
       with open(self.cachename, 'wb') as output:
           cPickle.dump(self._dict, output, -1)
 
@@ -128,11 +129,11 @@ def getDefaultDict(module_name, config_key, loader, reload=False, filename=None)
     """Returns default BLISS dictonary for module_name
 
     This helper function encapulates the core logic necessary to
-    (re)load, cache (via bliss.util.ObjectCache), and return the
-    default dictionary.  For example, in bliss.cmd:
+    (re)load, cache (via util.ObjectCache), and return the default
+    dictionary.  For example, in bliss.core.cmd:
 
     def getDefaultDict(reload=False):
-      return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
+        return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
     """
     module   = sys.modules[module_name]
     default  = getattr(module, 'DefaultDict', None)
@@ -141,15 +142,15 @@ def getDefaultDict(module_name, config_key, loader, reload=False, filename=None)
         try:
             filename = bliss.config[config_key].filename
         except (AttributeError, KeyError), e:
-            bliss.log.error('Missing "%s.filename" in config.yaml', config_key)
+            log.error('Missing "%s.filename" in config.yaml', config_key)
 
     if filename is not None and (default is None or reload is True):
         try:
-            default = bliss.util.ObjectCache(filename, loader).load()
+            default = ObjectCache(filename, loader).load()
             setattr(module, 'DefaultDict', default)
         except IOError, e:
             msg = 'Could not load default %s "%s": %s'
-            bliss.log.error(msg, config_key, filename, str(e))
+            log.error(msg, config_key, filename, str(e))
 
     return default or { }
 
