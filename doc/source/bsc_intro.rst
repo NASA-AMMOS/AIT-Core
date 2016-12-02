@@ -5,7 +5,7 @@ The Binary Stream Capture (BSC) module provides tools for monitoring and capturi
 
 To initialize BSC, run the ``bliss-bsc`` utility script::
 
-    $ ./bliss-bsc
+    $ ./bliss_bsc
 
 If you want to customize BSC before you start it you can do so via a YAML file. By default this config file will be called ``bsc.yaml``. There are two main components of the configuration: The first is the ``capture_manager`` configuration. This sets high level configuration for the system that manages logging tasks as well as the webserver that handles the REST endpoints. The second is ``handler`` configuration which specifies tasks that will log specific connections.
 
@@ -287,21 +287,21 @@ Convenience Scripts
 Create Handler
 ^^^^^^^^^^^^^^
 
-The **bliss-bsc-create-handler** bin script provides a wrapper around the BSC REST endpoint for creating a log handler. It requires a name for the new handler, a hostname/interface name, port/protocol number, and the connection time (one of 'udp', 'tcp', or 'ethernet').
+The **bliss_bsc_create_handler** bin script provides a wrapper around the BSC REST endpoint for creating a log handler. It requires a name for the new handler, a hostname/interface name, port/protocol number, and the connection time (one of 'udp', 'tcp', or 'ethernet').
 
 **Example:**
 
 .. code-block:: bash
 
-   ./bliss-bsc-create-handler new_handler '' 8123 udp
+   ./bliss_bsc_create_handler new_handler '' 8123 udp
 
 Stop Handler
 ^^^^^^^^^^^^
 
-The **bliss-bsc-stop-handler** bin script provides a wrapper around the BSC REST endpoint for stopping a log handler. It requires the handlers name that you wish to stop.
+The **bliss_bsc_stop_handler** bin script provides a wrapper around the BSC REST endpoint for stopping a log handler. It requires the handlers name that you wish to stop.
 
 **Example:**
 
 .. code-block:: bash
 
-   ./bliss-bsc-stop-handler new_handler
+   ./bliss_bsc_stop_handler new_handler

@@ -26,11 +26,11 @@ BLISS provides support for YAML-based configuration of telemetry data within the
             0: 'Core'
             1: 'Payload'
 
-All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  BLISS also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``./bliss-yaml-validate.py`` it will check this for you.
+All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  BLISS also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``./bliss_yaml_validate.py`` it will check this for you.
 
 .. code-block:: bash
 
-    $ ./bliss-yaml-validate.py --tlm
+    $ ./bliss_yaml_validate.py --tlm
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
 BLISS provides telemetry dictionary processing via :class:`bliss.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.tlm.PacketDefinition` instances.

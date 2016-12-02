@@ -62,11 +62,11 @@ All the valid parameters and attributes that you can have in your command dictio
         }
     }
 
-BLISS also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``./bliss-yaml-validate.py`` it will check this for you.
+BLISS also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``./bliss_yaml_validate.py`` it will check this for you.
 
 .. code-block:: bash
     
-    $ ./bliss-yaml-validate.py --cmd
+    $ ./bliss_yaml_validate.py --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
 BLISS provides command encoding/decoding via :class:`bliss.cmd.CmdDict`.

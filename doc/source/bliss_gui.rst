@@ -6,7 +6,7 @@ The BLISS GUI provides an easily customizable and extendible interface for monit
 .. code-block:: bash
 
    cd $BLISS_ROOT/bin
-   ./bliss-gui
+   ./bliss_gui
 
 GUI Customization
 -----------------

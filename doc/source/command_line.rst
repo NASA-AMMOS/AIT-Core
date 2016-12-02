@@ -14,10 +14,6 @@ bliss_bsc
 ^^^^^^^^^
 .. automodule:: bliss_bsc
 
-bliss_gui
-^^^^^^^^^
-.. automodule:: bliss_gui
-
 ----
 
 Sequence Utilities
@@ -32,10 +28,6 @@ bliss_seq_encode
 bliss_seq_decode
 ^^^^^^^^^^^^^^^^
 .. automodule:: bliss_seq_decode
-
-bliss_seq_send
-^^^^^^^^^^^^^^
-.. automodule:: bliss_seq_send
 
 bliss_seq_print
 ^^^^^^^^^^^^^^^
@@ -85,10 +77,6 @@ bliss_table_encode
 ^^^^^^^^^^^^^^^^^^
 .. automodule:: bliss_table_encode
 
-bliss_table_upload
-^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_table_upload
-
 ____
 
 Miscellaneous Utilities
@@ -101,10 +89,6 @@ bliss_create_dirs
 bliss_orbits
 ^^^^^^^^^^^^
 .. automodule:: bliss_orbits
-
-bliss_zlib_upload
-^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_zlib_upload
 
 bliss_yaml_validate
 ^^^^^^^^^^^^^^^^^^^

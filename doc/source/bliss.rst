@@ -1,27 +1,12 @@
 bliss package
 =============
 
-Submodules
-----------
+Subpackages
+-----------
 
 .. toctree::
 
-   bliss.bsc
-   bliss.cfg
-   bliss.cmd
-   bliss.coord
-   bliss.dmc
-   bliss.dtype
-   bliss.evr
-   bliss.gds
-   bliss.geom
-   bliss.gui
-   bliss.log
-   bliss.pcap
-   bliss.seq
-   bliss.tlm
-   bliss.util
-   bliss.val
+    bliss.core
 
 Module contents
 ---------------
