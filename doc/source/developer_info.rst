@@ -63,6 +63,11 @@ If deemed appropriate, prepare an email to all projects / parties known to be us
    Thank you!
    BLISS Development Team
 
+Push Release Artifacts to Compute Cluster
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make life easier for installation on the cluster, be sure to add the release artifacts to a folder in **/proj/oco3/bliss/releases**.
+
 Pointing to a Release
 ---------------------
 
