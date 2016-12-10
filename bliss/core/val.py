@@ -92,9 +92,10 @@ class YAMLProcessor (object):
                     # If we find a document, remove the tag
                     if doc_pattern.match(line):
                         line = doc_pattern.sub(r"---", line).lower()
-                        self.doclines.append(linenum)
                     elif seq_pattern.match(line):
-                        line = seq_pattern.sub(r"\1\2 \3: object", line).lower()
+                        # Replace the sequence start with key string
+                        line = seq_pattern.sub(r"\1\2 \3: line " + str(linenum), line).lower()
+                        self.doclines.append(linenum)
 
                     output = output + line
 
@@ -155,6 +156,15 @@ class SchemaProcessor(object):
 
 
 class ErrorHandler(object):
+    """ErrorHandler class
+
+    Leverages the jsonschema.exceptions.ValidationError API in order to extract
+    useful information from the error to provide more detail on the root cause
+    of the error.
+
+    Refer to http://python-jsonschema.readthedocs.io/en/latest/errors/ for more
+    information on JSON Schema errors.
+    """
 
     __slots__ = ['error', 'doclines', 'ymlfile', 'schemafile', 'messages']
 

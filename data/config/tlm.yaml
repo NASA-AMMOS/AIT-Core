@@ -75,3 +75,4 @@
         packet including checkword if present. The value is the number of
         bytes (octets) following the field minus 1.
       type:   MSB_U16
+      value:  0x360
