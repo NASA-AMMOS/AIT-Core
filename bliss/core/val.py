@@ -92,10 +92,10 @@ class YAMLProcessor (object):
                     # If we find a document, remove the tag
                     if doc_pattern.match(line):
                         line = doc_pattern.sub(r"---", line).lower()
+                        self.doclines.append(linenum)
                     elif seq_pattern.match(line):
                         # Replace the sequence start with key string
                         line = seq_pattern.sub(r"\1\2 \3: line " + str(linenum), line).lower()
-                        self.doclines.append(linenum)
 
                     output = output + line
 
