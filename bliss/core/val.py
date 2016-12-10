@@ -167,7 +167,6 @@ class ErrorHandler(object):
         # TODO: Process the various types of errors
         start = doclines[docnum]+1
         if error.message.endswith("is not of type u'object'"):
-            print error.message
             msg = "Invalid root object in YAML. Check format."
             messages.append(msg)
         elif len(doclines) > docnum+1:
@@ -181,8 +180,21 @@ class ErrorHandler(object):
         """Pretties up the output error message so it is readable
         and designates where the error came from"""
 
-        log.debug("Displaying document from lines '%i' to '%i'", start, end)
-        if len(error.relative_path) > 0:
+        # Handle various validator types, starting with addionalProperties
+        if str(error.validator) == "additionalProperties":
+            msg = ''
+            if 'name' in error.instance:
+                msg = "Error within '%s' definition. " % error.instance['name']
+
+            if len(error.message) > 256:
+                msg += error.message[:253] + "..."
+            else:
+                msg += error.message
+
+            messages.append("Between lines %d - %d. %s" % (start, end, msg))
+        elif len(error.relative_path) > 0:
+            # Next, let's check all those validators that are specific to a
+            # a key-value pair
             error_key = error.relative_path.pop()
 
             context = collections.deque(maxlen=20)
@@ -194,7 +206,10 @@ class ErrorHandler(object):
 
                 # Check if line contains the error
                 if ":" in line:
-                    key, value = line.split(":")
+                    split = line.split(":")
+                    key = split[0]
+                    del split[0]
+                    value = ':'.join(split)
 
                     # TODO:
                     # Handle maxItems TBD
@@ -238,12 +253,6 @@ class ErrorHandler(object):
             messages.append(msg)
 
             linecache.clearcache()
-        elif error.validator == "additionalProperties":
-            if len(error.message) > 256:
-                msg = error.message[:253] + "..."
-            else:
-                msg = error.message
-            messages.append("Between lines %d - %d. %s" % (start, end, msg))
         else:
             messages.append(error.message)
 
