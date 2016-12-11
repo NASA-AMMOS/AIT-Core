@@ -251,7 +251,7 @@ class PrimitiveType(object):
         else:
             if type(value) is str:
                 log("String '%s' cannot be represented as a number." % value)
-            elif type(value) is not int and type(value) is not float:
+            elif type(value) not in (int, long, float):
                 log("Value '%s' is not a primitive type." % str(value))
             elif type(value) is float and not self.float:
                 log("Float '%g' cannot be represented as an integer." % value)
