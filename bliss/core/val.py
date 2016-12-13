@@ -190,6 +190,7 @@ class ErrorHandler(object):
         """Pretties up the output error message so it is readable
         and designates where the error came from"""
 
+        foundline = -1
         # Handle various validator types, starting with addionalProperties
         if str(error.validator) == "additionalProperties":
             msg = ''
@@ -259,12 +260,18 @@ class ErrorHandler(object):
             for line in context:
                 out += line
 
-            msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
-            messages.append(msg)
+            if foundline != -1:
+                msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
+            else:
+                msg = "Unknown error found in %s:\n\n%s" % (self.ymlfile, error.message)
+
+            print msg
 
             linecache.clearcache()
         else:
-            messages.append(error.message)
+            msg = error.message
+
+        messages.append(msg)
 
 
 class Validator(object):

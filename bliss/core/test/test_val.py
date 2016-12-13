@@ -20,7 +20,7 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
 
 class TestYAMLProcessor(object):
     test_yaml_file = '/tmp/test.yaml'
-    
+
     def test_yamlprocess_init(self):
         yp = val.YAMLProcessor()
         assert yp.loaded == False
@@ -32,9 +32,9 @@ class TestYAMLProcessor(object):
     @mock.patch('bliss.core.val.YAMLProcessor.load')
     def test_ymlfile_setter(self, yaml_load_mock):
         yp = val.YAMLProcessor()
-        assert yaml_load_mock.call_count == 0 
+        assert yaml_load_mock.call_count == 0
         yp.ymlfile = 'something that is not None'
-        assert yaml_load_mock.call_count == 1 
+        assert yaml_load_mock.call_count == 1
 
     @mock.patch('bliss.core.val.YAMLProcessor.process')
     def test_yaml_load_with_clean(self, process_mock):
@@ -241,7 +241,7 @@ def validate(args):
 
 def dispmsgs(msgs):
     for msg in msgs:
-        log.error(msg)
+        print "Validation Test Error: %s \n" % msg
 
 
 def cmdval(args):
