@@ -1,4 +1,23 @@
-0x0000: NO_ERROR
-0x0001: EVR_1
-0x0002: EVR_2
-0x0003: EVR_3
+- !EVR
+  name: NO_ERROR
+  code: 0x0001
+  desc: No error
+  message: "No error {desc}"
+
+- !EVR
+  name: EVR_1
+  code: 0x0002
+  desc: EVR 1
+  message: "The first evr {desc}"
+
+- !EVR
+  name: EVR_2
+  code: 0x0003
+  desc: EVR 2
+  message: "The second evr {desc}"
+
+- !EVR
+  name: EVR_3
+  code: 0x0004
+  desc: EVR 3
+  message: "The third evr {desc}"
