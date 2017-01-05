@@ -11,6 +11,7 @@ information from the FSW EVR classes.
 
 """
 
+import binascii
 import os
 import re
 import yaml
@@ -81,6 +82,83 @@ class EVRDefn(object):
             k:getattr(self, k)
             for k in self.__slots__
         }
+
+    def format_message(self, evr_hist_data):
+        ''' Format EVR message with EVR data
+
+        Given a byte array of EVR data, format the EVR's message attribute
+        printf format strings and split the byte array into appropriately
+        sized chunks.
+
+        Args:
+            evr_hist_data: A bytearray of EVR data.
+
+            Example formatting::
+            # This is the character '!', string 'Foo', and int '4279317316'
+            bytearray([0x21, 0x46, 0x6f, 0x6f, 0x00, 0xff, 0x11, 0x33, 0x44])
+
+        Returns:
+            The EVR's message string formatted with the EVR data or the
+            unformatted EVR message string if there are no valid format
+            strings present in it.
+
+        Raises:
+            ValueError: When the bytearray cannot be fully processed with the
+                specified format strings. This is usually a result of the
+                expected data length and the byte array length not matching.
+        '''
+        formatter_info = {
+            's': (-1, str),
+            'c': (1, str),
+            'i': (4, lambda h: int(binascii.hexlify(h), 16)),
+            'd': (4, lambda h: int(binascii.hexlify(h), 16)),
+            'u': (4, lambda h: int(binascii.hexlify(h), 16)),
+            'f': (4, lambda h: float(binascii.hexlify(h), 16)),
+            'e': (4, lambda h: float(binascii.hexlify(h), 16)),
+            'g': (4, lambda h: float(binascii.hexlify(h), 16)),
+        }
+        formatters = re.findall("%(?:\d+\$)?([cdifosuxXhlL]+)", self._message)
+
+        cur_byte_index = 0
+        data_chunks = []
+
+        for f in formatters:
+            format_size, format_func = formatter_info[f]
+
+            try:
+                # Normal data chunking is the current byte index + the size
+                # of the relevant data type for the formatter
+                if format_size > 0:
+                    end_index = cur_byte_index + format_size
+
+                # Some formatters have an undefined data size (such as strings)
+                # and require additional processing to determine the length of
+                # the data.
+                else:
+                    if f == 's':
+                        end_index = str(evr_hist_data).index('\x00', cur_byte_index)
+                    else:
+                        end_index = format_size
+
+                data_chunks.append(format_func(evr_hist_data[cur_byte_index:end_index]))
+            except:
+                msg = "Unable to format EVR Message with data {}".format(evr_hist_data)
+                bliss.core.log.error(msg)
+                raise ValueError(msg)
+
+            cur_byte_index = end_index
+
+            # If we were formatting a string we need to add another index offset
+            # to exclude the null terminator.
+            if f == 's':
+                cur_byte_index += 1
+
+        # Format and return the EVR message if formatters were present, otherwise
+        # just return the EVR message as is.
+        if len(formatters) == 0:
+            return self._message
+        else:
+            return self._message % tuple(data_chunks)
 
     @property
     def message(self):
