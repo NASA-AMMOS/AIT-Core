@@ -17,13 +17,13 @@ from bliss.core import dtype
 def testEVR16():
     """Test EVR16 complex data type"""
     dt   = dtype.EVRType()
-    code = 0x0000
+    code = 0x0001
     name = "NO_ERROR"
 
     rawdata = bytearray(struct.pack('>H', code))
 
-    assert dt.decode(rawdata) == name
-    assert dt.encode(name)    == rawdata
+    assert dt.decode(rawdata).name == name
+    assert dt.encode(name) == rawdata
 
 
 def testTIME8():

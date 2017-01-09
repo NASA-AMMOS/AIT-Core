@@ -374,22 +374,30 @@ class EVRType(PrimitiveType):
 
         TODO better error handling?
         """
-        code = [k for k, v in self._evrs.items() if v == value]
+        code = False
+        for evr in self.evrs:
+            if evr.name == value:
+                code = evr.code
 
         if not code:
             log.error(str(value) + " not found as EVR. Cannot encode.")
             return None
         else:
-            return super(EVRType, self).encode(code[0])
+            return super(EVRType, self).encode(code)
 
     def decode(self, bytes):
         """decode(bytearray) -> value
 
         Decodes the given bytearray according to this ComplexType
-        definition and returns a CmdDefn object
+        definition and returns a EVRDefn object
         """
         code = super(EVRType, self).decode(bytes)
-        return self.evrs[code]
+
+        for evr in self.evrs:
+            if evr.code == code:
+                return evr
+        else:
+            return None
 
 class Time8Type(PrimitiveType):
     """Time8Type

@@ -61,3 +61,38 @@ def getDefaultEVRs():
 
 def getDefaultDictFilename():
     return bliss.config.evrdict.filename
+
+
+class EVRDefn(object):
+    """"""
+    __slots__ = ["name", "code", "desc", "_message"]
+
+    def __init__(self, *args, **kwargs):
+        """Creates a new EVR Definition."""
+        for slot in self.__slots__:
+            name = slot[1:] if slot.startswith("_") else slot
+            setattr(self, name, kwargs.get(name, None))
+
+    def __repr__(self):
+        return util.toRepr(self)
+
+    def toDict(self):
+        return {
+            k:getattr(self, k)
+            for k in self.__slots__
+        }
+
+    @property
+    def message(self):
+        return self._message
+
+    @message.setter
+    def message(self, value):
+        self._message = value
+
+def YAMLCtor_EVRDefn(loader, node):
+    fields = loader.construct_mapping(node, deep=True)
+    fields['argdefns'] = fields.pop('arguments', None)
+    return EVRDefn(**fields)
+
+yaml.add_constructor('!EVR' , YAMLCtor_EVRDefn)
