@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Usage: ./bliss_bsc.py
+Usage: bliss_bsc.py
 
 Start the bliss BSC for capturing network traffic into PCAP files
 and the manager server for RESTful manipulation of active loggers.
