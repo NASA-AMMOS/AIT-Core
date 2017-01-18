@@ -14,7 +14,7 @@ def test_getUTCDatetimeDOY():
     timestamp = datetime.datetime.utcnow().timetuple()
 
     exp_year = timestamp.tm_year
-    exp_day  = timestamp.tm_yday
+    exp_day  = '%03d' % timestamp.tm_yday
 
     dtime = dmc.getUTCDatetimeDOY().split(':')
 
@@ -27,7 +27,7 @@ def test_getUTCDatetimeDOY_w_days():
     t         = datetime.datetime.utcnow() + datetime.timedelta(days=days)
     timestamp = t.timetuple()
     exp_year  = timestamp.tm_year
-    exp_day   = timestamp.tm_yday
+    exp_day   = '%03d' % timestamp.tm_yday
 
     dtime     = dmc.getUTCDatetimeDOY(days).split(':')
 
