@@ -12,7 +12,9 @@ The following commands are used to start up BLISS services or components.
 
 bliss_bsc
 ^^^^^^^^^
-.. automodule:: bliss_bsc
+.. literalinclude:: ../../bin/bliss_bsc.py
+   :start-after: '''
+   :end-before: '''
 
 ----
 
@@ -23,15 +25,21 @@ Utilities for the manipulation of command sequences.
 
 bliss_seq_encode
 ^^^^^^^^^^^^^^^^
-.. automodule:: bliss_seq_encode
+.. literalinclude:: ../../bin/bliss_seq_encode.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_seq_decode
 ^^^^^^^^^^^^^^^^
-.. automodule:: bliss_seq_decode
+.. literalinclude:: ../../bin/bliss_seq_decode.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_seq_print
 ^^^^^^^^^^^^^^^
-.. automodule:: bliss_seq_print
+.. literalinclude:: ../../bin/bliss_seq_print.py
+   :start-after: '''
+   :end-before: '''
 
 ____
 
@@ -40,7 +48,9 @@ ___________________
 
 bliss_tlm_serv
 ^^^^^^^^^^^^^^
-.. automodule:: bliss_tlm_serv
+.. literalinclude:: ../../bin/bliss_tlm_serv.py
+   :start-after: '''
+   :end-before: '''
 
 ____
 
@@ -49,7 +59,9 @@ _________________
 
 bliss_cmd_send
 ^^^^^^^^^^^^^^
-.. automodule:: bliss_cmd_send
+.. literalinclude:: ../../bin/bliss_cmd_send.py
+   :start-after: '''
+   :end-before: '''
 
 ____
 
@@ -58,11 +70,15 @@ _____________
 
 bliss_bsc_create_handler
 ^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_bsc_create_handler
+.. literalinclude:: ../../bin/bliss_bsc_create_handler.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_bsc_stop_handler
 ^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_bsc_stop_handler
+.. literalinclude:: ../../bin/bliss_bsc_stop_handler.py
+   :start-after: '''
+   :end-before: '''
 
 ____
 
@@ -71,11 +87,15 @@ _______________________
 
 bliss_table_decode
 ^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_table_decode
+.. literalinclude:: ../../bin/bliss_table_decode.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_table_encode
 ^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_table_encode
+.. literalinclude:: ../../bin/bliss_table_encode.py
+   :start-after: '''
+   :end-before: '''
 
 ____
 
@@ -84,12 +104,18 @@ _______________________
 
 bliss_create_dirs
 ^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_create_dirs
+.. literalinclude:: ../../bin/bliss_create_dirs.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_orbits
 ^^^^^^^^^^^^
-.. automodule:: bliss_orbits
+.. literalinclude:: ../../bin/bliss_orbits.py
+   :start-after: '''
+   :end-before: '''
 
 bliss_yaml_validate
 ^^^^^^^^^^^^^^^^^^^
-.. automodule:: bliss_yaml_validate
+.. literalinclude:: ../../bin/bliss_yaml_validate.py
+   :start-after: '''
+   :end-before: '''
