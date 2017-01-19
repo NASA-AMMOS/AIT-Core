@@ -46,9 +46,9 @@ ____
 Telemetry Utilities
 ___________________
 
-bliss_tlm_serv
+bliss_tlm_send
 ^^^^^^^^^^^^^^
-.. literalinclude:: ../../bin/bliss_tlm_serv.py
+.. literalinclude:: ../../bin/bliss_tlm_send.py
    :start-after: '''
    :end-before: '''
 

@@ -69,7 +69,7 @@ BLISS also provides a command line utility for verifying that your command dicti
     $ ./bliss_yaml_validate.py --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
-BLISS provides command encoding/decoding via :class:`bliss.cmd.CmdDict`.
+BLISS provides command encoding/decoding via :class:`bliss.core.cmd.CmdDict`.
 
     >>> cmddict = bliss.cmd.getDefaultDict()
     >>> type(cmddict)

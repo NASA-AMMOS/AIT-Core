@@ -65,7 +65,7 @@ rotate_log (optional):
     Set this to ``True`` if you want the log to be rotated.
 
 rotate_log_index (optional):
-    If *rotate_log* is set to ``True`` this controls the time frame of log rotations. By default this is set to ``day``. You can look at the :class:`bliss.bsc.SocketStreamCapturer` documentation for a list of valid options.
+    If *rotate_log* is set to ``True`` this controls the time frame of log rotations. By default this is set to ``day``. You can look at the :class:`bliss.core.bsc.SocketStreamCapturer` documentation for a list of valid options.
 
 rotate_log_delta (optional):
     If *rotate_log* is ``True``, this controls the *rotate_log_index* delta between the current time at log rotation check versus the time the log file was open necessary to trigger a rotation. This defaults to ``1``.

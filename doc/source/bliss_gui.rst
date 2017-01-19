@@ -43,3 +43,14 @@ We could make a widget in our UI for tracking this in tabular form with the foll
 This would give us the following in the UI:
 
 .. image:: _static/cmd_history_in_ui.png
+
+Testing the GUI
+---------------
+
+You can send example telemetry data to the GUI for testing using **bliss_tlm_send.py**.
+
+.. code-block:: bash
+
+   bliss_tlm_send.py /path/to/sometestdata.pcap
+
+You will need to ensure that the **tlm.yaml** used when generating the example PCAP data matches the **tlm.yaml** you're using when running **bliss_tlm_send**, otherwise you will end up with data that looks odd in the UI.
