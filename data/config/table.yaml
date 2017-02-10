@@ -1,4 +1,4 @@
-# Dictionary describing the FSW table formats that are 
+# Dictionary describing the FSW table formats that are
 # uploaded into FSW table memory. Uses OrderedDict to maintain
 # the order, and contains the name of each column, description,
 # datatype, units, and the maximum length for that column.
@@ -57,3 +57,8 @@
       units: none
       type:  U8
       bytes: 4
+      enum:
+        0: TEST_ENUM_0
+        1: TEST_ENUM_1
+        2: TEST_ENUM_2
+        3: TEST_ENUM_3

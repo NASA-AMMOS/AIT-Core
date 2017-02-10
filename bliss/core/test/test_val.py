@@ -228,7 +228,7 @@ def validate(args):
 
 def dispmsgs(msgs):
     for msg in msgs:
-        log.error(msg)
+        print "Validation Test Error: %s \n" % msg
 
 
 def cmdval(args):

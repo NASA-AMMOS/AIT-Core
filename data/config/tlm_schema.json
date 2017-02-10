@@ -68,10 +68,22 @@
                             "type": "integer"
                         },
                         "bytes": {
-                            "type": [ "integer", "array", "string" ],
-                            "description": "TODO: Need to update the min/max when NOT a list",
-                            "maxItems": 2,
-                            "items": { "type": "integer" }
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": ["@prev"]
+
+                                },
+                                {
+                                    "type": "array",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                }
+                              ],
+                            "description": "TODO: Need to update the min/max when NOT a list"
                         },
                         "enum": {
                             "type": "object",
@@ -79,7 +91,7 @@
                         },
                         "value": {
                             "type": "integer",
-                            "description": "Set value for this defn in hex"
+                            "description": "Expected value for this field."
                         },
                         "when": {
                             "type": "string",

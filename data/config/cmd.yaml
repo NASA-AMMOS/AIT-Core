@@ -2,6 +2,7 @@
   name:      NO_OP
   opcode:    0x0001
   subsystem: CORE
+  title: NO_OP
   desc:      |
     Standard NO_OP command.
 
@@ -9,6 +10,7 @@
   name:      SEQ_START
   opcode:    0x002
   subsystem: CMD
+  title: Start Sequence
   desc:      |
     This command starts a specified command sequence.
 
@@ -24,6 +26,7 @@
   name:      SEQ_ENABLE_DISABLE
   opcode:    0x0003
   subsystem: CMD
+  title: Enable/Disable Sequence
   desc:      |
     This command enables or disabled the specified sequence.  If a
     sequence to be disabled is currently executing, it will be
