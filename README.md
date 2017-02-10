@@ -2,10 +2,10 @@ This README is in
 [Markdown format](http://daringfireball.net/projects/markdown/)
 
 
-Bespoke Link to Instruments on Space Station (BLISS)
-====================================================
+Bespoke Links to Instruments for Surface and Space (BLISS)
+==========================================================
 
-The Bespoke Link to Instruments on Space Station (BLISS) Ground Data
+The Bespoke Links to Instruments for Surface and Space (BLISS) Ground Data
 System (GDS) tools are a generalization of those developed for the
 following JPL ISS projects:
 
