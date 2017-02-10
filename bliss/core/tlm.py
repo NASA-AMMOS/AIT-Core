@@ -694,7 +694,10 @@ class TlmDict(dict):
             self[defn.name]          = defn
             self.pktnames[defn.name] = defn
         else:
-            log.error("Duplicate packet name '%s'" % defn.name)
+            msg = "Duplicate packet name '%s'" % defn.name
+            log.error(msg)
+            print msg
+            raise util.YAMLError(msg)
 
     def create(self, name, data=None):
         """Creates a new packet with the given definition and raw data.
@@ -815,8 +818,7 @@ def YAMLCtor_include(loader, node):
         data = yaml.load(f)
     return data
 
-
+yaml.add_constructor('!include', YAMLCtor_include)
 yaml.add_constructor('!Packet', YAMLCtor_PacketDefinition)
 yaml.add_constructor('!Field', YAMLCtor_FieldDefinition)
-yaml.add_constructor('!include', YAMLCtor_include)
 

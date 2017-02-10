@@ -1,77 +1,73 @@
 - !Packet
-  name: CCSDS
+  name: 1553_HS_Packet
+  desc: Ethernet 1553 packet used to monitor telemetry in real-time
   fields:
-    - !include ccsds.yaml
     - !Field
-      name:   version
-      title:   Version
-      desc:   CCSDS Version
-      bytes:  0
-      type:   U8
-      mask:   0xE0
+      name: Voltage_A
+      desc: Voltage A as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_B
+      desc: Voltage B as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_C
+      desc: Voltage C as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_D
+      desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
 
+- !Packet
+  name: Ethernet_HS_Packet
+  desc: Ethernet Health and Status Packet
+  fields:
     - !Field
-      name:   packet_type
-      title:  Packet Type
-      bytes:  0
-      type:   U8
-      mask:   0x10
-
+      name:  sync_word
+      type:  MSB_U32
+      value: 0x01234567
     - !Field
-      name:   secondary_header_flag
-      title:  Secondary Header Flag
-      desc:   |
-        Indicates whether, or not, a Secondary Header follows the primary
-        header (always set to 1)
-      bytes:  0
-      type:   U8
-      mask:   0x08
+      name:  time
+      type:  TIME64
+      desc:  Time when data product created (seconds since GPS/ISS epoch)
+    - !Field
+      name: product_type
+      type: U8
       enum:
-        0: 'Not Present'
-        1: 'Present'
-
+        0: TABLE_FOO
+        1: TABLE_BAR
+        2: MEM_DUMP
+        3: HEALTH_AND_STATUS
+      when: product_type == 3
     - !Field
-      name:   apid
-      title:  APID
-      desc:   |
-        Used in conjunction with packet_type to define the Logical
-        Data Path
-      bytes:  [0, 1]
-      type:   MSB_U16
-      mask:   0x07FF
-
+      name: product_length
+      type: MSB_U32
+      desc: Product length (including this header)
+      mask: 0x00FFFFFF
     - !Field
-      name:   sequence_flags
-      title:  Sequence Flags
-      desc:   |
-        When sending commands, the sequence flags must be marked as
-        unsegmented data. All other PL packets may be per source/destination
-        ICDs.
-      bytes:  2
-      type:   U8
-      mask:   0xC0
-      enum:
-        0: 'Continuation Segment'
-        1: 'First Segment'
-        2: 'Last Segment'
-        3: 'Unsegmented'
-
+      name: VoltageSampleTime
+      desc: Time measurements were taken
+      type: TIME64
     - !Field
-      name:   sequence_count
-      title:  Sequence Count
-      desc:   |
-        Sequential count which numbers each packet on a Logical Data Path,
-        i.e. a separate counter is maintained for each source-destination
-        pair.
-      bytes:  [2, 3]
-      mask:   0x03FF
-      type:   MSB_U16
-
+      name: Voltage_A
+      desc: Voltage A as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
     - !Field
-      name:   packet_length
-      title:  Packet Length
-      desc:   |
-        Sequential count which expresses the length of the remainder of the
-        packet including checkword if present. The value is the number of
-        bytes (octets) following the field minus 1.
-      type:   MSB_U16
+      name: Voltage_B
+      desc: Voltage B as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_C
+      desc: Voltage C as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name: Voltage_D
+      desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
+      type: MSB_U16
+    - !Field
+      name:  footer
+      type:  MSB_U32
+      value: 0x89ABCDEF
+
+- !include ccsds_header.yaml

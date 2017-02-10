@@ -6,6 +6,7 @@
 
 import os
 import unittest
+import mock
 
 from bliss.core import util
 
@@ -18,7 +19,7 @@ TEST_FILE_CRC_SKIP_BYTE = 651256842
 
 class Crc32FileTest(unittest.TestCase):
     """Unit test of the CRC-32 generator for files"""
-    
+
     def testCrc32WithTestFile(self):
         """Test the CRC for a basic test file"""
         crc = util.crc32File(TEST_FILE_PATH)
@@ -31,7 +32,7 @@ class Crc32FileTest(unittest.TestCase):
 
 class EndianSwapU16Test(unittest.TestCase):
     """Unit test of the endianSwap method"""
-    
+
     def testEndianSwap(self):
         """Test endian swap"""
         input_array = bytearray([0x13, 0x00, 0x01, 0x00, 0x08, 0x00])
@@ -41,7 +42,7 @@ class EndianSwapU16Test(unittest.TestCase):
 
 class GetFileSizeTest(unittest.TestCase):
     """Unit test for finding size of file"""
-    
+
     def testGetFileSize(self):
         """Test the method can properly calculate file size
         for known test data file
@@ -61,7 +62,7 @@ class ToBCDTest(unittest.TestCase):
 
 class ToFloatTest(unittest.TestCase):
     """Unit test for toFloat method"""
-    
+
     def testToFloat(self):
         """Test toFloat with float string"""
         f = util.toFloat("4.2")
@@ -81,7 +82,7 @@ class ToFloatTest(unittest.TestCase):
 
 class ToNumberTest(unittest.TestCase):
     """Unit test for toNumber method"""
-    
+
     def testToNumberWithHex(self):
         """Test toNumber with Hex specified"""
         n = util.toNumber("0x2A")
@@ -112,13 +113,27 @@ class ToNumberTest(unittest.TestCase):
         self.assertIsNone(n);
 
 class ToReprTest(unittest.TestCase):
-    """Unit test for converting Python object to 
+    """Unit test for converting Python object to
     string representation
     """
-    
+
     def testToReprWithString(self):
         """TODO"""
         pass
+
+@mock.patch('bliss.core.log.error')
+def test_YAMLValidationError_exception(log_mock):
+    message = 'foo'
+    e = util.YAMLValidationError(message)
+    assert message == e.message
+    log_mock.assert_called_with(message)
+
+@mock.patch('bliss.core.log.error')
+def test_YAMLError_exception(log_mock):
+    message = 'foo'
+    e = util.YAMLError(message)
+    assert message == e.message
+    log_mock.assert_called_with(message)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

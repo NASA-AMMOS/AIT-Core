@@ -18,12 +18,12 @@ import linecache
 import jsonschema
 import collections
 
-from bliss.core import dtype, log
+from bliss.core import dtype, log, tlm, util
 
 
 class YAMLProcessor (object):
 
-    __slots__ = ["_ymlfile", "data", "loaded", "doclines", "_clean"]
+    __slots__ = ["ymlfile", "data", "loaded", "doclines", "_clean"]
 
     def __init__(self, ymlfile=None, clean=True):
         """Creates a new YAML validator for the given schema and yaml file
@@ -40,21 +40,13 @@ class YAMLProcessor (object):
 
         self.ymlfile = ymlfile
 
-    @property
-    def ymlfile(self):
-        return self._ymlfile
-
-    @ymlfile.setter
-    def ymlfile(self, yml):
-        self._ymlfile = yml
-
-        if yml is not None:
+        if ymlfile is not None:
             self.load()
 
     def load(self, ymlfile=None):
         """Load and process the YAML file"""
         if ymlfile is not None:
-            self._ymlfile = ymlfile
+            self.ymlfile = ymlfile
 
         try:
             # If yaml should be 'cleaned' of document references
@@ -68,7 +60,7 @@ class YAMLProcessor (object):
             self.loaded = True
         except ScannerError, e:
             msg = "YAML formattting error - '" + self.ymlfile + ": '" + str(e) + "'"
-            raise YAMLError(msg)
+            raise util.YAMLError(msg)
 
     def process(self, ymlfile):
         """Cleans out all document tags from the YAML file to make it
@@ -100,7 +92,7 @@ class YAMLProcessor (object):
 
             if linenum is None:
                 msg = "Empty YAML file: " + ymlfile
-                raise YAMLError(msg)
+                raise util.YAMLError(msg)
             else:
                 # Append one more document to docline for the end
                 self.doclines.append(linenum+1)
@@ -182,6 +174,7 @@ class ErrorHandler(object):
         and designates where the error came from"""
 
         log.debug("Displaying document from lines '%i' to '%i'", start, end)
+        foundline = 0
         if len(error.relative_path) > 0:
             error_key = error.relative_path.pop()
 
@@ -234,8 +227,9 @@ class ErrorHandler(object):
             for line in context:
                 out += line
 
-            msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
-            messages.append(msg)
+            if foundline:
+                msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
+                messages.append(msg)
 
             linecache.clearcache()
         elif error.validator == "additionalProperties":
@@ -302,7 +296,7 @@ class Validator(object):
                     valid = False
 
         elif not self._ymlproc.loaded:
-            raise YAMLError("YAML must be loaded in order to validate.")
+            raise util.YAMLError("YAML must be loaded in order to validate.")
         elif not self._schemaproc.loaded:
             raise jsonschema.SchemaError("Schema must be loaded in order to validate.")
 
@@ -310,14 +304,16 @@ class Validator(object):
         return valid
 
     def display_errors(self, docnum, e, messages):
-            # Display the error message
-            if len(e.message) < 128:
-                msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
-            else:
-                msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
+        # Display the error message
+        if len(e.message) < 128:
+            msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
+        else:
+            msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
 
-            log.error(msg)
-            self.ehandler.process(docnum, self._ymlproc.doclines, e, messages)
+        log.error(msg)
+
+        # Send all error info and the messages array along for processing
+        self.ehandler.process(docnum, self._ymlproc.doclines, e, messages)
 
 
 class CmdValidator (Validator):
@@ -345,7 +341,7 @@ class CmdValidator (Validator):
         elif ymldata is None and self._ymlproc.loaded:
             cmddict = self._ymlproc.data
         elif not self._ymlproc.loaded:
-            raise YAMLError("YAML failed to load.")
+            raise util.YAMLError("YAML failed to load.")
 
         try:
             # instantiate the document number. this will increment in order to
@@ -409,13 +405,13 @@ class CmdValidator (Validator):
             # check validity of all command rules and argument validity
             return all(rule.valid is True for rule in rules) and argsvalid
 
-        except YAMLValidationError, e:
+        except util.YAMLValidationError, e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
-                    msg = "Validation Failed for YAML file '" + self._yml + "': '" + str(e.message) + "'"
+                    msg = "Validation Failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
                 else:
-                    msg = "Validation Failed for YAML file '" + self._yml + "'"
+                    msg = "Validation Failed for YAML file '" + self._ymlfile + "'"
 
                 log.error(msg)
                 self.ehandler.process(docnum, self.ehandler.doclines, e, messages)
@@ -431,24 +427,20 @@ class TlmValidator (Validator):
 
         schema_val = self.schema_val(messages)
         if len(messages) == 0:
-            content_val = self.content_val(messages=messages)
+            content_val = self.content_val(ymldata, messages)
 
         return schema_val and content_val
 
     def content_val(self, ymldata=None, messages=None):
-        """Validates the Command Dictionary to ensure the contents for each of the fields
+        """Validates the Telemetry Dictionary to ensure the contents for each of the fields
         meets specific criteria regarding the expected types, byte ranges, etc."""
 
-        self._ymlproc = YAMLProcessor(self._ymlfile, False)
-
         # Turn off the YAML Processor
-        log.debug("BEGIN: Content-based validation of Command dictionary")
+        log.debug("BEGIN: Content-based validation of Telemetry dictionary")
         if ymldata is not None:
             tlmdict = ymldata
-        elif ymldata is None and self._ymlproc.loaded:
-            tlmdict = self._ymlproc.data
-        elif not self._ymlproc.loaded:
-            raise YAMLError("YAML failed to load.")
+        else:
+            tlmdict = tlm.TlmDict(self._ymlfile)
 
         try:
             # instantiate the document number. this will increment in order to
@@ -461,17 +453,15 @@ class TlmValidator (Validator):
             # list of rules to validate against
             rules = []
 
-            ### set the command rules
+            ### set the packet rules
             #
-            # set uniqueness rule for command names
+            # set uniqueness rule for packet names
             rules.append(UniquenessRule('name', "Duplicate packet name: %s", messages))
 
             ###
-            # Look through the telemetry dictionary
-            # we access tlmdict[0] because the telemetry dictionary is a sequence
-            # of packets in 1 document, so we know we can just begin by looping through
-            # the first document of packets
-            for pktcnt, pktdefn in enumerate(tlmdict[0]):
+            # Loop through the keys and check each PacketDefinition
+            for key in tlmdict.keys():
+                pktdefn = tlmdict[key]
                 # check the telemetry packet rules
                 for rule in rules:
                     rule.check(pktdefn)
@@ -510,13 +500,13 @@ class TlmValidator (Validator):
             # check validity of all packet rules and field validity
             return all(rule.valid is True for rule in rules) and fldsvalid
 
-        except YAMLValidationError, e:
+        except util.YAMLValidationError, e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
-                    msg = "Validation Failed for YAML file '" + self._yml + "': '" + str(e.message) + "'"
+                    msg = "Validation Failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
                 else:
-                    msg = "Validation Failed for YAML file '" + self._yml + "'"
+                    msg = "Validation Failed for YAML file '" + self._ymlfile + "'"
 
                 log.error(msg)
                 self.ehandler.process(self.ehandler.doclines, e, messages)
@@ -653,18 +643,3 @@ class ByteOrderRule(ValidationRule):
 
         self.prevstop = defn.slice().stop
 
-
-class YAMLValidationError(Exception):
-    def __init__(self, arg):
-        # Set some exception infomation
-        self.msg = arg
-
-        log.error(self.msg)
-
-
-class YAMLError(Exception):
-    def __init__(self, arg):
-        # Set some exception infomation
-        self.msg = arg
-
-        log.error(self.msg)

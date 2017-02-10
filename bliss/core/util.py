@@ -288,7 +288,7 @@ def toDict(obj):
     attrs = getattr(obj, "__slots__")
   else:
     return obj
-  
+
   for attr in attrs:
     value = getattr(obj, attr)
     key = attr[1:] if attr.startswith("_") else attr
@@ -311,7 +311,7 @@ def toDict(obj):
               retval.update({o['name']: o})
             else:
               retval.update({k: o})
-        else: 
+        else:
           # Otherwise, just return the list
           retval = value
       elif isinstance(value, dict):
@@ -350,6 +350,21 @@ def toStringDuration (duration):
             return format % int(duration * factor)
 
     return '%fs' % duration
+
+class YAMLValidationError(Exception):
+    def __init__(self, arg):
+        # Set some exception infomation
+        self.message = arg
+
+        log.error(self.message)
+
+
+class YAMLError(Exception):
+    def __init__(self, arg):
+        # Set some exception infomation
+        self.message = arg
+
+        log.error(self.message)
 
 
 if __name__ == "__main__":
