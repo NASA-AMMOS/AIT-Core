@@ -15,7 +15,7 @@
                 "type": "string"
             },
             "include": {
-                    "type": "string"
+                "type": "string"
             },
             "name": {
                 "type": "string"
