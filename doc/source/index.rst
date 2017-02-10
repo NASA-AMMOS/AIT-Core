@@ -1,7 +1,7 @@
 Welcome to BLISS-Core's documentation!
 ======================================
 
-The Bespoke Link to Instruments on Space Station (BLISS) is a Python-based software suite developed to handle Ground Data System (GDS), Electronic Ground Support Equipment (EGSE), commanding, telemetry uplink/downlink, and sequencing for JPL International Space Station Missions. It is a generalization and expansion of tools developed for the following JPL ISS projects:
+The Bespoke Links to Instruments for Surface and Space (BLISS) framework is a Python-based software suite developed to handle Ground Data System (GDS), Electronic Ground Support Equipment (EGSE), commanding, telemetry uplink/downlink, and sequencing for JPL International Space Station Missions. It is a generalization and expansion of tools developed for the following JPL ISS projects:
 
 * `Orbiting Carbon Observatory 3 (OCO-3) <http://oco.jpl.nasa.gov>`_
 * `Vehicle Cabin Atmosphere Monitor (VCAM) <http://www.nasa.gov/mission_pages/station/research/experiments/35.html>`_
