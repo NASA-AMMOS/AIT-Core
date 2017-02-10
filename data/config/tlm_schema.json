@@ -4,18 +4,18 @@
     "description": "Telemetry Dictionary Schema",
     "type": "array",
     "items": {
-	"oneOf" : [{
-	    "required" : ["packet", "fields"]
-	}, {
-	    "required" : ["include"]
-	}],
+        "oneOf" : [{
+            "required" : ["packet", "fields"]
+            }, {
+            "required" : ["include"]
+        }],
         "additionalProperties": false,
         "properties": {
             "packet": {
                 "type": "string"
             },
-	    "include": {
-                "type": "string"
+            "include": {
+                    "type": "string"
             },
             "name": {
                 "type": "string"
@@ -40,11 +40,11 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-		    "oneOf" : [{
-			"required" : ["name", "type"]
-		    }, {
-			"required" : ["include"]
-		    }],
+                    "oneOf" : [{
+                    "required" : ["name", "type"]
+                        }, {
+                    "required" : ["include"]
+                    }],
                     "properties": {
                         "include": {
                             "type": "string"
@@ -82,7 +82,7 @@
                                     "maxItems": 2,
                                     "items": { "type": "integer" }
                                 }
-                              ],
+                            ],
                             "description": "TODO: Need to update the min/max when NOT a list"
                         },
                         "enum": {
