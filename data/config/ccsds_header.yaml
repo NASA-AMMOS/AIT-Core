@@ -1,0 +1,239 @@
+- !Packet
+  name: CCSDS_HEADER
+  fields:
+    - !Field
+      name:       version
+      desc:       Indicates CCSDS Version-1 (does not change)
+      bytes:       0
+      type:       U8
+      mask:       0xE0
+    - !Field
+      name:       type
+      desc:       |
+        Distinguishes between core and payload packet types to extend the
+        APID space to 4032
+      bytes:       0
+      type:       U8
+      mask:       0x10
+      enum:
+        0: 'Core'
+        1: 'Payload'
+    - !Field
+      name:       secondary_header_flag
+      desc:       |
+        Indicates whether, or not, a Secondary Header follows the primary
+        header (always set to 1)
+      bytes:       0
+      type:       U8
+      mask:       0x08
+      enum:
+        0: 'Not Present'
+        1: 'Present'
+    - !Field
+      name:       apid
+      desc:       |
+        Used in conjunction with Type to define the Logical Data Path
+      bytes:       [0, 1]
+      type:       MSB_U16
+      mask:       0x07FF
+    - !Field
+      name:       sequence_flags
+      desc:      |
+        When sending commands, the sequence flags must be marked as
+        unsegmented data. All other PL packets may be per source/destination
+        ICDs.
+      bytes:       2
+      type:       U8
+      mask:       0xC0
+      enum:
+        0: 'Continuation Segment'
+        1: 'First Segment'
+        2: 'Last Segment'
+        3: 'Unsegmented'
+    - !Field
+      name: sequence_count
+      desc:      |
+        Sequential count which numbers each packet on a Logical Data Path,
+        i.e. a separate counter is maintained for each source-destination
+        pair.
+      bytes: [2, 3]
+      mask: 0x3FFF
+      type: MSB_U16
+    - !Field
+      name: packet_length
+      desc:      |
+        Sequential count which expresses the length of the remainder of the
+        packet including checkword if present. The value is the number of
+        bytes (octets) following the field minus 1.
+      bytes: [4, 5]
+      type: MSB_U16
+    - !Field
+      name: time_coarse
+      desc: |
+        The Time Code is made up of a preamble field (P-field) and a time
+        field (T-field). For ISS, as allowed by the CCSDS Recommendation, 
+        the P-field is implicitly conveyed (it is not present with the
+        T-field). ISS time is referenced to GPS Time (midnight 5-6 January 
+        1980). The T-field consists of 4 octets of coarse time and 1 octet of
+        fine time. These octets are a set of binary counters, cascaded with
+        the adjacent counters. The value represents the elapsed time since
+        midnight 5-6 January 1980. The least significant bit (LSB) of the
+        least significant octet of coarse time is equal to 1 second.
+      bytes: [6, 9]
+      type: TIME32
+    - !Field
+      name: time_fine
+      desc: |
+        The LSB of the fine time octet is equal to 2-8 second, or about 4 ms.
+      bytes: 10
+      type: TIME8
+    - !Field
+      name: time_id
+      desc: |
+        The time field is always present. This field indicates its use.
+        Commands with Time ID = 00 indicate real-time commands (RTC) which are
+        not authenticated, e.g., commands originating from the Orbiter. Cmds
+        with ID = 01 are RTC commands for which authentication is required,
+        e.g., commands to the USOS from the SSCC. Commands with ID = 10 are
+        stored in the C&C MDMs time-tagged command queue for later execution.
+        For Data Packets, the field is always 01 and the time fields contain
+        the time at the beginning of the processing frame when the packet was
+        generated.
+      bytes: 11
+      type:  U8
+      mask: 0xC0
+      enum:
+        0: 'Not Used'
+        1: 'Data Gen'
+        2: 'Time Tagged Cmd'
+        3: 'Invalid'
+    - !Field
+      name: checkword_indicator
+      desc: |
+        This field indicates if a checkword (add without carry checksum) is
+        contained in the CCSDS packet. When present, the checkword is the last
+        16-bit word of the packet. All commands must contain a checkword. Data
+        packets do not contain a checkword.
+      bytes: 11
+      type:  U8
+      mask: 0x20
+      enum:
+        0: 'Not Present'
+        1: 'Present'
+    - !Field
+      name: zoe
+      desc: |
+        Used in a telemetry data packet to indicate that the telemetry packet
+        is from the onboard ZOE recording.
+      bytes: 11
+      type:  U8
+      mask: 0x10
+      enum:
+        0: 'Onboard recording'
+        1: 'All Other Cases'
+    - !Field
+      name: packet_type
+      bytes: 11
+      type:  U8
+      mask: 0x0F
+      enum:
+        1:  'Data Dump'
+        4:  'Telemetry Status'
+        6:  'Payload Private Science'
+        7:  'Ancillary Data'
+        8:  'Essential Command'
+        9:  'System Command'
+        10: 'RT/Payload Command'
+        11: 'Data Load'
+    # - !Field
+    #   name: spare
+    #   bytes: 12
+    #   mask: 0x80
+    - !Field
+      name: element_id
+      bytes: 12
+      type:  U8
+      mask: 0x78
+      enum:
+        0:  'NASA 0'
+        1:  'NASA 1'
+        2:  'ESA/APM'
+        3:  'NASDA'
+        4:  'RSA'
+        5:  'CSA'
+        6:  'ESAATV'
+        7:  'ASI'
+        8:  'ESA/ERA'
+        9:  'Reserved'
+        10: 'SPP'
+        11: 'HTV'
+        # 12: 'Spare 0'
+        # 13: 'Spare 1'
+        # 14: 'Spare 2'
+        # 15: 'Spare 3'
+    - !Field
+      name: data_packet
+      desc: |
+        Identifies this field as a data packet. This field distinguishes
+        between command and data packets and is used to ensure unique
+        definition of the 32- bit USOS Packet ID field.
+      bytes: 12
+      mask: 0x04
+      type: U8
+    - !Field
+      name: version_id
+      desc: |
+        Configuration Management. Used to identify multiple versions
+        of a format.
+      bytes: [12, 13]
+      mask: 0x03C0
+      type: MSB_U16
+    - !Field
+      name: format_id
+      desc: Identifies the packet.
+      bytes: 13
+      mask: 0x3F
+      type: U8
+      enum:
+        0: Reserved
+        1: 'Essential Telemetry'
+        2: 'Housekeeping Tlm-1'
+        3: 'Housekeeping Tlm-2'
+        4: 'PCS DDT'
+        5: 'CCS S-Band Command Response'
+        6: 'Contingency Telemetry to SMCC'
+        7: 'Normal Data Dump'
+        8: 'Extended data Dump'
+        9: 'MSS Ancillary Data'
+        10: 'Reserved'
+        11: 'Broadcast Ancillary Data'
+        12: 'PCS Status'
+        13: 'NCS to OIU Telemetry and ECOMM telemetry'
+        14: 'CCS to OIU Telemetry - Direct'
+        15: 'SM to USOS Status Data'
+        16: 'Normal File Dump'
+        17: 'Extended File Dump'
+        18: 'NCS to FGB Telemetry'
+        19: 'EMU Suit Data'
+        20: 'ZOE Normal Dump (S- Band)'
+        21: 'ZOE Extended Dump (S- Band)'
+        22: 'EMU S-Band TLM Packet'
+        23: 'VTC1 to CCS Status Packet'
+        24: 'VTC2 to CCS Status Packet'
+        25: 'MMC to CCS Status Packet'
+        26: 'CCS to OIU Telemetry via UHF'
+        # 27-63 reserved
+    # - !Field
+    #   name: spare
+    #   bytes: [14, 15]
+    #   mask: 0x3F
+    #   type: U8
+    - !Field
+      name: frame_id
+      desc: |
+        Identifies the processing frame count of the frame in which the data
+        packet was built. Not applicable for extended dump and data dump
+        packets.
+      bytes: 15
+      mask: 0x7F
+      type: U8
