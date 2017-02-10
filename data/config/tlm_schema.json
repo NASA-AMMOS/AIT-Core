@@ -4,13 +4,17 @@
     "description": "Telemetry Dictionary Schema",
     "type": "array",
     "items": {
-        "required": [],
+	"oneOf" : [{
+	    "required" : ["packet", "fields"]
+	}, {
+	    "required" : ["include"]
+	}],
         "additionalProperties": false,
         "properties": {
             "packet": {
                 "type": "string"
             },
-            "include": {
+	    "include": {
                 "type": "string"
             },
             "name": {
@@ -36,7 +40,11 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": [],
+		    "oneOf" : [{
+			"required" : ["name", "type"]
+		    }, {
+			"required" : ["include"]
+		    }],
                     "properties": {
                         "include": {
                             "type": "string"
@@ -53,9 +61,6 @@
                         "type": {
                             "type": "string"
                         },
-                        "value": {
-                            "type": "integer"
-                        },
                         "desc": {
                             "type": "string"
                         },
@@ -63,7 +68,7 @@
                             "type": "integer"
                         },
                         "bytes": {
-                            "type": [ "integer", "array" ],
+                            "type": [ "integer", "array", "string" ],
                             "description": "TODO: Need to update the min/max when NOT a list",
                             "maxItems": 2,
                             "items": { "type": "integer" }
@@ -71,6 +76,10 @@
                         "enum": {
                             "type": "object",
                             "description": "TODO: Does not check valid enumeration"
+                        },
+                        "value": {
+                            "type": "integer",
+                            "description": "Set value for this defn in hex"
                         },
                         "when": {
                             "type": "string",

@@ -159,7 +159,6 @@ class ErrorHandler(object):
         # TODO: Process the various types of errors
         start = doclines[docnum]+1
         if error.message.endswith("is not of type u'object'"):
-            print error.message
             msg = "Invalid root object in YAML. Check format."
             messages.append(msg)
         elif len(doclines) > docnum+1:
@@ -169,77 +168,90 @@ class ErrorHandler(object):
             # Only one value for doclines since only 1 doc
             self.pretty(1, start, error, messages)
 
-    def pretty(self, start, end, error, messages=None):
+    def pretty(self, start, end, e, messages=None):
         """Pretties up the output error message so it is readable
         and designates where the error came from"""
 
         log.debug("Displaying document from lines '%i' to '%i'", start, end)
         foundline = 0
-        if len(error.relative_path) > 0:
-            error_key = error.relative_path.pop()
 
-            context = collections.deque(maxlen=20)
-            tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
-
-            found = False
-            for linenum in range(start, end):
-                line = linecache.getline(self.ymlfile, linenum)
-
-                # Check if line contains the error
-                if ":" in line:
-                    key, value = line.split(":")
-
-                    # TODO:
-                    # Handle maxItems TBD
-                    # Handle minItems TBD
-                    # Handle required TBD
-                    # Handle in-order (bytes) TBD
-                    # Handle uniqueness TBD
-
-                    # Handle cases where key in yml file is hexadecimal
-                    try:
-                        key = int(key.strip(), 16)
-                    except ValueError:
-                        key = key.strip()
-
-                    # Handle bad value data type
-                    if error.validator == "type" and str(key) == error_key and \
-                            value.strip() == str(error.instance):
-                        errormsg = "Value should be of type '" + str(error.validator_value) + "'"
-
-                        line = line.replace("\n", (tag % errormsg))
-                        foundline = linenum
-                        found = True
-
-                # for the context queue, we want to get the error to appear in
-                # the middle of the error output. to do so, we will only append
-                # to the queue in 2 cases:
-                #
-                # 1. before we find the error (found == False). we can
-                #    just keep pushing on the queue until we find it in the YAML.
-                # 2. once we find the error (found == True), we just want to push
-                #    onto the queue until the the line is in the middle
-                if not found or (found and context.maxlen > (linenum-foundline)*2):
-                    context.append(line)
-
-            # Loop through the queue and generate a readable msg output
-            out = ""
-            for line in context:
-                out += line
-
-            if foundline:
-                msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
-                messages.append(msg)
-
-            linecache.clearcache()
-        elif error.validator == "additionalProperties":
-            if len(error.message) > 256:
-                msg = error.message[:253] + "..."
-            else:
-                msg = error.message
-            messages.append("Between lines %d - %d. %s" % (start, end, msg))
+        errorlist = []
+        if len(e.context) > 0:
+            errorlist = e.context
         else:
-            messages.append(error.message)
+            errorlist.append(e)
+
+        for error in errorlist:
+            validator = error.validator
+
+            if validator == "required":
+                msg = error.message
+                messages.append("Between lines %d - %d. %s" % (start, end, msg))
+            elif validator == "additionalProperties":
+                if len(error.message) > 256:
+                    msg = error.message[:253] + "..."
+                else:
+                    msg = error.message
+                    messages.append("Between lines %d - %d. %s" % (start, end, msg))
+            elif len(error.relative_path) > 0:
+                error_key = error.relative_path.pop()
+
+                context = collections.deque(maxlen=20)
+                tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
+
+                found = False
+                for linenum in range(start, end):
+                    line = linecache.getline(self.ymlfile, linenum)
+                    # Check if line contains the error
+                    if ":" in line:
+                        l = line.split(':')
+                        key = l[0]
+                        value = ':'.join(l[1:])
+
+                        # TODO:
+                        # Handle maxItems TBD
+                        # Handle minItems TBD
+                        # Handle in-order (bytes) TBD
+                        # Handle uniqueness TBD
+
+                        # Handle cases where key in yml file is hexadecimal
+                        try:
+                            key = int(key.strip(), 16)
+                        except ValueError:
+                            key = key.strip()
+
+                        if str(key) == error_key:
+                            # Handle bad value data type
+                            if error.validator == "type" and value.strip() == str(error.instance):
+                                errormsg = "Value should be of type '" + str(error.validator_value) + "'"
+
+                                line = line.replace("\n", (tag % errormsg))
+                                foundline = linenum
+                                found = True
+
+                    # for the context queue, we want to get the error to appear in
+                    # the middle of the error output. to do so, we will only append
+                    # to the queue in 2 cases:
+                    #
+                    # 1. before we find the error (found == False). we can
+                    #    just keep pushing on the queue until we find it in the YAML.
+                    # 2. once we find the error (found == True), we just want to push
+                    #    onto the queue until the the line is in the middle
+                    if not found or (found and context.maxlen > (linenum-foundline)*2):
+                        context.append(line)
+
+                # Loop through the queue and generate a readable msg output
+                out = ""
+                for line in context:
+                    out += line
+
+                if foundline:
+                    msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
+                    messages.append(msg)
+
+                linecache.clearcache()
+            else:
+                messages.append(error.message)
 
 
 class Validator(object):
@@ -268,10 +280,8 @@ class Validator(object):
 
     def schema_val(self, messages=None):
         "Perform validation with processed YAML and Schema"
-
         self._ymlproc = YAMLProcessor(self._ymlfile)
         self._schemaproc = SchemaProcessor(self._schemafile)
-
         valid = True
 
         log.debug("BEGIN: Schema-based validation for YAML '%s' with schema '%s'", self._ymlfile, self._schemafile)
@@ -291,9 +301,14 @@ class Validator(object):
                 v = jsonschema.Draft4Validator(self._schemaproc.data)
 
                 # Loop through the errors (if any) and set valid = False if any are found
+                # Display the error message
                 for error in sorted(v.iter_errors(data)):
-                    self.display_errors(docnum, error, messages)
+                    msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
+                    self.ehandler.process(docnum, self._ymlproc.doclines, error, messages)
                     valid = False
+
+                if not valid:
+                    log.error(msg)
 
         elif not self._ymlproc.loaded:
             raise util.YAMLError("YAML must be loaded in order to validate.")
@@ -302,18 +317,6 @@ class Validator(object):
 
         log.debug("END: Schema-based validation complete for '%s'", self._ymlfile)
         return valid
-
-    def display_errors(self, docnum, e, messages):
-        # Display the error message
-        if len(e.message) < 128:
-            msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
-        else:
-            msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
-
-        log.error(msg)
-
-        # Send all error info and the messages array along for processing
-        self.ehandler.process(docnum, self._ymlproc.doclines, e, messages)
 
 
 class CmdValidator (Validator):
@@ -424,7 +427,6 @@ class TlmValidator (Validator):
 
     def validate(self, ymldata=None, messages=None):
         """Validates the Telemetry Dictionary definitions"""
-
         schema_val = self.schema_val(messages)
         if len(messages) == 0:
             content_val = self.content_val(ymldata, messages)
