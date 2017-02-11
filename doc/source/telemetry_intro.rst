@@ -35,13 +35,13 @@ All the valid parameters and attributes that can be present in the telemetry dic
 
 BLISS provides telemetry dictionary processing via :class:`bliss.core.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.core.tlm.PacketDefinition` instances.
 
-    >>> tlmdict = bliss.tlm.getDefaultDict()
+    >>> tlmdict = bliss.core.tlm.getDefaultDict()
     >>> type(tlmdict)
-    <class 'bliss.tlm.TlmDict'>
+    <class 'bliss.core.tlm.TlmDict'>
     >>> tlmdict.keys()
     ['CCSDS']
     >>> type(tlmdict['CCSDS'])
-    <class 'bliss.tlm.PacketDefinition'>
+    <class 'bliss.core.tlm.PacketDefinition'>
 
 We can look at a specific field via a :class:`bliss.core.tlm.PacketDefinition`. For instance, we can look at the **version** field from the CCSDS packet defined in `Example Telemetry Packet Definition`
 
@@ -65,9 +65,9 @@ Decoding binary into a :class:`bliss.core.tlm.Packet` allows us to easily decode
 We'll create a packet from this binary using the CCSDS Primary Packet Header :class:`bliss.core.tlm.PacketDefinition` that we were using earlier.
 
     >>> type(ccsds_pkt)
-    <class 'bliss.tlm.PacketDefinition'>
+    <class 'bliss.core.tlm.PacketDefinition'>
     >>> data = bytearray(b'\x0A\xE7\x40\x00\x04\xAF')
-    >>> pkt = bliss.tlm.Packet(ccsds_pkt, data=data)
+    >>> pkt = bliss.core.tlm.Packet(ccsds_pkt, data=data)
 
 With the :class:`bliss.core.tlm.Packet` object we can check each of those values above.
 

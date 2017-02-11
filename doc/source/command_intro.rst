@@ -71,15 +71,15 @@ BLISS also provides a command line utility for verifying that your command dicti
 
 BLISS provides command encoding/decoding via :class:`bliss.core.cmd.CmdDict`.
 
-    >>> cmddict = bliss.cmd.getDefaultDict()
+    >>> cmddict = bliss.core.cmd.getDefaultDict()
     >>> type(cmddict)
-    <class 'bliss.cmd.CmdDict'>
+    <class 'bliss.core.cmd.CmdDict'>
 
 You can create and encode a command directly from the command dictionary.
 
     >>> noop = cmddict.create('NO_OP')
     >>> type(noop)
-    <class 'bliss.cmd.Cmd'>
+    <class 'bliss.core.cmd.Cmd'>
     >>> noop
     NO_OP
     >>> bin_noop = noop.encode()
@@ -90,7 +90,7 @@ Given a binary blob, you can also decode into a command.
 
     >>> decoded_cmd = cmddict.decode(bin_noop)
     >>> type(decoded_cmd)
-    <class 'bliss.cmd.Cmd'>
+    <class 'bliss.core.cmd.Cmd'>
     >>> decoded_cmd
     NO_OP
 
@@ -128,7 +128,7 @@ name:
     A **string** denoting the name of this argument
 
 type:
-    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.dtype.PrimitiveTypes``.
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.core.dtype.PrimitiveTypes``.
 
 bytes:
     Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).

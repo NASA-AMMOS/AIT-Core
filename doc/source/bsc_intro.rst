@@ -81,7 +81,7 @@ pre_write_transforms (optional):
 
     .. note::
 
-        At the moment you can only specify functions that are global to the ``bliss.bsc`` module. This will be changed in the future.
+        At the moment you can only specify functions that are global to the ``bliss.core.bsc`` module. This will be changed in the future.
 
 ----
 
