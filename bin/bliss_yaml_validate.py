@@ -47,10 +47,12 @@ def validate(validator, yml, schema):
 
     if valid:
         log.info(msg % ('SUCCESS', yml, schema))
+        return 0
     else:
         log.error(msg % ('FAILED', yml, schema))
         for msg in msgs:
             log.error(msg)
+        return 1
 
 
 def main(options):
@@ -67,7 +69,7 @@ def main(options):
             raise os.error(options.schema + " does not exist.")
 
         validator = val.Validator
-        validate(validator, options.yaml, options.schema)
+        retcode = validate(validator, options.yaml, options.schema)
 
     else:
         if options.cmd:
@@ -86,10 +88,10 @@ def main(options):
         if options.yaml is not None:
             yml = options.yaml
 
-        validate(validator, yml, schema)
+        retcode = validate(validator, yml, schema)
 
     log.end()
-    return 0
+    return retcode
 
 
 if __name__ == "__main__":
