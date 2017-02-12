@@ -15,7 +15,7 @@ for pkg in [ pkg.key for pkg in pip.get_installed_distributions() ]:
     if pkg not in KEEP:
         system('pip uninstall -y %s' % pkg)
 
-for name in '*~ *.pkl'.split():
+for name in '*~ *.pyc *.pkl'.split():
     system('find . -name "%s" -exec rm {} \;' % name)
 
 system( 'python setup.py clean --all' )
