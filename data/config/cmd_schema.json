@@ -19,6 +19,9 @@
             "subsystem": {
                 "type": "string"
             },
+            "title": {
+                "type": "string"
+            },
             "desc": {
                 "type": "string"
             },

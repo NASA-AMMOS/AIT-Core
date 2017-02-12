@@ -4,7 +4,11 @@
     "description": "Telemetry Dictionary Schema",
     "type": "array",
     "items": {
-        "required": [],
+        "oneOf" : [{
+            "required" : ["packet", "fields"]
+            }, {
+            "required" : ["include"]
+        }],
         "additionalProperties": false,
         "properties": {
             "packet": {
@@ -36,7 +40,11 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": [],
+                    "oneOf" : [{
+                    "required" : ["name", "type"]
+                        }, {
+                    "required" : ["include"]
+                    }],
                     "properties": {
                         "include": {
                             "type": "string"
@@ -53,9 +61,6 @@
                         "type": {
                             "type": "string"
                         },
-                        "value": {
-                            "type": "integer"
-                        },
                         "desc": {
                             "type": "string"
                         },
@@ -63,14 +68,30 @@
                             "type": "integer"
                         },
                         "bytes": {
-                            "type": [ "integer", "array" ],
-                            "description": "TODO: Need to update the min/max when NOT a list",
-                            "maxItems": 2,
-                            "items": { "type": "integer" }
+                            "anyOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "enum": ["@prev"]
+
+                                },
+                                {
+                                    "type": "array",
+                                    "maxItems": 2,
+                                    "items": { "type": "integer" }
+                                }
+                            ],
+                            "description": "TODO: Need to update the min/max when NOT a list"
                         },
                         "enum": {
                             "type": "object",
                             "description": "TODO: Does not check valid enumeration"
+                        },
+                        "value": {
+                            "type": "integer",
+                            "description": "Expected value for this field."
                         },
                         "when": {
                             "type": "string",
