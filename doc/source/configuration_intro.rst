@@ -3,7 +3,7 @@ Introduction to BLISS Configuration
 
 BLISS uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup Language) and JSON files for project configuration.
 
-In order to help BLISS properly configure your project, you should ensure that the *BLISS_CONFIG* environment variable points to your **config.yaml** file. Given the default BLISS project structure you would have the following setup. This assumes you've set *BLISS_ROOT* to the project's root directory::
+You must ensure that the **BLISS_CONFIG environment variable points to your **config.yaml** file in order for BLISS to properly configure your project. Given the default BLISS project structure you would have the following setup. This assumes you've set **BLISS_ROOT** to the project's root directory::
 
     export BLISS_CONFIG=$BLISS_ROOT/data/config/config.yaml
 
