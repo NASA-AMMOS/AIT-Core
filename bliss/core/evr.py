@@ -13,6 +13,7 @@ information from the FSW EVR classes.
 
 import binascii
 import os
+import pkg_resources
 import re
 import yaml
 
@@ -51,7 +52,7 @@ class EVRReader(object):
 
 
 def getDefaultSchema():
-    return os.path.join(bliss.config._directory, 'evr_schema.json')
+    return pkg_resources.resource_filename('bliss.core', 'data/evr_schema.json')
 
 def getDefaultDict(reload=False):
     d = util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)

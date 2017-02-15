@@ -16,6 +16,10 @@ setup(
         os.path.join('./bin', f) for f in os.listdir('./bin')
     ],
 
+    package_data = {
+        'bliss.core': ['data/*.json']
+    },
+
     install_requires = [
         'bottle==0.12.9',
         'docopt==0.6.2',
