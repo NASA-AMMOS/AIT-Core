@@ -173,8 +173,6 @@ class BlissConfig (object):
         order depending on the presence of environment variables::
 
             ${BLISS_CONFIG}
-            ${BLISS_ROOT}/config/config.yaml
-            /current_work_directory/config/config.yaml
 
         """
         self._filename = None
@@ -185,9 +183,9 @@ class BlissConfig (object):
             if 'BLISS_CONFIG' in os.environ:
                 filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
             else:
-                msg = 'BLISS_CONFIG not set. Falling back to BLISS_ROOT or CWD'
-                log.warn(msg)
-                filename = os.path.join(self._directory, 'config.yaml')
+                msg = 'BLISS_CONFIG is not set. Exiting ...'
+                log.error(msg)
+                raise ValueError(msg)
 
         if config is None:
             self.reload(filename, data)

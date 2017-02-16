@@ -42,15 +42,11 @@ Similarly, if you just want to install the additional documentation or test depe
     # Install the base dependencies and extra unit test dependencies
     $ pip install -e .[tests]
 
-BLISS uses two environment variables for configuration.
-
-**BLISS_ROOT** is used for project wide pathing. If you don't set this BLISS will attempt to do a good job of it for you. If you want to be safe you should set it to the project root where you checked out the code.
-
-**BLISS_CONFIG** is used for pointing BLISS at a configuration file. If you don't set this BLISS will fall back to **BLISS_ROOT** and try to locate a configuration file with that. If you're going to use the default test configuration that comes with bliss-core you should set this to:
+BLISS uses the **BLISS_CONFIG** environment variable for configuration. This environment variable should contain a full path to a valid **config.yaml** file. If you don't set this BLISS will fail to initialize properly and will notify you that your configuration is invalid. If you wanted to set this to some example configuration that comes packaged with BLISS you could set this to:
 
 .. code-block:: bash
 
-    /<project root path>/data/config/config.yaml
+    /<project root path>/test/config/config.yaml
 
 Documentation
 -------------
