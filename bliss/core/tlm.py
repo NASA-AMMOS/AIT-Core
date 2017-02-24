@@ -10,6 +10,7 @@ definitions.
 """
 
 import os
+import pkg_resources
 import yaml
 import csv
 
@@ -778,7 +779,7 @@ def getDefaultDict(reload=False):
 
 
 def getDefaultSchema():
-    return os.path.join(bliss.config._directory, 'tlm_schema.json')
+    return pkg_resources.resource_filename('bliss.core', 'data/tlm_schema.json')
 
 
 def getDefaultDictFilename():

@@ -5,6 +5,7 @@
 
 
 import os
+import pkg_resources
 import jsonschema
 import logging
 
@@ -12,7 +13,7 @@ import mock
 import nose
 
 import bliss
-from bliss.core import cmd, log, tlm, val, util
+from bliss.core import cmd, log, tlm, val, util, evr
 
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
@@ -402,7 +403,7 @@ def testTlmDictValidation():
 def testEvrValidation():
     # Validation test of current telemetry dictionary
     yml = bliss.config.evrdict.filename
-    schema = os.path.join(os.path.dirname(yml), 'evr_schema.json')
+    schema = os.path.join(os.path.dirname(yml), evr.getDefaultSchema())
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v
@@ -412,7 +413,7 @@ def testEvrValidation():
 def testTableValidation():
     # Validation test of current table configuration
     yml = bliss.config.table.filename
-    schema = os.path.join(os.path.dirname(yml), 'table_schema.json')
+    schema = pkg_resources.resource_filename('bliss.core', 'data/table_schema.json')
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v

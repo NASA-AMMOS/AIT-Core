@@ -9,6 +9,7 @@ Dictionaries contain command and argument definitions.
 """
 
 import os
+import pkg_resources
 import struct
 import yaml
 
@@ -408,7 +409,7 @@ def getDefaultDictFilename():
 
 
 def getDefaultSchema():
-    return os.path.join(bliss.config._directory, 'cmd_schema.json')
+    return pkg_resources.resource_filename('bliss.core', 'data/cmd_schema.json')
 
 
 def getMaxCmdSize():
