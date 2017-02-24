@@ -4,8 +4,7 @@
 import os
 import pip
 
-
-KEEP = 'pip setuptools wsgiref'.split()
+KEEP = 'pip setuptools wsgiref appdirs packaging pyparsing six'.split()
 
 def system (cmd):
     print cmd
