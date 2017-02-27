@@ -63,10 +63,11 @@ If deemed appropriate, prepare an email to all projects / parties known to be us
    Thank you!
    BLISS Development Team
 
-Push Release Artifacts to Compute Cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Push Release Artifacts to OCO3-TB PyPi
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To make life easier for installation on the cluster, be sure to add the release artifacts to a folder in **/proj/oco3/bliss/releases**.
+SSH into OCO3-TB and navigate to **/usr/local/vhosts/oco3-tb/htdocs/pypi**. Open **make-pypi.sh** and update with the new version number and comment out the previous number. Run **make-pypi.sh** and check https://bliss.jpl.nasa.gov/pypi/simple/ to ensure that the release has been added.
+
 
 Pointing to a Release
 ---------------------
@@ -76,6 +77,12 @@ To use BLISS in your project you'll want to point to a specific release in your 
 .. code-block:: none
 
    git+ssh://git@github.jpl.nasa.gov/bliss/bliss-core.git@<version # here>#egg=bliss-core[tests,docs]
+
+If you have access to the OCO-TB machine you can use our PyPi server for pulling down the dependency. Use the following line to set your bliss-core dependency to the latest available:
+
+.. code-block:: none
+
+    --extra-index-url https://bliss.jpl.nasa.gov/pypi/simple/ bliss-core
 
 
 Upgrading an Existing Environment
