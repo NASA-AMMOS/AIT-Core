@@ -574,7 +574,17 @@ class PacketExpression(object):
         """
         packet._defn.globals['history'] = packet.history
         packet._defn.globals['raw']     = packet.raw
-        return eval(self._code, packet._defn.globals, PacketContext(packet))
+
+        try:
+            context = PacketContext(packet)
+            result  = eval(self._code, packet._defn.globals, context)
+        except ZeroDivisionError:
+            result = None
+
+        packet._defn.globals['history'] = None
+        packet._defn.globals['raw']     = None
+
+        return result
 
 
 
