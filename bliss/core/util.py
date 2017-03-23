@@ -300,6 +300,9 @@ def toDict(obj):
         data[key] = str(obj)
         return data
 
+    if key == 'code':
+        continue
+
     if value is not None:
       if isinstance(value, (list, tuple, set)) and len(value) > 0:
         # Check the first object in the list to see if it is primitive
