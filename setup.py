@@ -4,7 +4,7 @@ import os
 
 setup(
     name         = 'bliss-core',
-    version      = '0.11.0',
+    version      = '0.12.0',
     packages     = ['bliss.core'],
     author       = 'BLISS-Core Development Team',
     author_email = 'bliss@jpl.nasa.gov',
