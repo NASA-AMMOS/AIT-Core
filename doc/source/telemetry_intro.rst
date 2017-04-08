@@ -157,7 +157,7 @@ name:
     A **string** denoting the name of this field in the packet.
 
 type:
-    A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``bliss.dtype.PrimitiveTypes``. You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
+    A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``bliss.dtype.PrimitiveTypes``. Arrays of types are also supported, e.g. ``MSB_U16[32]``.  You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
 
 desc (optional):
     A **string** for providing a description of the field.

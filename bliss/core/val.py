@@ -571,7 +571,8 @@ class TypeRule(ValidationRule):
 
         Assumes the defn has 'type' and 'name' attributes
         """
-        if not isinstance(defn.type, dtype.PrimitiveType):
+        allowedTypes = dtype.PrimitiveType, dtype.ArrayType
+        if not isinstance(defn.type, allowedTypes):
             self.messages.append(self.msg % str(defn.name))
             # self.messages.append("TBD location message")
             self.valid = False

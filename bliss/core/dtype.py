@@ -161,6 +161,9 @@ class PrimitiveType(object):
             self._max = 2 ** self.nbits - 1
             self._min = 0
 
+    def __eq__ (self, other):
+        return isinstance(other, PrimitiveType) and self._name == other._name
+
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.name)
 
@@ -273,6 +276,149 @@ PrimitiveTypeMap.update(
 )
 
 PrimitiveTypes = sorted(PrimitiveTypeMap.keys())
+
+
+class ArrayType(object):
+    __slots__ = [ '_nelems', '_type' ]
+
+    def __init__(self, elemType, nelems):
+        """Creates a new ArrayType of nelems, each of type elemType."""
+        if type(elemType) is str:
+            elemType = get(elemType)
+
+        if type(nelems) is not int:
+            raise TypeError('ArrayType(..., nelems) must be an integer')
+
+        self._type   = elemType
+        self._nelems = nelems
+
+
+    def __eq__(self, other):
+        """Returns True if two ArrayTypes are equivalent, False otherwise."""
+        return (isinstance(other, ArrayType) and
+                self.type == other.type and self.nelems == other.nelems)
+
+
+    def _assertIndex(self, index):
+        """Raise TypeError or IndexError if index is not an integer or out of
+        range for the number of elements in this array, respectively.
+        """
+        if type(index) is not int:
+            raise TypeError('list indices must be integers')
+        if index < 0 or index >= self.nelems:
+            raise IndexError('list index out of range')
+
+
+    @property
+    def name(self):
+        """Name of this ArrayType."""
+        return '%s[%d]' % (self.type.name, self.nelems)
+
+    @property
+    def nbits(self):
+        """Number of bits required to represent this ArrayType."""
+        return self.nelems * self.type.nbits
+
+    @property
+    def nbytes(self):
+        """Number of bytes required to represent this ArrayType."""
+        return self.nelems * self.type.nbytes
+
+    @property
+    def nelems(self):
+        """Number of elements in this ArrayType."""
+        return self._nelems
+
+    @property
+    def type(self):
+        """Type of array elements."""
+        return self._type
+
+
+    def decode(self, bytes, index=None):
+        """decode(bytea[, index]) -> value1, ..., valueN
+
+        Decodes the given sequence of bytes according to this Array's
+        element type.
+
+        If the optional `index` parameter is an integer or slice, then
+        only the element(s) at the specified position(s) will be
+        decoded and returned.
+        """
+        if index is None:
+            index = slice(0, self.nelems)
+
+        if type(index) is slice:
+            step    = 1 if index.step is None else index.step
+            indices = xrange(index.start, index.stop, step)
+            result  = [ self.decodeElem(bytes, n) for n in indices ]
+        else:
+            result = self.decodeElem(bytes, index)
+
+        return result
+
+
+    def decodeElem(self, bytes, index):
+        """Decodes a single element at array[index] from a sequence bytes
+        that contain data for the entire array.
+        """
+        self._assertIndex(index)
+        start = index * self.type.nbytes
+        stop  = start + self.type.nbytes
+
+        if stop > len(bytes):
+            msg =  'Decoding %s[%d] requires %d bytes, '
+            msg += 'but the ArrayType.decode() method received only %d bytes.'
+            raise IndexError(msg % (self.type.name, index, stop, len(bytes)))
+
+        return self.type.decode( bytes[start:stop] )
+
+
+    def encode(self, *args):
+        """encode(value1[, ...]) -> bytes
+
+        Encodes the given values to a sequence of bytes according to this
+        Array's underlying element type
+        """
+        if len(args) != self.nelems:
+            msg = 'ArrayType %s encode() requires %d values, but received %d.'
+            raise ValueError(msg % (self.name, self.nelems, len(args)))
+
+        return bytearray().join(self.type.encode(arg) for arg in args)
+
+
+    @staticmethod
+    def parse (name):
+        """parse(name) -> [typename | None, nelems | None]
+
+        Parses an ArrayType name to return the element type name and
+        number of elements, e.g.:
+
+            >>> ArrayType.parse('MSB_U16[32]')
+            ['MSB_U16', 32]
+
+        If typename cannot be determined, None is returned.
+        Similarly, if nelems is not an integer or less than one (1),
+        None is returned.
+        """
+        parts = [None, None]
+        start = name.find('[')
+
+        if start != -1:
+            stop = name.find(']', start)
+            if stop != -1:
+                try:
+                    parts[0] = name[:start]
+                    parts[1] = int(name[start + 1:stop])
+                    if parts[1] <= 0:
+                        raise ValueError
+                except ValueError:
+                    msg  = 'ArrayType specification: "%s" must have an '
+                    msg += 'integer greater than zero in square brackets.'
+                    raise ValueError(msg % name)
+
+        return parts
+
 
 
 class ComplexType(PrimitiveType):
@@ -622,8 +768,11 @@ def get(typename):
 
     Returns the PrimitiveType or ComplexType for typename or None.
     """
-    if typename not in DataTypeMap and typename.startswith("S"):
-        PrimitiveTypeMap[typename] = PrimitiveType(typename)
-        return PrimitiveTypeMap.get(typename, None)
+    dt = getPDT(typename) or getCDT(typename)
 
-    return DataTypeMap.get(typename, None)
+    if dt is None:
+        pdt, nelems = ArrayType.parse(typename)
+        if pdt and nelems:
+            dt = ArrayType(pdt, nelems)
+
+    return dt

@@ -10,8 +10,46 @@ import datetime
 import struct
 
 import nose
+import nose.tools
 
 from bliss.core import dtype
+
+
+def testArrayType():
+    array  = dtype.ArrayType('MSB_U16', 3)
+    bin123 = '\x00\x01\x00\x02\x00\x03'
+    bin456 = '\x00\x04\x00\x05\x00\x06'
+
+    assert array.name   == 'MSB_U16[3]'
+    assert array.nbits  == 3 * 16
+    assert array.nbytes == 3 *  2
+    assert array.nelems == 3
+    assert array.type   == dtype.PrimitiveType('MSB_U16')
+
+    assert array.encode(1, 2, 3)   == bin123
+    assert array.decode(bin456)    == [4, 5, 6]
+    assert array.decode(bin456, 0) == 4
+    assert array.decode(bin456, 1) == 5
+    assert array.decode(bin456, 2) == 6
+    assert array.decode(bin456, slice(1, 3)) == [5, 6]
+
+    with nose.tools.assert_raises(ValueError):
+        array.encode(1, 2)
+
+    with nose.tools.assert_raises(IndexError):
+        array.decode(bin456[1:5])
+
+    with nose.tools.assert_raises(IndexError):
+        array.decode(bin456, 3)
+
+    with nose.tools.assert_raises(TypeError):
+        array.decode(bin456, 'foo')
+
+    with nose.tools.assert_raises(TypeError):
+        dtype.ArrayType('U8', '4')
+
+
+
 
 
 def testEVR16():
@@ -102,6 +140,14 @@ def testget():
     assert isinstance( dtype.get("U8")    , dtype.PrimitiveType )
     assert isinstance( dtype.get("S40")   , dtype.PrimitiveType )
     assert isinstance( dtype.get("TIME32"), dtype.Time32Type    )
+
+    assert dtype.get('LSB_U32[10]') == dtype.ArrayType('LSB_U32', 10)
+
+    with nose.tools.assert_raises(ValueError):
+        dtype.get('U8["foo"]')
+
+    with nose.tools.assert_raises(ValueError):
+        dtype.get('U8[-42]')
 
 
 if __name__ == '__main__':
