@@ -6,6 +6,7 @@
 
 import os
 import csv
+import struct
 
 import nose
 
@@ -329,6 +330,26 @@ class TestTlmConfig(object):
             os.remove(self.test_pkl_main)
         except OSError:
             None
+
+
+
+def testArray ():
+    """
+    # This test will use the following TLM dictionary definitions:
+
+    - !Packet
+      name: P
+      fields:
+        - !Field
+          name: A
+          type: MSB_U16[3]
+
+    """
+    defn   = tlm.TlmDict(testArray.__doc__)['P']
+    packet = tlm.Packet(defn, struct.pack('>HHH', 1, 2, 3))
+
+    assert packet.A == [1, 2, 3]
+
 
 if __name__ == '__main__':
     nose.main()

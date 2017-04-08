@@ -9,6 +9,7 @@ dictionaries.  Dictionaries contain packet, header, data, and field
 definitions.
 """
 
+import collections
 import os
 import pkg_resources
 import yaml
@@ -93,6 +94,38 @@ class DNToEUConversion(object):
 
 
 
+class FieldList(collections.Sequence):
+    """FieldList
+
+    FieldLists encapsulate a packet field array so that it behaves
+    like a Python list (or more generally a sequence) when accessed.
+
+    A FieldList should not be created directly.  It's created internally
+    by the private Packet field accessor _getattr().
+    """
+
+    __slots__ = [ '_defn', '_packet', '_raw' ]
+
+    def __init__(self, packet, defn, raw):
+        self._packet = packet
+        self._defn   = defn
+        self._raw    = raw
+
+    def __eq__ (self, other):
+        return  (
+            isinstance(other, collections.Sequence) and
+            len(self) == len(other) and
+            all(self[n] == other[n] for n in xrange(len(self)))
+        )
+
+    def __getitem__(self, key):
+        return self._packet._getattr(self._defn.name, self._raw, key)
+
+    def __len__(self):
+        return self._defn.type.nelems
+
+
+
 class FieldDefinition(object):
     """FieldDefinition
 
@@ -173,22 +206,28 @@ class FieldDefinition(object):
             log.error("Invalid field type '%s' " % value)
 
 
-    def decode(self, bytes, raw=False):
+    def decode(self, bytes, raw=False, index=None):
         """Decodes the given bytes according to this Field Definition.
 
         If raw is True, no enumeration substitutions will be applied
         to the data returned.
+
+        If index is an integer or slice (and the type of this
+        FieldDefinition is an ArrayType), then only the element(s) at
+        the specified position(s) will be decoded.
         """
-        value = self.type.decode( bytes[self.slice()] )
+        if index is not None and isinstance(self.type, dtype.ArrayType):
+            value = self.type.decode( bytes[self.slice()], index )
+        else:
+            value = self.type.decode( bytes[self.slice()] )
+
 
         # Apply bit mask if needed
         if self.mask is not None:
             value &= self.mask
-            #log.info("mask out: " + bin(value))
 
         if self.shift > 0:
             value >>= self.shift
-            #log.info("shift out: " + bin(value))
 
         if not raw and self.enum is not None:
             value = self.enum.get(value, value)
@@ -298,7 +337,7 @@ class Packet(object):
             raise AttributeError("Packet '%s' has no field '%s'" % values)
 
 
-    def _getattr (self, fieldname, raw=False):
+    def _getattr (self, fieldname, raw=False, index=None):
         """Returns the value of the given packet field name.
 
         If raw is True, the field value is only decoded.  That is no
@@ -314,9 +353,12 @@ class Packet(object):
         else:
             defn = self._defn.fieldmap[fieldname]
 
+            if isinstance(defn.type, dtype.ArrayType) and index is None:
+                return FieldList(self, defn, raw)
+
             if defn.when is None or defn.when.eval(self):
                 if raw or (defn.dntoeu is None and defn.expr is None):
-                    value = defn.decode(self._data, raw)
+                    value = defn.decode(self._data, raw, index)
                 elif defn.dntoeu is not None:
                     value = defn.dntoeu.eval(self)
                 elif defn.expr is not None:
@@ -688,7 +730,7 @@ class TlmDict(dict):
     """
     def __init__(self, *args, **kwargs):
         """Creates a new Telemetry Dictionary from the given telemetry
-        dictionary filename.
+        dictionary filename or YAML string.
         """
         self.filename = None
         self.pktnames  = {}
@@ -719,17 +761,25 @@ class TlmDict(dict):
             pkt = Packet(defn, data)
         return pkt
 
-    def load(self, filename):
-        """Loads Packet Definitions from the given YAML file into this
-        Telemetry Dictionary.
+    def load(self, content):
+        """Loads Packet Definitions from the given YAML content into this
+        Telemetry Dictionary.  Content may be either a filename
+        containing YAML content or a YAML string.
         """
         if self.filename is None:
-            self.filename = filename
-            with open(self.filename, 'rb') as stream:
-                pkts = yaml.load(stream)
-                pkts = handle_includes(pkts)
-                for pkt in pkts:
-                    self.add(pkt)
+            if os.path.isfile(content):
+                self.filename = content
+                stream        = open(self.filename, 'r')
+            else:
+                stream        = content
+            
+            pkts = yaml.load(stream)
+            pkts = handle_includes(pkts)
+            for pkt in pkts:
+                self.add(pkt)
+
+            if type(stream) is file:
+                stream.close()
 
     def toDict(self):
         data = {}
