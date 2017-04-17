@@ -1,7 +1,3 @@
-This README is in
-[Markdown format](http://daringfireball.net/projects/markdown/)
-
-
 Bespoke Links to Instruments for Surface and Space (BLISS)
 ==========================================================
 
@@ -76,7 +72,11 @@ dependencies you can do so with the below commands:
     # Install the base dependencies and extra unit test dependencies
     $ pip install -e .[tests]
 
-BLISS' BSC module supports the use of the [rawsocket](https://github.com/mwalle/rawsocket) library so you can limit raw socket access on machines to specific users. If you need this functionality you will need to manually install the dependency with
+BLISS' BSC module is used to capture data over Ethernet (Not supported on OS X), TCP, and
+UDP connections. BSC supports the use of the [rawsocket](https://github.com/mwalle/rawsocket)
+library so you can limit raw socket access on machines to specific users. `Rawsocket`
+is not needed for BSC to function, however if you need this additional functionality
+you will have to manually install the dependency with
 
     $ pip install rawsocket
 
@@ -93,6 +93,53 @@ comes with `bliss-core` you should set this to:
 
     /<project root path>/data/config/config.yaml
 
+Setting the above environment variables can be simplified by adding them to your
+`virtualenvwrapper's postactivate` script. This file is sourced after you activate
+a new environment with `workon`.
+
+```
+# Edit the postactivate script in your editor of choice. You can find it at $WORKON_HOME/postactivate
+
+# Add the below to the file and update the paths to point to your checkout
+if [ $VIRTUAL_ENV == "$WORKON_HOME/bliss-core-development" ]
+then
+    export BLISS_ROOT=/path/to/checkout/of/bliss-core
+    export BLISS_CONFIG=$BLISS_ROOT/data/config/config.yaml
+fi
+```
+
+Your BLISS Core configuration is now isolated to your `virtualenv` environment.
+Whenever you want to work on BLISS run `workon bliss-core-development`. You
+will see a change in the format of your prompt indicating what environment you
+currently have active. If you want to disable the environment run `deactivate`.
+
+```
+# Normal prompt
+>
+
+# Prompt after running workon
+(bliss-core-development)
+>
+```
+
+You're now finished with installing BLISS Core. To quickly check that everything
+went as expected run `python -c 'import bliss.core'` in a new terminal window.
+You shouldn't see any message returned. If you receive an error as shown below
+make sure you have activated your `virtualenv` environment first!
+
+```
+# Nominal
+(bliss-core)
+> python -c 'import bliss.core'
+>
+
+# Error!!!!
+> python -c "import bliss.core"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: No module named bliss.core
+>
+```
 
 Unit Tests
 ----------
