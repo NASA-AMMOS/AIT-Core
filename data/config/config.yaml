@@ -39,5 +39,5 @@ default:
     gui:
       telemetry:
         - stream:
-          name: OCO3_1553_EHS
-          port: 3076
+            name: OCO3_1553_EHS
+            port: 3076
