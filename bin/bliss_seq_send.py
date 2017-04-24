@@ -81,7 +81,7 @@ def main ():
         log.error( str(err) )
 
     except IOError:
-        log.error('Could not open '%s' for reading.' % filename)
+        log.error("Could not open '%s' for reading." % filename)
 
     log.end()
 
