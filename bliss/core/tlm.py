@@ -765,11 +765,14 @@ class TlmDict(dict):
         """Loads Packet Definitions from the given YAML content into this
         Telemetry Dictionary.  Content may be either a filename
         containing YAML content or a YAML string.
+
+        Load has no effect if this Command Dictionary was already
+        instantiated with a filename or YAML content.
         """
         if self.filename is None:
             if os.path.isfile(content):
                 self.filename = content
-                stream        = open(self.filename, 'r')
+                stream        = open(self.filename, 'rb')
             else:
                 stream        = content
             

@@ -159,12 +159,30 @@ class Cmd(object):
 
     Commands reference their Command Definition and may contain arguments.
     """
-    def __init__(self, defn, *args):
-        """Creates a new BLISS Command based on the given command definition
-        and command arguments.
+    def __init__(self, defn, *args, **kwargs):
+        """Creates a new BLISS Command based on the given command
+        definition and command arguments.  A Command may be created
+        with either positional or keyword arguments, but not both.
         """
         self.defn = defn
-        self.args = args
+
+        if len(args) > 0 and len(kwargs) > 0:
+            msg  = 'A Cmd may be created with either positional or '
+            msg += 'keyword arguments, but not both.'
+            raise TypeError(msg)
+
+        if len(kwargs) > 0:
+            args = [ ]
+            for defn in self.defn.args:
+                if defn.name in kwargs:
+                    value = kwargs.pop(defn.name)
+                else:
+                    value = None
+                args.append(value)
+
+        self.args          = args
+        self._unrecognized = kwargs
+
 
     def __repr__(self):
         return self.defn.name + " " + " ".join([str(a) for a in self.args])
@@ -206,11 +224,12 @@ class Cmd(object):
         52050J, Section 3.2.3.4).  This leaves 53 words (106 bytes) for
         the command itself.
         """
-        offset  = len(self.defn.opcode)
+        opcode  = struct.pack('>H', self.defn.opcode)
+        offset  = len(opcode)
         size    = max(offset + self.defn.argsize, pad)
         encoded = bytearray(size)
 
-        encoded[0:offset] = self.defn.opcode
+        encoded[0:offset] = opcode
         encoded[offset]   = self.defn.argsize
         offset           += 1
         index             = 0
@@ -261,9 +280,18 @@ class CmdDefn(object):
         return util.toRepr(self)
 
     @property
+    def args (self):
+        """The argument definitions to this command (excludes fixed
+        arguments).
+        """
+        return filter(lambda a: not a.fixed, self.argdefns)
+
+    @property
     def nargs(self):
-        """The number of arguments to this command (excludes fixed arguments)."""
-        return len(filter(lambda d: not d.fixed, self.argdefns))
+        """The number of arguments to this command (excludes fixed
+        arguments).
+        """
+        return len(self.args)
 
     @property
     def nbytes(self):
@@ -279,7 +307,7 @@ class CmdDefn(object):
     @property
     def opcode(self):
         """Returns the opcode for the given command."""
-        return bytearray(struct.pack(">H", self._opcode))
+        return self._opcode
 
     @property
     def argsize(self):
@@ -301,19 +329,28 @@ class CmdDefn(object):
         Validation error messages are appended to an optional messages
         array.
         """
-        valid    = True
-        argdefns = [defn for defn in self.argdefns if not defn.fixed]
+        valid = True
+        args  = [ arg for arg in cmd.args if arg is not None ]
 
-        if len(argdefns) != len(cmd.args):
+        if self.nargs != len(args):
             valid = False
             if messages is not None:
-                msg  = "Argument number mismatch for command '%s'.  "
-                msg += "Expected %d, but received %d."
-                messages.append(msg % (self.name, len(self.argdefns), len(cmd.args)))
+                msg  = 'Expected %d arguments, but received %d.'
+                messages.append(msg % (self.nargs, len(args)))
 
-        for defn, value in zip(argdefns, cmd.args):
-            if defn.validate(value, messages) is False:
+        for defn, value in zip(self.args, cmd.args):
+            if value is None:
                 valid = False
+                if messages is not None:
+                    messages.append('Argument "%s" is missing.' % defn.name)
+            elif defn.validate(value, messages) is False:
+                valid = False
+
+        if len(cmd._unrecognized) > 0:
+            valid = False
+            if messages is not None:
+                for name in cmd.unrecognized:
+                    messages.append('Argument "%s" is unrecognized.' % name)
 
         return valid
 
@@ -346,13 +383,27 @@ class CmdDict(dict):
         self.opcodes[defn._opcode] = defn
 
 
-    def create(self, name, *args):
+    def create(self, name, *args, **kwargs):
         """Creates a new BLISS command with the given arguments."""
-        cmd  = None
+        tokens = name.split()
+
+        if len(tokens) > 1 and (len(args) > 0 or len(kwargs) > 0):
+            msg  = 'A Cmd may be created with either positional arguments '
+            msg += '(passed as a string or a Python list) or keyword '
+            msg += 'arguments, but not both.'
+            raise TypeError(msg)
+
+        if len(tokens) > 1:
+            name = tokens[0]
+            args = [ util.toNumber(t, t) for t in tokens[1:] ]
+
         defn = self.get(name, None)
-        if defn:
-            cmd = Cmd(defn, *args)
-        return cmd
+
+        if defn is None:
+            raise TypeError('Unrecognized command: %s' % name)
+
+        return Cmd(defn, *args, **kwargs)
+
 
     def decode(self, bytes):
         """Decodes the given bytes according to this BLISS Command
@@ -378,15 +429,26 @@ class CmdDict(dict):
 
         return self.create(name, *args)
 
-    def load(self, filename):
-        """Loads Command Definitions from the given YAML file into this
-        Command Dictionary.
+    def load(self, content):
+        """Loads Command Definitions from the given YAML content into
+        into this Command Dictionary.  Content may be either a
+        filename containing YAML content or a YAML string.
+
+        Load has no effect if this Command Dictionary was already
+        instantiated with a filename or YAML content.
         """
         if self.filename is None:
-            self.filename = filename
-        with open(self.filename, 'rb') as stream:
+            if os.path.isfile(content):
+                self.filename = content
+                stream        = open(self.filename, 'rb')
+            else:
+                stream        = content
+
             for cmd in yaml.load(stream):
                 self.add(cmd)
+
+            if type(stream) is file:
+                stream.close()
 
     def toDict(self):
         data = {}
