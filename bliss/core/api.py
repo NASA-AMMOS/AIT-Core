@@ -366,7 +366,7 @@ class UdpTelemetryServer (gevent.server.DatagramServer):
 
 
 
-class Instrument:
+class Instrument (object):
     def __init__ (self, cmdport=3075, tlmport=3076, defn=None):
         if defn is None:
             tlmdict = tlm.getDefaultDict()
