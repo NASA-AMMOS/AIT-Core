@@ -11,6 +11,8 @@ First you need to determine the version number for the release. **bliss-core** u
 
 Update the project documentation to use the correct version names. The `conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ file contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. The appropriate version number must also be set in the project's **setup.py** file. Commit and push these changes to master.
 
+For example, see a past release `commit <https://github.jpl.nasa.gov/bliss/bliss-core/commit/0503789dadfcfdeec450fd3cf3165f7bcfe05bfb>`_.
+
 Generate Release Notes
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -38,6 +40,7 @@ You will need to push the latest documentation to Github pages for the release. 
    git status # Check that everything looks correct
    git commit -m "Update docs for <version>"
    git push origin gh-pages
+   git checkout master
 
 Notify Relevant Parties of Release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -68,6 +71,7 @@ Push Release Artifacts to OCO3-TB PyPi
 
 SSH into OCO3-TB and navigate to **/usr/local/vhosts/oco3-tb/htdocs/pypi**. Open **make-pypi.sh** and update with the new version number and comment out the previous number. Run **make-pypi.sh** and check https://bliss.jpl.nasa.gov/pypi/simple/ to ensure that the release has been added.
 
+NOTE: Currently requires pip 9.0.1 in order to utilize `pip download`.
 
 Pointing to a Release
 ---------------------
