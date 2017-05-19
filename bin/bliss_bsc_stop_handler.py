@@ -14,7 +14,7 @@ from docopt import docopt
 import requests
 
 
-if __name__ == '__main__':
+def main():
     arguments = docopt(__doc__)
 
     host = arguments.pop('--service-host')
@@ -23,3 +23,6 @@ if __name__ == '__main__':
     handler_name = arguments.pop('<name>')
 
     requests.delete('http://{}:{}/{}/stop'.format(host, port, handler_name))
+
+if __name__ == '__main__':
+    main()

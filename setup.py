@@ -5,16 +5,12 @@ import os
 setup(
     name         = 'bliss-core',
     version      = '0.15.0',
-    packages     = ['bliss.core'],
+    packages     = ['bliss.core', 'bin'],
     author       = 'BLISS-Core Development Team',
     author_email = 'bliss@jpl.nasa.gov',
 
-    namespace_packages   = [ 'bliss' ],
+    namespace_packages   = ['bliss'],
     include_package_data = True,
-
-    scripts = [
-        os.path.join('./bin', f) for f in os.listdir('./bin')
-    ],
 
     package_data = {
         'bliss.core': ['data/*.json']
@@ -42,5 +38,14 @@ setup(
             'mock',
             'pylint'
         ],
+    },
+
+    entry_points = {
+        'console_scripts': [
+            '{}=bin.{}:main'.format(
+                f.split('.')[0].replace('_', '-'),
+                f.split('.')[0])
+            for f in os.listdir('./bin')
+        ]
     }
 )

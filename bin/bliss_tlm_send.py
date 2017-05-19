@@ -28,60 +28,64 @@ defaults = {
 }
 
 
-try:
-    if '--help' in sys.argv:
-        gds.usage(exit=True)
+def main():
+    try:
+        if '--help' in sys.argv:
+            gds.usage(exit=True)
 
-    log.begin()
-    options, args = gds.parseArgs(sys.argv[1:], defaults)
+        log.begin()
+        options, args = gds.parseArgs(sys.argv[1:], defaults)
 
-    if len(args) == 0:
-        gds.usage(exit=True)
-    else:
-        filename = args[0]
+        if len(args) == 0:
+            gds.usage(exit=True)
+        else:
+            filename = args[0]
 
-    host    = 'localhost'
-    port    = options['port']
-    sock    = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    verbose = options['verbose']
+        host    = 'localhost'
+        port    = options['port']
+        sock    = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        verbose = options['verbose']
 
-    if not verbose:
-        log.info('Will only report every 10 telemetry packets')
-        log.info('Will only report long telemetry send delays')
+        if not verbose:
+            log.info('Will only report every 10 telemetry packets')
+            log.info('Will only report long telemetry send delays')
 
-    with pcap.open(filename, 'r') as stream:
-        npackets = 0
-        prev_ts  = None
+        with pcap.open(filename, 'r') as stream:
+            npackets = 0
+            prev_ts  = None
 
-        for header, packet in stream:
-            if prev_ts is None:
-                prev_ts = header.ts
+            for header, packet in stream:
+                if prev_ts is None:
+                    prev_ts = header.ts
 
-            delay = header.ts - prev_ts
+                delay = header.ts - prev_ts
 
-            if delay >= 2:
-                log.info('Next telemetry in %1.2f seconds' % delay)
+                if delay >= 2:
+                    log.info('Next telemetry in %1.2f seconds' % delay)
 
-            time.sleep(delay)
+                time.sleep(delay)
 
-            nbytes = len(packet)
+                nbytes = len(packet)
 
-            if npackets == 0:
-                log.info('Sent first telemetry packet (%d bytes)' % nbytes)
-            elif verbose:
-                log.info('Sent telemetry (%d bytes)' % nbytes)
-            elif npackets % 10 == 0:
-                log.info('Sent 10 telemetry packets')
+                if npackets == 0:
+                    log.info('Sent first telemetry packet (%d bytes)' % nbytes)
+                elif verbose:
+                    log.info('Sent telemetry (%d bytes)' % nbytes)
+                elif npackets % 10 == 0:
+                    log.info('Sent 10 telemetry packets')
 
-            sock.sendto(packet, (host, port))
+                sock.sendto(packet, (host, port))
 
-            npackets += 1
-            prev_ts   = header.ts
+                npackets += 1
+                prev_ts   = header.ts
 
-except KeyboardInterrupt:
-  log.info('Received Ctrl-C.  Stopping telemetry stream.')
+    except KeyboardInterrupt:
+      log.info('Received Ctrl-C.  Stopping telemetry stream.')
 
-except Exception as e:
-  log.error('TLM send error: %s' % str(e))
+    except Exception as e:
+      log.error('TLM send error: %s' % str(e))
 
-log.end()
+    log.end()
+
+if __name__ == '__main__':
+    main()

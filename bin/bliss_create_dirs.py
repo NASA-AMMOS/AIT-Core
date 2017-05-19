@@ -201,7 +201,7 @@ def createDirStruct(paths, verbose=False):
 
     return True
 
-if __name__ == '__main__':
+def main():
     arguments = docopt(__doc__)
 
     try:
@@ -244,3 +244,6 @@ if __name__ == '__main__':
     except Exception as e:
         print e
         log.error('BLISS Create Directories error: %s' % traceback.format_exc())
+
+if __name__ == '__main__':
+    main()

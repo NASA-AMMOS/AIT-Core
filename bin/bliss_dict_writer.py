@@ -30,8 +30,7 @@ import sys
 
 from bliss.core import log, tlm
 
-
-if __name__ == '__main__':
+def main():
     arguments = docopt(__doc__)
 
     # output format for the file
@@ -54,3 +53,6 @@ if __name__ == '__main__':
         writer.writeToCSV(output_path=path)
     else:
         log.error("Invalid <format> specified.")
+
+if __name__ == '__main__':
+    main()
