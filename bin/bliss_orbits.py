@@ -83,138 +83,142 @@ import docopt
 import bliss
 
 
-arguments = docopt.docopt(__doc__, version='bliss-orbits 0.1.0')
-predicts  = arguments['predicts']
-actuals   = arguments['actuals']
-filename  = arguments['<filename>']
-outname   = arguments['-o']
-start     = arguments['<start-time>']
-stop      = arguments['<stop-time>']
-today     = start.lower() == 'today'
-date      = None
-doy       = None
+def main():
+    arguments = docopt.docopt(__doc__, version='bliss-orbits 0.1.0')
+    predicts  = arguments['predicts']
+    actuals   = arguments['actuals']
+    filename  = arguments['<filename>']
+    outname   = arguments['-o']
+    start     = arguments['<start-time>']
+    stop      = arguments['<stop-time>']
+    today     = start.lower() == 'today'
+    date      = None
+    doy       = None
 
-if re.match('\d{4}-\d{2}-\d{2}$', start):
-    date = start
+    if re.match('\d{4}-\d{2}-\d{2}$', start):
+        date = start
 
-if re.match('\d{1,3}$', start):
-    doy = start
+    if re.match('\d{1,3}$', start):
+        doy = start
 
-now = datetime.datetime.utcnow()
-day = True
-
-
-# Parse and determine start and stop filter times.
-try:
-    if start and stop:
-        field  = 'Start time'
-        format = 'YYYY-MM-DDTHH:MM:SS'
-        value  = start
-        start  = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
-
-        field  = 'Stop time'
-        value  = stop
-        stop   = datetime.datetime.strptime(stop , '%Y-%m-%dT%H:%M:%S')
-
-        day    = False
-
-    elif today:
-        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-
-    elif doy:
-        field = 'DOY'
-        start = datetime.datetime.strptime(doy, '%j').replace(year=now.year)
-
-    elif date:
-        format = 'YYYY-MM-DD'
-        field  = 'Date'
-        value  = date
-        start  = datetime.datetime.strptime(date, '%Y-%m-%d')
-
-    else:
-        start = None
-        stop  = None
-        day   = False
-
-    if day:
-        stop = start.replace(hour=23, minute=59, second=59, microsecond=999999)
-
-except ValueError, e:
-    if field == 'DOY':
-        bliss.log.error('DOY "%s" is not a number or in range [0 366].', doy)
-    else:
-        msg = '%s "%s" does not match format %s.'
-        bliss.log.error(msg, field, value, format)
-    bliss.log.end()
-    sys.exit(1)
+    now = datetime.datetime.utcnow()
+    day = True
 
 
-# Ensure output file can be opened for writing.
-if outname:
+    # Parse and determine start and stop filter times.
     try:
-        output = open(outname, 'wt')
-        stdout = False
-    except IOError, e:
-        bliss.log.error('Could not open "%s" for writing.', outname)
-        bliss.log.end()
+        if start and stop:
+            field  = 'Start time'
+            format = 'YYYY-MM-DDTHH:MM:SS'
+            value  = start
+            start  = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+
+            field  = 'Stop time'
+            value  = stop
+            stop   = datetime.datetime.strptime(stop , '%Y-%m-%dT%H:%M:%S')
+
+            day    = False
+
+        elif today:
+            start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        elif doy:
+            field = 'DOY'
+            start = datetime.datetime.strptime(doy, '%j').replace(year=now.year)
+
+        elif date:
+            format = 'YYYY-MM-DD'
+            field  = 'Date'
+            value  = date
+            start  = datetime.datetime.strptime(date, '%Y-%m-%d')
+
+        else:
+            start = None
+            stop  = None
+            day   = False
+
+        if day:
+            stop = start.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    except ValueError, e:
+        if field == 'DOY':
+            bliss.core.log.error('DOY "%s" is not a number or in range [0 366].', doy)
+        else:
+            msg = '%s "%s" does not match format %s.'
+            bliss.core.log.error(msg, field, value, format)
+        bliss.core.log.end()
         sys.exit(1)
-else:
-    output = sys.stdout
-    stdout = True
 
 
-# Generate and filter orbits.
-bliss.log.begin()
+    # Ensure output file can be opened for writing.
+    if outname:
+        try:
+            output = open(outname, 'wt')
+            stdout = False
+        except IOError, e:
+            bliss.core.log.error('Could not open "%s" for writing.', outname)
+            bliss.core.log.end()
+            sys.exit(1)
+    else:
+        output = sys.stdout
+        stdout = True
 
-if predicts:
-    bliss.log.info('Reading JSC Pointing World report "%s".', filename)
-    report    = bliss.iss.pointing.WorldReport(filename)
-    path      = report.path
-elif actuals:
-    bliss.log.info('Reading ISS Ephemeris "%s".', filename)
-    report    = bliss.iss.eph.EphemeridesReport(filename)
-    path      = bliss.iss.eph.toGroundPath(report.ephemerides)
 
-crossings = list( path.crossings() )
+    # Generate and filter orbits.
+    bliss.core.log.begin()
 
-bliss.log.info('Found %6d total orbits.', len(crossings))
+    if predicts:
+        bliss.core.log.info('Reading JSC Pointing World report "%s".', filename)
+        report    = bliss.iss.pointing.WorldReport(filename)
+        path      = report.path
+    elif actuals:
+        bliss.core.log.info('Reading ISS Ephemeris "%s".', filename)
+        report    = bliss.iss.eph.EphemeridesReport(filename)
+        path      = bliss.iss.eph.toGroundPath(report.ephemerides)
 
-if start is None and stop is None:
-    filtered = enumerate(crossings)
-else:
-    filtered = [ (orbit, c) for (orbit, c) in enumerate(crossings)
-                     if c.first.time >= start and c.first.time < stop ]
-    msg      = 'Found %6d total orbits for ' % len(filtered)
+    crossings = list( path.crossings() )
 
-    if today:
-        msg += 'today.'
-        bliss.log.info(msg)
-    elif doy:
-        msg += 'DOY %03d.'
-        bliss.log.info(msg, int(doy))
-    elif date:
-        msg += 'for date %s.'
-        bliss.log.info(msg, start.strftime('%Y-%m-%d'))
-    elif start and stop:
-        msg += 'for date/time range [%s, %s)'
-        bliss.log.info(msg, start.isoformat(), stop.isoformat())
+    bliss.core.log.info('Found %6d total orbits.', len(crossings))
 
-if stdout:
-    print
-else:
-    bliss.log.info('Writing orbits to "%s".' % outname)
+    if start is None and stop is None:
+        filtered = enumerate(crossings)
+    else:
+        filtered = [ (orbit, c) for (orbit, c) in enumerate(crossings)
+                         if c.first.time >= start and c.first.time < stop ]
+        msg      = 'Found %6d total orbits for ' % len(filtered)
 
-for (orbit, c) in filtered:
-    begin = c.first.time + datetime.timedelta(seconds=1)
-    begin = begin.strftime('%Y-%m-%dT%H:%M:%S')
-    end   = c.last.time.strftime('%Y-%m-%dT%H:%M:%S')
-    delta = (c.last.time - c.first.time).seconds / 60.
-    output.write('%s\t%s\t%f\t%06d\n' % (begin, end, delta, orbit))
+        if today:
+            msg += 'today.'
+            bliss.core.log.info(msg)
+        elif doy:
+            msg += 'DOY %03d.'
+            bliss.core.log.info(msg, int(doy))
+        elif date:
+            msg += 'for date %s.'
+            bliss.core.log.info(msg, start.strftime('%Y-%m-%d'))
+        elif start and stop:
+            msg += 'for date/time range [%s, %s)'
+            bliss.core.log.info(msg, start.isoformat(), stop.isoformat())
 
-if stdout:
-    print
+    if stdout:
+        print
+    else:
+        bliss.core.log.info('Writing orbits to "%s".' % outname)
 
-if output != sys.stdout:
-    output.close()
+    for (orbit, c) in filtered:
+        begin = c.first.time + datetime.timedelta(seconds=1)
+        begin = begin.strftime('%Y-%m-%dT%H:%M:%S')
+        end   = c.last.time.strftime('%Y-%m-%dT%H:%M:%S')
+        delta = (c.last.time - c.first.time).seconds / 60.
+        output.write('%s\t%s\t%f\t%06d\n' % (begin, end, delta, orbit))
 
-bliss.log.end()
+    if stdout:
+        print
+
+    if output != sys.stdout:
+        output.close()
+
+    bliss.core.log.end()
+
+if __name__ == '__main__':
+    main()

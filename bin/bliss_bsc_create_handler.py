@@ -25,8 +25,7 @@ Usage:
 from docopt import docopt
 import requests
 
-
-if __name__ == '__main__':
+def main():
     arguments = docopt(__doc__)
 
     host = arguments.pop('--service-host')
@@ -52,3 +51,6 @@ if __name__ == '__main__':
         'http://{}:{}/{}/start'.format(host, port, handler_name),
         data=arguments
     )
+
+if __name__ == '__main__':
+    main()
