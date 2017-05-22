@@ -55,46 +55,7 @@ def validate(validator, yml, schema):
         return 1
 
 
-def main(options):
-    log.begin()
-
-    # Validate specified yaml file with specified schema
-    if options.yaml is not None and options.schema is not None:
-        # Check YAML exists
-        if not os.path.exists(options.yaml):
-            raise os.error(options.yaml + " does not exist.")
-
-        # Check schema exists
-        if not os.path.exists(options.schema):
-            raise os.error(options.schema + " does not exist.")
-
-        validator = val.Validator
-        retcode = validate(validator, options.yaml, options.schema)
-
-    else:
-        if options.cmd:
-            yml       = cmd.getDefaultDictFilename()
-            schema    = cmd.getDefaultSchema()
-            validator = val.CmdValidator
-        elif options.evr:
-            yml       = evr.getDefaultDictFilename()
-            schema    = evr.getDefaultSchema()
-            validator = val.Validator
-        elif options.tlm:
-            yml       = tlm.getDefaultDictFilename()
-            schema    = tlm.getDefaultSchema()
-            validator = val.TlmValidator
-
-        if options.yaml is not None:
-            yml = options.yaml
-
-        retcode = validate(validator, yml, schema)
-
-    log.end()
-    return retcode
-
-
-if __name__ == "__main__":
+def main():
     argparser = argparse.ArgumentParser(
         description = """
 Validate YAML files with applicable schema and/or advanced
@@ -172,6 +133,46 @@ Examples:
         argparser.print_usage()
         print 'Run with --help for detailed help.'
         sys.exit(2)
+
+    options = argparser.parse_args()
+
+    log.begin()
+
+    # Validate specified yaml file with specified schema
+    if options.yaml is not None and options.schema is not None:
+        # Check YAML exists
+        if not os.path.exists(options.yaml):
+            raise os.error(options.yaml + " does not exist.")
+
+        # Check schema exists
+        if not os.path.exists(options.schema):
+            raise os.error(options.schema + " does not exist.")
+
+        validator = val.Validator
+        retcode = validate(validator, options.yaml, options.schema)
+
     else:
-        options = argparser.parse_args()
-        sys.exit( main(options) )
+        if options.cmd:
+            yml       = cmd.getDefaultDictFilename()
+            schema    = cmd.getDefaultSchema()
+            validator = val.CmdValidator
+        elif options.evr:
+            yml       = evr.getDefaultDictFilename()
+            schema    = evr.getDefaultSchema()
+            validator = val.Validator
+        elif options.tlm:
+            yml       = tlm.getDefaultDictFilename()
+            schema    = tlm.getDefaultSchema()
+            validator = val.TlmValidator
+
+        if options.yaml is not None:
+            yml = options.yaml
+
+        retcode = validate(validator, yml, schema)
+
+    log.end()
+    return retcode
+
+
+if __name__ == "__main__":
+    main()
