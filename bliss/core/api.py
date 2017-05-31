@@ -132,11 +132,11 @@ class GeventDeque (object):
                     timer = gevent.Timeout(timeout, empty)
                     timer.start()
 
-                    while True:
-                        self.notEmpty.wait()
-                        if len(deque) > 0:
-                            item = deque.popleft() if left else deque.pop()
-                            break
+                while True:
+                    self.notEmpty.wait()
+                    if len(deque) > 0:
+                        item = deque.popleft() if left else deque.pop()
+                        break
             finally:
                 if timer is not None:
                     timeout.cancel()
