@@ -296,6 +296,28 @@ class BlissConfig (object):
         else:
             self._config = { }
 
+
+    def get (self, name, default=None):
+        """Returns the attribute value BlissConfig.name or default if name
+        does not exist.
+
+        The name may be a series of attributes separated periods
+        (e.g. name='foo.bar.baz' => BlissConfig.foo.bar.baz).
+        """
+        config = self
+        parts  = name.split('.')
+        heads  = parts[:-1]
+        tail   = parts[-1]
+
+        for part in heads:
+            if part in config and type(config[part]) is BlissConfig:
+                config = config[part]
+            else:
+                return default
+
+        return config[tail] if tail in config else default
+
+
     def getDefaultFilename(self):
         if 'BLISS_CONFIG' in os.environ:
             filename = os.path.abspath(os.environ.get('BLISS_CONFIG'))
