@@ -233,6 +233,9 @@ class PrimitiveType(object):
         """
         return struct.unpack(self.format, buffer(bytes))[0]
 
+    def toJSON(self):
+        return self.name
+
     def validate(self, value, messages=None, prefix=None):
         """validate(value[, messages[, prefix]]) -> True | False
 

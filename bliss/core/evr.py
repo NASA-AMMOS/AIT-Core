@@ -18,7 +18,7 @@ import re
 import yaml
 
 import bliss
-from bliss.core import log, util
+from bliss.core import json, log, util
 
 
 class EVRReader(object):
@@ -65,7 +65,7 @@ def getDefaultDictFilename():
     return bliss.config.evrdict.filename
 
 
-class EVRDefn(object):
+class EVRDefn(json.SlotSerializer, object):
     """"""
     __slots__ = ["name", "code", "desc", "_message"]
 
@@ -77,12 +77,6 @@ class EVRDefn(object):
 
     def __repr__(self):
         return util.toRepr(self)
-
-    def toDict(self):
-        return {
-            k:getattr(self, k)
-            for k in self.__slots__
-        }
 
     def format_message(self, evr_hist_data):
         ''' Format EVR message with EVR data

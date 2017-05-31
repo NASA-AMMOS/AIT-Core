@@ -14,13 +14,13 @@ import struct
 import yaml
 
 import bliss
-from bliss.core import log, util
+from bliss.core import json, log, util
 
 
 MAX_CMD_WORDS = 54
 
 
-class ArgDefn(object):
+class ArgDefn(json.SlotSerializer, object):
     """ArgDefn - Argument Definition
 
     Argument Definitions encapsulate all information required to define
@@ -150,8 +150,6 @@ class ArgDefn(object):
 
         return valid
 
-    def toDict(self):
-        return { self.name: util.toDict(self) }
 
 
 class Cmd(object):
@@ -251,11 +249,9 @@ class Cmd(object):
         """
         return self.defn.validate(self, messages)
 
-    def toDict(self):
-        return self.defn.toDict()
 
 
-class CmdDefn(object):
+class CmdDefn(json.SlotSerializer, object):
     """CmdDefn - Command Definition
 
     Command Definitions encapsulate all information required to define a
@@ -324,6 +320,11 @@ class CmdDefn(object):
         else:
             return True
 
+    def toJSON(self):
+        obj              = super(CmdDefn, self).toJSON()
+        obj['arguments'] = obj.pop('argdefns')
+        return obj
+
     def validate(self, cmd, messages=None):
         """Returns True if the given Command is valid, False otherwise.
         Validation error messages are appended to an optional messages
@@ -354,8 +355,6 @@ class CmdDefn(object):
 
         return valid
 
-    def toDict(self):
-        return { self._opcode: util.toDict(self) }
 
 
 class CmdDict(dict):
@@ -450,12 +449,9 @@ class CmdDict(dict):
             if type(stream) is file:
                 stream.close()
 
-    def toDict(self):
-        data = {}
-        for name, val in self.opcodes.items():
-            data.update(val.toDict())
+    def toJSON(self):
+        return { name: defn.toJSON() for name, defn in self.items() }
 
-        return data
 
 
 def getDefaultCmdDict(reload=False):

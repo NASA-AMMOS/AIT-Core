@@ -16,7 +16,7 @@ import yaml
 import csv
 
 import bliss
-from bliss.core import dtype, log, util
+from bliss.core import dtype, json, log, util
 
 
 class wordarray(object):
@@ -65,7 +65,7 @@ class wordarray(object):
 
 
 
-class DNToEUConversion(object):
+class DNToEUConversion(json.SlotSerializer, object):
     """DNToEUConversion
     """
 
@@ -126,7 +126,7 @@ class FieldList(collections.Sequence):
 
 
 
-class FieldDefinition(object):
+class FieldDefinition(json.SlotSerializer, object):
     """FieldDefinition
 
     FieldDefinitions encapsulate all information required to define a
@@ -167,6 +167,9 @@ class FieldDefinition(object):
         if self.when:
             self.when = PacketExpression(self.when)
 
+
+    def __jsonOmit__(self, key, val):
+        return val is None or val is '' or (key == 'shift' and val == 0)
 
     def __repr__(self):
         return util.toRepr(self)
@@ -287,15 +290,12 @@ class FieldDefinition(object):
 
         return valid
 
-    def toDict(self):
-        return { self.name: util.toDict(self) }
-
 
 
 class Packet(object):
     """Packet
     """
-    def __init__(self, defn, data=None, history=None):
+    def __init__(self, defn, data=None, hist=None):
         """Creates a new Packet based on the given Packet Definition and
         binary (raw) packet data.
         """
@@ -306,10 +306,10 @@ class Packet(object):
 
         object.__setattr__(self, '_data', data)
         object.__setattr__(self, '_defn', defn)
+        object.__setattr__(self, '_hist', hist)
 
-        if history is not None:
-            object.__setattr__(self, 'history', history)
-            self.history.add(self)
+        if self._hist is not None:
+            self._hist.add(self)
 
 
     def __repr__(self):
@@ -349,7 +349,7 @@ class Packet(object):
         if fieldname == 'raw':
             value = RawPacket(self)
         elif fieldname == 'history':
-            value = self.history
+            value = self._hist
         else:
             defn = self._defn.fieldmap[fieldname]
 
@@ -385,16 +385,16 @@ class Packet(object):
         return wordarray(self._data)
 
 
+    def toJSON(self):
+        return { name: getattr(self, name) for name in self._defn.fieldmap }
+
+
     def validate(self, messages=None):
         """Returns True if the given Packet is valid, False otherwise.
         Validation error messages are appended to an optional messages
         array.
         """
         return self._defn.validate(self, messages)
-
-
-    def toDict(self):
-        return util.toDict(self)
 
 
 
@@ -438,12 +438,12 @@ class PacketContext(object):
 
 
 
-class PacketDefinition(object):
+class PacketDefinition(json.SlotSerializer, object):
     """PacketDefinition
     """
-
+    NextUID   = 1
     __slots__ = [ 'constants', 'desc', 'fields', 'fieldmap', 'functions',
-                  'globals', 'history', 'name' ]
+                  'globals', 'history', 'name', 'uid' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new PacketDefinition."""
@@ -457,6 +457,9 @@ class PacketDefinition(object):
         else:
             self.fields = handle_includes(self.fields)
             self.fieldmap = dict((defn.name, defn) for defn in self.fields)
+
+        self.uid                  = PacketDefinition.NextUID
+        PacketDefinition.NextUID += 1
 
         self._update_globals()
         self._update_bytes(self.fields)
@@ -537,6 +540,7 @@ class PacketDefinition(object):
 
         return max_byte + 1
 
+
     def validate(self, pkt, messages=None):
         """Returns True if the given Packet is valid, False otherwise.
         Validation error messages are appended to an optional messages
@@ -561,8 +565,12 @@ class PacketDefinition(object):
 
         return valid
 
-    def toDict(self):
-        return { self.name: util.toDict(self) }
+
+    def toJSON(self):
+        slots = 'name', 'desc', 'constants', 'functions', 'history', 'uid'
+        obj   = json.slotsToJSON(self, slots)
+        obj['fields'] = { defn.name: defn.toJSON() for defn in self.fields }
+        return obj
 
 
 
@@ -627,6 +635,10 @@ class PacketExpression(object):
         packet._defn.globals['raw']     = None
 
         return result
+
+
+    def toJSON(self):
+        return self._expr
 
 
 
@@ -733,7 +745,6 @@ class TlmDict(dict):
         dictionary filename or YAML string.
         """
         self.filename = None
-        self.pktnames  = {}
 
         if len(args) == 1 and len(kwargs) == 0 and type(args[0]) == str:
             dict.__init__(self)
@@ -743,9 +754,8 @@ class TlmDict(dict):
 
     def add(self, defn):
         """Adds the given Packet Definition to this Telemetry Dictionary."""
-        if defn.name not in self.pktnames:
-            self[defn.name]          = defn
-            self.pktnames[defn.name] = defn
+        if defn.name not in self:
+            self[defn.name] = defn
         else:
             msg = "Duplicate packet name '%s'" % defn.name
             log.error(msg)
@@ -755,11 +765,7 @@ class TlmDict(dict):
     def create(self, name, data=None):
         """Creates a new packet with the given definition and raw data.
         """
-        pkt = None
-        defn = self.get(name, None)
-        if defn:
-            pkt = Packet(defn, data)
-        return pkt
+        return Packet(self[name], data) if name in self else None
 
     def load(self, content):
         """Loads Packet Definitions from the given YAML content into this
@@ -784,13 +790,9 @@ class TlmDict(dict):
             if type(stream) is file:
                 stream.close()
 
-    def toDict(self):
-        data = {}
-        for name, val in self.pktnames.items():
-            #data[name] = {}
-            data.update(val.toDict())
+    def toJSON(self):
+        return { name: defn.toJSON() for name, defn in self.items() }
 
-        return data
 
 
 class TlmDictWriter(object):
@@ -883,6 +885,6 @@ def YAMLCtor_include(loader, node):
     return data
 
 yaml.add_constructor('!include', YAMLCtor_include)
-yaml.add_constructor('!Packet', YAMLCtor_PacketDefinition)
-yaml.add_constructor('!Field', YAMLCtor_FieldDefinition)
+yaml.add_constructor('!Packet' , YAMLCtor_PacketDefinition)
+yaml.add_constructor('!Field'  , YAMLCtor_FieldDefinition)
 

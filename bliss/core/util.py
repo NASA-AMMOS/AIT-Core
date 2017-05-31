@@ -272,68 +272,6 @@ def toRepr (obj):
     return "%s(%s)" % (obj.__class__.__name__, ", ".join(args))
 
 
-def toDict(obj):
-  """toDict(obj) -> string
-
-  Converts the Python object to a dictionary object
-  """
-  args  = []
-  attrs = []
-
-  data = {}
-
-  if hasattr(obj, "__dict__"):
-    attrs = getattr(obj, "__dict__").keys()
-  elif hasattr(obj, "__slots__"):
-    attrs = getattr(obj, "__slots__")
-  else:
-    return obj
-
-  for attr in attrs:
-    value = getattr(obj, attr)
-    key = attr[1:] if attr.startswith("_") else attr
-
-    # FIXME: This is a hacky fix for the issue of when clauses being serialized
-    # with the code expression included, which breaks json.dumps. This all needs
-    # to be handled in a cleaner way.
-    if key == 'when':
-        data[key] = str(obj)
-        return data
-
-    if key == 'code':
-        continue
-
-    if value is not None:
-      if isinstance(value, (list, tuple, set)) and len(value) > 0:
-        # Check the first object in the list to see if it is primitive
-        if not isinstance(value[0], (str, basestring, int, long, float, complex)):
-          retval = {}
-          for k, v in enumerate(value):
-            o = toDict(v)
-            if type(o) is dict and 'name' in o.keys():
-              retval.update({o['name']: o})
-            else:
-              retval.update({k: o})
-        else:
-          # Otherwise, just return the list
-          retval = value
-      elif isinstance(value, dict):
-        retval = {}
-        for k, v in value.items():
-          retval.update({str(k): toDict(v)})
-      elif not isinstance(value, (str, basestring, int, long, float, complex)):
-        try:
-          retval = value.toDict()
-        except:
-          retval = toDict(value)
-      else:
-        retval = value
-
-      data[key] = retval
-
-  return data
-
-
 def toStringDuration (duration):
     """Returns a description of the given duration in the most appropriate
     units (e.g. seconds, ms, us, or ns).

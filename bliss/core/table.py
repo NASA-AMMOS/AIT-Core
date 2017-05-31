@@ -112,8 +112,6 @@ class FSWColDefn (object):
         if value is not None:
             self._bytes = value
 
-    def toDict(self):
-        return {self.name: util.toDict(self)}
 
 
 class FSWTab (object):

@@ -42,7 +42,6 @@ def testArgDefn ():
     assert arg.value   == None
 
     assert type( repr(arg)    ) is str
-    assert type( arg.toDict() ) is dict
 
     arg = defn.argdefns[1]
     assert arg.bytes   == 2
@@ -58,7 +57,6 @@ def testArgDefn ():
     assert arg.value   == None
 
     assert type( repr(arg)    ) is str
-    assert type( arg.toDict() ) is dict
 
 
 def testArgDefnDecode ():
