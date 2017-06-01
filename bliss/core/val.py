@@ -8,6 +8,9 @@ The bliss.core.val module provides validation of content for YAML
 files based on specified schema.
 """
 
+from __future__ import absolute_import
+
+
 import os
 
 import json
