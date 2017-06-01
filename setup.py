@@ -45,7 +45,7 @@ setup(
             '{}=bin.{}:main'.format(
                 f.split('.')[0].replace('_', '-'),
                 f.split('.')[0])
-            for f in os.listdir('./bin')
+            for f in os.listdir('./bin') if f.endswith('.py')
         ]
     }
 )
