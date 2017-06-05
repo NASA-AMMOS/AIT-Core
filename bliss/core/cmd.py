@@ -40,7 +40,7 @@ class ArgDefn(json.SlotSerializer, object):
     def __init__(self, *args, **kwargs):
         """Creates a new Argument Definition.
         """
-        for slot in self.__slots__:
+        for slot in ArgDefn.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
 
@@ -264,7 +264,7 @@ class CmdDefn(json.SlotSerializer, object):
 
     def __init__(self, *args, **kwargs):
         """Creates a new Command Definition."""
-        for slot in self.__slots__:
+        for slot in CmdDefn.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, slot, kwargs.get(name, None))
 
@@ -401,7 +401,7 @@ class CmdDict(dict):
         if defn is None:
             raise TypeError('Unrecognized command: %s' % name)
 
-        return Cmd(defn, *args, **kwargs)
+        return createCmd(defn, *args, **kwargs)
 
 
     def decode(self, bytes):
@@ -482,14 +482,16 @@ def getMaxCmdSize():
 def YAMLCtor_ArgDefn(loader, node):
     fields          = loader.construct_mapping(node, deep=True)
     fields["fixed"] = node.tag == "!Fixed"
-    return ArgDefn(**fields)
+    return createArgDefn(**fields)
 
 
 def YAMLCtor_CmdDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     fields['argdefns'] = fields.pop('arguments', None)
-    return CmdDefn(**fields)
+    return createCmdDefn(**fields)
 
 yaml.add_constructor('!Command' , YAMLCtor_CmdDefn)
 yaml.add_constructor('!Argument', YAMLCtor_ArgDefn)
 yaml.add_constructor('!Fixed'   , YAMLCtor_ArgDefn)
+
+util.__init_extensions__(__name__, globals())

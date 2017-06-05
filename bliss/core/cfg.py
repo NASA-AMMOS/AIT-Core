@@ -298,12 +298,20 @@ class BlissConfig (object):
 
 
     def get (self, name, default=None):
-        """Returns the attribute value BlissConfig.name or default if name
-        does not exist.
+        """Returns the attribute value *BlissConfig.name* or *default*
+        if name does not exist.
 
-        The name may be a series of attributes separated periods
-        (e.g. name='foo.bar.baz' => BlissConfig.foo.bar.baz).
+        The name may be a series of attributes separated periods.  For
+        example, "foo.bar.baz".  In that case, lookups are attempted
+        in the following order until one succeeeds:
+
+            1.  BlissConfig['foo.bar.baz'], and
+            2.  BlissConfig.foo.bar.baz
+            3.  (If both fail, return *default*)
         """
+        if name in self:
+            return self[name]
+
         config = self
         parts  = name.split('.')
         heads  = parts[:-1]

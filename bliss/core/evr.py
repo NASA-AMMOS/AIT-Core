@@ -71,7 +71,7 @@ class EVRDefn(json.SlotSerializer, object):
 
     def __init__(self, *args, **kwargs):
         """Creates a new EVR Definition."""
-        for slot in self.__slots__:
+        for slot in EVRDefn.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
 
@@ -166,6 +166,8 @@ class EVRDefn(json.SlotSerializer, object):
 def YAMLCtor_EVRDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     fields['argdefns'] = fields.pop('arguments', None)
-    return EVRDefn(**fields)
+    return createEVRDefn(**fields)
 
 yaml.add_constructor('!EVR' , YAMLCtor_EVRDefn)
+
+util.__init_extensions__(__name__, globals())

@@ -145,7 +145,7 @@ class FieldDefinition(json.SlotSerializer, object):
 
     def __init__(self, *args, **kwargs):
         """Creates a new FieldDefinition."""
-        for slot in self.__slots__:
+        for slot in FieldDefinition.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
 
@@ -159,13 +159,13 @@ class FieldDefinition(json.SlotSerializer, object):
                 mask >>= 1
 
         if self.dntoeu:
-            self.dntoeu = DNToEUConversion(**self.dntoeu)
+            self.dntoeu = createDNToEUConversion(**self.dntoeu)
 
         if self.expr:
-            self.expr = PacketExpression(self.expr)
+            self.expr = createPacketExpression(self.expr)
 
         if self.when:
-            self.when = PacketExpression(self.when)
+            self.when = createPacketExpression(self.when)
 
 
     def __jsonOmit__(self, key, val):
@@ -347,14 +347,14 @@ class Packet(object):
         value = None
 
         if fieldname == 'raw':
-            value = RawPacket(self)
+            value = createRawPacket(self)
         elif fieldname == 'history':
             value = self._hist
         else:
             defn = self._defn.fieldmap[fieldname]
 
             if isinstance(defn.type, dtype.ArrayType) and index is None:
-                return FieldList(self, defn, raw)
+                return createFieldList(self, defn, raw)
 
             if defn.when is None or defn.when.eval(self):
                 if raw or (defn.dntoeu is None and defn.expr is None):
@@ -447,7 +447,7 @@ class PacketDefinition(json.SlotSerializer, object):
 
     def __init__(self, *args, **kwargs):
         """Creates a new PacketDefinition."""
-        for slot in self.__slots__:
+        for slot in PacketDefinition.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, slot, kwargs.get(name, None))
 
@@ -469,13 +469,14 @@ class PacketDefinition(json.SlotSerializer, object):
         return util.toRepr(self)
 
     def __getstate__(self):
-        state            = dict((s, getattr(self, s)) for s in self.__slots__)
-        state['globals'] = None
-        return state
+        return {
+            name: getattr(self, name)
+            for name in PacketDefinition.__slots__ if name != 'globals'
+        }
 
     def __setstate__(self, state):
-        for s in self.__slots__:
-            setattr(self, s, state[s])
+        for s in PacketDefinition.__slots__:
+            setattr(self, s, state.get(s, None))
         self._update_globals()
 
 
@@ -626,7 +627,7 @@ class PacketExpression(object):
         packet._defn.globals['raw']     = packet.raw
 
         try:
-            context = PacketContext(packet)
+            context = createPacketContext(packet)
             result  = eval(self._code, packet._defn.globals, context)
         except ZeroDivisionError:
             result = None
@@ -765,7 +766,7 @@ class TlmDict(dict):
     def create(self, name, data=None):
         """Creates a new packet with the given definition and raw data.
         """
-        return Packet(self[name], data) if name in self else None
+        return createPacket(self[name], data) if name in self else None
 
     def load(self, content):
         """Loads Packet Definitions from the given YAML content into this
@@ -868,12 +869,12 @@ def handle_includes(defns):
 
 def YAMLCtor_PacketDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
-    return PacketDefinition(**fields)
+    return createPacketDefinition(**fields)
 
 
 def YAMLCtor_FieldDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
-    return FieldDefinition(**fields)
+    return createFieldDefinition(**fields)
 
 
 def YAMLCtor_include(loader, node):
@@ -888,3 +889,4 @@ yaml.add_constructor('!include', YAMLCtor_include)
 yaml.add_constructor('!Packet' , YAMLCtor_PacketDefinition)
 yaml.add_constructor('!Field'  , YAMLCtor_FieldDefinition)
 
+util.__init_extensions__(__name__, globals())

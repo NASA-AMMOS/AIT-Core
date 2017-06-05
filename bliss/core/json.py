@@ -13,8 +13,24 @@ import json
 
 
 def slotsToJSON(obj, slots=None):
+    """Converts the given Python object to one suitable for Javascript
+    Object Notation (JSON) serialization via :func:`json.dump` or
+    :func:`json.dumps`.  This function delegates to :func:`toJSON`.
+
+    Specifically only attributes in the list of *slots* are converted.
+    If *slots* is not provided, it defaults to the object's
+    ``__slots__` and any inherited ``__slots__``.
+
+    To omit certain slots from serialization, the object may define a
+    :meth:`__jsonOmit__(key, val)` method.  When the method returns
+    True for any particular slot name (i.e. key) and value
+    combination, the slot will not serialized.
+    """
     if slots is None:
-        slots = obj.__slots__
+        slots = list(obj.__slots__) if hasattr(obj, '__slots__') else [ ]
+        for base in obj.__class__.__bases__:
+            if hasattr(base, '__slots__'):
+                slots.extend(base.__slots__)
 
     testOmit = hasattr(obj, '__jsonOmit__') and callable(obj.__jsonOmit__)
     result   = { }

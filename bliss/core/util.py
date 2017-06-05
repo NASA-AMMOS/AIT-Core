@@ -10,6 +10,7 @@ The bliss.core.util module provides general utility functions.
 """
 
 import os
+import pydoc
 import stat
 import sys
 import time
@@ -95,6 +96,72 @@ else:
     timer = time.time
 
 
+
+def __init_extensions__(modname, modsyms):
+    """Initializes a module (given its name and :func:`globals()` symbol
+    table) for BLISS extensions.
+
+    For every Python class defined in the given module, a
+    `createXXX()`` function is added to the module (where XXX is the
+    classname).  By default, the function calls the ``XXX()``
+    constructor and returns a new instance of that class.  However, if
+    BLISS extensions are defined in ``config.yaml`` those extension
+    classes are instantiated instead.  For example, with the following
+    ``config.yaml``:
+
+        .. code-block:: python
+           extensions:
+               bliss.core.cmd.Cmd: FooCmd
+
+    Anywhere BLISS would create a :class:`Cmd` object (via
+    :func:`createCmd()`) it will now create a ``FooCmd`` object
+    instead.  Note: ``FooCmd`` should adhere to the same interface as
+    :class:`bliss.core.cmd.Cmd` (and probably inherit from it).
+    """
+
+    def createFunc (cls, extname):
+        """Creates and returns a new ``createXXX()`` function to instantiate
+        either the given class by class object (*cls*) or extension
+        class name (*extname*).
+
+        In the case of an extension class name, the first time the
+        returned ``createXXX()`` is called, it attempts to lookup and
+        load the class.  Thereafter, the loaded class is cached for
+        subsequent calls.
+        """
+        def create(*args, **kwargs):
+            if create.cls is None:
+                parts = extname.rsplit('.', 1)
+                if len(parts) > 1:
+                    modname, clsname = parts
+                    module           = pydoc.locate(modname)
+                    if module is None:
+                        raise ImportError('No module named %d' % modname)
+                    create.cls = getattr(module, clsname)
+                if create.cls is None:
+                    raise ImportError('No class named %s' % extname)
+            return create.cls(*args, **kwargs)
+        create.cls = cls
+        return create
+
+    extensions = bliss.config.get('extensions', None)
+
+    for clsname, cls in modsyms.items():
+        if not isinstance(cls, type):
+            continue
+
+        if extensions:
+            extname = extensions.get(modname + '.' + clsname, None)
+
+            if extname:
+                cls    = None
+                values = modname, clsname, extname
+                log.info('Replacing %s.%s with custom extension: %s' % values)
+
+        modsyms['create' + clsname] = createFunc(cls, extname)
+
+
+
 def crc32File(filename, skip=0):
     """Computes the CRC-32 of the contents of filename, optionally
     skipping a certain number of bytes at the beginning of the file.
@@ -125,8 +192,8 @@ def setDictDefaults (d, defaults):
   return d
 
 
-def getDefaultDict(module_name, config_key, loader, reload=False, filename=None):
-    """Returns default BLISS dictonary for module_name
+def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
+    """Returns default BLISS dictonary for modname
 
     This helper function encapulates the core logic necessary to
     (re)load, cache (via util.ObjectCache), and return the default
@@ -135,7 +202,7 @@ def getDefaultDict(module_name, config_key, loader, reload=False, filename=None)
     def getDefaultDict(reload=False):
         return bliss.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
     """
-    module   = sys.modules[module_name]
+    module   = sys.modules[modname]
     default  = getattr(module, 'DefaultDict', None)
 
     if filename is None:
@@ -161,6 +228,7 @@ def getFileSize(filename):
 
 
 def toBCD (n):
+
     """Converts the number n into Binary Coded Decimal."""
     bcd  = 0
     bits = 0
