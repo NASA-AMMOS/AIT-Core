@@ -150,6 +150,8 @@ def __init_extensions__(modname, modsyms):
         if not isinstance(cls, type):
             continue
 
+        extname = None
+
         if extensions:
             extname = extensions.get(modname + '.' + clsname, None)
 
