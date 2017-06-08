@@ -14,7 +14,6 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
 
    project_setup
    getting_started
-   bliss_gui
    command_line
    BLISS API Documentation <bliss>
    configuration_intro
