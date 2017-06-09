@@ -22,6 +22,7 @@ Visit the :doc:`Getting Started and Installation <getting_started>` guide for in
    EVR Introduction <evr_intro>
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
+   contribute
 
 Indices and tables
 ==================
