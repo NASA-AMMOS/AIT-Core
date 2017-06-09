@@ -19,6 +19,8 @@ configurable, they'll be brought over to this repository.
 Getting Started
 ---------------
 
+You can read through the [Getting Started page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/getting_started.html) for instruction on how to install BLISS Core.
+
 You can read through the [new project getting started page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/project_setup.html) for
 instructions on how to use BLISS on your next project.
 
