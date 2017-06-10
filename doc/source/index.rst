@@ -7,7 +7,7 @@ The Bespoke Links to Instruments for Surface and Space (BLISS) framework is a Py
 * `Vehicle Cabin Atmosphere Monitor (VCAM) <http://www.nasa.gov/mission_pages/station/research/experiments/35.html>`_
 * `ECOsystem Spaceborne Thermal Radiometer Experiment on Space Station (ECOSTRESS) <http://ecostress.jpl.nasa.gov>`_
 
-Visit the :doc:`Getting Started and Installation <getting_started>` guide for installation information. Visit the :doc:`BLISS API Documentation <bliss>` page to view in-depth interface documentation.
+Visit the :doc:`Installation and Environment Configuration <installation>` guide for installation information. Visit the :doc:`BLISS API Documentation <bliss>` page to view in-depth interface documentation.
 
 .. toctree::
    :maxdepth: 2
