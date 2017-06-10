@@ -1,27 +1,24 @@
 Bespoke Links to Instruments for Surface and Space (BLISS)
 ==========================================================
 
-The Bespoke Links to Instruments for Surface and Space (BLISS) Ground Data
-System (GDS) tools are a generalization of those developed for the
+The Bespoke Links to Instruments for Surface and Space (BLISS) framework is a
+Python-based software suite developed to handle Ground Data System (GDS),
+Electronic Ground Support Equipment (EGSE), commanding,
+telemetry uplink/downlink, and sequencing for JPL International Space Station
+Missions. It is a generalization and expansion of tools developed for the
 following JPL ISS projects:
 
-  * [Vehicle Cabin Atmosphere Monitor (VCAM)](http://www.nasa.gov/mission_pages/station/research/experiments/35.html)
-
-  * [Orbiting Carbon Observatory 3 (OCO-3)](http://oco.jpl.nasa.gov)
-
-  * [ECOsystem Spaceborne Thermal Radiometer Experiment on Space Station (ECOSTRESS)](http://ecostress.jpl.nasa.gov)
-
-Currently, the OCO-3 GDS tools are far ahead of the ECOSTRESS GDS
-tools, but as the OCO-3 tools are generalized and made more
-configurable, they'll be brought over to this repository.
+* [Orbiting Carbon Observatory 3 (OCO-3)](http://oco.jpl.nasa.gov)
+* [Vehicle Cabin Atmosphere Monitor (VCAM)](http://www.nasa.gov/mission_pages/station/research/experiments/35.html)
+* [ECOsystem Spaceborne Thermal Radiometer Experiment on Space Station (ECOSTRESS)](http://ecostress.jpl.nasa.gov)
 
 
 Getting Started
 ---------------
 
-You can read through the [Getting Started page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/getting_started.html) for instruction on how to install BLISS Core.
+You can read through the [Installation and Configuration Page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/installation.html) for instruction on how to install BLISS Core.
 
-You can read through the [new project getting started page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/project_setup.html) for
+You can read through the [New Project Setup Page](https://github.jpl.nasa.gov/pages/bliss/bliss-core/project_setup.html) for
 instructions on how to use BLISS on your next project.
 
 
