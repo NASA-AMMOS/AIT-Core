@@ -295,7 +295,7 @@ class FieldDefinition(json.SlotSerializer, object):
 class Packet(object):
     """Packet
     """
-    def __init__(self, defn, data=None, hist=None):
+    def __init__(self, defn, data=None):
         """Creates a new Packet based on the given Packet Definition and
         binary (raw) packet data.
         """
@@ -306,11 +306,9 @@ class Packet(object):
 
         object.__setattr__(self, '_data', data)
         object.__setattr__(self, '_defn', defn)
-        object.__setattr__(self, '_hist', hist)
 
-        if self._hist is not None:
-            self._hist.add(self)
-
+        if defn.history:
+            defn.history.add(self)
 
     def __repr__(self):
         return self._defn.__repr__()
@@ -349,7 +347,7 @@ class Packet(object):
         if fieldname == 'raw':
             value = createRawPacket(self)
         elif fieldname == 'history':
-            value = self._hist
+            value = self._defn.history
         else:
             defn = self._defn.fieldmap[fieldname]
 
@@ -423,7 +421,7 @@ class PacketContext(object):
 
 
     def __getitem__(self, name):
-        """Returns packet.fieldname"""
+        """Returns packet[name]"""
         result = None
         packet = self._packet
 
@@ -435,7 +433,6 @@ class PacketContext(object):
             raise KeyError(msg % values)
 
         return result
-
 
 
 class PacketDefinition(json.SlotSerializer, object):
@@ -455,8 +452,11 @@ class PacketDefinition(json.SlotSerializer, object):
             self.fields   = [ ]
             self.fieldmap = { }
         else:
-            self.fields = handle_includes(self.fields)
-            self.fieldmap = dict((defn.name, defn) for defn in self.fields)
+            self.fields   = handle_includes(self.fields)
+            self.fieldmap = { defn.name: defn for defn in self.fields }
+
+        if self.history:
+            self.history = PacketHistory(self, names=self.history)
 
         self.uid                  = PacketDefinition.NextUID
         PacketDefinition.NextUID += 1
@@ -526,8 +526,8 @@ class PacketDefinition(json.SlotSerializer, object):
                 defn = 'def %s: return %s\n' % (signature, body)
                 exec(defn, self.globals)
 
-        if self.globals.has_key('__builtins__'):
-            del self.globals['__builtins__']
+        if self.history:
+            self.globals['history'] = self.history
 
 
     @property
@@ -623,17 +623,11 @@ class PacketExpression(object):
         """Returns the result of evaluating this PacketExpression in the
         context of the given Packet.
         """
-        packet._defn.globals['history'] = packet.history
-        packet._defn.globals['raw']     = packet.raw
-
         try:
             context = createPacketContext(packet)
             result  = eval(self._code, packet._defn.globals, context)
         except ZeroDivisionError:
             result = None
-
-        packet._defn.globals['history'] = None
-        packet._defn.globals['raw']     = None
 
         return result
 
@@ -677,14 +671,13 @@ class PacketHistory(object):
 
         self._defn  = defn
         self._names = names
-        self._dict  = dict((name, 0) for name in names)
+        self._dict  = { name: 0 for name in names }
 
 
-    def add(self, packet):
-        for name in self._names:
-            value = getattr(packet, name)
-            if value is not None:
-                self._dict[name] = value
+    def __contains__(self, fieldname):
+        """Returns True if fieldname is in this PacketHistory."""
+        return fieldname in self._names
+
 
     def __getattr__(self, fieldname):
         """Returns the value of the given packet field name."""
@@ -697,6 +690,17 @@ class PacketHistory(object):
         return self._dict.get(fieldname, None)
 
 
+    def __getstate__(self):
+        """Serialize state, avoiding __getattr__()."""
+        return { s: getattr(self, s) for s in PacketHistory.__slots__ }
+
+
+    def __setstate__(self, state):
+        """Deserialize state, avoiding __getattr__()."""
+        for s in PacketHistory.__slots__:
+            setattr(self, s, state.get(s, None))
+
+
     def _assertField(self, name):
         """Raise AttributeError when PacketHistory has no field with the given
         name.
@@ -705,6 +709,16 @@ class PacketHistory(object):
             msg    = 'PacketHistory "%s" has no field "%s"'
             values = self._defn.name, name
             raise AttributeError(msg % values)
+
+    def add(self, packet):
+        """Add the given Packet to this PacketHistory."""
+        for name in self._names:
+            value = getattr(packet, name)
+            if value is not None:
+                self._dict[name] = value
+
+    def toJSON(self):
+        return self._names
 
 
 
@@ -760,7 +774,6 @@ class TlmDict(dict):
         else:
             msg = "Duplicate packet name '%s'" % defn.name
             log.error(msg)
-            print msg
             raise util.YAMLError(msg)
 
     def create(self, name, data=None):
