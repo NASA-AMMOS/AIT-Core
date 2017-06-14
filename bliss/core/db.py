@@ -8,28 +8,32 @@ commands and telemetry with several backends.
 """
 
 import importlib
-import sqlite3
 
-from bliss.core import tlm
-
-
-# Backend must implement DB-API 2.0 (PEP 249)
-Backend = sqlite3
+import bliss
+from bliss.core import cfg, tlm
 
 
-def connect(dbname):
+# Backend must implement DB-API 2.0 [PEP 249]
+# (https://www.python.org/dev/peps/pep-0249/).
+Backend = None
+
+
+def connect(database):
     """Returns a connection to the given database."""
-    return Backend.connect(dbname)
+    if Backend is None:
+        raise cfg.BlissConfigMissing('database.backend')
+
+    return Backend.connect(database)
 
 
-def create(dbname, tlmdict=None):
+def create(database, tlmdict=None):
     """Creates a new database for the given Telemetry Dictionary and
     returns a connection to it.
     """
     if tlmdict is None:
         tlmdict = tlm.getDefaultDict()
     
-    dbconn = connect(dbname)
+    dbconn = connect(database)
 
     for name, defn in tlmdict.items():
         createTable(dbconn, defn)
@@ -79,4 +83,13 @@ def use(backend):
     'MySQLdb', etc.
     """
     global Backend
-    Backend = importlib.import_module(backend)
+
+    try:
+        Backend = importlib.import_module(backend)
+    except ImportError:
+        msg = 'Could not import (load) database.backend: %s' % backend
+        raise cfg.BlissConfigError(msg)
+
+
+if bliss.config.get('database.backend'):
+    use( bliss.config.get('database.backend') )

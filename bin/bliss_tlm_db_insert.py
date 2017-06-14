@@ -11,35 +11,57 @@ import sys
 import socket
 import time
 
+import bliss
 from bliss.core import db, log, tlm
 
 
 def main():
     tlmdict = tlm.getDefaultDict()
     pnames  = tlmdict.keys()
-    preq    = len(pnames) > 1
-    ap      = argparse.ArgumentParser(description=__doc__)
+    ap      = argparse.ArgumentParser(
+        description     = __doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter
+    )
 
-    ap.add_argument('--packet',
-                    type=str,
-                    choices=pnames,
-                    default=pnames[0],
-                    required=preq)
-    ap.add_argument('dbname')
-    ap.add_argument('file', nargs='+')
+    arguments = {
+        '--packet': {
+            'type'    : str,
+            'choices' : pnames,
+            'default' : pnames[0] if len(pnames) > 0 else None,
+            'help'    : 'Type of packets (!Packet name in tlm.yaml) in file',
+            'required': len(pnames) > 1,
+        },
+
+        '--database': {
+            'default' : bliss.config.get('database.name'),
+            'help'    : ('Name of database in which to insert packets (may '
+                         'also be specified in config.yaml database.name)'),
+            'required': bliss.config.get('database.name') is None
+        },
+
+        'file': {
+            'nargs': '+',
+            'help' : 'File(s) containing telemetry packets'
+        }
+    }
+
+    for name, params in arguments.items():
+        ap.add_argument(name, **params)
+
     args = ap.parse_args()
 
     log.begin()
 
     try:
         npackets = 0
+        dbconn   = None
         defn     = tlm.getDefaultDict()[args.packet]
         nbytes   = defn.nbytes
 
-        if args.dbname == ':memory:' or not os.path.exists(args.dbname):
-            dbconn = db.create(args.dbname)
+        if args.database == ':memory:' or not os.path.exists(args.database):
+            dbconn = db.create(args.database)
         else:
-            dbconn = db.connect(args.dbname)
+            dbconn = db.connect(args.database)
 
         for filename in args.file:
             log.info('Processing %s' % filename)
@@ -60,9 +82,10 @@ def main():
         log.error(str(e))
 
     finally:
-        dbconn.close()
+        if dbconn:
+            dbconn.close()
 
-    values = npackets, args.packet, args.dbname
+    values = npackets, args.packet, args.database
     log.info('Inserted %d %s packets into database %s.' % values)
 
     log.end()

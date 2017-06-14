@@ -17,6 +17,7 @@ import re
 
 import yaml
 
+import bliss
 from bliss.core import log
 
 
@@ -146,6 +147,25 @@ def merge (d, o):
         else:
             d[k] = o[k]
     return d
+
+
+
+class BlissConfigError(Exception):
+    """Raised when a BLISS configuration parameter is present, but
+    is in some way incorrect."""
+    pass
+
+
+
+class BlissConfigMissing(Exception):
+    """Raised when a BLISS configuration parameter is missing."""
+
+    def __init__(self, param):
+        values = param, bliss.config._filename
+        format = 'The parameter %s is missing from config.yaml (%s).'
+        super(BlissConfigMissing, self).__init__(format % values)
+        self.param = param
+
 
 
 class BlissConfig (object):
