@@ -1,4 +1,9 @@
 default:
+    command:
+        history:
+            filename: ../../cmdhist.pcap
+    sequence:
+        directory: ../../seq/
     cmddict:
         filename:  cmd.yaml
 
@@ -37,6 +42,7 @@ default:
             path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/ats
 
     gui:
+      port: 8080
       telemetry:
         - stream:
             name: OCO3_1553_EHS
