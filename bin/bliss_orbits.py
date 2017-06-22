@@ -2,8 +2,8 @@
 
 """
 Usage:
-  bliss_orbits.py predicts <filename> <start-time> [<stop-time>] [options]
-  bliss_orbits.py actuals  <filename> <start-time> [<stop-time>] [options]
+  bliss-orbits predicts <filename> <start-time> [<stop-time>] [options]
+  bliss-orbits actuals  <filename> <start-time> [<stop-time>] [options]
 
 Arguments:
   filename     An JSC ISS Attitude and Pointing Nadir report (predicts), or

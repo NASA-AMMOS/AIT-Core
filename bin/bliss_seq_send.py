@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss_seq_send.py [options] filename.rts
+usage: bliss-seq-send [options] filename.rts
 
 Sends the given relative timed sequence via UDP.
 
@@ -9,7 +9,7 @@ Sends the given relative timed sequence via UDP.
 
 Examples:
 
-  $ bliss-seq-send.py test.rts
+  $ bliss-seq-send test.rts
 '''
 
 import os

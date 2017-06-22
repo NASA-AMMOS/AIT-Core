@@ -2,7 +2,7 @@
 
 '''
 Usage:
-    bliss_bsc_create_handler.py [options] <name> <loc> <port> <conn_type>
+    bliss-bsc-create-handler [options] <name> <loc> <port> <conn_type>
 
 --service-host=<host> The host for the BSC REST service connection
                       [default: localhost]

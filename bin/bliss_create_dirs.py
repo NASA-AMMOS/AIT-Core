@@ -2,7 +2,7 @@
 
 '''
 Usage:
-    bliss_create_dirs.py [options]
+    bliss-create-dirs [options]
 
 Arguments:
     -c FILE, --config=<filename>    YAML config file, secondary to the

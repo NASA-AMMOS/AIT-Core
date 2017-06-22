@@ -10,7 +10,7 @@ Component Initialization Utilities
 
 The following commands are used to start up BLISS services or components.
 
-bliss_bsc
+bliss-bsc
 ^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_bsc.py
    :start-after: '''
@@ -23,19 +23,19 @@ Sequence Utilities
 
 Utilities for the manipulation of command sequences.
 
-bliss_seq_encode
+bliss-seq-encode
 ^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_seq_encode.py
    :start-after: '''
    :end-before: '''
 
-bliss_seq_decode
+bliss-seq-decode
 ^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_seq_decode.py
    :start-after: '''
    :end-before: '''
 
-bliss_seq_print
+bliss-seq-print
 ^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_seq_print.py
    :start-after: '''
@@ -46,7 +46,7 @@ ____
 Telemetry Utilities
 ___________________
 
-bliss_tlm_send
+bliss-tlm-send
 ^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_tlm_send.py
    :start-after: '''
@@ -57,7 +57,7 @@ ____
 Command Utilities
 _________________
 
-bliss_cmd_send
+bliss-cmd-send
 ^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_cmd_send.py
    :start-after: '''
@@ -68,13 +68,13 @@ ____
 BSC Utilities
 _____________
 
-bliss_bsc_create_handler
+bliss-bsc-create-handler
 ^^^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_bsc_create_handler.py
    :start-after: '''
    :end-before: '''
 
-bliss_bsc_stop_handler
+bliss-bsc-stop-handler
 ^^^^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_bsc_stop_handler.py
    :start-after: '''
@@ -85,13 +85,13 @@ ____
 Command Table Utilities
 _______________________
 
-bliss_table_decode
+bliss-table-decode
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_table_decode.py
    :start-after: '''
    :end-before: '''
 
-bliss_table_encode
+bliss-table-encode
 ^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_table_encode.py
    :start-after: '''
@@ -102,19 +102,19 @@ ____
 Miscellaneous Utilities
 _______________________
 
-bliss_create_dirs
+bliss-create-dirs
 ^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_create_dirs.py
    :start-after: '''
    :end-before: '''
 
-bliss_orbits
+bliss-orbits
 ^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_orbits.py
    :start-after: '''
    :end-before: '''
 
-bliss_yaml_validate
+bliss-yaml-validate
 ^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../bin/bliss_yaml_validate.py
    :start-after: '''
