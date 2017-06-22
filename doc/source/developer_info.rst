@@ -50,18 +50,19 @@ If deemed appropriate, prepare an email to all projects / parties known to be us
 .. code-block:: none
    
    Subject:
-   [ANNOUNCE][RELEASE] BLISS v<version> has been released
+   [RELEASE] BLISS Core v<version> has been released
    
    Body:
    Hello!
    
-   BLISS v<version> has been released and is ready for use.
+   BLISS Core v<version> has been released and is ready for use.
    
-   The following changes are included in this release:
-   <paste change log here>
-   
-   You can download the release at:
-   <link to release page>
+   You can view the change logs and download the release at
+   https://github.jpl.nasa.gov/bliss/bliss-core/releases/tag/<version>
+
+   View the BLISS Installation page for information on updating
+   to the latest version.
+   https://github.jpl.nasa.gov/pages/bliss/bliss-core/installation.html#upgrading-an-installation
    
    Thank you!
    BLISS Development Team
