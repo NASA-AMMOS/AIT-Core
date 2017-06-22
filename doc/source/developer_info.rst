@@ -45,7 +45,7 @@ You will need to push the latest documentation to Github pages for the release. 
 Notify Relevant Parties of Release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If deemed appropriate, prepare an email to all projects / parties known to be using the tool and notify them of a new release. An example template for this is below:
+Send an email to the **bliss.announce@jpl.nasa.gov** mailing list. An example template is included below:
 
 .. code-block:: none
    
