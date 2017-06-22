@@ -1,62 +1,32 @@
 Setting up a New Project with BLISS
 ===================================
 
-This guide will show you how to setup a new project building off of BLISS. It assumes your project dependencies are installed into a virtual environment.
+The following documentation will teach you how to setup a new project to build off of the BLISS toolkit. This guide assumes that the project you'll be developing is a Python-based project.
 
-Set BLISS as a Dependency
--------------------------
+Add BLISS Core as a Dependency
+------------------------------
 
-In your current project's requirements file you need to add the latest version of BLISS. You can do this two ways, directly from the repository or from a downloaded copy of the source.
+You'll need to add BLISS Core to either your **requirements.txt** file or your **setup.py** file.
 
-Clone from the Main Repository
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. warning::
-
-   This will fail to work if you don't have SSH keys setup in the main repository. As such, if you arne't a contributor to bliss-core you should scope other methods.
-
-Add the following to your requirements/setup file. Note that the below example is for v0.1.0, you should update this to grab the latest version of the code.
+If you use a requirements file for specifying dependencies:
 
 .. code-block:: bash
 
-   git+ssh://git@github.jpl.nasa.gov/bliss/bliss-core.git@0.1.0#egg=bliss-core
+   --extra-index-url https://bliss.jpl.nasa.gov/pypi/simple/
+   bliss-core==1.0.0
 
-Downloaded Source
-^^^^^^^^^^^^^^^^^
-
-Download the latest code .zip file from the `project's releases page <https://github.jpl.nasa.gov/bliss/bliss-core/releases>`_.
-
-Add the following to your requirements/setup file (updating the path and version number as appropriate).
+If you use **setup.py** for specifying dependencies:
 
 .. code-block:: bash
 
-   /path/to/bliss-core-0.1.0.zip
-
-Update Installed Requirements
------------------------------
-
-You'll need to reinstall your requirements so **bliss-core** and its dependencies are installed.
-
-If you're using a requirements file:
-
-.. code-block:: bash
-
-   pip install -r /path/to/requirements.txt
-
-If you're using a setup.py file:
-
-.. code-block:: bash
-
-   # From the project root
-   pip install -e .
+   install_requires = [
+       bliss-core==1.0.0
+   ],
+   dependency_links = [
+       'https://bliss.jpl.nasa.gov/pypi/simple/bliss-core/'
+   ]
 
 Set BLISS Config Values
 -----------------------
 
-BLISS provides a number of default configuration files as an example for you to build off of. You should read the :doc:`Telemetry <telemetry_intro>` and :doc:`Commanding <command_intro>` pages for additional information and update the files to meet your projects specifications.
-
-You will also need to point BLISS to your configuration. Assuming you have placed the config in *<project root>/config* you need to set:
-
-.. code-block:: bash
-
-   export BLISS_CONFIG=<project root>/config/config.yaml
+BLISS provides a large number of configuration parameters for customizing and configuring the toolkit. BLISS ships with an example **config.yaml** skeleton located at **/PROJECT_ROOT/data/config/config.yaml** that you can use as a baseline configuration file. You should read the :doc:`Configuration Introduction <configuration_intro>` and the component specific configuration documents such as the :doc:`Telemetry <telemetry_intro>`, :doc:`Commanding <command_intro>`, and :doc:`EVR <evr_intro>` pages for additional information and update the files to meet your projects specifications.
