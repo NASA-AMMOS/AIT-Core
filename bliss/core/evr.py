@@ -5,10 +5,6 @@
 BLISS Event Record (EVR) Reader
 
 The bliss.core.evr module is used to read the EVRs from a YAML file.
-
-Also includes deprecated EVRParser class for parsing the EVR
-information from the FSW EVR classes.
-
 """
 
 import binascii
@@ -89,8 +85,9 @@ class EVRDefn(json.SlotSerializer, object):
             evr_hist_data: A bytearray of EVR data.
 
             Example formatting::
-            # This is the character '!', string 'Foo', and int '4279317316'
-            bytearray([0x21, 0x46, 0x6f, 0x6f, 0x00, 0xff, 0x11, 0x33, 0x44])
+
+                # This is the character '!', string 'Foo', and int '4279317316'
+                bytearray([0x21, 0x46, 0x6f, 0x6f, 0x00, 0xff, 0x11, 0x33, 0x44])
 
         Returns:
             The EVR's message string formatted with the EVR data or the
