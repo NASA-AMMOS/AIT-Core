@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 '''
-usage: bin/bliss_table_decode.py --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
+usage: bliss-table-decode --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
 
 Decodes the given FSW binary table to text.
 
 Examples:
 
-  $ bin/bliss-table-decode.py --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
+  $ bliss-table-decode --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
 '''
 
 import os

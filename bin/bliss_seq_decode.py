@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 '''
 
-usage: bliss_seq_decode.py oco3_seq_SSS_NNN_desc.bin
+usage: bliss-seq-decode oco3_seq_SSS_NNN_desc.bin
 
 Decodes the given relative time command sequence to text.
 
 Examples:
 
-  $ bliss-seq-decode.py seq/oco3_seq_gps_001_reset.bin
+  $ bliss-seq-decode seq/oco3_seq_gps_001_reset.bin
 '''
 
 import os

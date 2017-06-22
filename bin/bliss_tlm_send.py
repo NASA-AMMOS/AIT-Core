@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Usage: bliss_tlm_send.py [options] <pcap-filename>
+Usage: bliss-tlm-send [options] <pcap-filename>
 
 Sends the telemetry contained in the given pcap file via UDP.
 
@@ -10,7 +10,7 @@ Sends the telemetry contained in the given pcap file via UDP.
 
 Examples:
 
-  $ bliss_tlm_send.py test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
+  $ bliss-tlm-send test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
 
 '''
 

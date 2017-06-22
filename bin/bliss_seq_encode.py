@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss_seq_encode.py oco3_seq_SSS_NNN_desc.txt 
+usage: bliss-seq-encode oco3_seq_SSS_NNN_desc.txt 
 
 Encodes the given relative time command sequence to binary.
 

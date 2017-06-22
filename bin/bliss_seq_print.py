@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 '''
-usage: bliss_seq_print.py oco3_seq_SSS_NNN_desc.bin
+usage: bliss-seq-print oco3_seq_SSS_NNN_desc.bin
 
 Prints the given binary relative time command sequence to standard
 output as text.
 
 Examples:
 
-  $ bliss-seq-print.py seq/oco3_seq_gps_001_reset.bin
+  $ bliss-seq-print seq/oco3_seq_gps_001_reset.bin
 '''
 
 import os
