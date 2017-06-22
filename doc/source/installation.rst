@@ -6,7 +6,12 @@ The following guide will show you how to install and configure BLISS Core. For i
 Installation
 ------------
 
-Before you install **bliss-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already.
+Before you install **bliss-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already and created an environment.
+
+You can install BLISS Core from a checkout of the code or from the BLISS PyPi server. Having a checkout of the code can be handy if you want to view the source or make changes. Installing from PyPi keeps your system clutter free since you don’t have a copy of the code base around. Either choice will work fine!
+
+From Code Checkout
+^^^^^^^^^^^^^^^^^^
 
 Clone the repository from JPL Github:
 
@@ -15,17 +20,32 @@ Clone the repository from JPL Github:
     $ git clone https://github.jpl.nasa.gov/bliss/bliss-core.git
     $ cd bliss-core
 
-First you need to make a virtual environment into which we'll install the bliss-core package and its dependencies:
+Find the latest tagged version of the code and check it out
 
 .. code-block:: bash
 
-    $ mkvirtualenv bliss
+   $ git tag
+   $ git checkout <Most recent version number output by the previous command>
+
 
 Install the bliss-core package and its dependencies.
 
 .. code-block:: bash
 
     $ pip install .
+
+From BLISS PyPi
+^^^^^^^^^^^^^^^
+
+If you have access to the JPL network you can install BLISS Core directly from the BLISS PyPi server.
+
+.. code-block:: bash
+
+    $ pip install bliss-core --extra-index-url https://bliss.jpl.nasa.gov/pypi/simple/
+
+
+Optional Binary Stream Capture Components
+-----------------------------------------
 
 BLISS' Binary Stream Capture (BSC) module is used to capture data over Ethernet (Not supported on OS X), TCP, and
 UDP connections. BSC supports the use of the `rawsocket <https://github.com/mwalle/rawsocket>`_
@@ -36,6 +56,9 @@ you will have to manually install the dependency with
 .. code-block:: bash 
 
     $ pip install rawsocket
+
+Environment Configuration
+-------------------------
 
 BLISS uses two environment variables for configuration.
 
@@ -96,3 +119,30 @@ Your BLISS Core installation is now isolated to your virtual environment. Whenev
    # Prompt after running workon
    (bliss)
    $
+
+Upgrading an Installation
+-------------------------
+
+When a new version of BLISS Core is released you'll most likely want to upgrade your environment. You'll need to upgrade differently depending on how you installed the system.
+
+Installed from Code Checkout
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Navigate back to the directory where you checked out the code and run the following commands to pull the latest code, checkout the latest tag, and upgrade your install.
+
+.. code-block:: bash
+
+   $ git checkout master
+   $ git pull
+   $ git tag
+   $ git checkout <Most recent version number output by the previous command>
+   $ pip install . --upgrade
+
+Installed from PyPi
+^^^^^^^^^^^^^^^^^^^
+
+Run the following to upgrade to the latest BLISS Core versions.
+
+.. code-block:: bash
+
+   $ pip install bliss-core --extra-index-url https://bliss.jpl.nasa.gov/pypi/simple/ --upgrade
