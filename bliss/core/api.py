@@ -26,6 +26,26 @@ import time
 from bliss.core import cmd, gds, log, tlm
 
 
+class APIError (Exception):
+    """All BLISS API exceptions are derived from this class"""
+    pass
+
+
+class APITimeoutError (Exception):
+    """Raised when a timeout limit is exceeded"""
+    def __init__ (self, timeout=0, msg=None):
+        self.timeout = timeout
+        self.msg     = msg
+
+    def __str__ (self):
+        s = 'APITimeoutError: Timeout (%d seconds) exceeded' % self.timeout
+
+        if self.msg:
+            s += ': ' + self.msg
+
+        return s
+
+
 class CmdAPI:
     """CmdAPI
 
@@ -395,18 +415,56 @@ class Instrument (object):
         return TlmWrapperAttr(self._packets)
 
 
-def wait (cond, timeout=None):
-    status = False
-    n      = 0
+def wait (cond, _timeout=10, _raiseException=True):
+    """Waits either a specified number of seconds, e.g.:
+
+    .. code-block:: python
+
+        wait(1.2)
+
+    or for a given condition to be True.  Conditions may be take
+    several forms: Python string expression, lambda, or function,
+    e.g.:
+
+    .. code-block:: python
+
+        wait('instrument_mode == "SAFE"')
+        wait(lambda: instrument_mode == "SAFE")
+
+        def isSafe(): return instrument_mode == "SAFE"
+        wait(isSafe)
+
+    The default ``_timeout`` is 10 seconds.  If the condition is not
+    satisfied before the timeout has elapsed, an
+    :exception:``APITimeoutError`` exception is raised.
+
+    The :exception:``APITimeoutError`` exception may be supressed in
+    favor of returning ``True`` on success (i.e. condition satisfied)
+    and ``False`` on failure (i.e. timeout exceeded) by setting the
+    ``_raiseException`` parameter to ``False``.
+
+    These parameters are prefixed with an underscore so they may also
+    be used to control exception handling when sending commands.
+    Since methods that generate commands take keyword arguments, we
+    did not want these parameter names to conflict with command
+    parameter names.
+    """
+    status  = False
+    delay   = 0.25
+    elapsed = 0
 
     if type(cond) in (int, float):
         gevent.sleep(cond)
         status = True
     else:
         while True:
-            if n == timeout:
-                status = False
-                break
+            if _timeout is not None and elapsed >= _timeout:
+                if _raiseException:
+                    msg = cond if type(cond) is str else None
+                    raise APITimeoutError(timeout, msg)
+                else:
+                    status = False
+                    break
 
             if type(cond) is str:
                 caller = inspect.stack()[1][0]
@@ -419,7 +477,7 @@ def wait (cond, timeout=None):
             if status:
                 break
 
-            gevent.sleep(1)
-            n += 1
+            gevent.sleep(delay)
+            elapsed += delay
 
     return status
