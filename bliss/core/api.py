@@ -34,16 +34,25 @@ class APIError (Exception):
 class APITimeoutError (Exception):
     """Raised when a timeout limit is exceeded"""
     def __init__ (self, timeout=0, msg=None):
-        self.timeout = timeout
-        self.msg     = msg
+        self._timeout = timeout
+        self._msg     = msg
 
     def __str__ (self):
-        s = 'APITimeoutError: Timeout (%d seconds) exceeded' % self.timeout
+        return self.msg
 
-        if self.msg:
-            s += ': ' + self.msg
+    @property
+    def msg(self):
+        s = 'APITimeoutError: Timeout (%d seconds) exceeded' % self._timeout
+
+        if self._msg:
+            s += ': ' + self._msg
 
         return s
+
+    @property
+    def timeout(self):
+        return self._timeout
+
 
 
 class CmdAPI:
@@ -415,7 +424,7 @@ class Instrument (object):
         return TlmWrapperAttr(self._packets)
 
 
-def wait (cond, _timeout=10, _raiseException=True):
+def wait (cond, msg=None, _timeout=10, _raiseException=True):
     """Waits either a specified number of seconds, e.g.:
 
     .. code-block:: python
@@ -453,6 +462,9 @@ def wait (cond, _timeout=10, _raiseException=True):
     delay   = 0.25
     elapsed = 0
 
+    if msg is None and type(cond) is str:
+        msg = cond
+
     if type(cond) in (int, float):
         gevent.sleep(cond)
         status = True
@@ -460,8 +472,7 @@ def wait (cond, _timeout=10, _raiseException=True):
         while True:
             if _timeout is not None and elapsed >= _timeout:
                 if _raiseException:
-                    msg = cond if type(cond) is str else None
-                    raise APITimeoutError(timeout, msg)
+                    raise APITimeoutError(_timeout, msg)
                 else:
                     status = False
                     break
