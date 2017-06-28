@@ -54,6 +54,24 @@ class APITimeoutError (Exception):
         return self._timeout
 
 
+class FalseWaitError (Exception):
+    """Raised when a 'False' boolean is passed as an argument to wait (in order to avoid infinite loop)"""
+    def __init__ (self, msg=None):
+        self._msg     = msg
+
+    def __str__ (self):
+        return self.msg
+
+    @property
+    def msg(self):
+        s = 'FalseWaitError: "False" boolean passed as argument to wait. Ensure wait condition args are surounded by lambda or " "' 
+
+        if self._msg:
+            s += ': ' + self._msg
+
+        return s
+
+
 
 class CmdAPI:
     """CmdAPI
@@ -451,7 +469,13 @@ def wait (cond, msg=None, _timeout=10, _raiseException=True):
     favor of returning ``True`` on success (i.e. condition satisfied)
     and ``False`` on failure (i.e. timeout exceeded) by setting the
     ``_raiseException`` parameter to ``False``.
-
+     
+    The :exception:``FalseWaitError`` will be thrown only if a boolean 
+    with value "False" is passed as an argument to wait. The purpose of 
+    this is to avoid infinite loops and catch conditional arguments are
+    not passed in as strings and therefore evaluated before the wait
+    function gets called. 
+    
     These parameters are prefixed with an underscore so they may also
     be used to control exception handling when sending commands.
     Since methods that generate commands take keyword arguments, we
@@ -464,6 +488,12 @@ def wait (cond, msg=None, _timeout=10, _raiseException=True):
 
     if msg is None and type(cond) is str:
         msg = cond
+
+    if type(cond) is bool:
+        if cond:
+            log.warn('Boolean passed as argument to wait. Make sure argument to wait is surrounded by a lambda or " "')
+        else:
+            raise FalseWaitError(msg)
 
     if type(cond) in (int, float):
         gevent.sleep(cond)
