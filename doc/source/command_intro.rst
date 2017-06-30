@@ -27,7 +27,7 @@ BLISS provides support for YAML-based configuration of commands with enough deta
           2: SCANNING
           3: SCIENCE
 
-All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. By default this is called **cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
+All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. You can view the full schema file in the BLISS Core repo at **bliss/core/data/cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
 
 .. code-block:: javascript
 
@@ -50,6 +50,9 @@ All the valid parameters and attributes that you can have in your command dictio
                     "type": "integer"
                 },
                 "subsystem": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "desc": {
@@ -111,6 +114,9 @@ opcode:
 subsystem (optional):
     A **string** denoting the subsystem associated with this command.
 
+title (optional):
+    A **string** denoting the title of this command
+
 desc (optional):
     A **string** for providing a description of the command.
 
@@ -133,7 +139,7 @@ type:
 bytes:
     Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
 
-desc (opitonal):
+desc (optional):
     A **string** for providing a description of the argument.
 
 units (optional):
@@ -152,14 +158,14 @@ enum (optional):
 
 The fixed constructor allows you to define constant values in your command.
 
-name:
-    A **string** denoting the name of this constant.
+type:
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.core.dtype.PrimitiveTypes``.
 
 bytes:
     Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
 
-value:
-    A number specifying the value for this constant.
+name (optional):
+    A **string** denoting the name of this constant.
 
 desc (optional):
     A **string** for providing a description of the constant.
@@ -167,8 +173,9 @@ desc (optional):
 units (optional):
     A **string** denoting the constant's units.
 
-bytes (optional):
-    Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+value (optional):
+    A number specifying the value for this constant.
+
 
 ----
 
