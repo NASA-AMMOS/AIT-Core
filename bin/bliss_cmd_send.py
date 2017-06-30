@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-cmd-send.py [options] command arg1 ... argN
+usage: bliss-cmd-send [options] command arg1 ... argN
 
 Sends the given command and its arguments to the ISS
 simulator via UDP.
@@ -10,7 +10,7 @@ simulator via UDP.
 
 Examples:
 
-  $ bliss-cmd-send.py OCO3_CMD_START_SEQUENCE_NOW 1
+  $ bliss-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
 '''
 
 
