@@ -14,11 +14,12 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
 
    project_setup
    installation
-   command_line
    BLISS API Documentation <bliss>
+   command_line
    configuration_intro
    Command Dictionary Introduction <command_intro>
    Telemetry Dictionary Introduction <telemetry_intro>
+   API Module Introduction <api_intro>
    EVR Introduction <evr_intro>
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
