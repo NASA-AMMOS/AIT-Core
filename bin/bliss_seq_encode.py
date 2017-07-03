@@ -6,7 +6,7 @@ Encodes the given relative time command sequence to binary.
 
 Examples:
 
-  $ bliss-seq-encode.py seq/oco3_seq_gps_001_reset.txt 
+  $ bliss-seq-encode seq/oco3_seq_gps_001_reset.txt 
 '''
 
 import os

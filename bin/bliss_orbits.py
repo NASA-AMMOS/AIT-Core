@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""
+'''
 Usage:
   bliss-orbits predicts <filename> <start-time> [<stop-time>] [options]
   bliss-orbits actuals  <filename> <start-time> [<stop-time>] [options]
@@ -71,7 +71,7 @@ Example:
   2015-11-16T22:36:30    2015-11-17T00:09:00    000308
 
   2015-11-15T22:13:18.969 | COMMAND  | done.
-"""
+'''
 
 
 import datetime
