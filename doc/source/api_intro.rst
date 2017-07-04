@@ -64,7 +64,7 @@ Putting it all Together
 
 Below we'll create an example script to do a simple test of the API to ensure that we can read telemetry from our instrument, send it a command, and react to changes in the telemetry.
 
-.. code-block::
+.. code-block:: python
 
     #!/usr/bin/env python
 
