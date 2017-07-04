@@ -208,10 +208,7 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
     default  = getattr(module, 'DefaultDict', None)
 
     if filename is None:
-        try:
-            filename = bliss.config[config_key].filename
-        except (AttributeError, KeyError), e:
-            log.error('Missing "%s.filename" in config.yaml', config_key)
+        filename = bliss.config.get('%s.filename' % config_key, None)
 
     if filename is not None and (default is None or reload is True):
         try:

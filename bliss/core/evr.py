@@ -52,7 +52,7 @@ def getDefaultSchema():
 
 def getDefaultDict(reload=False):
     d = util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)
-    return d.evrs
+    return d.evrs if isinstance(d, EVRReader) else [ ]
 
 def getDefaultEVRs():
     return getDefaultDict()
