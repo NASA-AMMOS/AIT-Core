@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Limit Dictionary Schema",
+    "description": "Limit Dictionary Schema. See http://json-schema.org/ for more details on how to create this schema.",
+    "type": "array",
+    "items": {
+        "required": ["limit", "source"],
+        "anyOf": [{
+            "required": ["error"]
+        }, {
+            "required": ["warn"]
+        }],
+        "additionalProperties": false,
+        "properties": {
+            "limit": {
+                "type": "string"
+            },
+            "source": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "error": {
+                "type": "object",
+                "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        },
+                        "enum": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "warn": {
+                "type": "object",
+                "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        },
+                        "enum": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
