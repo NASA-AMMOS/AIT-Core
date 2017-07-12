@@ -5,7 +5,7 @@ import os
 setup(
     name         = 'bliss-core',
     version      = '0.18.0',
-    packages     = ['bliss.core', 'bin'],
+    packages     = ['bliss.core'],
     author       = 'BLISS-Core Development Team',
     author_email = 'bliss@jpl.nasa.gov',
 
@@ -42,10 +42,12 @@ setup(
 
     entry_points = {
         'console_scripts': [
-            '{}=bin.{}:main'.format(
+            '{}=bliss.core.bin.{}:main'.format(
                 f.split('.')[0].replace('_', '-'),
                 f.split('.')[0])
-            for f in os.listdir('./bin') if f.endswith('.py')
+            for f in os.listdir('./bliss/core/bin')
+            if f.endswith('.py') and
+            f != '__init__.py'
         ]
     }
 )
