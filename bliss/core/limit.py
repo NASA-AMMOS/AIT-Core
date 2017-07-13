@@ -15,14 +15,13 @@ The expected limit.yaml should follow this schema:
                telemetry dictionary
   lower:    -- lower limits
     error:  -- trigger error if telemetry value exceeds this lower bound (exclusive)
-    warn:   -- trigger error if telemetry value exceeds this lower bound (exclusive)
+    warn:   -- trigger warning if telemetry value exceeds this lower bound (exclusive)
   upper:    -- upper limits
     error:  -- trigger error if telemetry value exceeds this upper bound (exclusive)
-    warn:   -- trigger error if telemetry value exceeds this upper bound (exclusive)
-  value:    -- upper limits
-    error:  -- trigger error if telemetry value exceeds this upper bound (exclusive)
-    warn:   -- trigger error if telemetry value exceeds this upper bound (exclusive)
-
+    warn:   -- trigger warning if telemetry value exceeds this upper bound (exclusive)
+  value:    -- enumerated values to trigger error/warning
+    error:  -- trigger error if telemetry value == or in list of strings
+    warn:   -- trigger warning if telemetry value == or in list of strings
 
 For example:
 
@@ -150,6 +149,8 @@ class LimitDefinition (json.SlotSerializer, object):
         pkt, fld = source.split('.')
         return self.tlmdict[pkt].fieldmap[fld]
 
+    def convert(self, value, new_unit, old_unit):
+        return value
 
 
 class LimitDict(dict):
