@@ -78,8 +78,8 @@ Description:
     * hostname = current machine hostname
     * platform = platform of the current machine (darwin, win32, etc.)
 
-    You can also use `strftime format characters
-    <https://docs.python.org/2/library/time.html#time.strftime>`.
+    You can also use strftime format characters
+    (https://docs.python.org/2/library/time.html#time.strftime).
 
     For example,
 
