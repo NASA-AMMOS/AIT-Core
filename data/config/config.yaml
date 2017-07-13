@@ -27,19 +27,19 @@ default:
 
     data:
         '1553':
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/1553
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
         bad:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/bad
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
         lehx:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/lehx
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
         planning:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/planning
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
         sdos:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/sdos
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
         uplink:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/uplink
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
         ats:
-            path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/ats
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
     gui:
       port: 8080

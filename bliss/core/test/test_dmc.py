@@ -4,22 +4,19 @@
 # U.S. Government Sponsorship acknowledged.
 
 
+import time
 import datetime
 import nose
 
 from bliss.core import dmc
 
 
-def test_getUTCDatetimeDOY():
-    timestamp = datetime.datetime.utcnow().timetuple()
+def test_getTimestampUTC():
+    expected = time.strftime('%Y-%j', time.gmtime())
 
-    exp_year = timestamp.tm_year
-    exp_day  = '%03d' % timestamp.tm_yday
+    actual = time.strftime('%Y-%j', time.gmtime(dmc.getTimestampUTC()[0]))
 
-    dtime = dmc.getUTCDatetimeDOY().split(':')
-
-    assert str(exp_year) == dtime[0]
-    assert str(exp_day)  == dtime[1]
+    assert actual == expected
 
 
 def test_getUTCDatetimeDOY_w_days():
@@ -29,8 +26,7 @@ def test_getUTCDatetimeDOY_w_days():
     exp_year  = timestamp.tm_year
     exp_day   = '%03d' % timestamp.tm_yday
 
-    dtime     = dmc.getUTCDatetimeDOY(days).split(':')
-
+    dtime     = dmc.getUTCDatetimeDOY(days=days).split('T')[0].split('-')
     assert str(exp_year) == dtime[0]
     assert str(exp_day)  == dtime[1]
 

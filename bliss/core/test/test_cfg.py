@@ -6,7 +6,7 @@
 
 import sys
 import os
-import datetime
+import time
 
 import nose
 
@@ -30,9 +30,9 @@ def YAML ():
 
         data:
             test1:
-                path: /gds/${year}/${year}-${doy}/test1
+                path: /gds/%Y/%Y-%j/test1
             test2:
-                path: /gds/${year}/${year}-${doy}/test2
+                path: /gds/%Y/%Y-%j/test2
 
     PLATFORM:
         ISS:
@@ -78,7 +78,7 @@ def test_expandConfigPaths ():
         }
     }
 
-    cfg.expandConfigPaths(actual, prefix, None, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, None, None, 'file', 'filename')
     assert actual == expected
 
 def test_expandConfigPaths_w_variables ():
@@ -99,7 +99,7 @@ def test_expandConfigPaths_w_variables ():
         'filename': os.path.join(prefix, 'bin', 'test-y', 'bliss-orbits')
     }
 
-    cfg.expandConfigPaths(actual, prefix, pathvars, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, None, pathvars, 'file', 'filename')
     assert actual == expected
 
 
@@ -126,7 +126,7 @@ def test_replaceVariables ():
     }
     pathname = os.path.join('/' , '${x}', 'bliss-orbits')
     expected = [ os.path.join('/', pathvars['x'], 'bliss-orbits') ]
-    assert cfg.replaceVariables(pathname, pathvars) == expected
+    assert cfg.replaceVariables(pathname, pathvars=pathvars) == expected
 
     # Test expandPath with more complex path variable with multiple
     # permutations
@@ -146,7 +146,29 @@ def test_replaceVariables ():
         os.path.join('/', pathvars['x'], pathvars['y'][1],
                      pathvars['z'][1], 'bliss-orbits')
     ]
-    assert cfg.replaceVariables(pathname, pathvars) == expected
+    assert sorted(cfg.replaceVariables(pathname, pathvars=pathvars)) == sorted(expected)
+
+def test_replaceVariables_strftime ():
+    # Test replaceVariables with strftime directives
+    pathname = os.path.join('/', '%Y', '%Y-%j', 'bliss-orbits')
+
+    expected = [ os.path.join('/', 
+        time.strftime('%Y', time.gmtime()),
+        time.strftime('%Y-%j', time.gmtime()),
+        'bliss-orbits') ]
+
+    assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
+
+def test_replaceVariables_strftime_addday ():
+    # Test replaceVariables with strftime directives
+    pathname = os.path.join('/', '%Y', '%Y-%j', 'bliss-orbits')
+
+    expected = [ os.path.join('/', 
+        time.strftime('%Y', time.gmtime()),
+        time.strftime('%Y-%j', time.gmtime()),
+        'bliss-orbits') ]
+
+    assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
 
 def test_addPathVariables ():
     config = cfg.BlissConfig(data=YAML())
@@ -200,8 +222,8 @@ def assert_BlissConfig (config, path, filename=None):
     assert config     != config.ISS
     assert config.ISS == config['ISS']
 
-    year = datetime.datetime.utcnow().strftime('%Y')
-    doy = datetime.datetime.utcnow().strftime('%j')
+    year = time.strftime('%Y', time.gmtime())
+    doy = time.strftime('%j', time.gmtime())
     base = '/gds/%s/%s-%s/' % (year, year, doy)
     assert config.data.test1.path == base + 'test1'
     assert config.data.test2.path == base + 'test2'

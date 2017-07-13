@@ -25,7 +25,8 @@ GPS_Epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
 TICs      = [ ]
 TwoPi     = 2 * math.pi
 
-DOY_Format = '%Y:%j:%H:%M:%S'
+DOY_Format = '%Y-%jT%H:%M:%SZ'
+ISO_8601_Format = '%Y-%m-%dT%H:%M:%SZ'
 
 
 def getTimestampUTC():
@@ -39,16 +40,17 @@ def getTimestampUTC():
     return ts_sec, ts_usec
 
 
-def getUTCDatetimeDOY(days=0):
+def getUTCDatetimeDOY(days=0, hours=0, minutes=0, seconds=0):
     """getUTCDatetimeDOY -> datetime
 
-    Returns the UTC current datetime with the input slack time (seconds)
-    added in DOY format:
+    Returns the UTC current datetime with the input timedelta arguments (days, hours, minutes, seconds)
+    added to current date. Returns ISO-8601 datetime format for day of year:
 
-        YYYY:DDD:HH:MM:SS
+        YYYY-DDDTHH:mm:ssZ
 
     """
-    return (datetime.datetime.utcnow() + datetime.timedelta(days=days)).strftime(DOY_Format)
+    return (datetime.datetime.utcnow() + 
+        datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)).strftime(DOY_Format)
 
 
 def tic():

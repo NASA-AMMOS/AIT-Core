@@ -12,7 +12,7 @@ The bliss.core.cfg module provides classes and functions to manage
 import os
 import platform
 import sys
-import datetime
+import time
 import re
 
 import yaml
@@ -22,15 +22,15 @@ from bliss.core import log
 
 
 DEFAULT_PATH_VARS = {
-    'year': datetime.datetime.utcnow().strftime('%Y'),
-    'doy' : datetime.datetime.utcnow().strftime('%j')
+    'year': time.strftime('%Y', time.gmtime()),
+    'doy' : time.strftime('%j', time.gmtime())
 }
 
-def expandConfigPaths (config, prefix=None, pathvars=None, *keys):
+def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, *keys):
     """Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
-    If keys is is omitted, it defaults to 'directory', 'file',
+    If keys is omitted, it defaults to 'directory', 'file',
     'filename', 'path', 'pathname'.
 
     See expandPath().
@@ -41,10 +41,10 @@ def expandConfigPaths (config, prefix=None, pathvars=None, *keys):
     for name, value in config.items():
         if name in keys and type(name) is str:
             expanded = expandPath(value, prefix)
-            cleaned = replaceVariables(expanded, pathvars)
+            cleaned = replaceVariables(expanded, datetime=datetime, pathvars=pathvars)
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
         elif type(value) is dict:
-            expandConfigPaths(value, prefix, pathvars, *keys)
+            expandConfigPaths(value, prefix, datetime, pathvars, *keys)
 
 
 def expandPath (pathname, prefix=None):
@@ -64,43 +64,73 @@ def expandPath (pathname, prefix=None):
     return os.path.abspath(expanded)
 
 
-def replaceVariables(path, pathvars=None):
+def replaceVariables(path, datetime=None, pathvars=None):
     """Return absolute path with path variables replaced as applicable"""
 
-    # if path variables is None, let's use the default
+    if datetime is None:
+        datetime = time.gmtime()
+
+    # if path variables are not given, set as empty list
     if pathvars is None:
-        pathvars = DEFAULT_PATH_VARS
+        pathvars = [ ]
 
-    paths = [ path ]
+    # create an init path list to loop through
+    if isinstance(path, list):
+        path_list = path
+    else:
+        path_list = [ path ]
 
-    # Replace all path variables with their specified values
+    # Set up the regex to search for variables
     regex = re.compile('\$\{(.*?)\}')
 
-    # Find all the variables in path using the regex
-    for k in regex.findall(path):
-        # Check if the key is in path variables map
-        if k in pathvars:
-            # get the str or list of values
-            v = pathvars[k]
+    # create a newpath list that will hold the 'cleaned' paths
+    # with variables and strftime format directives replaced
+    newpath_list = [ ]
 
-            # new path list for this variable
-            newpaths = [ ]
+    for p in path_list:
+        # create temppath_list to be used a we work through the
+        newpath_list.append(p)
 
-            # Value of variable must be in (string, integer, list)
-            if type(v) is dict:
-                msg = "Path variable must refer to string, integer, or list"
-                raise TypeError(msg)
+        # Variable replacement
+        # Find all the variables in path using the regex
+        for k in regex.findall(p):
+            # Check if the key is in path variables map
+            if k in pathvars:
+                # get the str or list of values
+                v = pathvars[k]
 
-            # start with a list
-            valuelist = v if type(v) is list else [ v ]
+                # Check value of variable must be in (string, integer, list)
+                if type(v) is dict:
+                    msg = "Path variable must refer to string, integer, or list"
+                    raise TypeError(msg)
 
-            for p in paths:
-                for v in valuelist:
-                    newpaths.append(p.replace('${%s}' % k, str(v)))
+                # get the list of possible variable values
+                value_list = v if type(v) is list else [ v ]
 
-            paths = newpaths
 
-    return paths
+                # create temp_list for now
+                temp_list = []
+
+                # loop through the most recent newpath list
+                # need to do this every time in order to account for all possible
+                # combinations
+                # replace the variables
+                # loop through the list of values and replace the variables
+                for v in value_list:
+                    for newpath in newpath_list:
+                        # remove the path from newpath_list
+                        temp_list.append(newpath.replace('${%s}' % k, str(v)))
+
+                # replace newpath_list
+                newpath_list = temp_list
+
+        # strftime translation
+        # Loop through newpath_list to do strftime translation
+        for index, newpath in enumerate(newpath_list):
+            # Apply strftime translation
+            newpath_list[index] = time.strftime(newpath, datetime)
+
+    return newpath_list
 
 
 def flatten (d, *keys):
@@ -197,6 +227,7 @@ class BlissConfig (object):
         """
         self._filename = None
         self._data = data
+        self._datetime = time.gmtime()
         self._pathvars = pathvars
 
         if data is None and filename is None:
@@ -310,8 +341,10 @@ class BlissConfig (object):
             if self._pathvars is None:
                 self._pathvars = self.getDefaultPathVariables()
 
-            expandConfigPaths(self._config, self._directory,
-                              merge(self._config, self._pathvars))
+            expandConfigPaths(self._config, 
+                            self._directory,
+                            self._datetime,
+                            merge(self._config, self._pathvars))
 
         else:
             self._config = { }
@@ -366,9 +399,6 @@ class BlissConfig (object):
         """ Adds path variables to the pathvars map property"""
         if type(pathvars) is dict:
             self._pathvars = merge(self._pathvars, pathvars)
-
-        # Need to reload the config with the new variables
-        self.reload(self._filename, self._data)
 
 
 # Create a singleton BlissConfig accessible via bliss.config

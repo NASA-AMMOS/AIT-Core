@@ -56,19 +56,19 @@ BLISS loads **config.yaml** on import. Here is an example **config.yaml**:
 
         data:
             '1553':
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/1553
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
             bad:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/bad
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
             lehx:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/downlink/lehx
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
             planning:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/planning
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
             sdos:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/sdos
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
             uplink:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/uplink
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
             ats:
-                path: /gds/${phase}/data/${hostname}/${year}/${year}-${doy}/ats
+                path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
         gui:
             port: 8080
@@ -131,7 +131,7 @@ Variables can also be specified within the path in order to allow for more expli
     # For example
     path: /${phase}/${mission}/${instrument}
 
-* There are currently 4 default variables whose values are automatically generated, and they can be accessed without specifying them in **config.yaml**.
+* There are currently 2 default variables whose values are automatically generated, and they can be accessed without specifying them in **config.yaml**.
 
   * ${year} - current year
   * ${doy}  - current day of year
@@ -148,9 +148,9 @@ If we have the following specified in **config.yaml**::
         mission:    'oco3'
         data:
             data1:
-                path: /${phase}/${hostname}/${year}-${doy}/data1
+                path: /${phase}/${hostname}/%Y-%j/data1
             data2:
-                path: /${phase}/${hostname}/${year}-${doy}/data2
+                path: /${phase}/${hostname}/%Y-%j/data2
 
 If the machine hostname = 'oco3-gds1', and today is day 300 in 2016, we can programmatically access these paths:
 
