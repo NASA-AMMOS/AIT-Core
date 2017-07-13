@@ -281,3 +281,25 @@ def open (filename, mode='r'):
     stream = PCapStream( __builtin__.open(filename, mode), mode )
 
     return stream
+
+
+def query(filename, starttime, endtime, outname=None):
+    '''Given a time range and input file, query creates a new file with only
+    that subset of data. If no outfile name is given, the new file name is the
+    old file name with the time range appended.
+    '''
+    if outname is not None:
+       outname = filename.replace('.pcap','').append(timerange).append('.pcap')
+
+    start = datetime.datetime.utcfromtimestamp(starttime)
+    end = datetime.datetime.utcfromtimestamp(endtime)
+
+    with __builtin__.open(outname,'wb') as outfile:
+
+        with pcap.open(filename, 'r') as stream:
+            header, packet = stream.read()
+            if packet is not None:
+                if header.timestamp <= start and header.timestamp > end:
+                   outfile.write(header.__str__())
+                   outfile.write(packet)
+
