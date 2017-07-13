@@ -104,12 +104,15 @@ class LimitDefinition (json.SlotSerializer, object):
         if self.source:
             self.source_fld = self.get_fld_defn(self.source)
 
+        if self.units and self.units != self.source_fld.units:
+            raise SyntaxError("%s must match the units in the telemetry dictionary." % self.units)
+
     def __repr__(self):
         return bliss.util.toRepr(self)
 
     def error (self, value, units=None):
         if self.units and self.units != units:
-            value = convert(value, units, self.units)
+            value = self.convert(value, units, self.units)
 
         check = False
         if self.lower:
@@ -128,7 +131,7 @@ class LimitDefinition (json.SlotSerializer, object):
 
     def warn (self, value, units=None):
         if self.units and self.units != units:
-            value = convert(value, units, self.units)
+            value = self.convert(value, units, self.units)
 
         check = False
         if self.lower:

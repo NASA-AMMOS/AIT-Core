@@ -162,3 +162,21 @@ def test_check_value_list_warn2():
     """
     ldict = limit.LimitDict(test_check_value_list_warn2.__doc__)
     assert ldict['Ethernet_HS_Packet.product_type'].warn('BAR')
+
+def test_check_units():
+    """
+    # test_check_units
+
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      units: Volts
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limit.LimitDict(test_check_units.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].warn(6)

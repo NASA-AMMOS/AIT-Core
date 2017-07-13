@@ -2,7 +2,7 @@
 - !Limit
   source: 1553_HS_Packet.Voltage_A
   desc: Voltage A
-  units: Volt
+  units: Volts
   lower:
     error: 5.0
     warn: 10.0
