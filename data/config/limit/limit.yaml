@@ -1,8 +1,8 @@
 # Min/Max Range Example - Simple case for telemetry value range
 - !Limit
-  source: 1553_HS_Packet.RT2
-  desc: Noise Source Temperature
-  units: Kelvin
+  source: 1553_HS_Packet.Voltage_A
+  desc: Voltage A
+  units: Volt
   lower:
     error: 5.0
     warn: 10.0
