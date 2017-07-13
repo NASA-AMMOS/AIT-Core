@@ -299,7 +299,7 @@ def query(filename, starttime, endtime, outname=None):
         with pcap.open(filename, 'r') as stream:
             header, packet = stream.read()
             if packet is not None:
-                if header.timestamp <= start and header.timestamp > end:
+                if header.timestamp >= start and header.timestamp < end:
                    outfile.write(header.__str__())
                    outfile.write(packet)
 
