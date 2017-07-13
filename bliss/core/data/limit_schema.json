@@ -6,9 +6,11 @@
     "items": {
         "required": ["limit", "source"],
         "anyOf": [{
-            "required": ["error"]
+            "required": ["lower"]
         }, {
-            "required": ["warn"]
+            "required": ["upper"]
+        }, {
+            "required": ["value"]
         }],
         "additionalProperties": false,
         "properties": {
@@ -21,37 +23,44 @@
             "desc": {
                 "type": "string"
             },
-            "error": {
+            "units": {
+                "type": "string"
+            },
+            "lower": {
                 "type": "object",
-                "items": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "min": {
-                            "type": "integer"
-                        },
-                        "max": {
-                            "type": "integer"
-                        },
-                        "enum": {
-                            "type": "string"
-                        }
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": "number"
+                    },
+                    "warn": {
+                        "type": "number"
                     }
                 }
             },
-            "warn": {
+            "upper": {
                 "type": "object",
-                "items": {
-                    "additionalProperties": false,
-                    "properties": {
-                        "min": {
-                            "type": "integer"
-                        },
-                        "max": {
-                            "type": "integer"
-                        },
-                        "enum": {
-                            "type": "string"
-                        }
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": "number"
+                    },
+                    "warn": {
+                        "type": "number"
+                    }
+                }
+            },
+            "value": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": [ "string", "number", "array" ],
+                        "minLength": 1
+                    },
+                    "warn": {
+                        "type": [ "string", "number", "array" ],
+                        "minLength": 1
                     }
                 }
             }
