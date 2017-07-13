@@ -13,64 +13,152 @@ import nose
 import bliss
 from bliss.core import limit
 
-class TestLimitDefinition(object):
-  test_yaml_test1 = '/tmp/test_test1.yaml'
+def test_limit_range():
+    """
+    # test_limit_range
 
-  yaml_docs_test1 = (
-    '- !Limit\n'
-    '  source: 1553_HS_Packet.Voltage_A\n'
-    '  desc: tbd\n'
-    '  error:\n'
-    '    min: 5.0\n'
-    '    max: 45.0\n'
-    '  warn:\n'
-    '    min: 10.0\n'
-    '    max: 40.0\n'
-    '- !Limit\n'
-    '  source: CCSDS_HEADER.secondary_header_flag\n'
-    '  desc: tbd\n'
-    '  error:\n'
-    '    enum:\n'
-    '      - Not Present\n'
-    '- !Limit\n'
-    '  source: CCSDS_HEADER.type\n'
-    '  error:\n'
-    '    enum:\n'
-    '      - Core\n'
-    '- !Limit\n'
-    '  source: Ethernet_HS_Packet.product_type\n'
-    '  error:\n'
-    '    enum:\n'
-    '    - TABLE_FOO\n'
-    '    - TABLE_BAR\n'
-  )
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limit.LimitDict(test_limit_range.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].upper.error == 45.0
+    assert ldict['1553_HS_Packet.Voltage_A'].lower.warn == 10.0
 
-  def setUp(self):
-    with open(self.test_yaml_test1, 'wb') as out:
-      out.write(self.yaml_docs_test1)
 
-  def tearDown(self):
-    os.remove(self.test_yaml_test1)
+def test_limit_error_value():
+    """
+    # test_limit_error_value
 
-  def test_limit_range(self):
-    ldict = limit.LimitDict(self.test_yaml_test1)
-    assert ldict['1553_HS_Packet.Voltage_A'].error.max == 45.0
-    assert ldict['1553_HS_Packet.Voltage_A'].warn.min == 10.0
+    - !Limit
+      source: CCSDS_HEADER.secondary_header_flag
+      desc: tbd
+      lower:
+        error: Not Present
+    """
+    ldict = limit.LimitDict(test_limit_error_value.__doc__)
+    assert 'Not Present' in ldict['CCSDS_HEADER.secondary_header_flag'].lower.error
 
-  def test_limit_error_enum(self):
-    ldict = limit.LimitDict(self.test_yaml_test1)
-    assert ldict['CCSDS_HEADER.type'].error.enum[0] == 'Core'
 
-  def test_limit_error_enum_list(self):
-    ldict = limit.LimitDict(self.test_yaml_test1)
-    assert 'TABLE_FOO' in ldict['Ethernet_HS_Packet.product_type'].error.enum
+def test_limit_source_fld():
+    """
+    # test_limit_source_fld
 
-  def test_limit_source(self):
-    ldict = limit.LimitDict(self.test_yaml_test1)
+    - !Limit
+      source: Ethernet_HS_Packet.product_type
+      desc: tbd
+      lower:
+        error:
+          - 'TABLE_FOO'
+          - 'TABLE_BAR'
+        warn:
+          - 'MEM_DUMP'
+    """
+    ldict = limit.LimitDict(test_limit_source_fld.__doc__)
     assert ldict['Ethernet_HS_Packet.product_type'].source_fld.name == 'product_type'
 
-  def test_test_limit_yaml(self):
+
+def test_example_limit_yaml():
+    """
+    # test_example_limit_yaml
+
+    - !Limit
+      source: Ethernet_HS_Packet.product_type
+      desc: tbd
+      lower:
+        error:
+          - 'TABLE_FOO'
+          - 'TABLE_BAR'
+        warn:
+          - 'MEM_DUMP'
+    """
     ldict = limit.LimitDict()
     ldict.load(os.path.join(bliss.config._directory, 'limit', 'limit.yaml'))
     assert ldict['Ethernet_HS_Packet.product_type'].source_fld.name == 'product_type'  
 
+
+def test_check_upper_error():
+    """
+    # test_check_upper_error
+
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limit.LimitDict(test_check_upper_error.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].error(46)
+
+
+def test_check_lower_warn():
+    """
+    # test_check_lower_warn
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limit.LimitDict(test_check_lower_warn.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].warn(6)
+
+def test_check_value_error():
+    """
+    # test_check_value_error
+
+    - !Limit
+      source: Ethernet_HS_Packet.product_type
+      desc: tbd
+      value:
+        error: TABLE_BAR
+        warn: TABLE_FOO
+    """
+    ldict = limit.LimitDict(test_check_value_error.__doc__)
+    assert ldict['Ethernet_HS_Packet.product_type'].error('TABLE_BAR')
+    assert ldict['Ethernet_HS_Packet.product_type'].warn('TABLE_FOO')
+
+def test_check_value_list_warn():
+    """
+    # test_check_value_error
+
+    - !Limit
+      source: Ethernet_HS_Packet.product_type
+      desc: tbd
+      value:
+        error: FOOBAR
+        warn: [ FOO, BAR ]
+    """
+    ldict = limit.LimitDict(test_check_value_list_warn.__doc__)
+    assert ldict['Ethernet_HS_Packet.product_type'].error('FOOBAR')
+    assert ldict['Ethernet_HS_Packet.product_type'].warn('BAR')
+
+def test_check_value_list_warn2():
+    """
+    # test_check_value_error
+
+    - !Limit
+      source: Ethernet_HS_Packet.product_type
+      desc: tbd
+      value:
+        error: FOOBAR
+        warn:
+          - FOO
+          - BAR
+    """
+    ldict = limit.LimitDict(test_check_value_list_warn2.__doc__)
+    assert ldict['Ethernet_HS_Packet.product_type'].warn('BAR')

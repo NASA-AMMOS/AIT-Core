@@ -11,14 +11,41 @@ The expected limit.yaml should follow this schema:
 - !Limit
   source:   -- telemetry source for the limit. should follow format 'Packet.field_name'
   desc:     -- description of the limit
-  error:    -- either a min/max range or an enum that will cause an error
-    min:    -- min range value (exclusive)
-    max:    -- max range value (exclusive)
-    enum:   -- list of enumeration values that will trigger an error
-  warn:     -- same as error, either a min/max range or an enum that will cause an warning
-    min:    -- min range value (exclusive)
-    max:    -- max range value (exclusive)
-    enum:   -- list of enumeration values that will trigger an error
+  units:    -- the units used for possible conversion depending on the units set in the
+               telemetry dictionary
+  lower:    -- lower limits
+    error:  -- trigger error if telemetry value exceeds this lower bound (exclusive)
+    warn:   -- trigger error if telemetry value exceeds this lower bound (exclusive)
+  upper:    -- upper limits
+    error:  -- trigger error if telemetry value exceeds this upper bound (exclusive)
+    warn:   -- trigger error if telemetry value exceeds this upper bound (exclusive)
+  value:    -- upper limits
+    error:  -- trigger error if telemetry value exceeds this upper bound (exclusive)
+    warn:   -- trigger error if telemetry value exceeds this upper bound (exclusive)
+
+
+For example:
+
+  - !Limit
+    source: 1553_HS_Packet.Voltage_A
+    desc: tbd
+    units: Kelvin
+    lower:
+      error: 5.0
+      warn: 10.0
+    upper:
+      error: 45.0
+      warn: 40.0
+
+
+  - !Limit
+    source: Ethernet_HS_Packet.product_type
+    desc: tbd
+    value:
+      error: FOOBAR
+      warn:
+        - FOO
+        - BAR
 
 """
 
@@ -29,61 +56,100 @@ import yaml
 import bliss
 from bliss.core import json, log, tlm, util
 
-
-class ValueDefinition(json.SlotSerializer, object):
-    """ MinMaxDefinition
-    """
-    __slots__ = [ 'min', 'max', 'enum' ]
-
-    def __init__(self, *args, **kwargs):
-    #     """Creates a new LimitDefinition."""
-        for slot in ValueDefinition.__slots__:
-            name = slot[1:] if slot.startswith("_") else slot
-            setattr(self, slot, args[0].get(name, None))
-
-    def __repr__(self):
-        return util.toRepr(self)
+class Thresholds (json.SlotSerializer, object):
+    def __init__ (self, **kwargs):
+        self._thresholds = kwargs
 
 
-class LimitDefinition(json.SlotSerializer, object):
-# class LimitDefinition(object):
+    def __getattr__ (self, name):
+        if name in self._thresholds:
+            return self._thresholds[name]
+        else:
+            raise AttributeError("Limit has no such threshold '%s'" % name)
+
+
+    def __getstate__ (self):
+        return self.__dict__
+
+
+    def __repr__ (self):
+        kwargs = [ '%s=%s' % item for item in self._thresholds.items() ]
+        return 'Thresholds(%s)' % ', '.join(kwargs)
+
+
+    def __setstate__ (self, state):
+        self.__dict__ = state
+
+
+
+class LimitDefinition (json.SlotSerializer, object):
     """LimitDefinition
     """
-    __slots__ = [ 'source', 'source_fld', 'desc', 'error', 'warn' ]
+
+    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value', 'source_fld' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new LimitDefinition."""
         self.tlmdict = tlm.getDefaultDict()
 
-        for slot in LimitDefinition.__slots__:
+        for slot in self.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
-            setattr(self, slot, kwargs.get(name, None))
+            setattr(self, name, kwargs.get(name, None))
 
-        if self._source:
-            self.source = self._source
+        for name in 'lower', 'upper', 'value':
+            thresholds = getattr(self, name)
 
-        if self.error:
-            self.error = ValueDefinition(self.error)            
+            if type(thresholds) is dict:
+                setattr(self, name, Thresholds(**thresholds))
 
-        if self.warn:
-            self.warn = ValueDefinition(self.warn)
+        if self.source:
+            self.source_fld = self.get_fld_defn(self.source)
 
     def __repr__(self):
-        return util.toRepr(self)
+        return bliss.util.toRepr(self)
 
-    @property
-    def source(self):
-        return self._source
+    def error (self, value, units=None):
+        if self.units and self.units != units:
+            value = convert(value, units, self.units)
 
-    @source.setter
-    def source(self, value):
-        self._source = value
+        check = False
+        if self.lower:
+            check = check or value < self.lower.error
 
-        self.source_fld = self.get_fld_defn(value)
+        if self.upper:
+            check = check or value > self.upper.error
+
+        if self.value:
+            if isinstance(self.value.error, list):
+                check = check or value in self.value.error
+            else:
+                check = check or value == self.value.error
+
+        return check
+
+    def warn (self, value, units=None):
+        if self.units and self.units != units:
+            value = convert(value, units, self.units)
+
+        check = False
+        if self.lower:
+            check = check or value < self.lower.warn
+
+        if self.upper:
+            check = check or value > self.upper.warn
+
+        if self.value:
+            if isinstance(self.value.warn, list):
+                check = check or value in self.value.warn
+            else:
+                check = check or value == self.value.warn
+
+        return check
 
     def get_fld_defn(self, source):
         pkt, fld = source.split('.')
         return self.tlmdict[pkt].fieldmap[fld]
+
 
 
 class LimitDict(dict):
