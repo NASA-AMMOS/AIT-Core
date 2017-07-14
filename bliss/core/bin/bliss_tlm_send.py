@@ -18,6 +18,7 @@ Examples:
 import sys
 import socket
 import time
+import argparse
 
 from bliss.core import gds, log, pcap
 
@@ -31,20 +32,32 @@ defaults = {
 def main():
     try:
         if '--help' in sys.argv:
-            gds.usage(exit=True)
+            stream = open(sys.argv[0])
+            for line in stream.readlines():
+                if line.startswith('##'): print line.replace('##',''),
+            stream.close()
+            sys.exit(2)
 
         log.begin()
-        options, args = gds.parseArgs(sys.argv[1:], defaults)
 
+        parser = argparse.ArgumentParser()
+        parser.add_argument('filename',type=string)
+        parser.add_argument('--port',default=3076,type=int)
+        parser.add_argument('--verbose',type=int,default=0)
+        args = vars(parser.parse_args())
         if len(args) == 0:
-            gds.usage(exit=True)
+            stream = open(sys.argv[0])
+            for line in stream.readlines():
+                if line.startswith('##'): print line.replace('##',''),
+            stream.close()
+            sys.exit(2)
         else:
-            filename = args[0]
+            filename = args['filename']
 
         host    = 'localhost'
-        port    = options['port']
+        port    = args['port']
         sock    = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        verbose = options['verbose']
+        verbose = args['verbose']
 
         if not verbose:
             log.info('Will only report every 10 telemetry packets')

@@ -17,6 +17,7 @@ Examples:
 import sys
 import socket
 import time
+import argparse
 
 from bliss.core import cmd, gds, log, util
 
@@ -24,21 +25,32 @@ from bliss.core import cmd, gds, log, util
 def main():
     log.begin()
 
-    defaults      = { "port": 3075, "verbose": 0 }
-    options, args = gds.parseArgs(sys.argv[1:], defaults)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('command')
+    parser.add_argument('argument',type=int,action='append')
+    parser.add_argument('--port',type=int,default=3075)
+    parser.add_argument('--verbose',type=int,default=0)
+    args = vars(parser.parse_args())
 
     if len(args) == 0:
-        gds.usage(exit=True)
+        stream = open(sys.argv[0])
+        for line in stream.readlines():
+            if line.startswith('##'): print line.replace('##',''),
+        stream.close()
+        sys.exit(2)
+
 
     host     = "127.0.0.1"
-    port     = options['port']
+    port     = args['port']
     sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    verbose  = options['verbose']
+    verbose  = argss['verbose']
     cmddict  = cmd.getDefaultCmdDict()
 
     if cmddict is not None:
-        name     = args[0]
-        args     = [ util.toNumber(t, t) for t in args[1:] ]
+        name     = args['command']
+        args     = args['argument']
         command  = cmddict.create(name, *args)
         messages = [ ]
 

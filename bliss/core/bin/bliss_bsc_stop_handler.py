@@ -10,17 +10,21 @@ Usage:
                       [default: 8080]
 '''
 
-from docopt import docopt
 import requests
+import argparse
 
 
 def main():
-    arguments = docopt(__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('name')
+    parser.add_argument('--service-host',default='localhost')
+    parser.add_argument('--service-port',type=int,default=8080)
+    args = vars(parser.parse_args())
 
-    host = arguments.pop('--service-host')
-    port = arguments.pop('--service-port')
+    host = args['service-host']
+    port = args['service-port']
 
-    handler_name = arguments.pop('<name>')
+    handler_name = args['name']
 
     requests.delete('http://{}:{}/{}/stop'.format(host, port, handler_name))
 

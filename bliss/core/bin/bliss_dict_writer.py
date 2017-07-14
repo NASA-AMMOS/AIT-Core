@@ -25,26 +25,34 @@ Description:
         U.S. Government Sponsorship acknowledged.
 '''
 
-from docopt import docopt
 import sys
+import argparse
 
 from bliss.core import log, tlm
 
 def main():
-    arguments = docopt(__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--format',default='csv')
+    parser.add_argument('--path',default='')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--tlm',action='store_true')
+    group.add_argument('--cmd',action='store_true')
+    args = vars(parser.parse_args())
 
     # output format for the file
-    format = arguments.pop('--format')
+    format = args['format']
 
     # output path
-    path = arguments.pop('--path') or ''
+    path = args['path']
 
     # initialize telemetry dictionary writer
-    if arguments.pop('--tlm'):
+    if args['tlm']:
         writer = tlm.TlmDictWriter()
 
     # initialize command dictionary writer
-    if arguments.pop('--cmd'):
+    if args['cmd']:
         log.error("Not yet supported")
         sys.exit()
 

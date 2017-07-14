@@ -16,6 +16,7 @@ import os
 import sys
 import socket
 import time
+import argparse
 
 from bliss.core import cmd, gds, log, seq, util
 
@@ -29,19 +30,29 @@ def main ():
     log.begin()
 
     defaults      = { 'port': 3075, 'verbose': 0 }
-    options, args = gds.parseArgs(sys.argv[1:], defaults)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('filename',default=None)
+    parser.add_argument('--port',default=3075,type=int)
+    parser.add_argument('--verbose',default=0,type=int)
+    args = vars(parser.parse_args())
 
     if len(args) == 0:
-        gds.usage(exit=True)
+        stream = open(sys.argv[0])
+        for line in stream.readlines():
+            if line.startswith('##'): print line.replace('##',''),
+        stream.close()
+        sys.exit(2)
 
     host     = '127.0.0.1'
-    port     = options['port']
+    port     = args['port']
     sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     data     = ' '.join(args)
-    verbose  = options['verbose']
+    verbose  = args['verbose']
 
     cmddict  = cmd.getDefaultCmdDict()
-    filename = args[0]
+    filename = args['filename']
 
     try:
         with open(filename, 'r') as stream:

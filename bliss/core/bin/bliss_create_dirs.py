@@ -145,7 +145,6 @@ def createDirStruct(paths, verbose=True):
     return True
 
 def main():
-
     argparser = argparse.ArgumentParser(
         description = """
     BLISS Create Directories Script

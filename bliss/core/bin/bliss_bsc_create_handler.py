@@ -22,30 +22,41 @@ Usage:
                       format characters [default: %Y-%m-%d-%H-%M-%S-{name}.pcap]
 '''
 
-from docopt import docopt
+import argparse
 import requests
 
 def main():
-    arguments = docopt(__doc__)
+    parser = argparse.ArgumentParser(description = __doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('name')
+    parser.add_argument('loc')
+    parser.add_argument('port',type=int)
+    parser.add_argument('conn_type')
+    parser.add_argument('--service-host',default='localhost')
+    parser.add_argument('--service-port',type=int,default=8080)
+    parser.add_argument('--rotate',type=int,default=1)
+    parser.add_argument('--rotate-index',choices=['year','month','day','hour','minutes','second'],default='day')
+    parser.add_argument('--rotate-delta',type=int,default=1)
+    parser.add_argument('--file-pattern',default='\%Y-\%m-\%d-\%H-\%M-\%S-{name}.pcap')
+    args = vars(parser.parse_args())
 
-    host = arguments.pop('--service-host')
-    port = arguments.pop('--service-port')
+    host = args['service-host']
+    port = args['service-port']
 
-    handler_name = arguments.pop('<name>')
+    handler_name = args['name']
 
-    handler_port = arguments.pop('<port>')
+    handler_port = args['port']
     arguments['port'] = handler_port
 
-    handler_conn_type = arguments.pop('<conn_type>')
+    handler_conn_type = args['conn_type']
     arguments['conn_type'] = handler_conn_type
 
-    handler_loc = arguments.pop('<loc>')
+    handler_loc = args['loc']
     arguments['loc'] = handler_loc
 
-    arguments['rotate_log'] = eval(arguments.pop('--rotate'))
-    arguments['rotate_log_index'] = arguments.pop('--rotate-index')
-    arguments['rotate_log_delta'] = arguments.pop('--rotate-delta')
-    arguments['file_name_pattern'] = arguments.pop('--file-pattern')
+    arguments['rotate_log'] = eval(args['rotate'])
+    arguments['rotate_log_index'] = args['rotate-index']
+    arguments['rotate_log_delta'] = args['rotate-delta']
+    arguments['file_name_pattern'] = args['file-pattern']
 
     requests.post(
         'http://{}:{}/{}/start'.format(host, port, handler_name),
