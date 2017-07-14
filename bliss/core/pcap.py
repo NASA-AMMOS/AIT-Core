@@ -303,3 +303,27 @@ def query(filename, starttime, endtime, outname=None):
                    outfile.write(header.__str__())
                    outfile.write(packet)
 
+
+def stats(filename):
+    '''For the given file, displays the time ranges available in the file.
+    Tolerance sets the limit of seconds between a continuous time range.
+    Any gaps larger than tolerance will end the current time range and
+    print a new time range.
+    '''
+    first = None
+    last = None
+    tolerance = 2
+
+    with pcap.open(filename, 'r') as stream:
+        header, packet = stream.read()
+        if packet is not None:
+            if first is None:
+                first = header.timestamp
+
+            if header.timestamp - timestamps[last] > tolerance:
+                print first + " - " + last
+                first = header.timestamp
+                last = None
+            else:
+                last = header.timestamp
+
