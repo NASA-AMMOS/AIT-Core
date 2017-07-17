@@ -41,7 +41,7 @@ File and Directory Structure
 Authors
 -------
 
-BLISS authors (alphabetical):
+BLISS authors (alphabetically):
 
   * Ben Bornstein
   * Erik Hovland
