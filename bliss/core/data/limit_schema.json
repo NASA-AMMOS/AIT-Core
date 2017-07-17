@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Limit Dictionary Schema",
+    "description": "Limit Dictionary Schema. See http://json-schema.org/ for more details on how to create this schema.",
+    "type": "array",
+    "items": {
+        "required": ["limit", "source"],
+        "anyOf": [{
+            "required": ["lower"]
+        }, {
+            "required": ["upper"]
+        }, {
+            "required": ["value"]
+        }],
+        "additionalProperties": false,
+        "properties": {
+            "limit": {
+                "type": "string"
+            },
+            "source": {
+                "type": "string"
+            },
+            "desc": {
+                "type": "string"
+            },
+            "units": {
+                "type": "string"
+            },
+            "lower": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": "number"
+                    },
+                    "warn": {
+                        "type": "number"
+                    }
+                }
+            },
+            "upper": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": "number"
+                    },
+                    "warn": {
+                        "type": "number"
+                    }
+                }
+            },
+            "value": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "error": {
+                        "type": [ "string", "number", "array" ],
+                        "minLength": 1
+                    },
+                    "warn": {
+                        "type": [ "string", "number", "array" ],
+                        "minLength": 1
+                    }
+                }
+            }
+        }
+    }
+}

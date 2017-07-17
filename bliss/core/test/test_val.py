@@ -223,7 +223,7 @@ def validate(args):
 
     validator = val.Validator(*args)
     v = validator.validate(messages=msgs)
-
+    # print validator
     return msgs, v
 
 
@@ -414,6 +414,15 @@ def testTableValidation():
     # Validation test of current table configuration
     yml = bliss.config.table.filename
     schema = pkg_resources.resource_filename('bliss.core', 'data/table_schema.json')
+    msgs, v = validate([yml, schema])
+    dispmsgs(msgs)
+    assert v
+    assert len(msgs) == 0
+
+def testLimitValidation():
+    # Validation test of current table configuration
+    yml = bliss.config.limit.filename
+    schema = pkg_resources.resource_filename('bliss.core', 'data/limit_schema.json')
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v

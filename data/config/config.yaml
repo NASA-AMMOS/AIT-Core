@@ -13,6 +13,9 @@ default:
     tlmdict:
         filename:  tlm.yaml
 
+    limit:
+        filename:  limit/limit.yaml
+      
     table:
         filename: table.yaml
 

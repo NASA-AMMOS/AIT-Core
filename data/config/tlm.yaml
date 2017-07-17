@@ -5,18 +5,22 @@
     - !Field
       name: Voltage_A
       desc: Voltage A as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
       type: MSB_U16
     - !Field
       name: Voltage_B
       desc: Voltage B as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
       type: MSB_U16
     - !Field
       name: Voltage_C
       desc: Voltage C as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
       type: MSB_U16
     - !Field
       name: Voltage_D
       desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
+      units: Volts
       type: MSB_U16
 
 - !Packet
