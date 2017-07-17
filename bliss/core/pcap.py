@@ -336,17 +336,24 @@ def stats(filename, tolerance=2):
     first = None
     last = None
 
+    timeranges = []
+
     with open(filename, 'r') as stream:
         for header, packet in stream:
             if packet is not None:
                 if first is None:
                     first = header.timestamp
-
-                if last and header.timestamp - last > tolerance:
-                    print str(first) + " - " + str(last)
+                if last and header.timestamp - last > datetime.timedelta(tolerance):
+                    print len(timeranges)
+                    timeranges.append(str(first) + " - " + str(last))
                     first = header.timestamp
                     last = None
                 else:
                     last = header.timestamp
 
-    print str(first) + " - " + str(last)
+    timeranges.append(str(first) + " - " + str(last))
+
+    for tr in timeranges:
+        print tr
+
+    return timeranges
