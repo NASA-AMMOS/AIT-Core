@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    bliss.core.bin
     bliss.core.test
 
 Submodules
@@ -25,6 +26,7 @@ Submodules
    bliss.core.gds
    bliss.core.geom
    bliss.core.json
+   bliss.core.limit
    bliss.core.log
    bliss.core.pcap
    bliss.core.seq
