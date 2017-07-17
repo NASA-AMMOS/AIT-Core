@@ -207,24 +207,28 @@ def testPCapStats():
 
 
 def testPCapQuery():
-    TmpResults = "test_pcap_res.pcap"
+    TmpRes = "test_pcap_res.pcap"
+    TmpFilenam = "test_pcap_file.pcap"
     packets = "This is a nice little sentence".split()
     start = datetime.datetime.now()
-    with pcap.open(TmpFilename, 'w') as stream:
+
+    #stream = pcap.open(TmpFilenam, 'w')
+    with pcap.open(TmpFilenam, 'w') as stream:
         for p in packets:
             stream.write(p)
-    end = datetime.datetime.now()
+    end = datetime.datetime.max
 
-    pcap.query(start, end, (TmpFilename), TmpResults)
+    pcap.query(start, end, TmpRes, (TmpFilenam))
 
-    with pcap.open(TmpFilename, 'r') as stream1:
-        with pcap.open(TmpResults, 'r') as stream2:
-            print stream1.read()
-            print stream2.read()
-            assert stream1.read() == stream2.read()
+    with pcap.open(TmpFilenam, 'r') as stream1:
+        with pcap.open(TmpRes, 'r') as stream2:
+            header1, packet1 = stream1.read()
+            header2, packet2 = stream2.read()
+            assert str(header1) == str(header2)
+            assert packet1 == packet2
 
-    os.unlink(TmpResults)
-    os.unlink(TmpFilename)
+    os.unlink(TmpRes)
+    os.unlink(TmpFilenam)
 
 
 if __name__ == '__main__':

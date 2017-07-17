@@ -283,7 +283,7 @@ def open (filename, mode='r'):
     return stream
 
 
-def query(starttime, endtime, *filenames, **outname):
+def query(starttime, endtime, outname="None", *filenames):
     '''Given a time range and input file, query creates a new file with only
     that subset of data. If no outfile name is given, the new file name is the
     old file name with the time range appended.
@@ -293,17 +293,17 @@ def query(starttime, endtime, *filenames, **outname):
             The datetime of the beginning time range to be extracted from the files.
         endtime:
             The datetime of the end of the time range to be extracted from the files.
-        filenames:
-            A tuple of one or more filenames to extract data from.
         outname:
             Optional: The output file name. Defaults to
             [first filename in filenames][starttime]-[endtime].pcap
+        filemanes:
+            A tuple of one or more file names to extract data from.
     '''
     
-    if len(outname) == 0:
+    if outname is "None":
         outname = (filenames[0].replace('.pcap','') + starttime.isoformat() + '-' + endtime.isoformat() + '.pcap')
     else:
-        outname = outname[0]
+        outname = outname
 
     with __builtin__.open(outname,'wb') as outfile:
         h = False
@@ -313,10 +313,13 @@ def query(starttime, endtime, *filenames, **outname):
                     outfile.write(str(stream.header))
                     h = True
                 for header, packet in stream:
+		    print header.timestamp, starttime, endtime
                     if packet is not None:
                         if header.timestamp >= starttime and header.timestamp < endtime:
                             outfile.write(str(header))
                             outfile.write(packet)
+                            print packet
+                    print packet
 
 
 def stats(filename, tolerance=2):
