@@ -283,47 +283,70 @@ def open (filename, mode='r'):
     return stream
 
 
-def query(filename, starttime, endtime, outname=None):
+def query(starttime, endtime, *filenames, **outname):
     '''Given a time range and input file, query creates a new file with only
     that subset of data. If no outfile name is given, the new file name is the
     old file name with the time range appended.
-    '''
-    if outname is not None:
-       outname = filename.replace('.pcap','').append(timerange).append('.pcap')
 
-    start = datetime.datetime.utcfromtimestamp(starttime)
-    end = datetime.datetime.utcfromtimestamp(endtime)
+    Args:
+        starttime:
+            The datetime of the beginning time range to be extracted from the files.
+        endtime:
+            The datetime of the end of the time range to be extracted from the files.
+        filenames:
+            A tuple of one or more filenames to extract data from.
+        outname:
+            Optional: The output file name. Defaults to
+            [first filename in filenames][starttime]-[endtime].pcap
+    '''
+    
+    if len(outname) == 0:
+        outname = (filenames[0].replace('.pcap','') + starttime.isoformat() + '-' + endtime.isoformat() + '.pcap')
+    else:
+        outname = outname[0]
 
     with __builtin__.open(outname,'wb') as outfile:
+        h = False
+        for filename in filenames:
+            with open(filename, 'r') as stream:
+                if not h:
+                    outfile.write(str(stream.header))
+                    h = True
+                for header, packet in stream:
+                    if packet is not None:
+                        if header.timestamp >= starttime and header.timestamp < endtime:
+                            outfile.write(str(header))
+                            outfile.write(packet)
 
-        with pcap.open(filename, 'r') as stream:
-            header, packet = stream.read()
-            if packet is not None:
-                if header.timestamp >= start and header.timestamp < end:
-                   outfile.write(header.__str__())
-                   outfile.write(packet)
 
-
-def stats(filename):
+def stats(filename, tolerance=2):
     '''For the given file, displays the time ranges available in the file.
     Tolerance sets the limit of seconds between a continuous time range.
     Any gaps larger than tolerance will end the current time range and
     print a new time range.
+
+    Args:
+        filename:
+            The name of the file to read.
+        tolerance:
+            The max number of seconds between packets to count as a contiguous
+            time range. If the number of seconds between two packets is greater
+            than tolerance, the time range is split.
     '''
     first = None
     last = None
-    tolerance = 2
 
-    with pcap.open(filename, 'r') as stream:
-        header, packet = stream.read()
-        if packet is not None:
-            if first is None:
-                first = header.timestamp
+    with open(filename, 'r') as stream:
+        for header, packet in stream:
+            if packet is not None:
+                if first is None:
+                    first = header.timestamp
 
-            if header.timestamp - timestamps[last] > tolerance:
-                print first + " - " + last
-                first = header.timestamp
-                last = None
-            else:
-                last = header.timestamp
+                if last and header.timestamp - last > tolerance:
+                    print str(first) + " - " + str(last)
+                    first = header.timestamp
+                    last = None
+                else:
+                    last = header.timestamp
 
+    print str(first) + " - " + str(last)
