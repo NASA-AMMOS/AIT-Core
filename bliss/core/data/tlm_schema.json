@@ -61,6 +61,9 @@
                         "type": {
                             "type": "string"
                         },
+                        "units": {
+                            "type": "string"
+                        },
                         "desc": {
                             "type": "string"
                         },
