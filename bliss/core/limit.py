@@ -79,6 +79,9 @@ class Thresholds (json.SlotSerializer, object):
     def __setstate__ (self, state):
         self.__dict__ = state
 
+    def toJSON(self):
+        return self._thresholds
+
 
 
 class LimitDefinition (json.SlotSerializer, object):
