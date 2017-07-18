@@ -108,7 +108,7 @@ class LimitDefinition (json.SlotSerializer, object):
             raise SyntaxError("%s must match the units in the telemetry dictionary." % self.units)
 
     def __repr__(self):
-        return bliss.util.toRepr(self)
+        return util.toRepr(self)
 
     def error (self, value, units=None):
         if self.units and self.units != units:
