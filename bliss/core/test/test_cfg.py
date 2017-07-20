@@ -78,7 +78,7 @@ def test_expandConfigPaths ():
         }
     }
 
-    cfg.expandConfigPaths(actual, prefix, None, None, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, None, None, '', 'file', 'filename')
     assert actual == expected
 
 def test_expandConfigPaths_w_variables ():
@@ -99,7 +99,7 @@ def test_expandConfigPaths_w_variables ():
         'filename': os.path.join(prefix, 'bin', 'test-y', 'bliss-orbits')
     }
 
-    cfg.expandConfigPaths(actual, prefix, None, pathvars, 'file', 'filename')
+    cfg.expandConfigPaths(actual, prefix, None, pathvars, '', 'file', 'filename')
     assert actual == expected
 
 

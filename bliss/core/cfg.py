@@ -26,7 +26,7 @@ DEFAULT_PATH_VARS = {
     'doy' : time.strftime('%j', time.gmtime())
 }
 
-def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, *keys):
+def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parameter_key='', *keys):
     """Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
@@ -43,8 +43,13 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, *keys)
             expanded = expandPath(value, prefix)
             cleaned = replaceVariables(expanded, datetime=datetime, pathvars=pathvars)
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
+
+            if not os.path.exists(config[name]):
+                msg = "Config parameter {}.{} specifies nonexistent path".format(parameter_key, name)
+                log.warn(msg)
         elif type(value) is dict:
-            expandConfigPaths(value, prefix, datetime, pathvars, *keys)
+            param_key = name if parameter_key == '' else parameter_key + '.' + name
+            expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
 
 
 def expandPath (pathname, prefix=None):
