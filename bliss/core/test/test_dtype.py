@@ -99,14 +99,7 @@ def testTIME40():
     rawdata.extend(struct.pack('B', fine))
 
     # get the expected date
-    date = datetime.datetime(2015, 4, 22, 10, 18, 17)
-
-    # get expected fine string
-    fine_exp = fine / 256.0
-    fine_str = ('%f' % fine_exp).lstrip('0')
-
-    # concatenate the expcted datetime value
-    expected = ('%s%s' % (date, fine_str))
+    expected = datetime.datetime(2015, 4, 22, 10, 18, 17, 31250)
 
     assert dt.decode(rawdata)  == expected
     assert dt.encode(expected) == rawdata
@@ -114,16 +107,16 @@ def testTIME40():
 
 def testTIME64():
     """Test TIME64 complex data type"""
-    dt     = dtype.Time64Type()
-    sec    = 1113733097
-    subsec = 10
-    
+    dt   = dtype.Time64Type()
+    sec  = 1113733097
+    nsec = 31250000
+
     rawdata = bytearray(struct.pack('>I', sec))
-    rawdata.extend(struct.pack('>I', subsec))
+    rawdata.extend(struct.pack('>I', nsec))
 
-    date = datetime.datetime(2015, 4, 22, 10, 18, 17)
-    date = '%s.%010d' % (date, subsec)
+    date = datetime.datetime(2015, 4, 22, 10, 18, 17, 31250)
 
+    print dt.decode(rawdata)
     assert dt.decode(rawdata) == date
     assert dt.encode(date)    == rawdata
 
