@@ -561,8 +561,8 @@ class Time8Type(PrimitiveType):
     def __init__(self):
         super(Time8Type, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt  = self.name
+        self._name = 'TIME8'
 
     @property
     def pdt(self):
@@ -583,24 +583,22 @@ class Time8Type(PrimitiveType):
         Decodes the given bytearray according to this ComplexType
         definition.
         """
-        sec = super(Time8Type, self).decode(bytes) / 256.0
-        return sec
+        return super(Time8Type, self).decode(bytes) / 256.0
 
 
 class Time32Type(PrimitiveType):
     """Time32Type
 
-    This 4-byte time is the time represented in the CCSDS headers.
-    The value represents the elapsed time since midnight 5-6 January
-    1980. See SSP 41175-02H for description of this time.
+    This four byte time represents the elapsed time in seconds since
+    the GPS epoch.
     """
     BASEPDT = "MSB_U32"
 
     def __init__(self):
         super(Time32Type, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt  = self.name
+        self._name = 'TIME32'
 
     @property
     def pdt(self):
@@ -614,9 +612,9 @@ class Time32Type(PrimitiveType):
         ComplexType definition.
         """
         if type(value) is not datetime.datetime:
-            value = datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+            raise TypeError('encode() argument must be a Python datetime')
 
-        return super(Time32Type, self).encode(dmc.toGPSSeconds(value))
+        return super(Time32Type, self).encode( dmc.toGPSSeconds(value) )
 
     def decode(self, bytes):
         """decode(bytearray) -> value
@@ -627,19 +625,22 @@ class Time32Type(PrimitiveType):
         sec = super(Time32Type, self).decode(bytes)
         return dmc.toLocalTime(sec)
 
+
+
 class Time40Type(PrimitiveType):
     """Time40Type
 
-    This 5-byte time is a concatenation of Time32Type and Time8Type
-    to more succintly represent the CCSDS Time
+    This five byte time is made up of four bytes of seconds and one
+    byte of (1 / 256) subseconds, representing the elapsed time since
+    the GPS epoch.
     """
     BASEPDT = "MSB_U32"
 
     def __init__(self):
         super(Time40Type, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt  = self.name
+        self._name = 'TIME40'
 
     @property
     def pdt(self):
@@ -652,13 +653,13 @@ class Time40Type(PrimitiveType):
         Encodes the given value to a bytearray according to this
         ComplexType definition.
         """
-        t = value.split('.')
-        coarse = Time32Type().encode(t[0])
-        fine = Time8Type().encode(float('0.' + t[1]))
+        if type(value) is not datetime.datetime:
+            raise TypeError('encode() argument must be a Python datetime')
 
-        raw = coarse
-        raw.extend(fine)
-        return raw
+        coarse = Time32Type().encode(value)
+        fine   = Time8Type() .encode(value.microsecond / 1e6)
+
+        return coarse + fine
 
     def decode(self, bytes):
         """decode(bytearray) -> value
@@ -667,26 +668,25 @@ class Time40Type(PrimitiveType):
         definition.
         """
         coarse = Time32Type().decode(bytes[:4])
-        fine = Time8Type().decode(bytes[4:])
-        fine_str = ('%f' % fine).lstrip('0')
-        return '%s%s' % (coarse, fine_str)
+        fine   = Time8Type() .decode(bytes[4:])
+
+        return coarse + datetime.timedelta(microseconds=fine * 1e6)
 
 
 class Time64Type(PrimitiveType):
     """Time64Type
 
-    This 8-byte time is made up a 4-byte Time32Type with the
-    remaining 4-bytes representing the subseconds. The value
-    represents the elapsed time since midnight 5-6 January
-    1980.
+    This eight byte time is made up of four bytes of seconds and four
+    bytes of nanoseconds, representing the elapsed time since the GPS
+    epoch.
     """
     BASEPDT = "MSB_U64"
 
     def __init__(self):
         super(Time64Type, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt  = self.name
+        self._name = 'TIME64'
 
     @property
     def pdt(self):
@@ -699,11 +699,13 @@ class Time64Type(PrimitiveType):
         Encodes the given value to a bytearray according to this
         ComplexType definition.
         """
-        t = value.split('.')
+        if type(value) is not datetime.datetime:
+            raise TypeError('encode() argument must be a Python datetime')
 
-        raw = Time32Type().encode(t[0])
-        raw.extend( get('MSB_U32').encode( util.toNumber(t[1]) ) )
-        return raw
+        coarse = Time32Type().encode(value)
+        fine   = get('MSB_U32').encode(value.microsecond * 1e3)
+
+        return coarse + fine
 
     def decode(self, bytes):
         """decode(bytearray) -> value
@@ -711,14 +713,15 @@ class Time64Type(PrimitiveType):
         Decodes the given bytearray according to this ComplexType
         definition.
         """
-        coarse = Time32Type().decode(bytes[:4])
-        subsec = get('MSB_U32').decode(bytes[4:])
+        coarse = Time32Type()  .decode(bytes[:4])
+        fine   = get('MSB_U32').decode(bytes[4:])
 
-        return ('%s.%010d' % (coarse, subsec))
+        return coarse + datetime.timedelta(microseconds=fine / 1e3)
 
-# # ComplexTypeMap
-# #
-# # Maps typenames to ComplexType.  Use bliss.core.dtype.get(typename).
+
+# ComplexTypeMap
+#
+# Maps typenames to ComplexType.  Use bliss.core.dtype.get(typename).
 #
 ComplexTypeNames = {
     "CMD16": CmdType,
