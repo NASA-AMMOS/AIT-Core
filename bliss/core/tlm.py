@@ -220,9 +220,9 @@ class FieldDefinition(json.SlotSerializer, object):
         the specified position(s) will be decoded.
         """
         if index is not None and isinstance(self.type, dtype.ArrayType):
-            value = self.type.decode( bytes[self.slice()], index )
+            value = self.type.decode( bytes[self.slice()], index, raw )
         else:
-            value = self.type.decode( bytes[self.slice()] )
+            value = self.type.decode( bytes[self.slice()], raw )
 
 
         # Apply bit mask if needed
@@ -795,7 +795,7 @@ class TlmDict(dict):
                 stream        = open(self.filename, 'rb')
             else:
                 stream        = content
-            
+
             pkts = yaml.load(stream)
             pkts = handle_includes(pkts)
             for pkt in pkts:
