@@ -15,6 +15,50 @@ import nose.tools
 from bliss.core import dtype
 
 
+def fpeq (p, q, eps=1e-6):
+    return abs(p - q) < eps
+
+
+def testLSB_D64():
+    val     = 1.2
+    bytes   = struct.pack('<d', val)
+    rawval  = struct.unpack('<Q', bytes)[0]
+    LSB_D64 = dtype.get('LSB_D64')
+
+    assert fpeq(LSB_D64.decode(bytes), val)
+    assert LSB_D64.decode(bytes, raw=True) == rawval
+
+
+def testMSB_D64():
+    val     = 3.4
+    bytes   = struct.pack('>d', val)
+    rawval  = struct.unpack('>Q', bytes)[0]
+    MSB_D64 = dtype.get('MSB_D64')
+
+    assert fpeq(MSB_D64.decode(bytes), val)
+    assert MSB_D64.decode(bytes, raw=True) == rawval
+
+
+def testLSB_F32():
+    val     = 5.6
+    bytes   = struct.pack('<f', val)
+    rawval  = struct.unpack('<I', bytes)[0]
+    LSB_F32 = dtype.get('LSB_F32')
+
+    assert fpeq(LSB_F32.decode(bytes), val)
+    assert LSB_F32.decode(bytes, raw=True) == rawval
+
+
+def testMSB_F32():
+    val     = 7.8
+    bytes   = struct.pack('>f', val)
+    rawval  = struct.unpack('>I', bytes)[0]
+    MSB_F32 = dtype.get('MSB_F32')
+
+    assert fpeq(MSB_F32.decode(bytes), val)
+    assert MSB_F32.decode(bytes, raw=True) == rawval
+
+
 def testArrayType():
     array  = dtype.ArrayType('MSB_U16', 3)
     bin123 = '\x00\x01\x00\x02\x00\x03'
@@ -49,47 +93,63 @@ def testArrayType():
         dtype.ArrayType('U8', '4')
 
 
+def testArrayTime8():
+    array = dtype.ArrayType('TIME8', 3)
+    bytes = '\x40\x80\xC0'
+
+    assert array.decode(bytes)           == [0.25, 0.50, 0.75]
+    assert array.decode(bytes, raw=True) == [  64,  128,  192]
 
 
-
-def testEVR16():
-    """Test EVR16 complex data type"""
-    dt   = dtype.EVRType()
+def testCMD16():
+    dt   = dtype.CmdType()
     code = 0x0001
-    name = "NO_ERROR"
+    name = 'NO_OP'
 
     rawdata = bytearray(struct.pack('>H', code))
 
-    assert dt.decode(rawdata).name == name
-    assert dt.encode(name) == rawdata
+    assert dt.decode(rawdata).name      == name
+    assert dt.decode(rawdata, raw=True) == code
+    assert dt.encode(name)              == rawdata
+
+
+def testEVR16():
+    dt   = dtype.EVRType()
+    code = 0x0001
+    name = 'NO_ERROR'
+
+    rawdata = bytearray(struct.pack('>H', code))
+
+    assert dt.decode(rawdata).name      == name
+    assert dt.decode(rawdata, raw=True) == code
+    assert dt.encode(name)              == rawdata
 
 
 def testTIME8():
-    """Test TIME8 complex data type"""
     dt      = dtype.Time8Type()
     fine    = 17
     rawdata = bytearray(struct.pack('B', fine))
 
-    expected = fine/256.0
+    expected = fine / 256.0
 
-    assert dt.decode(rawdata)  == expected
-    assert dt.encode(expected) == rawdata
+    assert dt.decode(rawdata)            == expected
+    assert dt.decode(rawdata, raw=True)  == fine
+    assert dt.encode(expected)           == rawdata
 
 
 def testTIME32():
-    """Test TIME32 complex data type"""
     dt  = dtype.Time32Type()
     sec = 1113733097
 
     rawdata = bytearray(struct.pack('>I', sec))
     date    = datetime.datetime(2015, 4, 22, 10, 18, 17)
 
-    assert dt.decode(rawdata) == date
-    assert dt.encode(date)    == rawdata
+    assert dt.decode(rawdata)           == date
+    assert dt.decode(rawdata, raw=True) == sec
+    assert dt.encode(date)              == rawdata
 
 
 def testTIME40():
-    """Test TIME40 complex data type"""
     dt   = dtype.Time40Type()
     sec  = 1113733097
     fine = 8
@@ -101,12 +161,12 @@ def testTIME40():
     # get the expected date
     expected = datetime.datetime(2015, 4, 22, 10, 18, 17, 31250)
 
-    assert dt.decode(rawdata)  == expected
-    assert dt.encode(expected) == rawdata
+    assert dt.decode(rawdata)            == expected
+    assert dt.decode(rawdata, raw=True)  == sec + (fine / 256.0)
+    assert dt.encode(expected)           == rawdata
 
 
 def testTIME64():
-    """Test TIME64 complex data type"""
     dt   = dtype.Time64Type()
     sec  = 1113733097
     nsec = 31250000
@@ -116,9 +176,9 @@ def testTIME64():
 
     date = datetime.datetime(2015, 4, 22, 10, 18, 17, 31250)
 
-    print dt.decode(rawdata)
-    assert dt.decode(rawdata) == date
-    assert dt.encode(date)    == rawdata
+    assert dt.decode(rawdata)           == date
+    assert dt.decode(rawdata, raw=True) == sec + (nsec / 1e9)
+    assert dt.encode(date)              == rawdata
 
 
 def testgetdtype():

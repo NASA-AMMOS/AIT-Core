@@ -184,7 +184,8 @@ class PrimitiveType(object):
 
     @property
     def name(self):
-        """Name of this PrimitiveType (e.g. 'I8', 'MSB_U16', 'LSB_F32', etc.)."""
+        """Name of this PrimitiveType (e.g. 'I8', 'MSB_U16', 'LSB_F32',
+        etc.)."""
         return self._name
 
     @property
@@ -225,13 +226,30 @@ class PrimitiveType(object):
         """
         return bytearray(struct.pack(self.format, value))
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
         Decodes the given bytearray according to this PrimitiveType
         definition.
+
+        For primitive types, if the optional parameter ``raw`` is
+        ``True``, an ``F32`` or ``D64`` will be decoded as a ``U32``
+        or ``U64``, respectively.
+
         """
-        return struct.unpack(self.format, buffer(bytes))[0]
+        result = None
+
+        if raw is True and self.float:
+            if self.nbits == 32:
+                name = 'MSB_U32' if self.endian == 'MSB' else 'LSB_U32'
+            else:
+                name = 'MSB_U64' if self.endian == 'MSB' else 'LSB_U64'
+
+            result = get(name).decode(bytes)
+        else:
+            result = struct.unpack(self.format, buffer(bytes))[0]
+
+        return result
 
     def toJSON(self):
         return self.name
@@ -338,8 +356,8 @@ class ArrayType(object):
         return self._type
 
 
-    def decode(self, bytes, index=None):
-        """decode(bytea[, index]) -> value1, ..., valueN
+    def decode(self, bytes, index=None, raw=False):
+        """decode(bytes[[, index], raw=False]) -> value1, ..., valueN
 
         Decodes the given sequence of bytes according to this Array's
         element type.
@@ -354,14 +372,14 @@ class ArrayType(object):
         if type(index) is slice:
             step    = 1 if index.step is None else index.step
             indices = xrange(index.start, index.stop, step)
-            result  = [ self.decodeElem(bytes, n) for n in indices ]
+            result  = [ self.decodeElem(bytes, n, raw) for n in indices ]
         else:
-            result = self.decodeElem(bytes, index)
+            result = self.decodeElem(bytes, index, raw)
 
         return result
 
 
-    def decodeElem(self, bytes, index):
+    def decodeElem(self, bytes, index, raw=False):
         """Decodes a single element at array[index] from a sequence bytes
         that contain data for the entire array.
         """
@@ -374,7 +392,7 @@ class ArrayType(object):
             msg += 'but the ArrayType.decode() method received only %d bytes.'
             raise IndexError(msg % (self.type.name, index, stop, len(bytes)))
 
-        return self.type.decode( bytes[start:stop] )
+        return self.type.decode( bytes[start:stop], raw )
 
 
     def encode(self, *args):
@@ -423,25 +441,19 @@ class ArrayType(object):
         return parts
 
 
-
-class ComplexType(PrimitiveType):
-    def __init__(self, pdt):
-        super(ComplexType, self).__init__(pdt)
-
-
 class CmdType(PrimitiveType):
     """CmdType
 
-    This type is used to take a 2-byte opcode and return the corresponding
-    CmdDefn object.
+    This type is used to take a two byte opcode and return the
+    corresponding Command Definition (:class:`CmdDefn`).
     """
     BASEPDT = "MSB_U16"
 
     def __init__(self):
         super(CmdType, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt     = self.name
+        self._name    = 'CMD16'
         self._cmddict = None
 
     @property
@@ -468,33 +480,47 @@ class CmdType(PrimitiveType):
         Encodes the given value to a bytearray according to this
         PrimitiveType definition.
         """
-        #cmddict = self.cmddict
         opcode = self.cmddict[value].opcode
         return super(CmdType, self).encode(opcode)
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition and returns a CmdDefn object
+        Decodes the given bytearray and returns the corresponding
+        Command Definition (:class:`CmdDefn`) for the underlying
+        'MSB_U16' command opcode.
+
+        If the optional parameter ``raw`` is ``True``, the command
+        opcode itself will be returned instead of the Command
+        Definition (:class:`CmdDefn`).
         """
         opcode = super(CmdType, self).decode(bytes)
-        return self.cmddict.opcodes[opcode]
+        result = None
+
+        if raw:
+            result = opcode
+        elif opcode in self.cmddict.opcodes:
+            result = self.cmddict.opcodes[opcode]
+        else:
+            raise ValueError('Unrecognized command opcode: %d' % opcode)
+
+        return result
 
 
 class EVRType(PrimitiveType):
     """EVRType
 
-    This type is used to take a 4-byte error code and return the corresponding
-    EVR name
+    This type is used to take a two byte Event Verification Record
+    (EVR) code and return the corresponding EVR Definition
+    (:class:`EVRDefn`).
     """
     BASEPDT = "MSB_U16"
 
     def __init__(self):
         super(EVRType, self).__init__(self.BASEPDT)
 
-        self._pdt = self.name
-        self._name = [name for name in ComplexTypeNames.keys() if ComplexTypeNames[name] == self.__class__][0]
+        self._pdt  = self.name
+        self._name = 'EVR16'
         self._evrs = None
 
     @property
@@ -520,9 +546,8 @@ class EVRType(PrimitiveType):
 
         Encodes the given value to a bytearray according to this
         Complex Type definition.
-
-        TODO better error handling?
         """
+        # TODO: better error handling?
         code = False
         for evr in self.evrs:
             if evr.name == value:
@@ -534,19 +559,33 @@ class EVRType(PrimitiveType):
         else:
             return super(EVRType, self).encode(code)
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition and returns a EVRDefn object
+        Decodes the given bytearray according the corresponding
+        EVR Definition (:class:`EVRDefn`) for the underlying
+        'MSB_U16' EVR code.
+
+        If the optional parameter ``raw`` is ``True``, the EVR code
+        itself will be returned instead of the EVR Definition
+        (:class:`EVRDefn`).
         """
-        code = super(EVRType, self).decode(bytes)
+        code   = super(EVRType, self).decode(bytes)
+        result = None
 
-        for evr in self.evrs:
-            if evr.code == code:
-                return evr
+        if raw:
+            result = code
         else:
-            return None
+            for evr in self.evrs:
+                if evr.code == code:
+                    result = evr
+                    break
+
+        if result is None:
+            raise ValueError('Unrecognized EVR code: %d' % code)
+
+        return result
+
 
 class Time8Type(PrimitiveType):
     """Time8Type
@@ -556,10 +595,8 @@ class Time8Type(PrimitiveType):
     octet is equal to 1/256 seconds (or 2^-8), approximately 4 msec.
     See SSP 41175-02H for more details on the CCSDS headers.
     """
-    BASEPDT = "U8"
-
     def __init__(self):
-        super(Time8Type, self).__init__(self.BASEPDT)
+        super(Time8Type, self).__init__('U8')
 
         self._pdt  = self.name
         self._name = 'TIME8'
@@ -577,13 +614,22 @@ class Time8Type(PrimitiveType):
         """
         return super(Time8Type, self).encode(value * 256)
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition.
+        Decodes the given bytearray and returns the number of
+        (fractional) seconds.
+
+        If the optional parameter ``raw`` is ``True``, the byte (U8)
+        itself will be returned.
+
         """
-        return super(Time8Type, self).decode(bytes) / 256.0
+        result = super(Time8Type, self).decode(bytes)
+
+        if not raw:
+            result /= 256.0
+
+        return result
 
 
 class Time32Type(PrimitiveType):
@@ -592,10 +638,8 @@ class Time32Type(PrimitiveType):
     This four byte time represents the elapsed time in seconds since
     the GPS epoch.
     """
-    BASEPDT = "MSB_U32"
-
     def __init__(self):
-        super(Time32Type, self).__init__(self.BASEPDT)
+        super(Time32Type, self).__init__('MSB_U32')
 
         self._pdt  = self.name
         self._name = 'TIME32'
@@ -616,14 +660,18 @@ class Time32Type(PrimitiveType):
 
         return super(Time32Type, self).encode( dmc.toGPSSeconds(value) )
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition.
+        Decodes the given bytearray containing the elapsed time in
+        seconds since the GPS epoch and returns the corresponding
+        Python :class:`datetime`.
+
+        If the optional parameter ``raw`` is ``True``, the integral
+        number of seconds will be returned instead.
         """
         sec = super(Time32Type, self).decode(bytes)
-        return dmc.toLocalTime(sec)
+        return sec if raw else dmc.toLocalTime(sec)
 
 
 
@@ -634,10 +682,8 @@ class Time40Type(PrimitiveType):
     byte of (1 / 256) subseconds, representing the elapsed time since
     the GPS epoch.
     """
-    BASEPDT = "MSB_U32"
-
     def __init__(self):
-        super(Time40Type, self).__init__(self.BASEPDT)
+        super(Time40Type, self).__init__('MSB_U32')
 
         self._pdt  = self.name
         self._name = 'TIME40'
@@ -661,16 +707,24 @@ class Time40Type(PrimitiveType):
 
         return coarse + fine
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, raw=False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition.
+        Decodes the given bytearray containing the elapsed time in
+        seconds plus 1/256 subseconds since the GPS epoch returns the
+        corresponding Python :class:`datetime`.
+
+        If the optional parameter ``raw`` is ``True``, the number of
+        seconds and subseconds will be returned as a floating-point
+        number instead.
         """
-        coarse = Time32Type().decode(bytes[:4])
+        coarse = Time32Type().decode(bytes[:4], raw)
         fine   = Time8Type() .decode(bytes[4:])
 
-        return coarse + datetime.timedelta(microseconds=fine * 1e6)
+        if not raw:
+            fine = datetime.timedelta(microseconds=fine * 1e6)
+
+        return coarse + fine
 
 
 class Time64Type(PrimitiveType):
@@ -680,10 +734,8 @@ class Time64Type(PrimitiveType):
     bytes of nanoseconds, representing the elapsed time since the GPS
     epoch.
     """
-    BASEPDT = "MSB_U64"
-
     def __init__(self):
-        super(Time64Type, self).__init__(self.BASEPDT)
+        super(Time64Type, self).__init__('MSB_U64')
 
         self._pdt  = self.name
         self._name = 'TIME64'
@@ -707,47 +759,41 @@ class Time64Type(PrimitiveType):
 
         return coarse + fine
 
-    def decode(self, bytes):
-        """decode(bytearray) -> value
+    def decode(self, bytes, raw=False):
+        """decode(bytearray, False) -> value
 
-        Decodes the given bytearray according to this ComplexType
-        definition.
+        Decodes the given bytearray containing the elapsed time in
+        seconds plus nanoseconds since the GPS epoch and and returns
+        the corresponding Python :class:`datetime`.  NOTE: The Python
+        :class:`datetime` class has only microsecond resolution.
+
+        If the optional parameter ``raw`` is ``True``, the number of
+        seconds and nanoseconds will be returned as a floating-point
+        number instead.
         """
-        coarse = Time32Type()  .decode(bytes[:4])
+        coarse = Time32Type()  .decode(bytes[:4], raw)
         fine   = get('MSB_U32').decode(bytes[4:])
 
-        return coarse + datetime.timedelta(microseconds=fine / 1e3)
+        if raw:
+            fine /= 1e9
+        else:
+            fine = datetime.timedelta(microseconds=fine / 1e3)
+
+        return coarse + fine
 
 
 # ComplexTypeMap
 #
-# Maps typenames to ComplexType.  Use bliss.core.dtype.get(typename).
+# Maps typenames to Complex Types.  Use bliss.core.dtype.get(typename).
 #
-ComplexTypeNames = {
-    "CMD16": CmdType,
-    "EVR16": EVRType,
-    "TIME8": Time8Type,
-    "TIME32": Time32Type,
-    "TIME40": Time40Type,
-    "TIME64": Time64Type
+ComplexTypeMap = {
+    'CMD16' : CmdType(),
+    'EVR16' : EVRType(),
+    'TIME8' : Time8Type(),
+    'TIME32': Time32Type(),
+    'TIME40': Time40Type(),
+    'TIME64': Time64Type()
 }
-
-ComplexTypeMap = {}
-ComplexTypeMap.update(
-    (name, ComplexTypeNames.get(name)()) for name in ComplexTypeNames.keys()
-)
-
-ComplexTypes = sorted(ComplexTypeMap.keys())
-
-
-#
-# Populate DataTypesMap with all Primitive and Complex
-# data types
-DataTypeMap = {}
-DataTypeMap.update(PrimitiveTypeMap)
-DataTypeMap.update(ComplexTypeMap)
-
-DataTypes = sorted(PrimitiveTypeMap.keys() + ComplexTypeMap.keys())
 
 
 def getPDT(typename):
