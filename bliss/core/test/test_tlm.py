@@ -350,6 +350,24 @@ def testArray ():
 
     assert packet.A == [1, 2, 3]
 
+def testAliases ():
+    """
+    # This test will use the following TLM dictionary definitions:
+
+    - !Packet
+      name: P
+      fields:
+        - !Field
+          name: A
+          aliases:
+            icd:     ALIAS_A
+            subsys:  ALIAS_B
+          type: MSB_U16[3]
+
+    """
+    defn   = tlm.TlmDict(testAliases.__doc__)['P']
+    assert defn.fieldmap['A'].aliases['icd'] == 'ALIAS_A'
+
 
 if __name__ == '__main__':
     nose.main()
