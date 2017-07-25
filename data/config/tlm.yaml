@@ -22,6 +22,8 @@
       desc: Voltage D as a 14-bit DN.  Conversion to engineering units is TBD.
       units: Volts
       type: MSB_U16
+      aliases:
+        icd: Voltage_D_Alias
 
 - !Packet
   name: Ethernet_HS_Packet

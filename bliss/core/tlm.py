@@ -140,7 +140,7 @@ class FieldDefinition(json.SlotSerializer, object):
 
     __slots__ = [
         "bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
-        "_type", "units", "when", "_title"
+        "_type", "units", "when", "_title", "aliases"
     ]
 
     def __init__(self, *args, **kwargs):

@@ -88,6 +88,9 @@
                             ],
                             "description": "TODO: Need to update the min/max when NOT a list"
                         },
+                        "aliases": {
+                            "type": "object"
+                        },
                         "enum": {
                             "type": "object",
                             "description": "TODO: Does not check valid enumeration"
@@ -103,7 +106,7 @@
                         "dntoeu": {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["equation", "units", "when"],
+                            "required": ["equation", "units"],
                             "properties": {
                                 "equation": {
                                     "type": "string"
