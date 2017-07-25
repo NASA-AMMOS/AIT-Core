@@ -367,6 +367,8 @@ def testAliases ():
     """
     defn   = tlm.TlmDict(testAliases.__doc__)['P']
     assert defn.fieldmap['A'].aliases['icd'] == 'ALIAS_A'
+    assert defn.fieldmap['A'].aliases['subsys'] == 'ALIAS_B'
+    assert len(defn.fieldmap['A'].aliases) == 2
 
 
 if __name__ == '__main__':
