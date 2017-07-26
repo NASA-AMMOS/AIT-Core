@@ -42,11 +42,14 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
         if name in keys and type(name) is str:
             expanded = expandPath(value, prefix)
             cleaned = replaceVariables(expanded, datetime=datetime, pathvars=pathvars)
+
+            for p in cleaned:
+                if not os.path.exists(p):
+                    msg = "Config parameter {}.{} specifies nonexistent path {}".format(parameter_key, name, p)
+                    log.warn(msg)
+
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
 
-            if not os.path.exists(config[name]):
-                msg = "Config parameter {}.{} specifies nonexistent path".format(parameter_key, name)
-                log.warn(msg)
         elif type(value) is dict:
             param_key = name if parameter_key == '' else parameter_key + '.' + name
             expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
