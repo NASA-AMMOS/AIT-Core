@@ -181,7 +181,6 @@ def testPCapPacketHeaderInit ():
 
 
 def testPCapStats():
-    import sys
     packets = "This is a nice little sentence".split()
     with pcap.open(TmpFilename, 'w') as stream:
         for p in packets:
