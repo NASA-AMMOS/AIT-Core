@@ -34,11 +34,14 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--format',default='csv')
-    parser.add_argument('--path',default='')
+    
+    parser.add_argument('--format', default='csv')
+    parser.add_argument('--path', default='')
+
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--tlm',action='store_true')
-    group.add_argument('--cmd',action='store_true')
+    group.add_argument('--tlm', action='store_true')
+    group.add_argument('--cmd', action='store_true')
+
     args = vars(parser.parse_args())
 
     # output format for the file

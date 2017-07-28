@@ -18,9 +18,11 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     parser.add_argument('name')
-    parser.add_argument('--service-host',default='localhost')
-    parser.add_argument('--service-port',type=int,default=8080)
+    parser.add_argument('--service-host', default='localhost')
+    parser.add_argument('--service-port', type=int, default=8080)
+    
     args = vars(parser.parse_args())
 
     host = args['service-host']

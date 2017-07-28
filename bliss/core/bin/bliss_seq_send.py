@@ -29,21 +29,15 @@ def system (command):
 def main ():
     log.begin()
 
-    defaults      = { 'port': 3075, 'verbose': 0 }
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('filename',default=None)
-    parser.add_argument('--port',default=3075,type=int)
-    parser.add_argument('--verbose',default=0,type=int)
-    args = vars(parser.parse_args())
 
-    if len(args) == 0:
-        stream = open(sys.argv[0])
-        for line in stream.readlines():
-            if line.startswith('##'): print line.replace('##',''),
-        stream.close()
-        sys.exit(2)
+    parser.add_argument('filename', default=None)
+    parser.add_argument('--port', default=3075, type=int)
+    parser.add_argument('--verbose', default=0, type=int)
+
+    args = vars(parser.parse_args())
 
     host     = '127.0.0.1'
     port     = args['port']

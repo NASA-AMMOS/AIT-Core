@@ -20,11 +20,12 @@ from bliss.core import gds, log, seq
 def main():
     log.begin()
 
-    defaults      = { }
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     parser.add_argument('filename',default=None)
+
     args = vars(parser.parse_args())
 
     if len(args) == 0:

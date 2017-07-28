@@ -28,30 +28,25 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     parser.add_argument('command')
-    parser.add_argument('argument',type=int,action='append')
-    parser.add_argument('--port',type=int,default=3075)
-    parser.add_argument('--verbose',type=int,default=0)
+    parser.add_argument('arguments', metavar='argument', nargs='*', help='command arguments')
+    # parser.add_argument('argument', type=int, default="", action='append')
+    parser.add_argument('--port', type=int, default=3075)
+    parser.add_argument('--verbose', type=int, default=0)
+
     args = vars(parser.parse_args())
-
-    if len(args) == 0:
-        stream = open(sys.argv[0])
-        for line in stream.readlines():
-            if line.startswith('##'): print line.replace('##',''),
-        stream.close()
-        sys.exit(2)
-
 
     host     = "127.0.0.1"
     port     = args['port']
     sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    verbose  = argss['verbose']
+    verbose  = args['verbose']
     cmddict  = cmd.getDefaultCmdDict()
 
     if cmddict is not None:
         name     = args['command']
-        args     = args['argument']
-        command  = cmddict.create(name, *args)
+        cmdargs  = args['arguments']
+        command  = cmddict.create(name, *cmdargs)
         messages = [ ]
 
         if command is None:

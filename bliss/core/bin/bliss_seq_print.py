@@ -20,19 +20,13 @@ from bliss.core import gds, log, seq
 def main():
     log.begin()
 
-    defaults      = { }
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('filename',default=None)
-    args = vars(parser.parse_args())
+        description = __doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-    if len(args) == 0:
-        stream = open(sys.argv[0])
-        for line in stream.readlines():
-            if line.startswith('##'): print line.replace('##',''),
-        stream.close()
-        sys.exit(2)
+    parser.add_argument('filename')
+
+    args = vars(parser.parse_args())
 
     filename  = os.path.abspath(args['filename'])
     extension = os.path.splitext(filename)[1]

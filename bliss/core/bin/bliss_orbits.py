@@ -86,18 +86,21 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('predicts',type=string,choices=['predicts'])
-    group.add_argument('actuals',type=string,choices=['actuals'])
-    parser.add_argument('filename',type=string,default=None)
-    parser.add_argument('start',type=string,default=None)
-    parser.add_argument('stop',type=string,default=None)
-    parser.add_argument('-o',type=string,default=None)
+    group.add_argument('--predicts', type=str, choices=['predicts'])
+    group.add_argument('--actuals', type=str, choices=['actuals'])
+
+    parser.add_argument('--filename', type=str, default=None)
+    parser.add_argument('--start', type=str, default=None)
+    parser.add_argument('--stop', type=str, default=None)
+    parser.add_argument('-o', '--output', type=str, default=None)
+
     args = vars(parser.parse_args())
     predicts  = args['predicts']
     actuals   = args['actuals']
     filename  = args['filename']
-    outname   = args['o']
+    outname   = args['output']
     start     = args['start']
     stop      = args['stop']
     today     = start.lower() == 'today'
