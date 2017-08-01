@@ -1,6 +1,9 @@
 - !Packet
   name: 1553_HS_Packet
   desc: Ethernet 1553 packet used to monitor telemetry in real-time
+  functions:
+        CurrA_Fx(dn):   (dn - 2) / 1234.0
+
   fields:
     - !Field
       name: Voltage_A
@@ -24,6 +27,12 @@
       type: MSB_U16
       aliases:
         icd: Voltage_D_Alias
+    - !Field
+      name: Current_A
+      type: MSB_U16
+      dntoeu:
+        equation: CurrA_Fx(raw.Current_A)
+        units:    amperes
 
 - !Packet
   name: Ethernet_HS_Packet

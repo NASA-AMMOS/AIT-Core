@@ -88,12 +88,10 @@ class LimitDefinition (json.SlotSerializer, object):
     """LimitDefinition
     """
 
-    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value', 'source_fld' ]
+    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new LimitDefinition."""
-        self.tlmdict = tlm.getDefaultDict()
-
         for slot in self.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
@@ -103,12 +101,6 @@ class LimitDefinition (json.SlotSerializer, object):
 
             if type(thresholds) is dict:
                 setattr(self, name, Thresholds(**thresholds))
-
-        if self.source:
-            self.source_fld = self.get_fld_defn(self.source)
-
-        if self.units and self.units != self.source_fld.units:
-            raise SyntaxError("%s must match the units in the telemetry dictionary." % self.units)
 
     def __repr__(self):
         return util.toRepr(self)
@@ -150,10 +142,6 @@ class LimitDefinition (json.SlotSerializer, object):
                 check = check or value == self.value.warn
 
         return check
-
-    def get_fld_defn(self, source):
-        pkt, fld = source.split('.')
-        return self.tlmdict[pkt].fieldmap[fld]
 
     def convert(self, value, new_unit, old_unit):
         return value
