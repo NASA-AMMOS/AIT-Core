@@ -107,8 +107,12 @@ class LimitDefinition (json.SlotSerializer, object):
         if self.source:
             self.source_fld = self.get_fld_defn(self.source)
 
-        if self.units and self.units != self.source_fld.units:
-            raise SyntaxError("%s must match the units in the telemetry dictionary." % self.units)
+        if self.units:
+            if self.source_fld.dntoeu and self.units != self.source_fld.dntoeu.units:
+                raise SyntaxError("%s must match the dntoeu units in the telemetry dictionary." % self.units)    
+            elif not self.source_fld.dntoeu and self.units != self.source_fld.units:
+                raise SyntaxError("%s must match the units in the telemetry dictionary." % self.units)
+            
 
     def __repr__(self):
         return util.toRepr(self)

@@ -11,7 +11,7 @@ import struct
 import nose
 
 import bliss
-from bliss.core import limit
+from bliss.core import limit, tlm
 
 def test_limit_range():
     """
@@ -168,9 +168,9 @@ def test_check_units():
     # test_check_units
 
     - !Limit
-      source: 1553_HS_Packet.Voltage_A
+      source: 1553_HS_Packet.Current_A
       desc: tbd
-      units: Volts
+      units: BAD_UNITS
       lower:
         error: 5.0
         warn: 10.0
@@ -178,5 +178,8 @@ def test_check_units():
         error: 45.0
         warn: 40.0
     """
-    ldict = limit.LimitDict(test_check_units.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].warn(6)
+    try:
+      ldict = limit.LimitDict(test_check_units.__doc__)
+    except SyntaxError:
+      assert True
+
