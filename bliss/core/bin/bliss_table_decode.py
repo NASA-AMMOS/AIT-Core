@@ -11,6 +11,7 @@ Examples:
 
 import os
 import sys
+import argparse
 
 from bliss.core import gds, log, table
 
@@ -27,12 +28,20 @@ defaults = {
 def main():
     log.begin()
 
-    options, args = gds.parseArgs(sys.argv[1:], defaults)
-    binfile       = options['binfile']
-    dictpath      = options['fswtabdict']
-    tabletype     = options['tabletype']
-    verbose       = options['verbose']
-    version       = options['version']
+    parser = argparse.ArgumentParser(
+         description=__doc__,
+         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--binfile',default=None)
+    parser.add_argument('--fswtabdict',default=None)
+    parser.add_argument('--tabletype',default='targets')
+    parser.add_argument('--verbose',default=0,type=int)
+    parser.add_argument('--version',default=0,type=int)
+    args = vars(parser.parse_args())
+    binfile       = args['binfile']
+    dictpath      = args['fswtabdict']
+    tabletype     = args['tabletype']
+    verbose       = args['verbose']
+    version       = args['version']
 
     # Grab default table dictionary
     if dictpath is not None:

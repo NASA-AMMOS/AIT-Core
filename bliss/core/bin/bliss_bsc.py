@@ -10,6 +10,7 @@ and the manager server for RESTful manipulation of active loggers.
 import os
 import threading
 import yaml
+import argparse
 
 import bliss
 from bliss.core import bsc
@@ -18,6 +19,12 @@ from bliss.core import bsc
 config_file = bliss.config.bsc.filename
 
 def main():
+    ap      = argparse.ArgumentParser(
+        description     = __doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter
+    )
+    args = ap.parse_args()
+
     if not os.path.isfile(config_file):
         print "Unable to locate config. Starting up handlers with default values ..."
         host = 'localhost'

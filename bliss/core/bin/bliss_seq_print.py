@@ -12,6 +12,7 @@ Examples:
 
 import os
 import sys
+import argparse
 
 from bliss.core import gds, log, seq
 
@@ -19,13 +20,15 @@ from bliss.core import gds, log, seq
 def main():
     log.begin()
 
-    defaults      = { }
-    options, args = gds.parseArgs(sys.argv[1:], defaults)
+    parser = argparse.ArgumentParser(
+        description = __doc__,
+        formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-    if len(args) == 0:
-        gds.usage(exit=True)
+    parser.add_argument('filename')
 
-    filename  = os.path.abspath(args[0])
+    args = vars(parser.parse_args())
+
+    filename  = os.path.abspath(args['filename'])
     extension = os.path.splitext(filename)[1]
 
     if extension.lower() != '.bin':

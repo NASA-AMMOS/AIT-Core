@@ -78,19 +78,31 @@ import datetime
 import re
 import sys
 
-import docopt
+import argparse
 
 import bliss
 
-
 def main():
-    arguments = docopt.docopt(__doc__, version='bliss-orbits 0.1.0')
-    predicts  = arguments['predicts']
-    actuals   = arguments['actuals']
-    filename  = arguments['<filename>']
-    outname   = arguments['-o']
-    start     = arguments['<start-time>']
-    stop      = arguments['<stop-time>']
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--predicts', type=str, choices=['predicts'])
+    group.add_argument('--actuals', type=str, choices=['actuals'])
+
+    parser.add_argument('--filename', type=str, default=None)
+    parser.add_argument('--start', type=str, default=None)
+    parser.add_argument('--stop', type=str, default=None)
+    parser.add_argument('-o', '--output', type=str, default=None)
+
+    args = vars(parser.parse_args())
+    predicts  = args['predicts']
+    actuals   = args['actuals']
+    filename  = args['filename']
+    outname   = args['output']
+    start     = args['start']
+    stop      = args['stop']
     today     = start.lower() == 'today'
     date      = None
     doy       = None
@@ -147,8 +159,6 @@ def main():
             msg = '%s "%s" does not match format %s.'
             bliss.core.log.error(msg, field, value, format)
         bliss.core.log.end()
-        sys.exit(1)
-
 
     # Ensure output file can be opened for writing.
     if outname:
@@ -162,7 +172,6 @@ def main():
     else:
         output = sys.stdout
         stdout = True
-
 
     # Generate and filter orbits.
     bliss.core.log.begin()

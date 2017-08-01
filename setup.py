@@ -18,7 +18,6 @@ setup(
 
     install_requires = [
         'bottle==0.12.9',
-        'docopt==0.6.2',
         'jsonschema==2.5.1',
         'pyyaml==3.11',
         'requests==2.9.1',
