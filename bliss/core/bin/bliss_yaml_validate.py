@@ -35,7 +35,8 @@ import os
 import sys
 import textwrap
 
-from bliss.core import cmd, evr, log, tlm, val
+import bliss
+from bliss.core import cmd, evr, log, tlm, val, limit
 
 
 def validate(validator, yml, schema):
@@ -125,9 +126,18 @@ Examples:
         action  = 'store_true',
         default = False,
         help    = """EVR dictionary flag. If a YAML file is not specified,
-        the default command dictionary and schema will be used.
+        the default EVR dictionary and schema will be used.
         """
     )
+
+    argparser.add_argument(
+        '-l', '--limit',
+        action  = 'store_true',
+        default = False,
+        help    = """Limit dictionary flag. If a YAML file is not specified,
+        the default limit dictionary and schema will be used.
+        """
+    )    
 
     if len(sys.argv) < 2:
         argparser.print_usage()
@@ -153,17 +163,21 @@ Examples:
 
     else:
         if options.cmd:
-            yml       = cmd.getDefaultDictFilename()
+            yml       = bliss.config.cmddict.filename
             schema    = cmd.getDefaultSchema()
             validator = val.CmdValidator
         elif options.evr:
-            yml       = evr.getDefaultDictFilename()
+            yml       = bliss.config.evrdict.filename
             schema    = evr.getDefaultSchema()
             validator = val.Validator
         elif options.tlm:
-            yml       = tlm.getDefaultDictFilename()
+            yml       = bliss.config.tlmdict.filename
             schema    = tlm.getDefaultSchema()
             validator = val.TlmValidator
+        elif options.limit:
+            yml       = bliss.config.limit.filename
+            schema    = limit.getDefaultSchema()
+            validator = val.Validator
 
         if options.yaml is not None:
             yml = options.yaml
