@@ -87,6 +87,7 @@ def main():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add optional command line arguments
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--predicts', type=str, choices=['predicts'])
     group.add_argument('--actuals', type=str, choices=['actuals'])
@@ -96,6 +97,7 @@ def main():
     parser.add_argument('--stop', type=str, default=None)
     parser.add_argument('-o', '--output', type=str, default=None)
 
+    # Get command line arguments
     args = vars(parser.parse_args())
     predicts  = args['predicts']
     actuals   = args['actuals']

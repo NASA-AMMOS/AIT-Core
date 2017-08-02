@@ -31,29 +31,22 @@ defaults = {
 
 def main():
     try:
-        if '--help' in sys.argv:
-            stream = open(sys.argv[0])
-            for line in stream.readlines():
-                if line.startswith('##'): print line.replace('##',''),
-            stream.close()
-            sys.exit(2)
 
         log.begin()
 
         parser = argparse.ArgumentParser()
+
+        # Add required command line arguments
         parser.add_argument('filename',type=string)
+
+        # Add optional command line arguments
         parser.add_argument('--port',default=3076,type=int)
         parser.add_argument('--verbose',type=int,default=0)
-        args = vars(parser.parse_args())
-        if len(args) == 0:
-            stream = open(sys.argv[0])
-            for line in stream.readlines():
-                if line.startswith('##'): print line.replace('##',''),
-            stream.close()
-            sys.exit(2)
-        else:
-            filename = args['filename']
 
+        # Get command line arguments
+        args = vars(parser.parse_args())
+
+        filename = args['filename']
         host    = 'localhost'
         port    = args['port']
         sock    = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -30,10 +30,14 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Add optional command line arguments
     parser.add_argument('--fswtabdict',default=None)
     parser.add_argument('--tabfile',default=None)
     parser.add_argument('--tabletype',default='targets')
     parser.add_argument('--verbose',type=int,default=0)
+
+    # Get command line arguments
     args = vars(parser.parse_args())
     dictpath      = args['fswtabdict']
     tabfile       = args['tabfile']

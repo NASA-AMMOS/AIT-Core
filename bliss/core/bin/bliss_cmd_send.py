@@ -29,12 +29,15 @@ def main():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add required command line arguments
     parser.add_argument('command')
     parser.add_argument('arguments', metavar='argument', nargs='*', help='command arguments')
-    # parser.add_argument('argument', type=int, default="", action='append')
+
+    # Add optional command line arguments
     parser.add_argument('--port', type=int, default=3075)
     parser.add_argument('--verbose', type=int, default=0)
 
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     host     = "127.0.0.1"

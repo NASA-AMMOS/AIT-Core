@@ -19,10 +19,14 @@ def main():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add required command line arguments
     parser.add_argument('name')
+
+    # Add optional command line arguments
     parser.add_argument('--service-host', default='localhost')
     parser.add_argument('--service-port', type=int, default=8080)
-    
+
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     host = args['service-host']

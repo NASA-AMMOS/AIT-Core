@@ -24,16 +24,11 @@ def main():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add required command line arguments
     parser.add_argument('filename',default=None)
 
+    # Get command line arguments
     args = vars(parser.parse_args())
-
-    if len(args) == 0:
-        stream = open(sys.argv[0])
-        for line in stream.readlines():
-            if line.startswith("##"): print line.replace("##", ""),
-        stream.close()
-        sys.exit(2)
 
     filename  = os.path.abspath(args['filename'])
     extension = os.path.splitext(filename)[1]
