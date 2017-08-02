@@ -37,11 +37,11 @@ def main():
         parser = argparse.ArgumentParser()
 
         # Add required command line arguments
-        parser.add_argument('filename',type=string)
+        parser.add_argument('filename')
 
         # Add optional command line arguments
-        parser.add_argument('--port',default=3076,type=int)
-        parser.add_argument('--verbose',type=int,default=0)
+        parser.add_argument('--port', default=3076, type=int)
+        parser.add_argument('--verbose', type=int, default=0)
 
         # Get command line arguments
         args = vars(parser.parse_args())

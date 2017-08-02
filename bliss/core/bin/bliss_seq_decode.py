@@ -25,7 +25,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Add required command line arguments
-    parser.add_argument('filename',default=None)
+    parser.add_argument('filename', default=None)
 
     # Get command line arguments
     args = vars(parser.parse_args())
