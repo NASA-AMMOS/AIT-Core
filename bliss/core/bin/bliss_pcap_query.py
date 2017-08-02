@@ -2,10 +2,20 @@
 
 '''
 Usage:
-   bliss-pcap-query [arguments]
+   bliss-pcap-query [query|stats] [arguments]
 
 Arguments:
-   [arguments]
+    query    Run the Query command
+
+        stime       Starting time of the desired time range
+        etime       Ending time of the desired time range
+        fnames      Filename or filenames to be analyzed
+        --output    The name of the output file to be generated
+
+    stats    Run the Stats command
+
+        fname       Name of the file to analyze
+        tol         Number of seconds allowed between contiguous time ranges
 
 Description:
     Bliss PCap Query
@@ -42,9 +52,9 @@ def main():
     qParser.add_argument('stime')
     qParser.add_argument('etime')
     qParser.add_argument('--output',default=None)
-    qParser.add_argument('fname',action='append')
+    qParser.add_argument('fnames',nargs='*',metavar='fname',help='names of files to be analyzed')
 
-    # Add optional command line arguments
+    # Add arguments for stats
     sParser = cmdparsers.add_parser('stats',help='Arguments for stats')
     sParser.add_argument('fname')
     sParser.add_argument('tol',default=2,type=int)
@@ -58,7 +68,7 @@ def main():
         stime = vars['stime']
         etime = vars['etime']
         output = vars['output']
-        filenames = vars['fname']
+        filenames = vars['fnames']
 
         try:
             # Convert start time to datetime object
