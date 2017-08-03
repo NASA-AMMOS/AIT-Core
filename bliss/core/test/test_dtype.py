@@ -22,41 +22,37 @@ def fpeq (p, q, eps=1e-6):
 def testLSB_D64():
     val     = 1.2
     bytes   = struct.pack('<d', val)
-    rawval  = struct.unpack('<Q', bytes)[0]
     LSB_D64 = dtype.get('LSB_D64')
 
     assert fpeq(LSB_D64.decode(bytes), val)
-    assert LSB_D64.decode(bytes, raw=True) == rawval
+    assert fpeq(LSB_D64.decode(bytes, raw=True), val)
 
 
 def testMSB_D64():
     val     = 3.4
     bytes   = struct.pack('>d', val)
-    rawval  = struct.unpack('>Q', bytes)[0]
     MSB_D64 = dtype.get('MSB_D64')
 
     assert fpeq(MSB_D64.decode(bytes), val)
-    assert MSB_D64.decode(bytes, raw=True) == rawval
+    assert fpeq(MSB_D64.decode(bytes, raw=True), val)
 
 
 def testLSB_F32():
     val     = 5.6
     bytes   = struct.pack('<f', val)
-    rawval  = struct.unpack('<I', bytes)[0]
     LSB_F32 = dtype.get('LSB_F32')
 
     assert fpeq(LSB_F32.decode(bytes), val)
-    assert LSB_F32.decode(bytes, raw=True) == rawval
+    assert fpeq(LSB_F32.decode(bytes, raw=True), val)
 
 
 def testMSB_F32():
     val     = 7.8
     bytes   = struct.pack('>f', val)
-    rawval  = struct.unpack('>I', bytes)[0]
     MSB_F32 = dtype.get('MSB_F32')
 
     assert fpeq(MSB_F32.decode(bytes), val)
-    assert MSB_F32.decode(bytes, raw=True) == rawval
+    assert fpeq(MSB_F32.decode(bytes, raw=True), val)
 
 
 def testArrayType():
