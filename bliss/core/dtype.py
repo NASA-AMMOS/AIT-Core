@@ -232,24 +232,12 @@ class PrimitiveType(object):
         Decodes the given bytearray according to this PrimitiveType
         definition.
 
-        For primitive types, if the optional parameter ``raw`` is
-        ``True``, an ``F32`` or ``D64`` will be decoded as a ``U32``
-        or ``U64``, respectively.
-
+        NOTE: The parameter ``raw`` is present to adhere to the
+        ``decode()`` inteface, but has no effect for PrimitiveType
+        definitions.
         """
-        result = None
+        return struct.unpack(self.format, buffer(bytes))[0]
 
-        if raw is True and self.float:
-            if self.nbits == 32:
-                name = 'MSB_U32' if self.endian == 'MSB' else 'LSB_U32'
-            else:
-                name = 'MSB_U64' if self.endian == 'MSB' else 'LSB_U64'
-
-            result = get(name).decode(bytes)
-        else:
-            result = struct.unpack(self.format, buffer(bytes))[0]
-
-        return result
 
     def toJSON(self):
         return self.name
