@@ -26,17 +26,25 @@ import argparse
 import requests
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Add required command line arguments
     parser.add_argument('name')
     parser.add_argument('loc')
     parser.add_argument('port', type=int)
     parser.add_argument('conn_type')
+
+    # Add optional command line arguments
     parser.add_argument('--service-host', default='localhost')
     parser.add_argument('--service-port', type=int, default=8080)
     parser.add_argument('--rotate', type=int, default=1)
     parser.add_argument('--rotate-index', choices=['year','month','day','hour','minutes','second'], default='day')
     parser.add_argument('--rotate-delta', type=int, default=1)
     parser.add_argument('--file-pattern', default='\%Y-\%m-\%d-\%H-\%M-\%S-{name}.pcap')
+
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     host = args['service-host']

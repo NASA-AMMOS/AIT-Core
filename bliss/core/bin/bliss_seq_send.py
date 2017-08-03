@@ -33,10 +33,14 @@ def main ():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add required command line argument
     parser.add_argument('filename', default=None)
+
+    # Add optional command line arguments
     parser.add_argument('--port', default=3075, type=int)
     parser.add_argument('--verbose', default=0, type=int)
 
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     host     = '127.0.0.1'

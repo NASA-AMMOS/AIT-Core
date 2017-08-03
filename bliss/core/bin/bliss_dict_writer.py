@@ -34,7 +34,8 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
+
+    # Add optional command line arguments    
     parser.add_argument('--format', default='csv')
     parser.add_argument('--path', default='')
 
@@ -42,6 +43,7 @@ def main():
     group.add_argument('--tlm', action='store_true')
     group.add_argument('--cmd', action='store_true')
 
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     # output format for the file

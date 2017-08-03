@@ -24,8 +24,10 @@ def main():
         description = __doc__,
         formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
+    # Add required command line argument
     parser.add_argument('filename')
 
+    # Get command line arguments
     args = vars(parser.parse_args())
 
     filename  = os.path.abspath(args['filename'])

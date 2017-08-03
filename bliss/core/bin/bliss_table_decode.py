@@ -31,11 +31,15 @@ def main():
     parser = argparse.ArgumentParser(
          description=__doc__,
          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--binfile',default=None)
-    parser.add_argument('--fswtabdict',default=None)
-    parser.add_argument('--tabletype',default='targets')
-    parser.add_argument('--verbose',default=0,type=int)
-    parser.add_argument('--version',default=0,type=int)
+
+    # Add optional command line arguments
+    parser.add_argument('--binfile', default=None)
+    parser.add_argument('--fswtabdict', default=None)
+    parser.add_argument('--tabletype', default='targets')
+    parser.add_argument('--verbose', default=0, type=int)
+    parser.add_argument('--version', default=0, type=int)
+
+    # Get command line arguments
     args = vars(parser.parse_args())
     binfile       = args['binfile']
     dictpath      = args['fswtabdict']
