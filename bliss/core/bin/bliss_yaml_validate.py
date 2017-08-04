@@ -36,7 +36,7 @@ import sys
 import textwrap
 
 import bliss
-from bliss.core import cmd, evr, log, tlm, val, limit
+from bliss.core import cmd, evr, log, tlm, val, limits
 
 
 def validate(validator, yml, schema):
@@ -131,11 +131,11 @@ Examples:
     )
 
     argparser.add_argument(
-        '-l', '--limit',
+        '-l', '--limits',
         action  = 'store_true',
         default = False,
-        help    = """Limit dictionary flag. If a YAML file is not specified,
-        the default limit dictionary and schema will be used.
+        help    = """Limits dictionary flag. If a YAML file is not specified,
+        the default limits dictionary and schema will be used.
         """
     )    
 
@@ -174,9 +174,9 @@ Examples:
             yml       = bliss.config.tlmdict.filename
             schema    = tlm.getDefaultSchema()
             validator = val.TlmValidator
-        elif options.limit:
-            yml       = bliss.config.limit.filename
-            schema    = limit.getDefaultSchema()
+        elif options.limits:
+            yml       = bliss.config.limits.filename
+            schema    = limits.getDefaultSchema()
             validator = val.Validator
 
         if options.yaml is not None:

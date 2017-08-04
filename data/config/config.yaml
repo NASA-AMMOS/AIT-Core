@@ -14,7 +14,7 @@ default:
         filename:  tlm.yaml
 
     limit:
-        filename:  limit/limit.yaml
+        filename:  limits/limits.yaml
       
     table:
         filename: table.yaml
