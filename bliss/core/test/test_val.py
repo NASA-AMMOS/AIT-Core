@@ -419,10 +419,10 @@ def testTableValidation():
     assert v
     assert len(msgs) == 0
 
-def testLimitValidation():
+def testLimitsValidation():
     # Validation test of current table configuration
-    yml = bliss.config.limit.filename
-    schema = pkg_resources.resource_filename('bliss.core', 'data/limit_schema.json')
+    yml = bliss.config.limits.filename
+    schema = pkg_resources.resource_filename('bliss.core', 'data/limits_schema.json')
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v

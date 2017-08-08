@@ -13,8 +13,8 @@ default:
     tlmdict:
         filename:  tlm.yaml
 
-    limit:
-        filename:  limit/limit.yaml
+    limits:
+        filename:  limits/limits.yaml
       
     table:
         filename: table.yaml

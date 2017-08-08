@@ -2,11 +2,11 @@
 # U.S. Government Sponsorship acknowledged.
 
 """
-BLISS Limit
+BLISS Limits
 
-The bliss.core.limit module provides limit definitions for telemetry fields.
+The bliss.core.limits module provides limit definitions for telemetry fields.
 
-The expected limit.yaml should follow this schema:
+The expected limits.yaml should follow this schema:
 
 - !Limit
   source:   -- telemetry source for the limit. should follow format 'Packet.field_name'
@@ -147,11 +147,11 @@ class LimitDefinition (json.SlotSerializer, object):
         return value
 
 
-class LimitDict(dict):
-    """LimitDict
+class LimitsDict(dict):
+    """LimitsDict
     """
     def __init__(self, *args, **kwargs):
-        """Creates a new Limit Dictionary from the given limit
+        """Creates a new Limits Dictionary from the given limits
         dictionary filename or YAML string.
         """
         self.filename = None
@@ -163,15 +163,15 @@ class LimitDict(dict):
             dict.__init__(self, *args, **kwargs)
 
     def add(self, defn):
-        """Adds the given Limit Definition to this Limit Dictionary."""
+        """Adds the given Limit Definition to this Limits Dictionary."""
         self[defn.source] = defn
 
     def load(self, content):
-        """Loads Packet Definitions from the given YAML content into this
+        """Loads Limit Definitions from the given YAML content into this
         Telemetry Dictionary.  Content may be either a filename
         containing YAML content or a YAML string.
 
-        Load has no effect if this Command Dictionary was already
+        Load has no effect if this Limits Dictionary was already
         instantiated with a filename or YAML content.
         """
         if self.filename is None:
@@ -194,15 +194,15 @@ class LimitDict(dict):
 
 
 def getDefaultDict(reload=False):
-    return util.getDefaultDict(__name__, 'limit', LimitDict, reload)
+    return util.getDefaultDict(__name__, 'limits', LimitsDict, reload)
 
 
 def getDefaultSchema():
-    return pkg_resources.resource_filename('bliss.core', 'data/limit_schema.json')
+    return pkg_resources.resource_filename('bliss.core', 'data/limits_schema.json')
 
 
 def getDefaultDictFilename():
-    return bliss.config.limit.filename
+    return bliss.config.limits.filename
 
 
 def YAMLCtor_LimitDefinition(loader, node):
