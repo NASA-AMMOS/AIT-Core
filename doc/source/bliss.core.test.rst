@@ -13,7 +13,7 @@ Submodules
    bliss.core.test.test_dmc
    bliss.core.test.test_dtype
    bliss.core.test.test_evr
-   bliss.core.test.test_limit
+   bliss.core.test.test_limits
    bliss.core.test.test_log
    bliss.core.test.test_pcap
    bliss.core.test.test_tlm

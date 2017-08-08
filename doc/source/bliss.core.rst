@@ -26,7 +26,7 @@ Submodules
    bliss.core.gds
    bliss.core.geom
    bliss.core.json
-   bliss.core.limit
+   bliss.core.limits
    bliss.core.log
    bliss.core.pcap
    bliss.core.seq
