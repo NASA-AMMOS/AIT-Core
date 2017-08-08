@@ -211,7 +211,6 @@ def testPCapQuery():
     packets = "This is a nice little sentence".split()
     start = datetime.datetime.now()
 
-    #stream = pcap.open(TmpFilenam, 'w')
     with pcap.open(TmpFilenam, 'w') as stream:
         for p in packets:
             stream.write(p)
