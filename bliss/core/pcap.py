@@ -344,7 +344,6 @@ def stats(filename, tolerance=2):
                 if first is None:
                     first = header.timestamp
                 if last and header.timestamp - last > datetime.timedelta(tolerance):
-                    print len(timeranges)
                     timeranges.append(str(first) + " - " + str(last))
                     first = header.timestamp
                     last = None
