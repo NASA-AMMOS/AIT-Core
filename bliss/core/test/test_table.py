@@ -13,7 +13,6 @@ import warnings
 import nose
 
 from bliss.core import table
-from enum import Enum
 
 TmpFilename = None
 
