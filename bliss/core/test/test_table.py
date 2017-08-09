@@ -22,14 +22,14 @@ with warnings.catch_warnings():
     TmpFilename = 'tmpfile'# os.tmpnam();
 
 
-class Season(Enum):
+class Season:
     SPRING=1
     SUMMER=2
     AUTUMN=3
     WINTER=4
 
 
-class Color(Enum):
+class Color:
     RED=1
     GREEN=2
     BLUE=3
