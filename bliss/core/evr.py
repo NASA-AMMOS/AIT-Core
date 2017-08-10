@@ -17,45 +17,62 @@ import bliss
 from bliss.core import json, log, util
 
 
-class EVRReader(object):
-    """EVRReader
+class EVRDict(dict):
+    def __init__(self, *args, **kwargs):
+        self.filename = None
+        self.codes = {}
 
-    Reads in the raw EVR YAML file. Differing from the CMD and TLM
-    dictionaries, this reader does not add any processing layers to
-    the read.
-    """
-    def __init__(self, filename=None):
+        if len(args) == 1 and len(kwargs) == 0 and type(args[0]) == str:
+            dict.__init__(self)
+            self.load(args[0])
+        else:
+            dict.__init__(self, *args, **kwargs)
+
+    def add(self, defn):
+        if defn.name not in self and defn.code not in self.codes:
+            self[defn.name] = defn
+            self.codes[defn.code] = defn
+        else:
+            msg = "EVRDict: Duplicate EVR name/code {}".format(defn)
+            log.error(msg)
+            raise util.YAMLError(msg)
+
+    def load(self, content):
+        if self.filename:
+            log.warn('EVRDict: Skipping load() attempt after previous initialization')
+            return
+
+        if os.path.isfile(content):
+            self.filename = content
+            stream = open(self.filename, 'rb')
+        else:
+            stream = content
+
         try:
-            if filename is None:
-                self.filename = bliss.config.evrdict.filename
-            else:
-                self.filename = filename
-
-            self.evrs = self.read(self.filename)
-
+            evrs = yaml.load(stream)
         except IOError, e:
-            msg = "Could not load EVR YAML '%s': '%s'"
-            log.error(msg, filename, str(e))
+            msg = "Could not load EVR YAML '{}': '{}'".format(stream, str(e))
+            log.error(msg)
+            return
 
-    def read(self, filename):
-        if self.filename is None:
-            self.filename = filename
+        for e in evrs:
+            self.add(e)
 
-        with open(self.filename, 'rb') as stream:
-            out = yaml.load(stream)
-
-        return out
+    def toJSON(self):
+        return {code: defn.toJSON() for code, defn in self.items()}
 
 
 def getDefaultSchema():
     return pkg_resources.resource_filename('bliss.core', 'data/evr_schema.json')
 
+
 def getDefaultDict(reload=False):
-    d = util.getDefaultDict(__name__, 'evrdict', EVRReader, reload)
-    return d.evrs if isinstance(d, EVRReader) else [ ]
+    return util.getDefaultDict(__name__, 'evrdict', EVRDict, reload)
+
 
 def getDefaultEVRs():
     return getDefaultDict()
+
 
 def getDefaultDictFilename():
     return bliss.config.evrdict.filename
