@@ -15,7 +15,7 @@
   source: Ethernet_HS_Packet.product_type
   desc: Ethernet Product Type field
   value:
-    error: FOOBAR
+    error: MEM_DUMP
     warn:
-      - FOO
-      - BAR
+      - TABLE_FOO
+      - TABLE_BAR
