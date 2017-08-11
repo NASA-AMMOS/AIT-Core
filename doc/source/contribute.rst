@@ -94,3 +94,9 @@ Mailing Lists
 -------------
 
 The BLISS mailings lists are a good way to get in contact with people working on the project. If you need help with something on the project feel free to send an email to the BLISS team at **bliss.support@jpl.nasa.gov**.
+
+Slack Channels
+--------------
+
+BLISS has three channels on the JPL team Slack. Generic BLISS conversations happen on **#bliss**, development conversations happen on **#bliss-development**, and user support conversations happen on **#bliss-support**.
+
