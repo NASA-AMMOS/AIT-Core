@@ -180,5 +180,54 @@ def testPCapPacketHeaderInit ():
     assert header.timestamp == datetime.datetime.utcfromtimestamp(float_ts)
 
 
+def testPCapStats():
+    packets = "This is a nice little sentence".split()
+    with pcap.open(TmpFilename, 'w') as stream:
+        for p in packets:
+            stream.write(p)
+
+    with pcap.open(TmpFilename, 'r') as stream:
+        i = 0
+        for header, packet in stream:
+            if i is 0:
+                start = header.timestamp
+            if i is 5:
+               end = header.timestamp
+            i += 1
+
+    cap = pcap.stats(TmpFilename)
+
+    cap = cap[0]
+    predict = str(str(start) + " - " + str(end))
+
+    assert cap == predict
+
+    os.unlink(TmpFilename)
+
+
+def testPCapQuery():
+    TmpRes = "test_pcap_res.pcap"
+    TmpFilenam = "test_pcap_file.pcap"
+    packets = "This is a nice little sentence".split()
+    start = datetime.datetime.now()
+
+    with pcap.open(TmpFilenam, 'w') as stream:
+        for p in packets:
+            stream.write(p)
+    end = datetime.datetime.max
+
+    pcap.query(start, end, TmpRes, (TmpFilenam))
+
+    with pcap.open(TmpFilenam, 'r') as stream1:
+        with pcap.open(TmpRes, 'r') as stream2:
+            header1, packet1 = stream1.read()
+            header2, packet2 = stream2.read()
+            assert str(header1) == str(header2)
+            assert packet1 == packet2
+
+    os.unlink(TmpRes)
+    os.unlink(TmpFilenam)
+
+
 if __name__ == '__main__':
   nose.main()

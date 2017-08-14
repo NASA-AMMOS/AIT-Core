@@ -281,3 +281,75 @@ def open (filename, mode='r'):
     stream = PCapStream( __builtin__.open(filename, mode), mode )
 
     return stream
+
+
+def query(starttime, endtime, output=None, *filenames):
+    '''Given a time range and input file, query creates a new file with only
+    that subset of data. If no outfile name is given, the new file name is the
+    old file name with the time range appended.
+
+    Args:
+        starttime:
+            The datetime of the beginning time range to be extracted from the files.
+        endtime:
+            The datetime of the end of the time range to be extracted from the files.
+        output:
+            Optional: The output file name. Defaults to
+            [first filename in filenames][starttime]-[endtime].pcap
+        filemanes:
+            A tuple of one or more file names to extract data from.
+    '''
+    
+    if not output:
+        output = (filenames[0].replace('.pcap','') + starttime.isoformat() + '-' + endtime.isoformat() + '.pcap')
+    else:
+        output = output
+
+    with __builtin__.open(output,'wb') as outfile:
+        h = False
+        for filename in filenames:
+            with open(filename, 'r') as stream:
+                if not h:
+                    outfile.write(str(stream.header))
+                    h = True
+                for header, packet in stream:
+                    if packet is not None:
+                        if header.timestamp >= starttime and header.timestamp < endtime:
+                            outfile.write(str(header))
+                            outfile.write(packet)
+
+
+def stats(filename, tolerance=2):
+    '''For the given file, displays the time ranges available in the file.
+    Tolerance sets the limit of seconds between a continuous time range.
+    Any gaps larger than tolerance will end the current time range and
+    print a new time range.
+
+    Args:
+        filename:
+            The name of the file to read.
+        tolerance:
+            The max number of seconds between packets to count as a contiguous
+            time range. If the number of seconds between two packets is greater
+            than tolerance, the time range is split.
+    '''
+    first = None
+    last = None
+
+    timeranges = []
+
+    with open(filename, 'r') as stream:
+        for header, packet in stream:
+            if packet is not None:
+                if first is None:
+                    first = header.timestamp
+                if last and header.timestamp - last > datetime.timedelta(tolerance):
+                    timeranges.append(str(first) + " - " + str(last))
+                    first = header.timestamp
+                    last = None
+                else:
+                    last = header.timestamp
+
+    timeranges.append(str(first) + " - " + str(last))
+
+    return timeranges
