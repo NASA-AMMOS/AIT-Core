@@ -535,17 +535,12 @@ class EVRType(PrimitiveType):
         Encodes the given value to a bytearray according to this
         Complex Type definition.
         """
-        # TODO: better error handling?
-        code = False
-        for evr in self.evrs:
-            if evr.name == value:
-                code = evr.code
-
-        if not code:
+        e = self.evrs.get(value, None)
+        if not e:
             log.error(str(value) + " not found as EVR. Cannot encode.")
             return None
         else:
-            return super(EVRType, self).encode(code)
+            return super(EVRType, self).encode(e.code)
 
     def decode(self, bytes, raw=False):
         """decode(bytearray, raw=False) -> value
@@ -564,10 +559,7 @@ class EVRType(PrimitiveType):
         if raw:
             result = code
         else:
-            for evr in self.evrs:
-                if evr.code == code:
-                    result = evr
-                    break
+            result = self.evrs.codes[code]
 
         if result is None:
             raise ValueError('Unrecognized EVR code: %d' % code)
