@@ -287,8 +287,8 @@ def testValidatorCmd():
     # test failed validation
     msgs, v = validate([os.path.join(DATA_PATH,  "testInvalidCmd1.yaml"), cmd.getDefaultSchema()])
     assert not v
-    assert len(msgs) == 1
-    assert "Expects: Value should be of type 'integer'" in msgs[0]
+    assert len(msgs) == 2
+    assert "'BAD_OPCODE' is not of type u'integer'" in msgs[1]
 
 def testCmdValidator():
     # test successful cmd validation
@@ -382,6 +382,12 @@ def testTlmValidator():
     assert not v
     assert len(msgs) == 2
     assert "Invalid enum value" in msgs[0]
+
+    # test failed tlm validation - empty string for a YAML field
+    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator6.yaml"), tlm.getDefaultSchema()])
+    assert not v
+    assert len(msgs) == 1
+    assert "None is not of type u'string'" in msgs[0]
 
 
 def testCmdDictValidation():
