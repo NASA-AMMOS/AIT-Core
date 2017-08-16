@@ -18,7 +18,7 @@ import re
 import yaml
 
 import bliss
-from bliss.core import log
+from bliss.core import log, util
 
 
 DEFAULT_PATH_VARS = {
@@ -33,14 +33,14 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
     If keys is omitted, it defaults to 'directory', 'file',
     'filename', 'path', 'pathname'.
 
-    See expandPath().
+    See util.expandPath().
     """
     if len(keys) == 0:
         keys = 'directory', 'file', 'filename', 'path', 'pathname'
 
     for name, value in config.items():
         if name in keys and type(name) is str:
-            expanded = expandPath(value, prefix)
+            expanded = util.expandPath(value, prefix)
             cleaned = replaceVariables(expanded, datetime=datetime, pathvars=pathvars)
 
             for p in cleaned:
@@ -53,23 +53,6 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
         elif type(value) is dict:
             param_key = name if parameter_key == '' else parameter_key + '.' + name
             expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
-
-
-def expandPath (pathname, prefix=None):
-    """Return pathname as an absolute path, either expanded by the users
-    home directory ("~") or with prefix prepended.
-    """
-    if prefix is None:
-        prefix = ''
-
-    expanded = pathname
-
-    if pathname[0] == '~':
-        expanded = os.path.expanduser(pathname)
-    elif pathname[0] != '/':
-        expanded = os.path.join(prefix, pathname)
-
-    return os.path.abspath(expanded)
 
 
 def replaceVariables(path, datetime=None, pathvars=None):

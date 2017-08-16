@@ -103,22 +103,6 @@ def test_expandConfigPaths_w_variables ():
     assert actual == expected
 
 
-def test_expandPath ():
-    pathname = os.path.join('~', 'bin', 'bliss-orbits')
-    assert cfg.expandPath(pathname) == os.path.expanduser(pathname)
-
-    pathname = os.path.join('/', 'bin', 'bliss-orbits')
-    assert cfg.expandPath(pathname) == pathname
-
-    pathname = os.path.join('' , 'bin', 'bliss-orbits')
-    assert cfg.expandPath(pathname) == os.path.abspath(pathname)
-
-    pathname = os.path.join('' , 'bin', 'bliss-orbits')
-    prefix   = os.path.join('/', 'bliss')
-    expected = os.path.join(prefix, pathname)
-    assert cfg.expandPath(pathname, prefix) == expected
-
-
 def test_replaceVariables ():
     # Test expandPath with simple custom path variable
     pathvars = {

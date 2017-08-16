@@ -359,12 +359,29 @@ def toStringDuration (duration):
 
     return '%fs' % duration
 
+def expandPath (pathname, prefix=None):
+    """Return pathname as an absolute path, either expanded by the users
+    home directory ("~") or with prefix prepended.
+    """
+    if prefix is None:
+        prefix = ''
+
+    expanded = pathname
+
+    if pathname[0] == '~':
+        expanded = os.path.expanduser(pathname)
+    elif pathname[0] != '/':
+        expanded = os.path.join(prefix, pathname)
+
+    return os.path.abspath(expanded)
 
 def listAllFiles (directory, suffix=None):
     """Returns the list of all files within the input directory and 
     all subdirectories.
     """
     files = []
+
+    directory = expandPath(directory)
 
     for dirpath, dirnames, filenames in os.walk(directory, followlinks=True):
         if suffix:
