@@ -359,6 +359,27 @@ def toStringDuration (duration):
 
     return '%fs' % duration
 
+
+def listAllFiles (directory, suffix=None):
+    """Returns the list of all files within the input directory and 
+    all subdirectories.
+    """
+    files = []
+
+    for dirpath, dirnames, filenames in os.walk(directory, followlinks=True):
+        if suffix:
+            filenames = [f for f in filenames if f.endswith(suffix)]
+
+        for filename in filenames:
+            relpath = ''
+            if dirpath != directory:
+                relpath = os.path.relpath(dirpath, start=directory) 
+
+            files.append(os.path.join(relpath, filename))
+
+    return files
+
+
 class YAMLValidationError(Exception):
     def __init__(self, arg):
         # Set some exception infomation

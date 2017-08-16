@@ -7,6 +7,7 @@
 import os
 import unittest
 import mock
+import shutil
 
 from bliss.core import util
 
@@ -121,6 +122,21 @@ class ToReprTest(unittest.TestCase):
         """TODO"""
         pass
 
+def test_listAllFiles():
+    directory = '/tmp/foo/bar/'
+    try:
+        os.makedirs(directory)
+        files = [ os.path.join(directory, 'test_1.txt'), os.path.join(directory, 'test_2.txt') ]
+        for fname in files:
+            with open(fname, 'wb') as file:
+                os.utime(fname, None)
+
+        filelist = util.listAllFiles(directory, ".txt")
+
+        assert filelist[0] == os.path.relpath(files[0], start=directory)
+    finally:
+        shutil.rmtree('/tmp/foo')
+
 @mock.patch('bliss.core.log.error')
 def test_YAMLValidationError_exception(log_mock):
     message = 'foo'
@@ -137,3 +153,4 @@ def test_YAMLError_exception(log_mock):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+    nose.main()
