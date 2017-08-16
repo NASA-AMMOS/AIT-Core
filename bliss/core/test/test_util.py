@@ -123,7 +123,7 @@ class ToReprTest(unittest.TestCase):
         pass
 
 def test_listAllFiles():
-    directory = '/tmp/foo/bar/'
+    directory = 'foo/bar/'
     try:
         os.makedirs(directory)
         files = [ os.path.join(directory, 'test_1.txt'), os.path.join(directory, 'test_2.txt') ]
@@ -135,7 +135,7 @@ def test_listAllFiles():
 
         assert filelist[0] == os.path.relpath(files[0], start=directory)
     finally:
-        shutil.rmtree('/tmp/foo')
+        shutil.rmtree('foo')
 
 @mock.patch('bliss.core.log.error')
 def test_YAMLValidationError_exception(log_mock):
