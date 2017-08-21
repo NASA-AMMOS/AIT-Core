@@ -187,7 +187,6 @@ class ErrorHandler(object):
         and designates where the error came from"""
 
         log.debug("Displaying document from lines '%i' to '%i'", start, end)
-        foundline = 0
 
         errorlist = []
         if len(e.context) > 0:
@@ -216,6 +215,12 @@ class ErrorHandler(object):
                 jsonpath = error.relative_path
                 array_index = 0
 
+                current_start = start
+                foundline = 0
+                found = False
+
+                context = collections.deque(maxlen=20)
+                tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
                 for cnt, path in enumerate(error.relative_path):
 
                     # Need to set the key we are looking, and then check the array count
@@ -228,8 +233,8 @@ class ErrorHandler(object):
                         # check if previous array_index > 0. if so, then we know we need to use
                         # that one to track down the specific instance of this nested key.
                         # later on, we utilize this array_index loop through
-                        if array_index == 0:
-                            array_index = jsonpath[cnt]
+                        # if array_index == 0:
+                        array_index = jsonpath[cnt]
 
                         match_count = 0
                         continue
@@ -238,11 +243,7 @@ class ErrorHandler(object):
                         # current_key keeps track of the key we are looking for in the JSON Path
                         current_key = jsonpath[cnt]
 
-                    context = collections.deque(maxlen=20)
-                    tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
-
-                    found = False
-                    for linenum in range(start, end):
+                    for linenum in range(current_start, end):
                         line = linecache.getline(self.ymlfile, linenum)
 
                         # Check if line contains the error
@@ -264,22 +265,37 @@ class ErrorHandler(object):
                                 key = key.strip()
 
                             if str(key) == current_key:
+                                # check if we are at our match_count and end of the path
+                                if match_count == array_index:
+                                    # check if we are at end of the jsonpath
+                                    if cnt == len(jsonpath)-1:
+                                        # we are at the end of path so let's stop here'
+                                        if error.validator == "type":
+                                            if value.strip() == str(error.instance):
+                                                errormsg = "Value '%s' should be of type '%s'" % (error.instance, str(error.validator_value))
+                                                line = line.replace("\n", (tag % errormsg))
+                                                foundline = linenum
+                                                found = True
+                                            elif value.strip() == "" and error.instance is None:
+                                                errormsg = "Missing value for %s." % key
+                                                line = line.replace("\n", (tag % errormsg))
+                                                foundline = linenum
+                                                found = True
+
+                                    elif not found:
+                                        # print "EXTRA FOO"
+                                        # print match_count
+                                        # print array_index
+                                        # print current_key
+                                        # print line
+                                        # otherwise change the start to the current line
+                                        current_start = linenum
+                                        break
+
                                 match_count += 1
 
-                                # check if we are at our match_count and end of the path
-                                if cnt == len(jsonpath)-1 and match_count == array_index+1:
-                                    # we are at the end of path so let's stop here'
-                                    if error.validator == "type":
-                                        if value.strip() == str(error.instance):
-                                            errormsg = "Value should be of type '" + str(error.validator_value) + "'"
-                                            line = line.replace("\n", (tag % errormsg))
-                                            foundline = linenum
-                                            found = True
-                                        elif value.strip() == "" and error.instance is None:
-                                            errormsg = "Missing value for %s." % key
-                                            line = line.replace("\n", (tag % errormsg))
-                                            foundline = linenum
-                                            found = True
+
+                                
 
                         # for the context queue, we want to get the error to appear in
                         # the middle of the error output. to do so, we will only append
@@ -291,6 +307,9 @@ class ErrorHandler(object):
                         #    onto the queue until the the line is in the middle
                         if not found or (found and context.maxlen > (linenum-foundline)*2):
                             context.append(line)
+                        elif found and context.maxlen <= (linenum-foundline)*2:
+                            break
+
 
                     # Loop through the queue and generate a readable msg output
                     out = ""
@@ -301,9 +320,13 @@ class ErrorHandler(object):
                         msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
                         messages.append(msg)
 
+                        # reset the line it was found on and the context
+                        foundline = 0
+                        context.clear()
+
                     linecache.clearcache()
-                else:
-                    messages.append(error.message)
+            else:
+                messages.append(error.message)
 
 
 class Validator(object):
