@@ -151,7 +151,7 @@ def test_listAllFiles():
 
         filelist = util.listAllFiles(pathname, ".txt")
 
-        assert filelist[0] == os.path.relpath(files[0], start=directory)
+        assert os.path.relpath(files[0], start=directory) in filelist
     finally:
         shutil.rmtree(os.path.expanduser(os.path.join('~','foo')))
 
