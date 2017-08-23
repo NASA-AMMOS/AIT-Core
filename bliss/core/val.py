@@ -170,6 +170,7 @@ class ErrorHandler(object):
 
     def process(self, docnum, doclines, error, messages=None):
         # TODO: Process the various types of errors
+
         start = doclines[docnum]+1
         if error.message.endswith("is not of type u'object'"):
             msg = "Invalid root object in YAML. Check format."
@@ -186,7 +187,6 @@ class ErrorHandler(object):
         and designates where the error came from"""
 
         log.debug("Displaying document from lines '%i' to '%i'", start, end)
-        foundline = 0
 
         errorlist = []
         if len(e.context) > 0:
@@ -198,71 +198,133 @@ class ErrorHandler(object):
             validator = error.validator
 
             if validator == "required":
+                # Handle required fields
                 msg = error.message
                 messages.append("Between lines %d - %d. %s" % (start, end, msg))
             elif validator == "additionalProperties":
+                # Handle additional properties not allowed
                 if len(error.message) > 256:
                     msg = error.message[:253] + "..."
                 else:
                     msg = error.message
                     messages.append("Between lines %d - %d. %s" % (start, end, msg))
             elif len(error.relative_path) > 0:
-                error_key = error.relative_path.pop()
+                # Handle other cases where we can loop through the lines
+
+                # get the JSON path to traverse through the file
+                jsonpath = error.relative_path
+                array_index = 0
+
+                current_start = start
+                foundline = 0
+                found = False
 
                 context = collections.deque(maxlen=20)
                 tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
+                for cnt, path in enumerate(error.relative_path):
 
-                found = False
-                for linenum in range(start, end):
-                    line = linecache.getline(self.ymlfile, linenum)
-                    # Check if line contains the error
-                    if ":" in line:
-                        l = line.split(':')
-                        key = l[0]
-                        value = ':'.join(l[1:])
+                    # Need to set the key we are looking, and then check the array count
+                    # if it is an array, we have some interesting checks to do
+                    if int(cnt) % 2 == 0:
+                        # we know we have some array account
+                        # array_index keeps track of the array count we are looking for or number
+                        # of matches we need to skip over before we get to the one we care about
 
-                        # TODO:
-                        # Handle maxItems TBD
-                        # Handle minItems TBD
-                        # Handle in-order (bytes) TBD
-                        # Handle uniqueness TBD
+                        # check if previous array_index > 0. if so, then we know we need to use
+                        # that one to track down the specific instance of this nested key.
+                        # later on, we utilize this array_index loop through
+                        # if array_index == 0:
+                        array_index = jsonpath[cnt]
 
-                        # Handle cases where key in yml file is hexadecimal
-                        try:
-                            key = int(key.strip(), 16)
-                        except ValueError:
-                            key = key.strip()
+                        match_count = 0
+                        continue
+                    elif int(cnt) % 2 == 1:
+                        # we know we have some key name
+                        # current_key keeps track of the key we are looking for in the JSON Path
+                        current_key = jsonpath[cnt]
 
-                        if str(key) == error_key:
-                            # Handle bad value data type
-                            if error.validator == "type" and value.strip() == str(error.instance):
-                                errormsg = "Value should be of type '" + str(error.validator_value) + "'"
+                    for linenum in range(current_start, end):
+                        line = linecache.getline(self.ymlfile, linenum)
 
-                                line = line.replace("\n", (tag % errormsg))
-                                foundline = linenum
-                                found = True
+                        # Check if line contains the error
+                        if ":" in line:
+                            l = line.split(':')
+                            key = l[0]
+                            value = ':'.join(l[1:])
 
-                    # for the context queue, we want to get the error to appear in
-                    # the middle of the error output. to do so, we will only append
-                    # to the queue in 2 cases:
-                    #
-                    # 1. before we find the error (found == False). we can
-                    #    just keep pushing on the queue until we find it in the YAML.
-                    # 2. once we find the error (found == True), we just want to push
-                    #    onto the queue until the the line is in the middle
-                    if not found or (found and context.maxlen > (linenum-foundline)*2):
-                        context.append(line)
+                            # TODO:
+                            # Handle maxItems TBD
+                            # Handle minItems TBD
+                            # Handle in-order (bytes) TBD
+                            # Handle uniqueness TBD
 
-                # Loop through the queue and generate a readable msg output
-                out = ""
-                for line in context:
-                    out += line
+                            # Handle cases where key in yml file is hexadecimal
+                            try:
+                                key = int(key.strip(), 16)
+                            except ValueError:
+                                key = key.strip()
 
-                if foundline:
-                    msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
-                    messages.append(msg)
+                            if str(key) == current_key:
+                                # check if we are at our match_count and end of the path
+                                if match_count == array_index:
+                                    # check if we are at end of the jsonpath
+                                    if cnt == len(jsonpath)-1:
+                                        # we are at the end of path so let's stop here'
+                                        if error.validator == "type":
+                                            if value.strip() == str(error.instance):
+                                                errormsg = "Value '%s' should be of type '%s'" % (error.instance, str(error.validator_value))
+                                                line = line.replace("\n", (tag % errormsg))
+                                                foundline = linenum
+                                                found = True
+                                            elif value.strip() == "" and error.instance is None:
+                                                errormsg = "Missing value for %s." % key
+                                                line = line.replace("\n", (tag % errormsg))
+                                                foundline = linenum
+                                                found = True
 
-                linecache.clearcache()
+                                    elif not found:
+                                        # print "EXTRA FOO"
+                                        # print match_count
+                                        # print array_index
+                                        # print current_key
+                                        # print line
+                                        # otherwise change the start to the current line
+                                        current_start = linenum
+                                        break
+
+                                match_count += 1
+
+
+                                
+
+                        # for the context queue, we want to get the error to appear in
+                        # the middle of the error output. to do so, we will only append
+                        # to the queue in 2 cases:
+                        #
+                        # 1. before we find the error (found == False). we can
+                        #    just keep pushing on the queue until we find it in the YAML.
+                        # 2. once we find the error (found == True), we just want to push
+                        #    onto the queue until the the line is in the middle
+                        if not found or (found and context.maxlen > (linenum-foundline)*2):
+                            context.append(line)
+                        elif found and context.maxlen <= (linenum-foundline)*2:
+                            break
+
+
+                    # Loop through the queue and generate a readable msg output
+                    out = ""
+                    for line in context:
+                        out += line
+
+                    if foundline:
+                        msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
+                        messages.append(msg)
+
+                        # reset the line it was found on and the context
+                        foundline = 0
+                        context.clear()
+
+                    linecache.clearcache()
             else:
                 messages.append(error.message)
 
