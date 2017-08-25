@@ -171,6 +171,24 @@ def test_addPathVariables ():
     assert 'x' in after.keys()
     assert 'y' in after.keys()
 
+def test_datapaths ():
+    """
+    default:
+        ISS:
+            apiport: 9090
+            bticard: 0
+            desc:    ISS PL/MDM Simulator
+            path:    bin/bliss-orbits
+            rtaddr:  15
+    """
+    # check data paths work from YAML()
+    config = cfg.BlissConfig(data=YAML())
+    assert len(config._datapaths) > 0
+    
+    # check if data paths do not exist
+    config = cfg.BlissConfig(data=test_datapaths.__doc__)
+    assert not config._datapaths
+    
 def test_flatten ():
     d = { 'a': { 'foo': 'a' }, 'b': { 'foo': 'b' } }
     assert cfg.flatten(dict(d), 'a', 'b') == { 'foo': 'b' }
