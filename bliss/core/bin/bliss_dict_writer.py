@@ -33,15 +33,15 @@ from bliss.core import log, tlm
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add optional command line arguments    
     parser.add_argument('--format', default='csv')
     parser.add_argument('--path', default='')
 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--tlm', action='store_true')
-    group.add_argument('--cmd', action='store_true')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--tlm', action='store_true', default=False)
+    group.add_argument('--cmd', action='store_true', default=False)
 
     # Get command line arguments
     args = vars(parser.parse_args())

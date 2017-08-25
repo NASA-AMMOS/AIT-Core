@@ -41,7 +41,7 @@ from bliss.core import pcap
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     # create subparser for different commands

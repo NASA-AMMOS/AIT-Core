@@ -27,7 +27,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add required command line arguments
     parser.add_argument('command')
@@ -35,7 +35,7 @@ def main():
 
     # Add optional command line arguments
     parser.add_argument('--port', type=int, default=3075)
-    parser.add_argument('--verbose', type=int, default=0)
+    parser.add_argument('--verbose', action='store_true', default=False)
 
     # Get command line arguments
     args = vars(parser.parse_args())
