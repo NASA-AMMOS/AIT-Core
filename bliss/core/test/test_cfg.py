@@ -180,6 +180,7 @@ def test_datapaths ():
             desc:    ISS PL/MDM Simulator
             path:    bin/bliss-orbits
             rtaddr:  15
+
     """
     # check data paths work from YAML()
     config = cfg.BlissConfig(data=YAML())
@@ -187,8 +188,12 @@ def test_datapaths ():
     
     # check if data paths do not exist
     config = cfg.BlissConfig(data=test_datapaths.__doc__)
-    assert not config._datapaths
-    
+    try:
+        paths = config._datapaths
+        assert False
+    except cfg.BlissConfigMissing as e:
+        assert True
+        
 def test_flatten ():
     d = { 'a': { 'foo': 'a' }, 'b': { 'foo': 'b' } }
     assert cfg.flatten(dict(d), 'a', 'b') == { 'foo': 'b' }

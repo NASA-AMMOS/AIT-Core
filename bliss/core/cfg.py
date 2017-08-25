@@ -307,11 +307,11 @@ class BlissConfig (object):
         try:
             data = self._config['data']
             for k in data:
-                for pathkey in PATH_KEYS:
-                    if pathkey in data[k]:
-                        paths[k] = data[k][pathkey]
-        except KeyError:
-            pass
+                paths[k] = data[k]['path']
+        except KeyError as e:
+            raise BlissConfigMissing(e.message)
+        except Exception as e:
+            raise BlissConfigError('Error reading data paths: %s' % e)
 
         return paths
 
