@@ -26,6 +26,8 @@ DEFAULT_PATH_VARS = {
     'doy' : time.strftime('%j', time.gmtime())
 }
 
+PATH_KEYS = 'directory', 'file', 'filename', 'path', 'pathname'
+
 def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parameter_key='', *keys):
     """Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
@@ -36,7 +38,7 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
     See util.expandPath().
     """
     if len(keys) == 0:
-        keys = 'directory', 'file', 'filename', 'path', 'pathname'
+        keys = PATH_KEYS
 
     for name, value in config.items():
         if name in keys and type(name) is str:
@@ -302,9 +304,14 @@ class BlissConfig (object):
     def _datapaths(self):
         """Returns a simple key-value map for easy access to data paths"""
         paths = { }
-        data = self._config['data']
-        for k in data:
-            paths[k] = data[k]['path']
+        try:
+            data = self._config['data']
+            for k in data:
+                paths[k] = data[k]['path']
+        except KeyError as e:
+            raise BlissConfigMissing(e.message)
+        except Exception as e:
+            raise BlissConfigError('Error reading data paths: %s' % e)
 
         return paths
 
