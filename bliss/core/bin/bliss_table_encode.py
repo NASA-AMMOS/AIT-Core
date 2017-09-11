@@ -15,27 +15,18 @@ import argparse
 
 from bliss.core import gds, log, table
 
-
-defaults = {
-    "fswtabdict": None,
-    "tabfile"   : None,
-    "tabletype" : "targets",
-    "verbose"   : 0
-}
-
-
 def main():
     log.begin()
 
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add optional command line arguments
-    parser.add_argument('--fswtabdict', default=None)
-    parser.add_argument('--tabfile', default=None)
-    parser.add_argument('--tabletype', default='targets')
-    parser.add_argument('--verbose', type=int, default=0)
+    parser.add_argument('--fswtabdict', default=None, required=True)
+    parser.add_argument('--tabfile', default=None, required=True)
+    parser.add_argument('--tabletype', default=None, required=True)
+    parser.add_argument('--verbose', action='store_true', default=False)
 
     # Get command line arguments
     args = vars(parser.parse_args())

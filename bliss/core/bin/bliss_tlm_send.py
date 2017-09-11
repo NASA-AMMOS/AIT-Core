@@ -6,7 +6,7 @@ Usage: bliss-tlm-send [options] <pcap-filename>
 Sends the telemetry contained in the given pcap file via UDP.
 
   --port=number    Port to which to send data  (default: 3076)
-  --verbose=0|1    Report every packet sent    (default:    0)
+  --verbose        Report every packet sent    (default:False)
 
 Examples:
 
@@ -23,25 +23,22 @@ import argparse
 from bliss.core import gds, log, pcap
 
 
-defaults = {
-  'port'   : 3076,
-  'verbose': 0
-}
-
-
 def main():
     try:
 
         log.begin()
 
-        parser = argparse.ArgumentParser()
+
+        parser = argparse.ArgumentParser(
+            description=__doc__,
+            formatter_class=argparse.RawDescriptionHelpFormatter)
 
         # Add required command line arguments
         parser.add_argument('filename')
 
         # Add optional command line arguments
         parser.add_argument('--port', default=3076, type=int)
-        parser.add_argument('--verbose', type=int, default=0)
+        parser.add_argument('--verbose', action='store_true', default=False)
 
         # Get command line arguments
         args = vars(parser.parse_args())

@@ -31,7 +31,7 @@ def main ():
 
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add required command line argument
     parser.add_argument('filename', default=None)

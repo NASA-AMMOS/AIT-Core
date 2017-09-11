@@ -28,7 +28,7 @@ import requests
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add required command line arguments
     parser.add_argument('name')
