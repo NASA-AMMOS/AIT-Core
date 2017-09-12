@@ -13,6 +13,7 @@ import sys
 import getopt
 import zlib
 import socket
+import argparse
 
 from bliss.core import log, util
 
@@ -222,3 +223,70 @@ def getip():
   looking at you oco3-sim1).
   """
   return [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
+
+
+def arg_parse(arguments, description=None):
+  """
+  arg_parse()
+
+  Parses the arguments using argparse. Returns a Namespace object. The
+  arguments dictionary should match the argparse expected data structure:
+
+  .. code-block::python
+
+    arguments = {
+      '--port': {
+        'type'    : int,
+        'default' : 3075,
+        'help'    : 'Port on which to send data'
+      },
+      '--verbose': {
+        'action'  : 'store_true',
+        'default' : False,
+        'help'    : 'Hexdump of the raw command being sent.'
+      }
+    }
+
+  For positional arguments, be sure to pass in an OrderedDict:
+
+  .. code-block::python
+
+    arguments = {
+      '--port': {
+        'type'    : int,
+        'default' : 3075,
+        'help'    : 'Port on which to send data'
+      },
+      '--verbose': {
+        'action'  : 'store_true',
+        'default' : False,
+        'help'    : 'Hexdump of the raw command being sent.'
+      }
+    }
+
+    arguments['command'] = {
+      'type' : str,
+      'help' : 'Name of the command to send.'
+    }
+
+    arguments['arguments'] = {
+      'type'      : util.toNumberOrStr,
+      'metavar'   : 'argument',
+      'nargs'     : '*',
+      'help'      : 'Command arguments.'
+    }
+
+  """
+  if not description:
+    description = ""
+
+  ap  = argparse.ArgumentParser(
+    description = description,
+    formatter_class = argparse.ArgumentDefaultsHelpFormatter
+  )
+
+  for name, params in arguments.items():
+    ap.add_argument(name, **params)
+
+  args = ap.parse_args()
+  return args
