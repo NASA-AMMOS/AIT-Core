@@ -12,7 +12,6 @@ Submodules
    bliss.core.bin.bliss_cmd_send
    bliss.core.bin.bliss_create_dirs
    bliss.core.bin.bliss_dict_writer
-   bliss.core.bin.bliss_orbits
    bliss.core.bin.bliss_pcap
    bliss.core.bin.bliss_seq_decode
    bliss.core.bin.bliss_seq_encode
