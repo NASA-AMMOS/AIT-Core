@@ -312,6 +312,13 @@ def toNumber (str, default=None):
 
     return value
 
+def toNumberOrStr (str):
+    """toNumberOrStr(str) -> integer | float | string
+
+    Converts the given string to a numeric value, if possible. Otherwise
+    returns the input string
+    """
+    return toNumber(str, str)
 
 def toRepr (obj):
     """toRepr(obj) -> string

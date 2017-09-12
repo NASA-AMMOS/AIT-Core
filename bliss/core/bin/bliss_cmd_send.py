@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 '''
-usage: bliss-cmd-send [options] command arg1 ... argN
-
-Sends the given command and its arguments to the ISS
-simulator via UDP.
-
-  --port=number    Port on which to send data  (default: 3075)
-  --verbose=0|1    Hexdump data                (default:    0)
-
-Examples:
-
-  $ bliss-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
+bliss-cmd-send
 '''
 
 
@@ -18,6 +8,7 @@ import sys
 import socket
 import time
 import argparse
+from collections import OrderedDict
 
 from bliss.core import cmd, gds, log, util
 
@@ -25,30 +16,51 @@ from bliss.core import cmd, gds, log, util
 def main():
     log.begin()
 
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+    description     = """
 
-    # Add required command line arguments
-    parser.add_argument('command')
-    parser.add_argument('arguments', metavar='argument', nargs='*', help='command arguments')
+    Sends the given command and its arguments to the ISS simulator via UDP.
 
-    # Add optional command line arguments
-    parser.add_argument('--port', type=int, default=3075)
-    parser.add_argument('--verbose', action='store_true', default=False)
+        Examples:
+            $ bliss-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
 
-    # Get command line arguments
-    args = vars(parser.parse_args())
+          """
+
+    arguments = OrderedDict({
+        '--port': {
+            'type'    : int,
+            'default' : 3075,
+            'help'    : 'Port on which to send data'
+        },
+        '--verbose': {
+            'action'  : 'store_true',
+            'default' : False,
+            'help'    : 'Hexdump of the raw command being sent.'
+        }
+    })
+
+    arguments['command'] = {
+        'type' : str,
+        'help' : 'Name of the command to send.'
+    }
+
+    arguments['arguments'] = {
+        'type'      : util.toNumberOrStr,
+        'metavar'   : 'argument',
+        'nargs'     : '*',
+        'help'      : 'Command arguments.'
+    }
+
+    args = gds.arg_parse(arguments, description)
 
     host     = "127.0.0.1"
-    port     = args['port']
+    port     = args.port
     sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    verbose  = args['verbose']
+    verbose  = args.verbose
     cmddict  = cmd.getDefaultCmdDict()
 
     if cmddict is not None:
-        name     = args['command']
-        cmdargs  = args['arguments']
+        name     = args.command
+        cmdargs  = args.arguments
         command  = cmddict.create(name, *cmdargs)
         messages = [ ]
 
