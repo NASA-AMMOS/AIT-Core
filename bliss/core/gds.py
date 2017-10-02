@@ -290,3 +290,14 @@ def arg_parse(arguments, description=None):
 
   args = ap.parse_args()
   return args
+
+
+def extant_file(file):
+    """
+    'Type' for argparse - checks that file exists but does not open.
+    """
+    if not os.path.exists(file):
+        # Argparse uses the ArgumentTypeError to give a rejection message like:
+        # error: argument input: file does not exist
+        raise argparse.ArgumentTypeError("{0} does not exist".format(file))
+    return file
