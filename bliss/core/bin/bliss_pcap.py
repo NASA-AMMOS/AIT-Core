@@ -61,14 +61,14 @@ def main():
 
     # Get command line arguments
     args = vars(parser.parse_args())
-    cmd = vars['command']
+    cmd = args['command']
 
     # if using pcap.query
     if cmd is "query":
-        stime = vars['stime']
-        etime = vars['etime']
-        output = vars['output']
-        filenames = vars['fnames']
+        stime = args['stime']
+        etime = args['etime']
+        output = args['output']
+        filenames = args['fnames']
 
         try:
             # Convert start time to datetime object
@@ -85,8 +85,8 @@ def main():
 
     # if using pcap.stats
     else:
-        filename = vars['fname']
-        tolerance = vars['tol']
+        filename = args['fname']
+        tolerance = args['tol']
         pcap.stats(filename, tolerance)
 
 if __name__ == '__main__':
