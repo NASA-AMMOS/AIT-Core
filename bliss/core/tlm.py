@@ -139,7 +139,7 @@ class FieldDefinition(json.SlotSerializer, object):
     """
 
     __slots__ = [
-        "bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
+        "_bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
         "_type", "units", "when", "_title", "aliases"
     ]
 
@@ -207,6 +207,18 @@ class FieldDefinition(json.SlotSerializer, object):
         else:
             self._type = value
             log.error("Invalid field type '%s' " % value)
+
+    @property
+    def bytes(self):
+        """The argument bytes."""
+        return self._bytes
+
+    @bytes.setter
+    def bytes(self, value):
+        if type(value) is list and len(value) == 1:
+            self._bytes = value[0]
+        else:
+            self._bytes = value
 
 
     def decode(self, bytes, raw=False, index=None):
