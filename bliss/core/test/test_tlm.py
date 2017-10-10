@@ -370,6 +370,30 @@ def testAliases ():
     assert defn.fieldmap['A'].aliases['subsys'] == 'ALIAS_B'
     assert len(defn.fieldmap['A'].aliases) == 2
 
+def testSingleItemList ():
+    """
+    # this test will test 1-item lists
+    - !Packet
+      name: P
+      fields:
+        - !Field
+          name: foo
+          bytes: 0
+          type: U8
+        - !Field
+          name: bar
+          bytes: [1]
+          type: U8
+        - !Field
+          name: baz
+          bytes: [9,10]
+          type: MSB_U16
+    """
+    defn   = tlm.TlmDict(testSingleItemList.__doc__)['P']
+    assert defn.fieldmap['foo'].nbytes == 1
+    assert defn.fieldmap['bar'].bytes == 1
+    assert defn.fieldmap['baz'].bytes == [9, 10]
+
 
 if __name__ == '__main__':
     nose.main()
