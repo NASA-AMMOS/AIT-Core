@@ -1,5 +1,5 @@
-Introduction to BLISS Command & Data Handling Tables and Products
-=================================================================
+Introduction to Command & Data Handling Tables and Products
+===========================================================
 
 The `bliss.core.table` module provides interfaces for encoding and decoding flight software tables to and from text and binary.
 

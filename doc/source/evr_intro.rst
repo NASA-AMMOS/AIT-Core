@@ -1,7 +1,7 @@
-EVRs
-====
+EVRs Introduction
+=================
 
-BLISS provides support for YAML-based configuration of Event Verification Records (EVRs) within the system. Below is an example of a simple set of EVRs defined for use in the toolkit.
+AIT provides support for YAML-based configuration of Event Verification Records (EVRs) within the system. Below is an example of a simple set of EVRs defined for use in the toolkit.
 
 .. code-block:: yaml
 
@@ -32,7 +32,7 @@ BLISS provides support for YAML-based configuration of Event Verification Record
 Message Formatting
 ------------------
 
-BLISS EVRs allow you to include common format strings in the **message** attribute so that EVR data can be decoded and included in displays. You can use the :meth:`bliss.core.evr.EVRDefn.format_message` method for this.
+AIT EVRs allow you to include common format strings in the **message** attribute so that EVR data can be decoded and included in displays. You can use the :meth:`bliss.core.evr.EVRDefn.format_message` method for this.
 
 >>> import bliss.core.evr
 >>> evr = bliss.core.evr.getDefaultDict()[3]

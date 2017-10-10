@@ -15,12 +15,12 @@ Installation is largely the same if you wish to contribute or make changes to th
 Project Workflow Overview
 -------------------------
 
-BLISS use a feature-branch / pull request approach to organizing contributions to the toolkit. All code is reviewed prior to integration into the toolkit.
+AIT use a feature-branch / pull request approach to organizing contributions to the toolkit. All code is reviewed prior to integration into the toolkit.
 
 Track changes via tickets
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All changes need to be made against one or more tickets for tracking purposes. BLISS uses Github Issues along with Zenhub to track issue in the project. All tickets should have (outside of rare edge-cases):
+All changes need to be made against one or more tickets for tracking purposes. AIT uses Github Issues along with Zenhub to track issue in the project. All tickets should have (outside of rare edge-cases):
 
 - A concise title
 - An in-depth description of the problem / request. If reporting a bug, the description should include information on how to reproduce the bug. Also include the version of the code where you're seeing the bug.
@@ -30,7 +30,7 @@ If you're going to begin work on a ticket make sure to progress the ticket throu
 Commit Messages
 ^^^^^^^^^^^^^^^
 
-BLISS projects take a fairly standard approach to commit message formatting. You can checkout `Tim Pope's blog <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_ for a good starting point to figuring out how to format your commit messages. All commit messages should reference a ticket in their title / summary line.
+AIT projects take a fairly standard approach to commit message formatting. You can checkout `Tim Pope's blog <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_ for a good starting point to figuring out how to format your commit messages. All commit messages should reference a ticket in their title / summary line.
 
 .. code-block:: none
 
@@ -41,7 +41,7 @@ This makes sure that tickets are updated on Github with references to commits th
 Pull Requests and Feature Branches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All changes should be isolated to a feature branch that links to a ticket. The standard across BLISS projects is to use **issue-###** for branch names where **###**  is the issue number found on Github.
+All changes should be isolated to a feature branch that links to a ticket. The standard across AIT projects is to use **issue-###** for branch names where **###**  is the issue number found on Github.
 
 The title of a pull request should include a reference to the ticket being fixed as mentioned for commit messages. The description of a pull request should provide an in-depth explanation of the changes present. Note, if you wrote good commit messages this step should be easy!
 
@@ -54,7 +54,7 @@ Any tickets that are resolved by the pull request should be referenced with Gith
 Documentation
 -------------
 
-BLISS uses Sphinx to build its documentation. You can build the documentation
+AIT uses Sphinx to build its documentation. You can build the documentation
 with:
 
 .. code-block:: bash
@@ -76,7 +76,7 @@ documentation being out of date.
 Unit Tests
 ----------
 
-BLISS uses the `Nose <https://nose.readthedocs.org/en/latest/>`_ unit
+AIT uses the `Nose <https://nose.readthedocs.org/en/latest/>`_ unit
 test framework.  To run the tests in **python/bliss/test**:
 
 .. code-block:: bash
@@ -88,15 +88,15 @@ Please be sure to check that all tests pass before creating a pull request for a
 Coding Style
 ------------
 
-BLISS makes a best-effort attempt at sticking with PEP-8 conventions.
+AIT makes a best-effort attempt at sticking with PEP-8 conventions.
 
 Mailing Lists
 -------------
 
-The BLISS mailings lists are a good way to get in contact with people working on the project. If you need help with something on the project feel free to send an email to the BLISS team at **bliss.support@jpl.nasa.gov**.
+The AIT mailings lists are a good way to get in contact with people working on the project. If you need help with something on the project feel free to send an email to the AIT team at **bliss.support@jpl.nasa.gov**.
 
 Slack Channels
 --------------
 
-BLISS has three channels on the JPL team Slack. Generic BLISS conversations happen on **#bliss**, development conversations happen on **#bliss-development**, and user support conversations happen on **#bliss-support**.
+AIT has three channels on the JPL team Slack. Generic AIT conversations happen on **#bliss**, development conversations happen on **#bliss-development**, and user support conversations happen on **#bliss-support**.
 
