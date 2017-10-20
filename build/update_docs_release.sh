@@ -8,6 +8,7 @@ python setup.py build_sphinx
 git checkout gh-pages
 \cp doc/build/html/*.html .
 \cp doc/build/html/*.js .
+\cp doc/build/html/objects.inv .
 \cp -r doc/build/html/_static .
 \cp -r doc/build/html/_images .
 git add *.html *.js _static _images
