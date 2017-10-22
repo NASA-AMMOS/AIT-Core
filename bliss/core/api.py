@@ -186,7 +186,7 @@ class GeventDeque (object):
                         break
             finally:
                 if timer is not None:
-                    timeout.cancel()
+                    timer.cancel()
 
         if len(deque) == 0:
             self.notEmpty.clear()
