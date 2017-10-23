@@ -77,6 +77,8 @@ def toJSON (obj):
 
 
 class SlotSerializer (object):
+    __slots__ = [ ]
+
     def __jsonOmit__(self, key, val):
         return val is None or val is ''
 
