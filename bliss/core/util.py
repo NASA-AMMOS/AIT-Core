@@ -330,9 +330,9 @@ def toRepr (obj):
     names = [ ]
 
     if hasattr(obj, "__dict__"):
-        names = getattr(obj, "__dict__").keys()
-    elif hasattr(obj, "__slots__"):
-        names = getattr(obj, "__slots__")
+        names += getattr(obj, "__dict__").keys()
+    if hasattr(obj, "__slots__"):
+        names += getattr(obj, "__slots__")
 
     for name in names:
         value = getattr(obj, name)
@@ -383,7 +383,7 @@ def expandPath (pathname, prefix=None):
     return os.path.abspath(expanded)
 
 def listAllFiles (directory, suffix=None):
-    """Returns the list of all files within the input directory and 
+    """Returns the list of all files within the input directory and
     all subdirectories.
     """
     files = []
@@ -397,7 +397,7 @@ def listAllFiles (directory, suffix=None):
         for filename in filenames:
             relpath = ''
             if dirpath != directory:
-                relpath = os.path.relpath(dirpath, start=directory) 
+                relpath = os.path.relpath(dirpath, start=directory)
 
             files.append(os.path.join(relpath, filename))
 
