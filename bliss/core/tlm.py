@@ -12,6 +12,7 @@ definitions.
 import collections
 import os
 import pkg_resources
+import struct
 import yaml
 import csv
 
@@ -254,6 +255,13 @@ class FieldDefinition(json.SlotSerializer, object):
         """Encodes the given value according to this FieldDefinition."""
         if type(value) == str and self.enum and value in self.enum:
             value = self.enum[value]
+
+        if type(value) == int:
+            if self.shift > 0:
+                value <<= self.shift
+            if self.mask is not None:
+                value &= self.mask
+
         return self.type.encode(value) if self.type else bytearray()
 
 
@@ -311,13 +319,14 @@ class Packet(object):
         """Creates a new Packet based on the given Packet Definition and
         binary (raw) packet data.
         """
+        object.__setattr__(self, '_defn', defn)
+
         if data is None:
             data = bytearray(self.nbytes)
         elif not isinstance(data, bytearray):
             data = bytearray(data)
 
         object.__setattr__(self, '_data', data)
-        object.__setattr__(self, '_defn', defn)
 
         if defn.history:
             defn.history.add(self)
@@ -334,14 +343,40 @@ class Packet(object):
     def __setattr__(self, fieldname, value):
         """Sets the given packet field name to value."""
         self._assertField(fieldname)
-        defn                       = self._defn.fieldmap[fieldname]
-        self._data[ defn.slice() ] = defn.encode(value)
+
+        defn    = self._defn.fieldmap[fieldname]
+        bytes   = defn.encode(value)
+        indices = defn.slice()
+
+        if defn.mask is not None:
+            # If a mask is defined on the FieldDefinition (defn),
+            # defn.encode() will return the encoded value
+            # appropriately bit-shifted and masked.  This value, which
+            # could span several bytes must now be integrated
+            # byte-by-byte into the already existing data bytes of the
+            # packet (self._data), taking care not to clobber any bits
+            # outside the mask.  To accomplish this, for each byte at
+            # byte position b:
+            #
+            #   1.  Bitwise-AND the existing value (data[b]) with the
+            #       bitwise-COMPLEMENT of mask[b] to zero-out (clear)
+            #       only the masked bits of the existing value, then
+            #
+            #   2.  Bitwise-OR with the the new byte value (bytes[b])
+            #       to set the appropriate bits.
+
+            data = self._data[indices]
+            mask = bytearray(struct.pack(defn.type.format, defn.mask))
+
+            for b in range( len(data) ):
+                bytes[b] |= (data[b] & ~mask[b])
+
+        self._data[indices] = bytes
 
 
     def _assertField(self, fieldname):
         """Raise AttributeError when Packet has no field with the given
         name."""
-        special = 'history', 'raw'
         if not self._hasattr(fieldname):
             values = self._defn.name, fieldname
             raise AttributeError("Packet '%s' has no field '%s'" % values)
