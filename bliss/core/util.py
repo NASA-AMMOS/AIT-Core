@@ -218,7 +218,7 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
             msg = 'Could not load default %s "%s": %s'
             log.error(msg, config_key, filename, str(e))
 
-    return default or { }
+    return default or loader()
 
 
 def getFileSize(filename):
