@@ -333,7 +333,7 @@ class TestTlmConfig(object):
 
 
 
-def testArray ():
+def testArray():
     """
     # This test will use the following TLM dictionary definitions:
 
@@ -350,7 +350,8 @@ def testArray ():
 
     assert packet.A == [1, 2, 3]
 
-def testAliases ():
+
+def testAliases():
     """
     # This test will use the following TLM dictionary definitions:
 
@@ -370,7 +371,43 @@ def testAliases ():
     assert defn.fieldmap['A'].aliases['subsys'] == 'ALIAS_B'
     assert len(defn.fieldmap['A'].aliases) == 2
 
-def testSingleItemList ():
+
+def testMask():
+    """
+    # This test will use the following TLM dictionary definitions.
+    # The mask 0x0180 singles out the two bits on either MSB_U16
+    # word:
+    #
+    #     0b00000001 0b10000000
+
+    - !Packet
+      name: P
+      fields:
+        - !Field
+          name: M
+          type: MSB_U16
+          mask: 0x0180
+    """
+    defn   = tlm.TlmDict(testMask.__doc__)['P']
+    packet = tlm.Packet(defn)
+
+    assert packet.M     == 0
+    assert packet._data == bytearray([0x00, 0x00])
+
+    packet.M = 1
+    assert packet.M     == 1
+    assert packet._data == bytearray([0x00, 0x80])
+
+    packet.M = 2
+    assert packet.M     == 2
+    assert packet._data == bytearray([0x01, 0x00])
+
+    packet.M = 3
+    assert packet.M     == 3
+    assert packet._data == bytearray([0x01, 0x80])
+
+
+def testSingleItemList():
     """
     # this test will test 1-item lists
     - !Packet
