@@ -197,11 +197,6 @@ Below is an example of what you might have defined for a command. It uses most o
       - !Fixed
         type:  LSB_U16
         bytes: [0, 1]
-        value: 0x92ea
-        
-      - !Fixed
-        type:  LSB_U16
-        bytes: [2, 3]
         value: 0x3010
 
       - !Argument
@@ -212,21 +207,17 @@ Below is an example of what you might have defined for a command. It uses most o
           DIAG_RAM_REBOOT: Diagnostic reboot
         units: none
         type:  LSB_U16
-        bytes: [4, 5]
+        bytes: [2, 3]
         enum:
-          0x1000: PROM_REBOOT
+          0x0000: PROM_REBOOT
           0x0001: DIAG_RAM_REBOOT
+        
+      - !Fixed
+        type:  LSB_U16
+        bytes: [4, 5]
+        value: 0x0000
         
       - !Fixed
         type:  LSB_U16
         bytes: [6, 7]
         value: 0x0000
-        
-      - !Fixed
-        type:  LSB_U16
-        bytes: [8, 9]
-        value: 0x0000
-        
-      - !Fixed
-        type:  LSB_U16
-        bytes: [10, 11]
