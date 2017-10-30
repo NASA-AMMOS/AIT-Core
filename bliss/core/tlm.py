@@ -486,14 +486,18 @@ class PacketDefinition(json.SlotSerializer, object):
     """PacketDefinition
     """
     NextUID   = 1
-    __slots__ = [ 'constants', 'desc', 'fields', 'fieldmap', 'functions',
-                  'globals', 'history', 'name', 'uid' ]
+    __slots__ = [ 'ccsds', 'constants', 'desc', 'fields', 'fieldmap',
+                  'functions', 'globals', 'history', 'name', 'uid' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new PacketDefinition."""
         for slot in PacketDefinition.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, slot, kwargs.get(name, None))
+
+        if self.ccsds:
+            import ccsds
+            self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
 
         if self.fields is None:
             self.fields   = [ ]
@@ -505,8 +509,11 @@ class PacketDefinition(json.SlotSerializer, object):
         if self.history:
             self.history = PacketHistory(self, names=self.history)
 
-        self.uid                  = PacketDefinition.NextUID
-        PacketDefinition.NextUID += 1
+        if self.ccsds:
+            self.uid = self.ccsds.apid
+        else:
+            self.uid                  = PacketDefinition.NextUID
+            PacketDefinition.NextUID += 1
 
         self._update_globals()
         self._update_bytes(self.fields)
@@ -615,7 +622,11 @@ class PacketDefinition(json.SlotSerializer, object):
 
 
     def toJSON(self):
-        slots = 'name', 'desc', 'constants', 'functions', 'history', 'uid'
+        slots = ['name', 'desc', 'constants', 'functions', 'history', 'uid']
+
+        if self.ccsds is not None:
+            slots += 'ccsds'
+
         obj   = json.slotsToJSON(self, slots)
         obj['fields'] = { defn.name: defn.toJSON() for defn in self.fields }
         return obj

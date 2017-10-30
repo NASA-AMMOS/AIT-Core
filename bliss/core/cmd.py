@@ -259,14 +259,18 @@ class CmdDefn(json.SlotSerializer, object):
     subsystem, description and a list of argument definitions.  Name and
     opcode are required.  All others are optional.
     """
-    __slots__ = ["name", "_opcode", "subsystem", "title", "desc", "argdefns"]
-
+    __slots__ = ( 'name', '_opcode', 'subsystem', 'ccsds', 'title', 'desc',
+                  'argdefns' )
 
     def __init__(self, *args, **kwargs):
         """Creates a new Command Definition."""
         for slot in CmdDefn.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, slot, kwargs.get(name, None))
+
+        if self.ccsds:
+            import ccsds
+            self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
 
         if self.argdefns is None:
             self.argdefns = []
@@ -323,6 +327,10 @@ class CmdDefn(json.SlotSerializer, object):
     def toJSON(self):
         obj              = super(CmdDefn, self).toJSON()
         obj['arguments'] = obj.pop('argdefns')
+
+        if self.ccsds is None:
+            obj.pop('ccsds')
+
         return obj
 
     def validate(self, cmd, messages=None):
