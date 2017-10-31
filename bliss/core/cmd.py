@@ -340,7 +340,7 @@ class CmdDefn(json.SlotSerializer, object):
         obj['arguments'] = obj.pop('argdefns')
 
         if self.ccsds is None:
-            obj.pop('ccsds')
+            obj.pop('ccsds', None)
 
         return obj
 
