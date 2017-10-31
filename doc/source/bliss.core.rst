@@ -16,6 +16,7 @@ Submodules
 
    bliss.core.api
    bliss.core.bsc
+   bliss.core.ccsds
    bliss.core.cfg
    bliss.core.cmd
    bliss.core.coord

@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    bliss.core.test.test_bsc
+   bliss.core.test.test_ccsds
    bliss.core.test.test_cfg
    bliss.core.test.test_cmd
    bliss.core.test.test_coord
