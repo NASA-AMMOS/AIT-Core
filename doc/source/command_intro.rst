@@ -1,7 +1,7 @@
-BLISS Command Dictionary Introduction
-=====================================
+Command Dictionary Introduction
+===============================
 
-BLISS provides support for YAML-based configuration of commands with enough detail to provide verification of information (E.g., units) and encoding/decoding. The commands are constrained by the ISS 1553B command word design (64 total words with 11 reserved).
+AIT provides support for YAML-based configuration of commands with enough detail to provide verification of information (E.g., units) and encoding/decoding. The commands are constrained by the ISS 1553B command word design (64 total words with 11 reserved).
 
 .. code-block:: yaml
 
@@ -27,7 +27,7 @@ BLISS provides support for YAML-based configuration of commands with enough deta
           2: SCANNING
           3: SCIENCE
 
-All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. You can view the full schema file in the BLISS Core repo at **bliss/core/data/cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
+All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. You can view the full schema file in the AIT Core repo at **bliss/core/data/cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
 
 .. code-block:: javascript
 
@@ -65,14 +65,14 @@ All the valid parameters and attributes that you can have in your command dictio
         }
     }
 
-BLISS also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``bliss-yaml-validate`` it will check this for you.
+AIT also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``bliss-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
     
     $ bliss-yaml-validate --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
-BLISS provides command encoding/decoding via :class:`bliss.core.cmd.CmdDict`.
+AIT provides command encoding/decoding via :class:`bliss.core.cmd.CmdDict`.
 
     >>> cmddict = bliss.core.cmd.getDefaultDict()
     >>> type(cmddict)
@@ -103,7 +103,7 @@ Given a binary blob, you can also decode into a command.
 !Command
 --------
 
-The BLISS command constructor is the parent construct for all BLISS command definitions. It encapsulates optional arguments and contains metadata critical to the command.
+The AIT command constructor is the parent construct for all AIT command definitions. It encapsulates optional arguments and contains metadata critical to the command.
 
 name:
     A **string** denoting the name of this command

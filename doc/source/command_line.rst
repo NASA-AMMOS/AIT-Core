@@ -1,14 +1,14 @@
-BLISS Command Line Utilities
-============================
+Command Line Utilities
+======================
 
-BLISS provides a number of command line utilities for performing common operations and component initialization. Below is a breakdown of these utilities with a brief explanation of how they work and why you might use them.
+AIT provides a number of command line utilities for performing common operations and component initialization. Below is a breakdown of these utilities with a brief explanation of how they work and why you might use them.
 
 ----
 
 Component Initialization Utilities
 ----------------------------------
 
-The following commands are used to start up BLISS services or components.
+The following commands are used to start up AIT services or components.
 
 bliss-bsc
 ^^^^^^^^^

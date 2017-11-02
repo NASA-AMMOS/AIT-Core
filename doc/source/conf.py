@@ -50,9 +50,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'BLISS-Core'
+project = u'AIT-Core'
 copyright = u'2017, Jet Propulsion Laboratory'
-author = u'BLISS-Core Development Team'
+author = u'AIT-Core Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -1,7 +1,7 @@
-BLISS Telemetry Dictionary Introduction
-=======================================
+Telemetry Dictionary Introduction
+=================================
 
-BLISS provides support for YAML-based configuration of telemetry data within the system. BLISS uses a YAML based configuration file to define Packets and their constituent Fields.
+AIT provides support for YAML-based configuration of telemetry data within the system. AIT uses a YAML based configuration file to define Packets and their constituent Fields.
 
 .. code-block:: yaml
 
@@ -26,14 +26,14 @@ BLISS provides support for YAML-based configuration of telemetry data within the
             0: 'Core'
             1: 'Payload'
 
-All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  BLISS also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``bliss-yaml-validate`` it will check this for you.
+All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  AIT also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``bliss-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
 
     $ bliss-yaml-validate --tlm
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
-BLISS provides telemetry dictionary processing via :class:`bliss.core.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.core.tlm.PacketDefinition` instances.
+AIT provides telemetry dictionary processing via :class:`bliss.core.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.core.tlm.PacketDefinition` instances.
 
     >>> import bliss.core.tlm
     >>> tlmdict = bliss.core.tlm.getDefaultDict()
@@ -92,7 +92,7 @@ With the :class:`bliss.core.tlm.Packet` object we can check each of those values
 !Packet
 -------
 
-The BLISS packet constructor is the parent construct for all BLISS telemetry packet definitions. It encapsulates high level metadata related to the packet along with all the fields that create the packets structure.
+The AIT packet constructor is the parent construct for all AIT telemetry packet definitions. It encapsulates high level metadata related to the packet along with all the fields that create the packets structure.
 
 fields:
     A **list** of *!Field* objects that define the structure of the packet.

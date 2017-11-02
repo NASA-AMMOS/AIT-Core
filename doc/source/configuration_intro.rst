@@ -1,9 +1,9 @@
-Introduction to BLISS Configuration
-===================================
+Introduction to AIT Configuration
+=================================
 
-BLISS uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup Language) and JSON files for project configuration.
+AIT uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup Language) and JSON files for project configuration.
 
-You must ensure that the **BLISS_CONFIG** environment variable points to your **config.yaml** file in order for BLISS to properly configure your project. Given the default BLISS project structure you would have the following setup. This assumes you've set **BLISS_ROOT** to the project's root directory::
+You must ensure that the **BLISS_CONFIG** environment variable points to your **config.yaml** file in order for AIT to properly configure your project. Given the default AIT project structure you would have the following setup. This assumes you've set **BLISS_ROOT** to the project's root directory::
 
     export BLISS_CONFIG=$BLISS_ROOT/data/config/config.yaml
 
@@ -15,18 +15,18 @@ YAML is a data serialization language with a heavy focus on maintaining human-re
 config.yaml
 -----------
 
-BLISS uses **config.yaml** to load configuration data for the command (cmddict), telemetry (tlmdict), Event Verification Record (evrdict), Binary Stream Capture (bsc), and Logging (logging) components.
+AIT uses **config.yaml** to load configuration data for the command (cmddict), telemetry (tlmdict), Event Verification Record (evrdict), Binary Stream Capture (bsc), and Logging (logging) components.
 
 * **cmddict**   - defines the location of the Command Dictionary YAML file
 * **evrdict**   - defines the location of the Event Verification Record (EVR) Dictionary YAML file
 * **tlmdict**   - defines the location of the Telemetry Dictionary YAML file
 * **bsc**       - defines the location of the Binary Stream Capture (BSC) YAML configuration file.
 * **logging**   - defines the name to be associated with the Logger component (defaults to 'bliss') and the host to push the output syslog information (defaults to 'localhost')
-* **data**      - specifies all of the data paths associated with the GDS that can further be referenced by BLISS or mission-specific tools. The paths specified can use path variables to allow for value substitution based upon date, hostname, platform, or any other configurable variable. See the *bliss-create-dirs* tool and *Path Expansion and Variables* section below for more details.
+* **data**      - specifies all of the data paths associated with the GDS that can further be referenced by AIT or mission-specific tools. The paths specified can use path variables to allow for value substitution based upon date, hostname, platform, or any other configurable variable. See the *bliss-create-dirs* tool and *Path Expansion and Variables* section below for more details.
 
-The filename paths should be considered relative to the location of **config.yaml**. If you have **hostname** specific configuration you can add another block of data. The **default** block is the fall back if a match cannot be found. Below is an example **config.yaml** file that defines the default configuration files for BLISS.
+The filename paths should be considered relative to the location of **config.yaml**. If you have **hostname** specific configuration you can add another block of data. The **default** block is the fall back if a match cannot be found. Below is an example **config.yaml** file that defines the default configuration files for AIT.
 
-BLISS loads **config.yaml** on import. Here is an example **config.yaml**:
+AIT loads **config.yaml** on import. Here is an example **config.yaml**:
 
 .. code-block:: none
 
@@ -135,8 +135,8 @@ Variables can also be specified within the path in order to allow for more expli
 
   * ${year} - current year
   * ${doy}  - current day of year
-  * ${hostname} - hostname of machine where BLISS is running
-  * ${platform} - platform of machine where BLISS is running
+  * ${hostname} - hostname of machine where AIT is running
+  * ${platform} - platform of machine where AIT is running
 
 Example
 ^^^^^^^
@@ -165,5 +165,5 @@ See **bliss-create-dir** software for more details on path substitution and how 
 YAML Idiosyncrasies
 -------------------
 
-While YAML is generally very user-friendly, every tool has its rough edges. The BLISS team has done its best to help you avoid these where possible. However, it may still be worth investigating potential roadblocks as you use YAML more. There is an excellent resource that the developers at SaltStack have put together on `YAML idosyncrasies <https://docs.saltstack.com/en/latest/topics/troubleshooting/yaml_idiosyncrasies.html>`_ that is worth reading. It should help you avoid any potential problems in your YAML configuration.
+While YAML is generally very user-friendly, every tool has its rough edges. The AIT team has done its best to help you avoid these where possible. However, it may still be worth investigating potential roadblocks as you use YAML more. There is an excellent resource that the developers at SaltStack have put together on `YAML idosyncrasies <https://docs.saltstack.com/en/latest/topics/troubleshooting/yaml_idiosyncrasies.html>`_ that is worth reading. It should help you avoid any potential problems in your YAML configuration.
 

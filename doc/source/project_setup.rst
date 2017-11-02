@@ -1,12 +1,12 @@
-Setting up a New Project with BLISS
-===================================
+Setting up a New Project with AIT
+=================================
 
-The following documentation will teach you how to setup a new project to build off of the BLISS toolkit. This guide assumes that the project you'll be developing is a Python-based project.
+The following documentation will teach you how to setup a new project to build off of the AMMOS Instrument Toolkit. This guide assumes that the project you'll be developing is a Python-based project.
 
-Add BLISS Core as a Dependency
+Add AIT Core as a Dependency
 ------------------------------
 
-You'll need to add BLISS Core to either your **requirements.txt** file or your **setup.py** file.
+You'll need to add AIT Core to either your **requirements.txt** file or your **setup.py** file.
 
 If you use a requirements file for specifying dependencies:
 
@@ -26,7 +26,7 @@ If you use **setup.py** for specifying dependencies:
        'https://bliss.jpl.nasa.gov/pypi/simple/bliss-core/'
    ]
 
-Set BLISS Config Values
------------------------
+Set AIT Config Values
+---------------------
 
-BLISS provides a large number of configuration parameters for customizing and configuring the toolkit. BLISS ships with an example **config.yaml** skeleton located at **/PROJECT_ROOT/data/config/config.yaml** that you can use as a baseline configuration file. You should read the :doc:`Configuration Introduction <configuration_intro>` and the component specific configuration documents such as the :doc:`Telemetry <telemetry_intro>`, :doc:`Commanding <command_intro>`, and :doc:`EVR <evr_intro>` pages for additional information and update the files to meet your projects specifications.
+AIT provides a large number of configuration parameters for customizing and configuring the toolkit. AIT ships with an example **config.yaml** skeleton located at **/PROJECT_ROOT/data/config/config.yaml** that you can use as a baseline configuration file. You should read the :doc:`Configuration Introduction <configuration_intro>` and the component specific configuration documents such as the :doc:`Telemetry <telemetry_intro>`, :doc:`Commanding <command_intro>`, and :doc:`EVR <evr_intro>` pages for additional information and update the files to meet your project's specifications.

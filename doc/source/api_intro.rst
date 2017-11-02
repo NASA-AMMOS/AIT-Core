@@ -1,12 +1,12 @@
-BLISS Application Programming Interface Module
-==============================================
+Application Programming Interface Module
+========================================
 
 The :mod:`bliss.core.api` module provides an Application Programming Interface (API) to your instrument by bringing together the ``core.cmd`` and ``core.tlm`` modules in a complementary whole, allowing you to script instrument interactions. The two primary tools in the ``api`` module that you'll use for scripting instrument interactions are the :class:`bliss.core.api.Instrument` class and the :func:`bliss.core.api.wait` function.
 
 Instrument
 ----------
 
-The :class:`bliss.core.api.Instrument` class brings together BLISS' commanding and telemetry tools into a single interface. With this you can monitor multiple telemetry packet streams and send commands to your instrument.  Let's look at a few examples.
+The :class:`bliss.core.api.Instrument` class brings together AIT's commanding and telemetry tools into a single interface. With this you can monitor multiple telemetry packet streams and send commands to your instrument.  Let's look at a few examples.
 
 First we'll instantiate an instance of our Instrument with the default commanding and telemetry connections::
 
