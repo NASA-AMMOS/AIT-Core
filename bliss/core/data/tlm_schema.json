@@ -17,6 +17,12 @@
             "include": {
                 "type": "string"
             },
+            "ccsds": {
+                "type": "object",
+                "apid": {
+                    "type": "string"
+                }
+            },
             "name": {
                 "type": "string"
             },
