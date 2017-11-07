@@ -172,8 +172,10 @@ def getUTCtoGPSLeapSeconds(timestamp=None):
                 return 15
         elif datetime.datetime(2012, 7, 1) <= timestamp < datetime.datetime(2015, 7, 1):
                 return 16
-        elif timestamp >= datetime.datetime(2015, 7, 1):
+        elif datetime.datetime(2015, 7, 1) <= timestamp < datetime.datetime(2017, 1, 1):
                 return 17
+        elif timestamp >= datetime.datetime(2017, 1, 1):
+                return 18
 
 
 def toGPSSeconds(timestamp):
