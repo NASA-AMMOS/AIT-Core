@@ -21,6 +21,7 @@ import __builtin__
 import struct
 import dmc
 import datetime
+import log
 
 
 """
@@ -255,17 +256,19 @@ class PCapStream:
         return (header, packet)
 
 
-    def write (self, bytes):
+    def write (self, bytes, header=None):
         """write() is meant to work like the normal file write().  It takes
-        one argument, a byte array to write to the file as a single
-        PCAP packet.  The length of the byte array should be less than
-        65535 bytes.  write() returns the number of bytes actually
-        written to the file.
+        two arguments, a byte array to write to the file as a single
+        PCAP packet, and an optional header if one already exists. 
+        The length of the byte array should be less than 65535 bytes. 
+        write() returns the number of bytes actually written to the file.
         """
         if type(bytes) is str:
             bytes = bytearray(bytes)
 
-        header = PCapPacketHeader(orig_len=len(bytes))
+        if not isinstance(header, PCapPacketHeader):
+            header = PCapPacketHeader(orig_len=len(bytes))
+
         packet = bytes[0:header.incl_len]
 
         self._stream.write( str(header) )
@@ -278,7 +281,6 @@ class PCapStream:
     def close (self):
         """Closes this PCapStream by closing the underlying Python stream."""
         self._stream.close()
-
 
 
 def open (filename, mode='r'):
@@ -307,7 +309,7 @@ def query(starttime, endtime, output=None, *filenames):
         output:
             Optional: The output file name. Defaults to
             [first filename in filenames][starttime]-[endtime].pcap
-        filemanes:
+        filenames:
             A tuple of one or more file names to extract data from.
     '''
     
@@ -316,51 +318,50 @@ def query(starttime, endtime, output=None, *filenames):
     else:
         output = output
 
-    with __builtin__.open(output,'wb') as outfile:
-        h = False
+    with open(output,'w') as outfile:
         for filename in filenames:
+            log.info("pcap.query: processing %s..." % filename)
             with open(filename, 'r') as stream:
-                if not h:
-                    outfile.write(str(stream.header))
-                    h = True
                 for header, packet in stream:
                     if packet is not None:
-                        if header.timestamp >= starttime and header.timestamp < endtime:
-                            outfile.write(str(header))
-                            outfile.write(packet)
+                        if header.timestamp >= starttime and header.timestamp <= endtime:
+                            outfile.write(packet, header=header)
 
 
-def stats(filename, tolerance=2):
+def stats(pcapfiles, tolerance=2):
     '''For the given file, displays the time ranges available in the file.
     Tolerance sets the limit of seconds between a continuous time range.
     Any gaps larger than tolerance will end the current time range and
     print a new time range.
 
     Args:
-        filename:
-            The name of the file to read.
+        pcapfiles:
+            List of files to read.
         tolerance:
             The max number of seconds between packets to count as a contiguous
             time range. If the number of seconds between two packets is greater
             than tolerance, the time range is split.
     '''
-    first = None
-    last = None
-
     timeranges = []
 
-    with open(filename, 'r') as stream:
-        for header, packet in stream:
-            if packet is not None:
-                if first is None:
-                    first = header.timestamp
-                if last and header.timestamp - last > datetime.timedelta(tolerance):
-                    timeranges.append(str(first) + " - " + str(last))
-                    first = header.timestamp
-                    last = None
-                else:
-                    last = header.timestamp
+    if isinstance(pcapfiles, str):
+        pcapfiles = [pcapfiles]
 
-    timeranges.append(str(first) + " - " + str(last))
+    for filename in pcapfiles:
+        log.info("pcap.stats: processing %s..." % filename)
+        first = None
+        last = None
+        with open(filename, 'r') as stream:
+            for header, packet in stream:
+                if packet is not None:
+                    if first is None:
+                        first = header.timestamp
+                    if last and header.timestamp - last > datetime.timedelta(tolerance):
+                        first = header.timestamp
+                        last = None
+                    else:
+                        last = header.timestamp
+
+        timeranges.append({'start': first, 'stop': last})
 
     return timeranges

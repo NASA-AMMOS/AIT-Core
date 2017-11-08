@@ -393,7 +393,7 @@ def expandPath (pathname, prefix=None):
 
     return os.path.abspath(expanded)
 
-def listAllFiles (directory, suffix=None):
+def listAllFiles (directory, suffix=None, abspath=False):
     """Returns the list of all files within the input directory and
     all subdirectories.
     """
@@ -406,11 +406,12 @@ def listAllFiles (directory, suffix=None):
             filenames = [f for f in filenames if f.endswith(suffix)]
 
         for filename in filenames:
-            relpath = ''
+            path = ''
             if dirpath != directory:
-                relpath = os.path.relpath(dirpath, start=directory)
+                if not abspath:
+                    path = os.path.relpath(dirpath, start=directory)
 
-            files.append(os.path.join(relpath, filename))
+            files.append(os.path.join(path, filename))
 
     return files
 

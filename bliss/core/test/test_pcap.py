@@ -208,9 +208,12 @@ def testPCapStats():
     cap = pcap.stats(TmpFilename)
 
     cap = cap[0]
-    predict = str(str(start) + " - " + str(end))
+    # print cap
+    # predict = str(str(start) + " - " + str(end))
+    predict = {'start': start, 'stop': end}
 
-    assert cap == predict
+    assert cap['start'] == predict['start']
+    assert cap['stop'] == predict['stop']
 
     os.unlink(TmpFilename)
 

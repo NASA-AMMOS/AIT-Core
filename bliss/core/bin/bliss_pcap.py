@@ -15,93 +15,121 @@
 # information to foreign countries or providing access to foreign persons.
 
 '''
-Usage:
-   bliss-pcap-query [query|stats] [arguments]
+Bliss PCap Query
 
-Arguments:
-    query    Run the Query command
-
-        stime       Starting time of the desired time range
-        etime       Ending time of the desired time range
-        fnames      Filename or filenames to be analyzed
-        --output    The name of the output file to be generated
-
-    stats    Run the Stats command
-
-        fname       Name of the file to analyze
-        tol         Number of seconds allowed between contiguous time ranges
-
-Description:
-    Bliss PCap Query
-
-    Provides a command line script for running PCap library functions.
-
-    pcap.query:
-        Creates a new file containing the data from one or more given PCap files
-        in a given time range. If no output file name is given, the new file name
-        will be the name of the first file with the time frame appended to the name.
-
-    pcap.stats:
-        Displays the time ranges available in a given PCap file.
-
-
-Author: Emily Winner
+Provides a command line script for running PCap library functions.
 '''
 
 import argparse
+import datetime
+import os
 
-from bliss.core import pcap
+from bliss.core import dmc, log, pcap, util
 
 def main():
-    parser = argparse.ArgumentParser(
+    ap = argparse.ArgumentParser(
         description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    # create subparser for different commands
-    cmdparsers = parser.add_subparsers(dest='command',help='Arguments for stats or query')
+    arguments = {
+        '--query': {
+            'action'  : 'store_true',
+            'help'    : ('Creates a new file containing the data from one or more given PCap files'
+                         'in a given time range. If no output file name is given, the new file name'
+                         'will be the name of the first file with the time frame appended to the name.')
+        },
 
-    # Add arguments for query
-    qParser = cmdparsers.add_parser('query', help='Arguments for query')
-    qParser.add_argument('stime')
-    qParser.add_argument('etime')
-    qParser.add_argument('--output',default=None)
-    qParser.add_argument('fnames',nargs='*',metavar='fname',help='names of files to be analyzed')
+        '--stats': {
+            'action'  : 'store_true',
+            'help'    : ('Displays the time ranges available in a given PCap file.')
+        },
 
-    # Add arguments for stats
-    sParser = cmdparsers.add_parser('stats',help='Arguments for stats')
-    sParser.add_argument('fname')
-    sParser.add_argument('tol',default=2,type=int)
+        '--stime': {
+            'default' : dmc.GPS_Epoch,
+            'help'    : ("Starting time for desired telemetry range in "
+                         "ISO 8601 Format 'YY-MM-DDThh:mm:SSZ'")
+        },
 
-    # Get command line arguments
-    args = vars(parser.parse_args())
-    cmd = args['command']
+        '--etime': {
+            'default' : datetime.datetime.now(),
+            'help'    : ("Ending time for desired telemetry range in "
+                         "ISO 8601 Format 'YY-MM-DDThh:mm:SSZ'")
+        },
+
+        '--output': {
+            'default' : None,
+            'help'    : ('The name of the output file to be generated')
+        },
+
+        '--tol': {
+            'type'    : int,
+            'default' : 2,
+            'help'    : ('Number of seconds allowed between contiguous time ranges')
+        },
+
+        '--pcap': {
+            'nargs': '+',
+            'metavar': '</path/to/pcap>',
+            'help': 'File or directory path containing PCAPs',
+            'required': True
+        }
+    }
+
+    for name, params in arguments.items():
+        ap.add_argument(name, **params)
+
+    args = ap.parse_args()
+
+    pcapfiles = []
+    for p in args.pcap:
+        if os.path.isdir(p):
+            pcapfiles.extend(util.listAllFiles(p, 'pcap', True))
+        elif os.path.isfile(p):
+            pcapfiles.append(p)
+        else:
+            ap.print_help()
+            raise IOError("Invalid pcapfile. Check path and try again: %s" % p)
+
+    log.begin()
 
     # if using pcap.query
-    if cmd is "query":
-        stime = args['stime']
-        etime = args['etime']
-        output = args['output']
-        filenames = args['fnames']
+    if args.query:
+        stime = args.stime
+        etime = args.etime
+        output = args.output
 
         try:
             # Convert start time to datetime object
-            starttime = datetime.datetime.strptime(stime,'%Y-%m-%dT%H:%M:%S')
+            starttime = datetime.datetime.strptime(stime, dmc.ISO_8601_Format)
 
             # Convert end time to datetime object
-            endtime = datetime.datetime.strptime(etime,'%Y-%m-%dT%H:%M:%S')
+            endtime = datetime.datetime.strptime(etime, dmc.ISO_8601_Format)
 
         except ValueError:
-            print "ValueError: Start and end time must be formatted as %Y-%m=%DT%H:%M:%S"
-            exit(2)
+            ap.print_help()
+            print
+            print
+            raise ValueError("Start and end time must be formatted as YY-MM-DDThh:mm:SSZ")
 
-        pcap.query(starttime, endtime, output, filenames)
+        pcap.query(starttime, endtime, output, *pcapfiles)
 
     # if using pcap.stats
+    elif args.stats:
+        tolerance = args.tol
+        timeranges = pcap.stats(pcapfiles, tolerance)
+
+        print
+        print
+        print 'Time Ranges:'
+        for tr in timeranges:
+            print '%s - %s' % (str(tr['start']), str(tr['stop']))
+        print
+        print
     else:
-        filename = args['fname']
-        tolerance = args['tol']
-        pcap.stats(filename, tolerance)
+        ap.print_help()
+
+    log.end()
 
 if __name__ == '__main__':
   main()
