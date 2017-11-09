@@ -159,9 +159,13 @@ def test_listAllFiles():
             with open(fname, 'wb') as file:
                 os.utime(fname, None)
 
+        # test relative path
         filelist = util.listAllFiles(pathname, ".txt")
-
         assert os.path.relpath(files[0], start=directory) in filelist
+        
+        # test absolute path
+        filelist = util.listAllFiles(pathname, ".txt", True)
+        assert files[0] in filelist
     finally:
         shutil.rmtree(os.path.expanduser(os.path.join('~','foo')))
 
