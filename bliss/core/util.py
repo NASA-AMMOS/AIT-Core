@@ -406,12 +406,13 @@ def listAllFiles (directory, suffix=None, abspath=False):
             filenames = [f for f in filenames if f.endswith(suffix)]
 
         for filename in filenames:
-            path = ''
-            if dirpath != directory:
-                if not abspath:
-                    path = os.path.relpath(dirpath, start=directory)
+            filepath = os.path.join(dirpath, filename)
+            if not abspath:
+                filepath = os.path.relpath(filepath, start=directory)
 
-            files.append(os.path.join(path, filename))
+                # os.path.join(path, filename)
+
+            files.append(filepath)
 
     return files
 
