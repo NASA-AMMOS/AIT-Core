@@ -25,18 +25,21 @@ script instrument interactions, e.g.:
     # TBA
 """
 
+from __future__ import absolute_import
 
 import gevent.monkey; gevent.monkey.patch_all()
 import gevent
 import gevent.event
 import gevent.server
-
+import requests
 
 import collections
 import inspect
+import json
 import socket
 import time
 
+import bliss.core
 from bliss.core import cmd, gds, log, tlm
 
 
@@ -536,3 +539,69 @@ def wait (cond, msg=None, _timeout=10, _raiseException=True):
             elapsed += delay
 
     return status
+
+
+def prompt_user(prompt_type, timeout=30, **options):
+    ''' Send a user prompt request to the GUI
+
+    Arguments:
+        prompt_type (string): The prompt type to send to the GUI. Currently
+            the only type supported is 'confirm'.
+
+        timeout (int): The optional time value for which the prompt should be
+            displayed to the user before a timeout occurs. Defaults to 30 seconds.
+
+        options (dict): The keyword arguments that should be passed to the requested
+            prompt type. Check prompt specific sections below for information on what
+            arguments are expected to be present.
+
+    Raises:
+        ValueError:
+            If the prompt type received is an unexpected value
+
+    **Confirm Prompt**
+    Display a message to the user and prompt them for a confirm/deny
+    response to the message.
+
+    Arguments:
+        msg (string): The message to return to the user
+
+    Returns:
+        True if the user picks 'Confirm', False if the user picks 'Deny'
+
+    Raises:
+        KeyError:
+            If the options passed to the prompt handler doesn't contain a
+            `msg` attribute.
+
+        APITimeoutError:
+            If the timeout value is reached without receiving a response.
+    '''
+    if prompt_type == 'confirm':
+        return _send_confirm_prompt(timeout, options)
+    else:
+        raise ValueError('Unknown prompt type: {}'.format(prompt_type))
+
+def _send_confirm_prompt(timeout, options):
+    ''''''
+    if 'msg' not in options:
+        raise KeyError('Confirm prompt options does not contain a `msg` attribute')
+
+    host = bliss.config.get('gui.host', 'localhost')
+    port = bliss.config.get('gui.port', 8080)
+    url = 'http://{}:{}/prompt'.format(host, port)
+    conn_timeout = timeout * 2
+
+    ret = requests.post(url, json={
+        'type': 'confirm',
+        'options': options,
+        'timeout': timeout
+    }, timeout=conn_timeout)
+    ret = json.loads(ret.text)['response']
+
+    if ret == 'confirm':
+        return True
+    elif ret == 'deny':
+        return False
+    else:
+        raise APITimeoutError(timeout=timeout, msg='User confirm prompt timed out')
