@@ -15,9 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 '''
-Bliss PCap Query
-
-Provides a command line script for running PCap library functions.
+Provides a command line script for running pcap library functions.
 '''
 
 import argparse
@@ -35,44 +33,45 @@ def main():
     arguments = {
         '--query': {
             'action'  : 'store_true',
-            'help'    : ('Creates a new file containing the data from one or more given PCap files'
-                         'in a given time range. If no output file name is given, the new file name'
-                         'will be the name of the first file with the time frame appended to the name.')
+            'help'    : ('Creates a new file containing the data from one or '
+                         'more given pcap files in a given time range. If no '
+                         'output file name is given, the new file name will '
+                         'be the name of the first file with the time frame '
+                         'appended to the name.')
         },
 
-        '--stats': {
+        '--times': {
             'action'  : 'store_true',
-            'help'    : ('Displays the time ranges available in a given PCap file.')
+            'help'    : 'Lists time ranges available in pcap file(s)'
         },
 
         '--stime': {
             'default' : dmc.GPS_Epoch,
-            'help'    : ("Starting time for desired telemetry range in "
-                         "ISO 8601 Format 'YY-MM-DDThh:mm:SSZ'")
+            'help'    : ('Starting time for desired telemetry range in '
+                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
         },
 
         '--etime': {
             'default' : datetime.datetime.now(),
-            'help'    : ("Ending time for desired telemetry range in "
-                         "ISO 8601 Format 'YY-MM-DDThh:mm:SSZ'")
+            'help'    : ('Ending time for desired telemetry range in '
+                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
         },
 
         '--output': {
             'default' : None,
-            'help'    : ('The name of the output file to be generated')
+            'help'    : 'The name of the output file to be generated'
         },
 
         '--tol': {
             'type'    : int,
             'default' : 2,
-            'help'    : ('Number of seconds allowed between contiguous time ranges')
+            'help'    : 'Number of seconds allowed between time ranges'
         },
 
-        '--pcap': {
+        'file': {
             'nargs': '+',
             'metavar': '</path/to/pcap>',
-            'help': 'File or directory path containing PCAPs',
-            'required': True
+            'help': 'File or directory path containing .pcap file(s)',
         }
     }
 
@@ -82,7 +81,7 @@ def main():
     args = ap.parse_args()
 
     pcapfiles = []
-    for p in args.pcap:
+    for p in args.file:
         if os.path.isdir(p):
             pcapfiles.extend(util.listAllFiles(p, 'pcap', True))
         elif os.path.isfile(p):
@@ -114,18 +113,18 @@ def main():
 
         pcap.query(starttime, endtime, output, *pcapfiles)
 
-    # if using pcap.stats
-    elif args.stats:
-        tolerance = args.tol
-        timeranges = pcap.stats(pcapfiles, tolerance)
+    # if using pcap.times
+    elif args.times:
+        times = pcap.times(pcapfiles, args.tol)
 
-        print
-        print
-        print 'Time Ranges:'
-        for tr in timeranges:
-            print '%s - %s' % (str(tr['start']), str(tr['stop']))
-        print
-        print
+        if len(times) == 1:
+            for start, stop in times.values()[0]:
+                print '%s - %s' % (start, stop)
+        else:
+            for filename in sorted(times.keys()):
+                basename = os.path.basename(filename)
+                for start, stop in times[filename]:
+                    print '%s: %s - %s' % (filename, start, stop)
     else:
         ap.print_help()
 
