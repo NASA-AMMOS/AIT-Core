@@ -259,8 +259,8 @@ class PCapStream:
     def write (self, bytes, header=None):
         """write() is meant to work like the normal file write().  It takes
         two arguments, a byte array to write to the file as a single
-        PCAP packet, and an optional header if one already exists. 
-        The length of the byte array should be less than 65535 bytes. 
+        PCAP packet, and an optional header if one already exists.
+        The length of the byte array should be less than 65535 bytes.
         write() returns the number of bytes actually written to the file.
         """
         if type(bytes) is str:
@@ -312,7 +312,7 @@ def query(starttime, endtime, output=None, *filenames):
         filenames:
             A tuple of one or more file names to extract data from.
     '''
-    
+
     if not output:
         output = (filenames[0].replace('.pcap','') + starttime.isoformat() + '-' + endtime.isoformat() + '.pcap')
     else:
@@ -328,40 +328,33 @@ def query(starttime, endtime, output=None, *filenames):
                             outfile.write(packet, header=header)
 
 
-def stats(pcapfiles, tolerance=2):
-    '''For the given file, displays the time ranges available in the file.
-    Tolerance sets the limit of seconds between a continuous time range.
-    Any gaps larger than tolerance will end the current time range and
-    print a new time range.
+def times(filenames, tolerance=2):
+    """For the given file(s), return the time ranges available.  Tolerance
+    sets the number of seconds between time ranges.  Any gaps larger
+    than tolerance seconds will result in a new time range.
 
-    Args:
-        pcapfiles:
-            List of files to read.
-        tolerance:
-            The max number of seconds between packets to count as a contiguous
-            time range. If the number of seconds between two packets is greater
-            than tolerance, the time range is split.
-    '''
-    timeranges = []
+    :param filenames: Single filename (string) or list of filenames
+    :param tolerance: Maximum seconds between contiguous time ranges
 
-    if isinstance(pcapfiles, str):
-        pcapfiles = [pcapfiles]
+    :returns: A dictionary keyed by filename, with each value a list
+    of (start, stop) time ranges for that file.
+    """
+    times = { }
+    delta = datetime.timedelta(seconds=tolerance)
 
-    for filename in pcapfiles:
-        log.info("pcap.stats: processing %s..." % filename)
-        first = None
-        last = None
+    if isinstance(filenames, str):
+        filenames = [ filenames ]
+
+    for filename in filenames:
         with open(filename, 'r') as stream:
+            times[filename] = list()
+            header, packet  = stream.read()
+            start , stop    = header.timestamp, header.timestamp
+
             for header, packet in stream:
-                if packet is not None:
-                    if first is None:
-                        first = header.timestamp
-                    if last and header.timestamp - last > datetime.timedelta(tolerance):
-                        first = header.timestamp
-                        last = None
-                    else:
-                        last = header.timestamp
+                if header.timestamp - stop > delta:
+                    times[filename].append((start, stop))
+                    start = header.timestamp
+                stop = header.timestamp
 
-        timeranges.append({'start': first, 'stop': last})
-
-    return timeranges
+    return times
