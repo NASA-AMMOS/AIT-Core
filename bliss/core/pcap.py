@@ -357,4 +357,6 @@ def times(filenames, tolerance=2):
                     start = header.timestamp
                 stop = header.timestamp
 
+            times[filename].append((start, stop))
+
     return times

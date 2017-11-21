@@ -19,6 +19,7 @@ import os
 import struct
 import time
 import warnings
+import time
 
 import nose
 
@@ -190,7 +191,7 @@ def testPCapPacketHeaderInit ():
     assert header.timestamp == datetime.datetime.utcfromtimestamp(float_ts)
 
 
-def testPCapStats():
+def testTimes():
     packets = "This is a nice little sentence".split()
     with pcap.open(TmpFilename, 'w') as stream:
         for p in packets:
@@ -200,46 +201,58 @@ def testPCapStats():
         i = 0
         for header, packet in stream:
             if i is 0:
-                start = header.timestamp
+                exp_start = header.timestamp
             if i is 5:
-               end = header.timestamp
+                exp_end = header.timestamp
             i += 1
 
-    cap = pcap.stats(TmpFilename)
+    times = pcap.times(TmpFilename)
 
-    cap = cap[0]
-    # print cap
-    # predict = str(str(start) + " - " + str(end))
-    predict = {'start': start, 'stop': end}
+    start =  times[TmpFilename][0][0]
+    stop = times[TmpFilename][0][1]
 
-    assert cap['start'] == predict['start']
-    assert cap['stop'] == predict['stop']
+    assert len(times[TmpFilename]) == 1
+    assert start == exp_start
+    assert stop == exp_end
 
-    os.unlink(TmpFilename)
+    # test when we have 2 separate time segments
+    with pcap.open(TmpFilename, 'w') as stream:
+        for p in packets:
+            stream.write(p)
+
+        time.sleep(3)
+
+        for p in packets:
+            stream.write(p)
+
+    times = pcap.times(TmpFilename, 2)
+    assert len(times[TmpFilename]) == 2
+
+    os.remove(TmpFilename)
 
 
-def testPCapQuery():
+def testQuery():
     TmpRes = "test_pcap_res.pcap"
-    TmpFilenam = "test_pcap_file.pcap"
+    TmpFilename = "test_pcap_file.pcap"
     packets = "This is a nice little sentence".split()
     start = datetime.datetime.now()
 
-    with pcap.open(TmpFilenam, 'w') as stream:
+    with pcap.open(TmpFilename, 'w') as stream:
         for p in packets:
             stream.write(p)
     end = datetime.datetime.max
 
-    pcap.query(start, end, TmpRes, (TmpFilenam))
+    pcap.query(start, end, TmpRes, (TmpFilename))
 
-    with pcap.open(TmpFilenam, 'r') as stream1:
+    with pcap.open(TmpFilename, 'r') as stream1:
         with pcap.open(TmpRes, 'r') as stream2:
             header1, packet1 = stream1.read()
             header2, packet2 = stream2.read()
             assert str(header1) == str(header2)
             assert packet1 == packet2
 
-    os.unlink(TmpRes)
-    os.unlink(TmpFilenam)
+    os.remove(TmpRes)
+    os.remove(TmpFilename)
 
 
 if __name__ == '__main__':
