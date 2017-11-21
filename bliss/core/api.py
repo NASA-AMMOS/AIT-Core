@@ -608,10 +608,9 @@ class UIAPI(object):
         }
         ret = self._sendMsgBoxRequest(data)
 
-        if not ret:
-            raise APIError('Confirm request returned invalid response')
-
-        if ret == 'confirm':
+        if ret == 'timeout':
+            raise APIError('Confirm request returned invalid response: {}'.format(ret))
+        elif ret == 'confirm':
             return True
         elif ret == 'deny':
             return False
