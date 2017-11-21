@@ -552,7 +552,7 @@ class UIAPI(object):
                 should be displayed to the user before a timeout occurs.
                 Defaults to -1 which indicates there is no timeout limit.
         '''
-        self.msgBox('confirm', _timeout=_timeout, msg=msg)
+        return self.msgBox('confirm', _timeout=_timeout, msg=msg)
 
     def msgBox(self, promptType, _timeout=-1, **options):
         ''' Send a user prompt request to the GUI
