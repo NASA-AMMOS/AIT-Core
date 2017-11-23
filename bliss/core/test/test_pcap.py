@@ -21,6 +21,7 @@ import time
 import warnings
 import time
 
+import mock
 import nose
 
 from bliss.core import dmc, pcap
@@ -189,6 +190,63 @@ def testPCapPacketHeaderInit ():
     float_ts = float(ts) + (float(usec) / 1e6)
     assert header.ts == float_ts
     assert header.timestamp == datetime.datetime.utcfromtimestamp(float_ts)
+
+
+@mock.patch('bliss.core.log.info')
+def testSegmentBytes(log_info):
+    try:
+        with pcap.open(TmpFilename, 'w') as output:
+            for p in range(10):
+                output.write( str(p) )
+
+        pcap.segment(TmpFilename, 'foo.pcap', nbytes=41, dryrun=True)
+        expected = 'Would write 41 bytes, 1 packets, 1 seconds to foo.pcap.'
+
+        assert len(log_info.call_args_list) == 10
+        for call in log_info.call_args_list:
+            assert call[0][0] == expected
+
+    finally:
+        os.unlink(TmpFilename)
+
+
+@mock.patch('bliss.core.log.info')
+def testSegmentPackets(log_info):
+    try:
+        with pcap.open(TmpFilename, 'w') as output:
+            for p in range(10):
+                output.write( str(p) )
+
+        pcap.segment(TmpFilename, 'foo.pcap', npackets=5, dryrun=True)
+        expected = 'Would write 109 bytes, 5 packets, 1 seconds to foo.pcap.'
+
+        print log_info.call_args_list
+        assert len(log_info.call_args_list) == 2
+        for call in log_info.call_args_list:
+            assert call[0][0] == expected
+
+    finally:
+        os.unlink(TmpFilename)
+
+
+@mock.patch('bliss.core.log.info')
+def testSegmentSeconds(log_info):
+    try:
+        header = pcap.PCapPacketHeader(orig_len=1)
+        with pcap.open(TmpFilename, 'w') as output:
+            for p in range(10):
+                header.ts_sec = p
+                output.write( str(p), header )
+
+        pcap.segment(TmpFilename, 'foo.pcap', nseconds=2, dryrun=True)
+        expected = 'Would write 58 bytes, 2 packets, 2 seconds to foo.pcap.'
+
+        assert len(log_info.call_args_list) == 5
+        for call in log_info.call_args_list:
+            assert call[0][0] == expected
+
+    finally:
+        os.unlink(TmpFilename)
 
 
 def testTimes():
