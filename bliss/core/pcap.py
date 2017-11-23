@@ -18,6 +18,8 @@ simple open, read, write, close functions
 """
 
 import __builtin__
+import calendar
+import math
 import struct
 import dmc
 import datetime
@@ -31,6 +33,17 @@ if struct.pack('@I', 0xA1B2C3D4) == struct.pack('>I', 0xA1B2C3D4):
     EndianSwap = '<'
 else:
     EndianSwap = '>'
+
+
+class PCapFileStats (object):
+    """Current and threshold and statistics in PCapRolloverStream"""
+
+    __slots__ = 'nbytes', 'npackets', 'nseconds'
+
+    def __init__ (self, nbytes=None, npackets=None, nseconds=None):
+        self.nbytes   = nbytes
+        self.npackets = npackets
+        self.nseconds = nseconds
 
 
 class PCapGlobalHeader:
@@ -185,6 +198,143 @@ class PCapPacketHeader:
       self.orig_len = values[3]
 
 
+class PCapRolloverStream:
+    """
+    Wraps a PCapStream to rollover to a new filename, based on packet
+    times, file size, or number of packets.
+    """
+
+    def __init__(self, format,
+                 nbytes=None, npackets=None, nseconds=None, dryrun=False):
+        """Creates a new :class:`PCapRolloverStream` with the given
+        thresholds.
+
+        A :class:`PCapRolloverStream` behaves like a
+        :class:`PCapStream`, except that writing a new packet will
+        cause the current file to be closed and a new file to be
+        opened when one or more of thresholds (``nbytes``,
+        ``npackets``, ``nseconds``) is exceeded.
+
+        The new filename is determined by passing the ``format``
+        string through :func:`PCapPacketHeader.timestamp.strftime()`
+        for the first packet in the file.
+
+        When segmenting based on time (``nseconds``), for file naming
+        and interval calculation purposes ONLY, the timestamp of the
+        first packet in the file is rounded down to nearest even
+        multiple of the number of seconds.  This yields nice round
+        number timestamps for filenames.  For example:
+
+          PCapRolloverStream(format="%Y%m%dT%H%M%S.pcap", nseconds=3600)
+
+        If the first packet written to a file has a time of 2017-11-23
+        19:28:58, the file will be named:
+
+            20171123T190000.pcap
+
+        And a new file will be started when a packet is written with a
+        timestamp that exceeds 2017-11-23 19:59:59.
+
+        :param format:    Output filename in ``strftime(3)`` format
+        :param nbytes:    Rollover after writing nbytes
+        :param npackets:  Rollover after writing npackets
+        :param nseconds:  Rollover after nseconds have elapsed between
+                          the first and last packet timestamp in the file.
+        :param dryrun:    Simulate file writes and output log messages.
+        """
+        self._dryrun    = dryrun
+        self._filename  = None
+        self._format    = format
+        self._startTime = None
+        self._stream    = None
+        self._threshold = PCapFileStats(nbytes, npackets, nseconds)
+        self._total     = PCapFileStats(0, 0, 0)
+
+
+    @property
+    def rollover (self):
+        """Indicates whether or not its time to rollover to a new file."""
+        rollover = False
+
+        if not rollover and self._threshold.nbytes is not None:
+            rollover = self._total.nbytes >= self._threshold.nbytes
+
+        if not rollover and self._threshold.npackets is not None:
+            rollover = self._total.npackets >= self._threshold.npackets
+
+        if not rollover and self._threshold.nseconds is not None:
+            nseconds = math.ceil(self._total.nseconds)
+            rollover = nseconds >= self._threshold.nseconds
+
+        return rollover
+
+
+    def write (self, bytes, header=None):
+        """Writes packet ``bytes`` and the optional pcap packet ``header``.
+
+        If the pcap packet ``header`` is not specified, one will be
+        generated based on the number of packet ``bytes`` and current
+        time.
+        """
+        if header is None:
+            header = PCapPacketHeader(orig_len=len(bytes))
+
+        if self._stream is None:
+            if self._threshold.nseconds is not None:
+                # Round down to the nearest multiple of nseconds
+                nseconds  = self._threshold.nseconds
+                remainder = int( math.floor( header.ts % nseconds ) )
+                delta     = datetime.timedelta(seconds=remainder)
+                timestamp = header.timestamp - delta
+            else:
+                timestamp = header.timestamp
+
+            self._filename  = timestamp.strftime(self._format)
+            self._startTime = calendar.timegm(
+                timestamp.replace(microsecond=0).timetuple() )
+
+            if self._dryrun:
+                self._stream        = True
+                self._total.nbytes += len(PCapGlobalHeader())
+            else:
+                self._stream        = open(self._filename, 'w')
+                self._total.nbytes += len(self._stream.header)
+
+        if not self._dryrun:
+            self._stream.write(bytes, header)
+
+        self._total.nbytes   += len(bytes) + len(header)
+        self._total.npackets += 1
+        self._total.nseconds  = header.ts - self._startTime
+
+        if self.rollover:
+            self.close()
+
+        return header.incl_len
+
+
+    def close (self):
+        """Closes this :class:``PCapStream`` by closing the underlying Python
+        stream."""
+        if self._stream:
+            values = ( self._total.nbytes,
+                       self._total.npackets,
+                       int( math.ceil(self._total.nseconds) ),
+                       self._filename )
+
+            if self._dryrun:
+                msg = 'Would write %d bytes, %d packets, %d seconds to %s.'
+            else:
+                msg = 'Wrote %d bytes, %d packets, %d seconds to %s.'
+                self._stream.close()
+
+            log.info(msg % values)
+
+            self._filename  = None
+            self._startTime = None
+            self._stream    = None
+            self._total     = PCapFileStats(0, 0, 0)
+
 
 class PCapStream:
     """PCapStream
@@ -283,15 +433,33 @@ class PCapStream:
         self._stream.close()
 
 
-def open (filename, mode='r'):
-    """Returns an instance of a PCapStream class which contains the
-    read(), write(), and close() methods.  Binary mode is assumed for
-    this module, so the "b" is not required when calling open().  A
-    max packet length can also be passed in if the default (65535) is
-    insufficient.
+def open (filename, mode='r', **options):
+    """Returns an instance of a :class:`PCapStream` class which contains
+    the ``read()``, ``write()``, and ``close()`` methods.  Binary mode
+    is assumed for this module, so the "b" is not required when
+    calling ``open()``.
+
+    If the optiontal ``rollover`` parameter is True, a
+    :class:`PCapRolloverStream` is created instead.  In that case
+    ``filename`` is treated as a ``strftime(3)`` format string and
+    ``nbytes``, ``npackets``, ``nseconds``, and ``dryrun`` parameters
+    may also be specified.  See :class:``PCapRolloverStream`` for more
+    information.
+
+    NOTE: :class:`PCapRolloverStream` is always opened in write mode
+    ("wb") and supports only ``write()`` and ``close()``, not
+    ``read()``.
     """
-    mode   = mode.replace('b', '') + 'b'
-    stream = PCapStream( __builtin__.open(filename, mode), mode )
+    mode = mode.replace('b', '') + 'b'
+
+    if options.get('rollover', False):
+        stream = PCapRolloverStream(filename,
+                                    options.get('nbytes'  , None),
+                                    options.get('npackets', None),
+                                    options.get('nseconds', None),
+                                    options.get('dryrun'  , False))
+    else:
+        stream = PCapStream( __builtin__.open(filename, mode), mode )
 
     return stream
 
@@ -326,6 +494,33 @@ def query(starttime, endtime, output=None, *filenames):
                     if packet is not None:
                         if header.timestamp >= starttime and header.timestamp <= endtime:
                             outfile.write(packet, header=header)
+
+
+def segment(filenames, format, **options):
+    """Segment the given pcap file(s) by one or more thresholds
+    (``nbytes``, ``npackets``, ``nseconds``).  New segment filenames
+    are determined based on the ``strftime(3)`` ``format`` string
+    and the timestamp of the first packet in the file.
+
+    :param filenames: Single filename (string) or list of filenames
+    :param format:    Output filename in ``strftime(3)`` format
+    :param nbytes:    Rollover after writing N bytes
+    :param npackets:  Rollover after writing N packets
+    :param nseconds:  Rollover after N seconds have elapsed between
+                      the first and last packet timestamp in the file.
+    :param dryrun:    Simulate file writes and output log messages.
+    """
+    output = open(format, rollover=True, **options)
+
+    if isinstance(filenames, str):
+        filenames = [ filenames ]
+
+    for filename in filenames:
+        with open(filename, 'r') as stream:
+            for header, packet in stream:
+                output.write(packet, header)
+
+    output.close()
 
 
 def times(filenames, tolerance=2):
