@@ -162,23 +162,6 @@ class SysLogHandler (logging.handlers.SysLogHandler):
 
         self.setFormatter( SysLogFormatter(self.bsd) )
 
-class SysLogParser(object):
-    """Parses SysLog into a dictionary. Assumes RFC 5424 - The Syslog Protocol"""
-
-    def __init__(self, fmt=None):
-        self.fmt = fmt
-
-        if not fmt:
-            self.fmt = "<%(pri)s>" + SysLogFormatter.SYSLOG_FMT + "$"
-
-    def parse(self, msg, fmt=None):
-        if fmt:
-            self.fmt = fmt
-
-        regex = get_regex(self.fmt)
-        match = regex.match(msg)
-        return match.groupdict()
-
 
 def addLocalHandlers (logger):
     """Adds logging handlers to logger to log to the following local
@@ -247,31 +230,65 @@ def init ():
 reinit = init
 
 
-def get_regex(fmt):
-    """Transforms log format string into regex.
+def parseSyslog(msg):
+    """Parses Syslog messages (RFC 5424)
 
-    Formats use the following syntax:
+    The `Syslog Message Format (RFC 5424)
+    <https://tools.ietf.org/html/rfc5424#section-6>`_ can be parsed with
+    simple whitespace tokenization::
 
-    .. code-block:: none
+        SYSLOG-MSG = HEADER SP STRUCTURED-DATA [SP MSG]
+        HEADER     = PRI VERSION SP TIMESTAMP SP HOSTNAME
+                     SP APP-NAME SP PROCID SP MSGID
+        ...
+        NILVALUE   = "-"
 
-        :variable - one or more words expected (\w+)
-        @variable - syslog time expected (SYSLOG_TIME_FMT)
-        #variable - any character expected (.+)
+    This method does not return STRUCTURED-DATA.  It parses NILVALUE
+    ("-") STRUCTURED-DATA or simple STRUCTURED-DATA which does not
+    contain (escaped) ']'.
 
+    :returns: A dictionary keyed by the constituent parts of the
+    Syslog message.
     """
-    def replace_decimal (match):
-        return "(?P<%s>.+)" % match.group(1)
+    tokens = msg.split(' ', 6)
+    result = { }
 
-    def replace_any (match):
-        return "(?P<%s>.+)" % match.group(1)
+    if len(tokens) > 0:
+        pri   = tokens[0]
+        start = pri.find('<')
+        stop  = pri.find('>')
 
+        if start != -1 and stop != -1:
+            result['pri'] = pri[start + 1:stop]
+        else:
+            result['pri'] = ''
 
-    # replace string-like format
-    r = re.sub(r"%\((\w+)(\)s)", replace_any, fmt)
+        if stop != -1 and len(pri) > stop:
+            result['version'] = pri[stop + 1:]
+        else:
+            result['version'] = ''
 
-    # replace decimal-like format
-    regex = re.compile(re.sub(r"%\((\w+)(\)d)", replace_decimal, r))
-    return regex;
+    result[ 'timestamp' ] = tokens[1] if len(tokens) > 1 else ''
+    result[ 'hostname'  ] = tokens[2] if len(tokens) > 2 else ''
+    result[ 'appname'   ] = tokens[3] if len(tokens) > 3 else ''
+    result[ 'procid'    ] = tokens[4] if len(tokens) > 4 else ''
+    result[ 'msgid'     ] = tokens[5] if len(tokens) > 5 else ''
+    result[ 'msg'       ] = ''
+
+    if len(tokens) > 6:
+        # The following will work for NILVALUE STRUCTURED-DATA or
+        # simple STRUCTURED-DATA which does not contain ']'.
+        rest  = tokens[6]
+        start = rest.find('-')
+
+        if start == -1:
+            start = rest.find(']')
+
+        if len(rest) > start:
+            result['msg'] = rest[start + 1:].strip()
+
+    return result
+
 
 def begin ():
     """Command-line tools should begin logging with core.log.begin() to
