@@ -546,9 +546,11 @@ class UIAPI(object):
         ''' Send a confirm prompt to the GUI
         
         Arguments:
-            msg (string): The message to display to the user.
+            msg (string):
+                The message to display to the user.
 
-            _timeout (int): The optional amount of time for which the prompt
+            _timeout (int):
+                The optional amount of time for which the prompt
                 should be displayed to the user before a timeout occurs.
                 Defaults to -1 which indicates there is no timeout limit.
         '''
@@ -558,14 +560,17 @@ class UIAPI(object):
         ''' Send a user prompt request to the GUI
 
         Arguments:
-            promptType (string): The prompt type to send to the GUI. Currently
+            promptType (string):
+                The prompt type to send to the GUI. Currently
                 the only type supported is 'confirm'.
 
-            _timeout (int): The optional amount of time for which the prompt
+            _timeout (int):
+                The optional amount of time for which the prompt
                 should be displayed to the user before a timeout occurs.
                 Defaults to -1 which indicates there is no timeout limit.
 
-            options (dict): The keyword arguments that should be passed to the requested
+            options (dict):
+                The keyword arguments that should be passed to the requested
                 prompt type. Check prompt specific sections below for information on what
                 arguments are expected to be present.
 
@@ -574,11 +579,13 @@ class UIAPI(object):
                 If the prompt type received is an unexpected value
 
         **Confirm Prompt**
+
         Display a message to the user and prompt them for a confirm/deny
         response to the message.
 
         Arguments:
-            msg (string): The message to display to the user
+            msg (string):
+                The message to display to the user
 
         Returns:
             True if the user picks 'Confirm', False if the user picks 'Deny'
