@@ -25,18 +25,21 @@ script instrument interactions, e.g.:
     # TBA
 """
 
+from __future__ import absolute_import
 
 import gevent.monkey; gevent.monkey.patch_all()
 import gevent
 import gevent.event
 import gevent.server
-
+import requests
 
 import collections
 import inspect
+import json
 import socket
 import time
 
+import bliss.core
 from bliss.core import cmd, gds, log, tlm
 
 
@@ -536,3 +539,111 @@ def wait (cond, msg=None, _timeout=10, _raiseException=True):
             elapsed += delay
 
     return status
+
+
+class UIAPI(object):
+    def confirm(self, msg, _timeout=-1):
+        ''' Send a confirm prompt to the GUI
+        
+        Arguments:
+            msg (string): The message to display to the user.
+
+            _timeout (int): The optional amount of time for which the prompt
+                should be displayed to the user before a timeout occurs.
+                Defaults to -1 which indicates there is no timeout limit.
+        '''
+        return self.msgBox('confirm', _timeout=_timeout, msg=msg)
+
+    def msgBox(self, promptType, _timeout=-1, **options):
+        ''' Send a user prompt request to the GUI
+
+        Arguments:
+            promptType (string): The prompt type to send to the GUI. Currently
+                the only type supported is 'confirm'.
+
+            _timeout (int): The optional amount of time for which the prompt
+                should be displayed to the user before a timeout occurs.
+                Defaults to -1 which indicates there is no timeout limit.
+
+            options (dict): The keyword arguments that should be passed to the requested
+                prompt type. Check prompt specific sections below for information on what
+                arguments are expected to be present.
+
+        Raises:
+            ValueError:
+                If the prompt type received is an unexpected value
+
+        **Confirm Prompt**
+        Display a message to the user and prompt them for a confirm/deny
+        response to the message.
+
+        Arguments:
+            msg (string): The message to display to the user
+
+        Returns:
+            True if the user picks 'Confirm', False if the user picks 'Deny'
+
+        Raises:
+            KeyError:
+                If the options passed to the prompt handler doesn't contain a
+                `msg` attribute.
+
+            APITimeoutError:
+                If the timeout value is reached without receiving a response.
+        '''
+        if promptType == 'confirm':
+            return self._sendConfirmPrompt(_timeout, options)
+        else:
+            raise ValueError('Unknown prompt type: {}'.format(promptType))
+
+    def _sendConfirmPrompt(self, _timeout, options):
+        ''''''
+        if 'msg' not in options:
+            raise KeyError('Confirm prompt options does not contain a `msg` attribute')
+
+        data = {
+            'type': 'confirm',
+            'options': options,
+            'timeout': _timeout
+        }
+        ret = self._sendMsgBoxRequest(data)
+
+        if ret == 'timeout':
+            raise APIError('Confirm request returned invalid response: {}'.format(ret))
+        elif ret == 'confirm':
+            return True
+        elif ret == 'deny':
+            return False
+
+    def _sendMsgBoxRequest(self, data):
+        host = bliss.config.get('gui.host', 'localhost')
+        port = bliss.config.get('gui.port', 8080)
+        url = 'http://{}:{}/prompt'.format(host, port)
+        connTimeout = data['timeout'] * 2
+
+        try:
+            if connTimeout > 0:
+                ret = requests.post(url, json=data, timeout=connTimeout)
+            else:
+                ret = requests.post(url, json=data)
+
+            ret = json.loads(ret.text)['response']
+        except requests.exceptions.ConnectionError as e:
+            log.error('User prompt request connection failed')
+            ret = None
+        except requests.exceptions.HTTPError:
+            log.error('User prompt request received an unsuccessful HTTP status code')
+            ret = None
+        except requests.exceptions.TooManyRedirects:
+            log.error('User prompt request failed due to too many redirects')
+            ret = None
+        except requests.exceptions.Timeout:
+            raise APITimeoutError(timeout=timeout, msg='User confirm prompt timed out')
+        except KeyError:
+            log.error('User prompt request received malformed response')
+            ret = None
+
+        return ret
+
+
+ui = UIAPI()
