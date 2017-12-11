@@ -145,6 +145,22 @@ class CmdAPI:
 
         return status
 
+    def validate(self, command, *args, **kwargs):
+        if not isinstance(command, bliss.core.cmd.Cmd):
+            try:
+                command = self._cmddict.create(command, *args, **kwargs)
+            except TypeError as e:
+                log.error(e)
+                return False, [e]
+
+        messages = []
+        if not command.validate(messages):
+            for msg in messages:
+                log.error(msg)
+            return False, messages
+
+        return True, []
+
 
 class GeventDeque (object):
     """GeventDeque
