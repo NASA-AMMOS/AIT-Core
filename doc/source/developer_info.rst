@@ -12,16 +12,21 @@ Prepare Repo for Release
 * Minor bumps are for backwards compatible changes
 * Patch bumps are for incremental bug fixes, small releases, and end-of-sprint releases.
 
-2. *Update the project documentation to use the correct version names.* The following files needs to be updated with the correct version names: 
-* `doc/source/conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ - contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. 
+2. *Update the project documentation to use the correct version names.* The following files needs to be updated with the correct version names:
+
+* `doc/source/conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ - contains a **version** and **release** option. Both of these should be updated to point to the version number for this release.
+
 .. code-block:: python
+
     # The short X.Y version.
     version = u'0.29.0'
     # The full version, including alpha/beta/rc tags.
     release = u'0.29.0
 
-* `setup.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/setup.py>` - The setup object and bottom of script also contains the **version**.
+* `setup.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/setup.py>`_ - The setup object and bottom of script also contains the **version**.
+
 .. code-block:: python
+
    setup(
        name = 'bliss-core',
        version = '0.29.0'
@@ -30,7 +35,9 @@ Prepare Repo for Release
    )
 
 3. Commit and push these changes.
+
 .. code-block:: bash
+
    git add doc/source/conf.py setup.py
    git commit -m "Prep for <version> release"
    git push origin master
@@ -97,7 +104,9 @@ Push Release Artifacts to OCO3-TB PyPi
 1. SSH into OCO3-TB:
 
 2. Run **make-pypi.sh**
+
 .. code-block:: bash
+
    # Navigate to pypi repo
    cd /usr/local/vhosts/oco3-tb/htdocs/pypi
    
