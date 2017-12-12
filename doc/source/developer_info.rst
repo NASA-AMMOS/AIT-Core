@@ -7,11 +7,35 @@ Release Process
 Prepare Repo for Release
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-First you need to determine the version number for the release. **bliss-core** uses standard semantic versioning (Major.Minor.Patch). Major bumps are for large, non-backwards compatible changes; Minor bumps are for backwards compatible changes; Patch bumps are for incremental bug fixes, small releases, and end-of-sprint releases.
+1. *Determine the version number for the release.* **bliss-core** uses standard semantic versioning (Major.Minor.Patch).
+* Major bumps are for large, non-backwards compatible changes
+* Minor bumps are for backwards compatible changes
+* Patch bumps are for incremental bug fixes, small releases, and end-of-sprint releases.
 
-Update the project documentation to use the correct version names. The `conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ file contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. The appropriate version number must also be set in the project's **setup.py** file. Commit and push these changes to master.
+2. *Update the project documentation to use the correct version names.* The following files needs to be updated with the correct version names: 
+* `doc/source/conf.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/doc/source/conf.py>`_ - contains a **version** and **release** option. Both of these should be updated to point to the version number for this release. 
+.. code-block:: python
+    # The short X.Y version.
+    version = u'0.29.0'
+    # The full version, including alpha/beta/rc tags.
+    release = u'0.29.0
 
-For example, see a past release `commit <https://github.jpl.nasa.gov/bliss/bliss-core/commit/0503789dadfcfdeec450fd3cf3165f7bcfe05bfb>`_.
+* `setup.py <https://github.jpl.nasa.gov/bliss/bliss-core/blob/master/setup.py>` - The setup object and bottom of script also contains the **version**.
+.. code-block:: python
+   setup(
+       name = 'bliss-core',
+       version = '0.29.0'
+       .
+       .
+   )
+
+3. Commit and push these changes.
+.. code-block:: bash
+   git add doc/source/conf.py setup.py
+   git commit -m "Prep for <version> release"
+   git push origin master
+
+See a past release `commit <https://github.jpl.nasa.gov/bliss/bliss-core/commit/0503789dadfcfdeec450fd3cf3165f7bcfe05bfb>`_ for an example.
 
 Generate Release Notes
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -70,6 +94,16 @@ Send an email to the **bliss.announce@jpl.nasa.gov** mailing list. An example te
 Push Release Artifacts to OCO3-TB PyPi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-SSH into OCO3-TB and navigate to **/usr/local/vhosts/oco3-tb/htdocs/pypi**. Open **make-pypi.sh** and update with the new version number and comment out the previous number. Run **make-pypi.sh** and check https://bliss.jpl.nasa.gov/pypi/simple/ to ensure that the release has been added.
+1. SSH into OCO3-TB:
+
+2. Run **make-pypi.sh**
+.. code-block:: bash
+   # Navigate to pypi repo
+   cd /usr/local/vhosts/oco3-tb/htdocs/pypi
+   
+   # Run make-pypi.sh.
+   ./make-pypi.sh -c 0.29.0
+
+3. Check https://bliss.jpl.nasa.gov/pypi/simple/ to ensure that the release has been added.
 
 NOTE: Currently requires pip 9.0.1 in order to utilize `pip download`.
