@@ -7,7 +7,8 @@ Release Process
 Prepare Repo for Release
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. *Determine the version number for the release.* **bliss-core** uses standard semantic versioning (Major.Minor.Patch).
+1. *Determine the version number for the release. **bliss-core** uses standard semantic versioning (Major.Minor.Patch).
+
 * Major bumps are for large, non-backwards compatible changes
 * Minor bumps are for backwards compatible changes
 * Patch bumps are for incremental bug fixes, small releases, and end-of-sprint releases.
