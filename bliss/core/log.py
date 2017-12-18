@@ -312,6 +312,10 @@ def program(*args, **kwargs):
     logger.log(PROGRAM, *args, **kwargs)
 
 
+def notice(*args, **kwargs):
+    logger.log(NOTICE, *args, **kwargs)
+
+
 logger = None
 crit   = None
 debug  = None
