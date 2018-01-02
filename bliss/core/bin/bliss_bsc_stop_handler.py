@@ -43,8 +43,8 @@ def main():
     # Get command line arguments
     args = vars(parser.parse_args())
 
-    host = args['service-host']
-    port = args['service-port']
+    host = args['service_host']
+    port = args['service_port']
 
     handler_name = args['name']
 
