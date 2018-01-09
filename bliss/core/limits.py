@@ -20,32 +20,36 @@ The bliss.core.limits module provides limit definitions for telemetry fields.
 The expected limits.yaml should follow this schema:
 
 - !Limit
-  source:   -- telemetry source for the limit. should follow format 'Packet.field_name'
-  desc:     -- description of the limit
-  units:    -- the units used for possible conversion depending on the units set in the
-               telemetry dictionary
-  lower:    -- lower limits
-    error:  -- trigger error if telemetry value exceeds this lower bound (exclusive)
-    warn:   -- trigger warning if telemetry value exceeds this lower bound (exclusive)
-  upper:    -- upper limits
-    error:  -- trigger error if telemetry value exceeds this upper bound (exclusive)
-    warn:   -- trigger warning if telemetry value exceeds this upper bound (exclusive)
-  value:    -- enumerated values to trigger error/warning
-    error:  -- trigger error if telemetry value == or in list of strings
-    warn:   -- trigger warning if telemetry value == or in list of strings
+  source:      -- telemetry source for the limit. should follow format 'Packet.field_name'
+  desc:        -- description of the limit
+  units:       -- the units used for possible conversion depending on the units set in the
+                  telemetry dictionary
+  lower:       -- lower limits
+    error:     -- trigger error if telemetry value exceeds this lower bound (exclusive)
+    warn:      -- trigger warning if telemetry value exceeds this lower bound (exclusive)
+  upper:       -- upper limits
+    error:     -- trigger error if telemetry value exceeds this upper bound (exclusive)
+    warn:      -- trigger warning if telemetry value exceeds this upper bound (exclusive)
+  value:       -- enumerated values to trigger error/warning
+    error:     -- trigger error if telemetry value == or in list of strings
+    warn:      -- trigger warning if telemetry value == or in list of strings
+  when:        -- when condition for specifying the necessary state when this limit applies
+  persist:     -- number of seconds the value must persist before limits trigger
 
 For example:
 
   - !Limit
-    source: 1553_HS_Packet.Voltage_A
-    desc: tbd
-    units: Kelvin
+    source:  1553_HS_Packet.Voltage_A
+    desc:    Voltage A
+    units:   Kelvin
     lower:
       error: 5.0
-      warn: 10.0
+      warn:  10.0
     upper:
       error: 45.0
-      warn: 40.0
+      warn:  40.0
+    when:    1553_HS_Packet.BankA == 'ON'
+    persist: 5
 
 
   - !Limit
@@ -96,10 +100,10 @@ class Thresholds (json.SlotSerializer, object):
 
 
 class LimitDefinition (json.SlotSerializer, object):
-    """LimitDefinition
-    """
+    """LimitDefinition"""
 
-    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value' ]
+    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value',
+                    'when', 'persist' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new LimitDefinition."""

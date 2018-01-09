@@ -63,6 +63,12 @@
                         "minLength": 1
                     }
                 }
+            },
+            "when": {
+                "type": "string"
+            },
+            "persist": {
+                "type": "number"
             }
         }
     }
