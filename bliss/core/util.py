@@ -174,6 +174,25 @@ def __init_extensions__(modname, modsyms):
         modsyms['create' + clsname] = createFunc(cls, extname)
 
 
+def __load_functions__ (symtbl):
+    """Loads all Python functions from the module specified in the
+    ``functions`` configuration parameter (in config.yaml) into the given
+    symbol table (Python dictionary).
+    """
+    modname = bliss.config.get('functions', None)
+
+    if modname:
+        module = pydoc.locate(modname)
+
+        if module is None:
+            msg = 'No module named %d (from config.yaml functions: parameter)'
+            raise ImportError(msg % modname)
+
+        for name in dir(module):
+            func = getattr(module, name)
+            if callable(func):
+                symtbl[name] = func
+
 
 def crc32File(filename, skip=0):
     """Computes the CRC-32 of the contents of filename, optionally
@@ -182,7 +201,6 @@ def crc32File(filename, skip=0):
     with open(filename, 'rb') as stream:
         discard = stream.read(skip)
         return zlib.crc32(stream.read()) & 0xffffffff
-
 
 def endianSwapU16(bytes):
     """Swaps pairs of bytes (16-bit words) in the given bytearray."""
