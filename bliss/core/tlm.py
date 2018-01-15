@@ -582,14 +582,16 @@ class PacketDefinition(json.SlotSerializer, object):
     def _update_globals(self):
         if self.globals is None:
             self.globals = { }
+            exec('from math import *', self.globals)
+            util.__load_functions__(self.globals)
 
         if self.constants:
             self.globals.update(self.constants)
 
         if self.functions:
             for signature, body in self.functions.items():
-                defn = 'def %s: return %s\n' % (signature, body)
-                exec(defn, self.globals)
+                fn = createPacketFunction(signature, body, self.globals)
+                self.globals[fn.name] = fn._func
 
         if self.history:
             self.globals['history'] = self.history
@@ -710,19 +712,104 @@ class PacketFunction(object):
     """PacketFunction
     """
 
-    __slots__ = [ '_args', '_code', '_name' ]
+    __slots__ = [ '_args', '_expr', '_func', '_name', '_sig' ]
 
-    def __init__(self, signature, body):
+    def __init__(self, signature, expression, syms):
+        """Creates a new PacketFunction from the given string signature and
+        expression.
+        """
+        self._sig  = signature
+        self._expr = expression
+
         lparen = signature.find('(')
         rparen = signature.find(')')
 
-        if lparen == -1 and rparen == -1:
-            raise SyntaxError('Function signature "%s" has no parentheses')
+        if lparen == -1 or rparen == -1:
+            msg = 'Function signature "%s" has no parentheses'
+            raise SyntaxError(msg % signature)
 
-        defn       = 'def %s:\n  return %s' % (signature, body)
-        self._args = signature[lparen:rparen].split(',')
-        self._name = signature[:lparen]
-        self._code = compile(defn, '<string>', mode='eval')
+        defn = 'def %s:\n' % signature
+
+        if type(expression) is dict:
+            for cond, subexpr in expression.items():
+                defn += '    if (%s):\n' % self.__sanitize(cond)
+                defn += '        return (%s)\n' % subexpr
+        else:
+            defn += '    return (%s)\n' % str(expression)
+
+
+        args = signature[lparen + 1:rparen]
+
+        exec(defn, syms)
+        del syms['__builtins__']
+
+        self._args = [ a.strip() for a in args.split(',') ]
+        self._name = signature[:lparen].strip()
+        self._func = syms[self._name]
+
+
+    def __reduce__(self):
+        """Pickles and Unpickles PacketFunctions.
+
+        Since Python code object cannot be pickled, this method tells
+        Python picklers to pickle this class as a string expression
+        and unpickle by passing that string to the PacketFunction
+        constructor.
+        """
+        return (PacketFunction, (self._sign, self._expr))
+
+
+    def __repr__(self):
+        s = '%s("%s", ' % (self.__class__.__name__, self._sig)
+
+        if type(self._expr) is dict:
+            s += '%s)' % repr(self._expr)
+        else:
+            s += '"%s")' % str(self._expr)
+
+        return s
+
+
+    def __str__(self):
+        s = '%s:' % self._sig
+
+        if type(self._expr) is dict:
+            for cond, subexpr in self._expr.items():
+                s += '\n    %s: %s' % (cond.encode('utf-8'), subexpr)
+        else:
+            s += ' %s' % str(self._expr)
+
+        return s
+
+
+    def __sanitize (self, cond):
+        return str( cond.replace(u'\u2264', '<=').replace(u'\u2265', '>=') )
+
+
+    def invoke(self, *args):
+        """Returns the result of invoking this PacketFunction."""
+        return self._func.__call__(*args)
+
+
+    @property
+    def arguments (self):
+        return self._args
+
+
+    @property
+    def expression (self):
+        return self._expr
+
+
+    @property
+    def name (self):
+        return self._name
+
+
+    @property
+    def signature (self):
+        return self._sig
+
 
 
 class PacketHistory(object):
