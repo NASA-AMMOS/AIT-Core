@@ -9,6 +9,7 @@ Submodules
    bliss.core.bin.bliss_bsc
    bliss.core.bin.bliss_bsc_create_handler
    bliss.core.bin.bliss_bsc_stop_handler
+   bliss.core.bin.bliss_cmd_hist
    bliss.core.bin.bliss_cmd_send
    bliss.core.bin.bliss_create_dirs
    bliss.core.bin.bliss_dict_writer
@@ -20,6 +21,7 @@ Submodules
    bliss.core.bin.bliss_seq_send
    bliss.core.bin.bliss_table_decode
    bliss.core.bin.bliss_table_encode
+   bliss.core.bin.bliss_tlm_csv
    bliss.core.bin.bliss_tlm_db_insert
    bliss.core.bin.bliss_tlm_send
    bliss.core.bin.bliss_yaml_validate
