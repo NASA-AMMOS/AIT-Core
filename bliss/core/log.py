@@ -193,7 +193,7 @@ def addRemoteHandlers (logger):
         # Do not "remote" log to this host, as that's already covered
         # by addLocalHandlers().
         if socket.getfqdn() != hostname:
-            socket.gethostbyname(hostname)
+            socket.getaddrinfo(hostname, None)
             logger.addHandler( SysLogHandler( (hostname,  514) ) )
 
     except AttributeError:
