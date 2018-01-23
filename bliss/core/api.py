@@ -135,7 +135,7 @@ class CmdAPI:
 
             try:
                 values = (self._host, self._port, cmdobj.name)
-                log.info('Sending to %s:%d: %s' % values)
+                log.command('Sending to %s:%d: %s' % values)
                 self._socket.sendto(encoded, (self._host, self._port))
                 status = True
             except socket.error as e:
