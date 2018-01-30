@@ -13,8 +13,21 @@
 # information to foreign countries or providing access to foreign persons.
 
 from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 import os
+import shutil
+
+class InstallWithGithooks(install):
+    def run(self):
+        install.run(self)
+        shutil.copy('./build/githooks/pre-commit', '.git/hooks')
+
+class DevWithGithooks(develop):
+    def run(self):
+        develop.run(self)
+        shutil.copy('./build/githooks/pre-commit', '.git/hooks')
 
 setup(
     name         = 'bliss-core',
@@ -62,5 +75,10 @@ setup(
             if f.endswith('.py') and
             f != '__init__.py'
         ]
+    },
+
+    cmdclass = {
+        'develop': DevWithGithooks,
+        'install': InstallWithGithooks
     }
 )
