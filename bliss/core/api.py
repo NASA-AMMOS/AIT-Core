@@ -150,7 +150,7 @@ class CmdAPI:
             try:
                 command = self._cmddict.create(command, *args, **kwargs)
             except TypeError as e:
-                log.error(e)
+                log.error('Command Validation: {}'.format(e))
                 return False, [e]
 
         messages = []
