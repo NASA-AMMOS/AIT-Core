@@ -28,6 +28,10 @@ Consider the below example telemetry packet and fields for which we'll specify l
            2: MEM_DUMP
            3: HEALTH_AND_STATUS
 
+.. note::
+
+   Limits are expected to be specified in Engineering Units when a given telemetry field has a corresponding DN-to-EU conversion. A field's value is converted via it's DN-to-EU function if present prior to limit checks.
+
 Specifying Limits
 -----------------
 
