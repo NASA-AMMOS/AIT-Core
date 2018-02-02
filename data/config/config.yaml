@@ -2,6 +2,7 @@ default:
     command:
         history:
             filename: ../../cmdhist.pcap
+        port: 3075
     sequence:
         directory: ../../seq/
     cmddict:
