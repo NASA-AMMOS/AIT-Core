@@ -90,6 +90,8 @@ def main ():
                     delay    = float(tokens[0])
                     name     = tokens[1]
                     args     = [ util.toNumber(t, t) for t in tokens[2:] ]
+                    time.sleep(delay)
+                    log.info(line)
                     cmd.send(name, *args)
     except IOError:
         log.error("Could not open '%s' for reading." % filename)
