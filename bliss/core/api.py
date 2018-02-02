@@ -36,12 +36,12 @@ import requests
 import collections
 import inspect
 import json
+import os
 import socket
 import time
 
 import bliss.core
-from bliss.core import cmd, gds, log, tlm
-
+from bliss.core import cmd, gds, log, pcap, tlm
 
 class APIError (Exception):
     """All BLISS API exceptions are derived from this class"""
@@ -109,6 +109,17 @@ class CmdAPI:
         self._verbose = verbose
         self._socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        _def_cmd_hist = os.path.join(bliss.config._ROOT_DIR, 'bliss-cmdhist.pcap')
+        self.CMD_HIST_FILE = bliss.config.get('command.history.filename', _def_cmd_hist)
+        if not os.path.isfile(self.CMD_HIST_FILE):
+            if not os.path.isdir(os.path.dirname(self.CMD_HIST_FILE)):
+                self.CMD_HIST_FILE = _def_cmd_hist
+                msg  = (
+                    'command.history.filename directory does not exist. '
+                    'Reverting to default {}'
+                ).format(_def_cmd_hist)
+                bliss.core.log.warn(msg)
+
 
     def send (self, command, *args, **kwargs):
         """Creates, validates, and sends the given command as a UDP
@@ -138,6 +149,9 @@ class CmdAPI:
                 log.command('Sending to %s:%d: %s' % values)
                 self._socket.sendto(encoded, (self._host, self._port))
                 status = True
+
+                with pcap.open(self.CMD_HIST_FILE, 'a') as output:
+                    output.write(command)
             except socket.error as e:
                 log.error(e.message)
             except IOError as e:
@@ -447,7 +461,9 @@ class UdpTelemetryServer (gevent.server.DatagramServer):
 
 
 class Instrument (object):
-    def __init__ (self, cmdport=3075, tlmport=3076, defn=None):
+    def __init__(self,
+                 cmdport=bliss.config.get('command.port', bliss.DEFAULT_CMD_PORT),
+                 tlmport=3076, defn=None):
         if defn is None:
             tlmdict = tlm.getDefaultDict()
             names   = sorted( tlmdict.keys() )

@@ -29,11 +29,11 @@ Examples:
 
 import os
 import sys
-import socket
 import time
 import argparse
 
-from bliss.core import cmd, gds, log, seq, util
+import bliss.core
+from bliss.core import api, gds, log, seq, util
 
 
 def system (command):
@@ -52,7 +52,11 @@ def main ():
     parser.add_argument('filename', default=None)
 
     # Add optional command line arguments
-    parser.add_argument('--port', default=3075, type=int)
+    parser.add_argument(
+        '--port',
+        default=bliss.config.get('command.port', bliss.DEFAULT_CMD_PORT),
+        type=int
+    )
     parser.add_argument('--verbose', default=0, type=int)
 
     # Get command line arguments
@@ -60,11 +64,10 @@ def main ():
 
     host     = '127.0.0.1'
     port     = args['port']
-    sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     data     = ' '.join(args)
     verbose  = args['verbose']
 
-    cmddict  = cmd.getDefaultCmdDict()
+    cmd = api.CmdAPI(port, verbose=verbose)
     filename = args['filename']
 
     try:
@@ -87,23 +90,7 @@ def main ():
                     delay    = float(tokens[0])
                     name     = tokens[1]
                     args     = [ util.toNumber(t, t) for t in tokens[2:] ]
-                    command  = cmddict.create(name, *args)
-                    messages = [ ]
-
-                    time.sleep(delay)
-                    log.info(line)
-
-                    if command is None:
-                        log.error('unrecognized command: %s' % name)
-                    elif command.validate(messages):
-                        sock.sendto(command.encode(), (host, port))
-                    else:
-                        msg = 'Command validation error: %s'
-                        log.error(msg, ' '.join(messages))
-
-    except socket.error, err:
-        log.error( str(err) )
-
+                    cmd.send(name, *args)
     except IOError:
         log.error("Could not open '%s' for reading." % filename)
 

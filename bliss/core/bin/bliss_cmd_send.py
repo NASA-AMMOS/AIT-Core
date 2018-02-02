@@ -25,7 +25,8 @@ import time
 import argparse
 from collections import OrderedDict
 
-from bliss.core import cmd, gds, log, util
+import bliss
+from bliss.core import api, gds, log, util
 
 
 def main():
@@ -43,7 +44,7 @@ def main():
     arguments = OrderedDict({
         '--port': {
             'type'    : int,
-            'default' : 3075,
+            'default' : bliss.config.get('command.port', bliss.DEFAULT_CMD_PORT),
             'help'    : 'Port on which to send data'
         },
         '--verbose': {
@@ -69,39 +70,11 @@ def main():
 
     host     = "127.0.0.1"
     port     = args.port
-    sock     = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     verbose  = args.verbose
-    cmddict  = cmd.getDefaultCmdDict()
-
-    if cmddict is not None:
-        name     = args.command
-        cmdargs  = args.arguments
-        command  = cmddict.create(name, *cmdargs)
-        messages = [ ]
-
-        if command is None:
-            log.error("unrecognized command: %s" % name)
-        elif not command.validate(messages):
-            for msg in messages:
-                log.error(msg)
-        else:
-            encoded = command.encode()
-
-            if verbose:
-                size     = len(command.name)
-                pad      = (size - len(command.name) + 1) * " "
-                preamble = command.name + ":" + pad
-                gds.hexdump(encoded, preamble=preamble)
-
-            try:
-                msg = "Sending to %s:%d: %s"
-                log.info(msg, host, port, command.name)
-                sock.sendto(encoded, (host, port))
-            except socket.error, err:
-                log.error( str(err) )
+    cmd = api.CmdAPI(port, verbose=verbose)
+    cmd.send(args.command, *args.arguments)
 
     log.end()
-
 
 if __name__ == '__main__':
     main()
