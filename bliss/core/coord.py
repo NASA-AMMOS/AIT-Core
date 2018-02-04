@@ -54,46 +54,6 @@ def cbrt (x):
     return - math.pow(abs(x), 1.0 / 3.0)
 
 
-def ecef2geodetic (x, y, z, ellipsoid=None):
-  """Convert ECEF coordinates to geodetic using the given ellipsoid
-  (defaults to WGS84).
-
-  J. Zhu, "Conversion of Earth-centered Earth-fixed coordinates to
-  geodetic coordinates," IEEE Transactions on Aerospace and Electronic
-  Systems, vol. 30, pp. 957-961, 1994.
-
-  See https://code.google.com/p/pysatel/source/browse/trunk/coord.py
-
-  """
-  if ellipsoid is None:
-    ellipsoid = WGS84
-
-  a    = ellipsoid.a
-  b    = ellipsoid.b
-  a2   = ellipsoid.a2
-  b2   = ellipsoid.b2
-  f    = ellipsoid.f
-  e2   = ellipsoid.e2
-  ep2  = ellipsoid.ep2
-  r    = math.sqrt(x * x + y * y)
-  F    = 54 * b * b * z * z
-  G    = r * r + (1 - e2) * z * z - e2 * (a2 - b2)
-  C    = (e2 * e2 * F * r * r) / (math.pow(G, 3))
-  S    = cbrt(1 + C + math.sqrt(C * C + 2 * C))
-  P    = F / (3 * math.pow((S + 1 / S + 1), 2) * G * G)
-  Q    = math.sqrt(1 + 2 * e2 * e2 * P)
-  r_0  =  -(P * e2 * r) / (1 + Q) + math.sqrt(0.5 * a * a*(1 + 1.0 / Q) - \
-            P * (1 - e2) * z * z / (Q * (1 + Q)) - 0.5 * P * r * r)
-  U    = math.sqrt(math.pow((r - e2 * r_0), 2) + z * z)
-  V    = math.sqrt(math.pow((r - e2 * r_0), 2) + (1 - e2) * z * z)
-  Z_0  = b * b * z / (a * V)
-  h    = U * (1 - b * b / (a * V))
-  lat  = math.atan((z + ep2 * Z_0) / r)
-  lon  = math.atan2(y, x)
-
-  return lat, lon, h
-
-
 def eci2ecef (x, y, z, gmst=None):
   """Converts the given ECI coordinates to ECEF at the given Greenwich
   Mean Sidereal Time (GMST) (defaults to now).
