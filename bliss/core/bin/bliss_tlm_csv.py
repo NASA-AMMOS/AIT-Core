@@ -2,6 +2,7 @@
 
 import csv
 import sys
+import os
 from datetime import datetime
 
 from bliss.core import log, tlm, pcap, gds, dmc
@@ -111,8 +112,10 @@ def main():
 
     output(csv_writer, fields)
 
+    rowcnt = 0
+
     for filename in args.pcap:
-        log.info('Processing %s' % filename)
+        log.debug('Processing %s' % filename)
 
         with pcap.open(filename, 'rb') as stream:
             header, data = stream.read()
@@ -140,12 +143,19 @@ def main():
 
                         row.append(fieldVal)
 
+                    rowcnt += 1
                     output(csv_writer, row)
 
                 npackets += 1
                 header, data = stream.read()
 
-    log.info('Parsed %s packets.' % npackets)
+    log.debug('Parsed %s packets.' % npackets)
+
+    csv_file.close()
+
+    if rowcnt == 0:
+        os.remove(args.csv)
+
     log.end()
 
 def output(csv_writer, row):
