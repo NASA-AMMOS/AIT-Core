@@ -319,6 +319,10 @@ class ArrayType(object):
                 self.type == other.type and self.nelems == other.nelems)
 
 
+    def __repr__(self):
+        return "%s('%s')" % (self.__class__.__name__, self.name)
+
+
     def _assertIndex(self, index):
         """Raise TypeError or IndexError if index is not an integer or out of
         range for the number of elements in this array, respectively.
