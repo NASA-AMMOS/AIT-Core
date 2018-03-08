@@ -330,6 +330,8 @@ class FSWTabDefn (object):
                        strval = ""
                        for i in range(nobytes):
                            value = colpk.decode(stream.read(1))
+                           if name == "RESERVED":
+                               continue
                            strval += str(colfmt % value)
                            #print(colfmt % value)
                    else:
@@ -359,6 +361,8 @@ class FSWTabDefn (object):
                        #print "condition: "+str(condition)
 
                    # Append the value to table row
+                   if name == "RESERVED":
+                       continue
                    out += strval + self.delimiter
                    
            out = out[:-1] + "\n" 
@@ -424,7 +428,7 @@ class FSWTabDefn (object):
         fswbin_f.write( struct.pack('>I', 0) )
 
         for line in stream:
-            #print line
+            #print "line: "+line
             idx = 0
             line = line.replace("\n","")
             allcols = line.split(self.delimiter)
@@ -461,6 +465,11 @@ class FSWTabDefn (object):
                        nobytes = 1
                     #print "bytes: " + str(fswcoldefn.bytes)
                     #print "nobytes: " + str(nobytes)
+                    if name == 'RESERVED':
+                        #add reserved bytes 
+                        for i in range(0,nobytes):
+                            fswbin_f.write(colpk.encode(0))
+                        continue
         
                     items = fswcoldefn.items
                     if items is not None:
@@ -469,8 +478,8 @@ class FSWTabDefn (object):
                            val = allcols[i]
                            #print "item col val: "+str(val)
                            if units != 'none':
-                               val = val.replace(units,"")
-                               val = val.replace(" ","")
+                               val = val.strip()
+                               val = val.split(" ")[0]
                            else:
                                val = val.replace(" ","")
                            #print "item col val: "+str(val)
@@ -491,15 +500,18 @@ class FSWTabDefn (object):
                         else:
                            #print "XXXX colpk.type: "+colpk.format
                            #print "fswcoldefn.bytes: "+str(fswcoldefn.bytes)
+                           #print "xxxx val: "+str(val)
+                           #print "units: "+str(units)
                            if units != 'none':
-                               val = val.replace(units,"")
-                               val = val.replace(" ","")
+                               val = val.strip()
+                               val = val.split(" ")[0]
                                #print "else col val 2a: "+str(val)
                                fswbin_f.write(colpk.encode(self.convertValue(val)))
                                #fswbin_f.write(colpk.encode(float(val)))
                            elif str(colpk) == "PrimitiveType('U8')" and nobytes>1:
                                strval = ""
                                for c in list(val):
+                                   #print "xxx c: "+str(c)
                                    tmp = (int(c,16))&255
                                    #print "tmp: "+str(tmp)
                                    fswbin_f.write(colpk.encode(tmp))
@@ -513,7 +525,7 @@ class FSWTabDefn (object):
         written = fswbin_f.tell()
         #print "written: "+str(written)
 
-        #print str(self.size) + ", " + str(written)
+        print str(self.size) + ", " + str(written)
         if self.size > written:
             padding = bytearray(self.size - (written))
             fswbin_f.write(padding)
@@ -660,6 +672,7 @@ def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath='../o
         stream = open(binfile, 'rb')
 
         #pass in stream, fswtab_f
+        #print "version: "+str(version)
         fswtabdefn.toText(stream,fswtab_f,verbose,version)
         fswtab_f.close()
     else:
@@ -705,8 +718,12 @@ def writeToBinary (fswtabdict, tabletype, tabfile, verbose, outpath='../output/'
         os.makedirs(outpath)
 
     # Get the files ready for writing
-    version = tabfile[tabfile.index("_table",0)+6:tabfile.index(".",0)]
+    version = tabfile[tabfile.index("_table0",0)+6:tabfile.index(".txt",0)]
+    #print "tabfile.index('_table',0)+6: "+str(tabfile.index("_table0",0)+6)
+    #print "tabfile.index('.',0): "+str(tabfile.index(".txt",0))
+    #print "version: "+str(version)
     fswbin_f = open(outpath + '/' + tabletype + '_table' + str(version) + '.bin', 'wb')
+    #print "output bin file: "+outpath + '/' + tabletype + '_table' + str(version) + '.bin'
     stream = open(tabfile, 'r')
 
     #pass in stream, fswtab_f
