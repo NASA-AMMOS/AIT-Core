@@ -267,11 +267,18 @@ class Seq (object):
       filename = self.binpath
 
     with open(filename, 'wb') as output:
+      # Magic Number
       output.write( struct.pack('>H', Seq.Magic          )  )
-      output.write( struct.pack('>I', 0                  )  )
-      output.write( struct.pack('>H', self.seqid         )  )
-      output.write( struct.pack('>H', self.version       )  )
+      # Upload Type
+      output.write( struct.pack('B', 9                   )  )
+      # Version
+      output.write( struct.pack('B', self.version        )  )
+      # Number of Commands
       output.write( struct.pack('>H', len(self.commands) )  )
+      # Sequence ID
+      output.write( struct.pack('>H', self.seqid         )  )
+      # CRC Placeholder
+      output.write( struct.pack('>I', 0                  ) )
 
       pad = struct.pack('B', 0)
       for n in range(20):
@@ -280,10 +287,10 @@ class Seq (object):
       for line in self.lines:
         output.write( line.encode() )
 
-    self.crc32 = util.crc32File(filename, 6)
+    self.crc32 = util.crc32File(filename, 0)
 
     with open(filename, 'r+b') as output:
-      output.seek(2)
+      output.seek(28)
       output.write( struct.pack('>I', self.crc32) )
 
 
