@@ -45,45 +45,49 @@ def main():
             formatter_class = argparse.RawDescriptionHelpFormatter)
 
         # Add required command line arguments
-        parser.add_argument('filename')
+        parser.add_argument('filename',
+            nargs='+',
+            metavar='</path/to/seq>',
+            help='File or collection of sequence file(s)')
 
         # Add optional command line arguments
         args = parser.parse_args()
 
-        filename  = os.path.abspath(args.filename)
-        if not os.path.isfile(filename):
-            raise Exception('File not found: %s ' % filename)
+        for fname in args.filename:
+            filename  = os.path.abspath(fname)
+            if not os.path.isfile(filename):
+                raise Exception('File not found: %s ' % filename)
 
-        extension = os.path.splitext(filename)[1]
+            extension = os.path.splitext(filename)[1]
 
-        if extension.lower() != '.txt':
-            log.warn("Filename '%s' does not have a '.txt' extension", filename)
+            if extension.lower() != '.txt':
+                log.warn("Filename '%s' does not have a '.txt' extension", filename)
 
-        # Parse the filename for the applicable information
-        parts = os.path.basename(filename).split('_')
-        l = len(parts)
-        seqid = os.path.splitext(parts[l-1])[0]
-        desc = parts[l-2]
-        subsys = parts[l-3]
+            # Parse the filename for the applicable information
+            parts = os.path.basename(filename).split('_')
+            l = len(parts)
+            seqid = os.path.splitext(parts[l-1])[0]
+            desc = parts[l-2]
+            subsys = parts[l-3]
 
-        try:
-            int(seqid)
-        except ValueError:
-            raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
+            try:
+                int(seqid)
+            except ValueError:
+                raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
 
-        sequence = seq.Seq(filename, id=seqid)
+            sequence = seq.Seq(filename, id=seqid)
 
-        if not sequence.validate():
-            for msg in sequence.log.messages:
-                log.error(msg)
-        else:
-            binpath = sequence.binpath
-            seqid   = sequence.seqid
+            if not sequence.validate():
+                for msg in sequence.log.messages:
+                    log.error(msg)
+            else:
+                binpath = sequence.binpath
+                seqid   = sequence.seqid
 
-            log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
-            sequence.writeBinary()
+                log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
+                sequence.writeBinary()
 
-        exit = 0
+            exit = 0
     except Exception, e:
         log.error(e)
         exit = 1
