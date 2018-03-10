@@ -71,7 +71,7 @@ def main():
         except ValueError:
             raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
 
-        sequence = seq.Seq(filename)
+        sequence = seq.Seq(filename, id=seqid)
 
         if not sequence.validate():
             for msg in sequence.log.messages:
