@@ -15,13 +15,17 @@
 # information to foreign countries or providing access to foreign persons.
 
 '''
-usage: bliss-seq-encode oco3_seq_SSS_NNN_desc.txt 
+usage:  bliss-seq-encode mission_seq_SSS_desc_NNN.txt
+where:
+        SSS  = subsystem
+        desc = sequence descriptor
+        NNN  = sequence ID (integer)
 
 Encodes the given relative time command sequence to binary.
 
 Examples:
 
-  $ bliss-seq-encode seq/oco3_seq_gps_001_reset.txt 
+  $ bliss-seq-encode seq/oco3_seq_gps_reset_001.txt
 '''
 
 import os
@@ -34,36 +38,59 @@ from bliss.core import gds, log, seq
 def main():
     log.begin()
 
-    defaults      = { }
-    parser = argparse.ArgumentParser(
-        description = __doc__,
-        formatter_class = argparse.RawDescriptionHelpFormatter)
+    try:
+        defaults      = { }
+        parser = argparse.ArgumentParser(
+            description = __doc__,
+            formatter_class = argparse.RawDescriptionHelpFormatter)
 
-    # Add required command line arguments
-    parser.add_argument('filename')
+        # Add required command line arguments
+        parser.add_argument('filename')
 
-    # Add optional command line arguments
-    args = vars(parser.parse_args())
+        # Add optional command line arguments
+        args = parser.parse_args()
 
-    filename  = os.path.abspath(args['filename'])
-    extension = os.path.splitext(filename)[1]
+        filename  = os.path.abspath(args.filename)
+        if not os.path.isfile(filename):
+            raise Exception('File not found: %s ' % filename)
 
-    if extension.lower() != '.txt':
-        log.warn("Filename '%s' does not have a '.txt' extension", filename)
+        extension = os.path.splitext(filename)[1]
 
-    sequence = seq.Seq(filename)
+        if extension.lower() != '.txt':
+            log.warn("Filename '%s' does not have a '.txt' extension", filename)
 
-    if not sequence.validate():
-        for msg in sequence.log.messages:
-            log.error(msg)
-    else:
-        binpath = sequence.binpath
-        seqid   = sequence.seqid
+        # Parse the filename for the applicable information
+        parts = os.path.basename(filename).split('_')
+        l = len(parts)
+        seqid = os.path.splitext(parts[l-1])[0]
+        desc = parts[l-2]
+        subsys = parts[l-3]
 
-        log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
-        sequence.writeBinary()
+        try:
+            int(seqid)
+        except ValueError:
+            raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
+
+        sequence = seq.Seq(filename)
+
+        if not sequence.validate():
+            for msg in sequence.log.messages:
+                log.error(msg)
+        else:
+            binpath = sequence.binpath
+            seqid   = sequence.seqid
+
+            log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
+            sequence.writeBinary()
+
+        exit = 0
+    except Exception, e:
+        log.error(e)
+        exit = 1
 
     log.end()
+
+    sys.exit(exit)
 
 
 if __name__ == '__main__':
