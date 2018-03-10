@@ -56,7 +56,7 @@ class Seq (object):
     self.pathname  = pathname
     self.cmddict   = cmddict or cmd.getDefaultCmdDict()
     self.crc32     = None
-    self.seqid     = id
+    self.seqid     = int(id)
     self.lines     = [ ]
     self.header    = { }
     self.version   = version
@@ -227,12 +227,12 @@ class Seq (object):
 
     if 'seqid' in self.header:
       self.seqid = self.header['seqid']
-    else:
+    elif self.seqid is None:
       self.log.error('No sequence id present in header.')
 
     if 'version' in self.header:
       self.version = self.header['version']
-    else:
+    elif self.version is None:
       self.log.warning('No version present in header.  Defaulting to zero (0).')
       self.version = 0
 
