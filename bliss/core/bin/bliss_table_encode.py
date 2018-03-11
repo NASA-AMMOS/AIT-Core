@@ -15,13 +15,13 @@
 # information to foreign countries or providing access to foreign persons.
 
 '''
-usage: bliss-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
+usage: bliss-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt
 
 Encodes the given FSW text table to binary.
 
 Examples:
 
-  $ bliss-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt 
+  $ bliss-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/bliss-workspace/output/targets_table.txt
 '''
 
 import os
@@ -40,15 +40,16 @@ def main():
     # Add optional command line arguments
     parser.add_argument('--fswtabdict', default=None, required=True)
     parser.add_argument('--tabfile', default=None, required=True)
+    parser.add_argument('--binfile', default=None, required=True)
     parser.add_argument('--tabletype', default=None, required=True)
     parser.add_argument('--verbose', action='store_true', default=False)
 
     # Get command line arguments
-    args = vars(parser.parse_args())
-    dictpath      = args['fswtabdict']
-    tabfile       = args['tabfile']
-    tabletype     = args['tabletyle']
-    verbose       = args['verbose']
+    args = parser.parse_args()
+    dictpath      = args.fswtabdict
+    tabfile       = args.tabfile
+    tabletype     = args.tabletype
+    verbose       = args.verbose
 
     # Grab default command dictionary
     if dictpath is not None:
@@ -59,13 +60,14 @@ def main():
         except IOError, e:
             msg = 'Could not load default table dictionary "%s": %s'
             log.error(msg, filename, str(e))
-
-    fswtabdict  = table.getDefaultFSWTabDict()
+        fswtabdict  = table.FSWTabDict(filename)
+    else:
+        fswtabdict  = table.getDefaultFSWTabDict()
 
     # Check if cmddict exists
     if fswtabdict is not None:
         # Write out the table file using the command dictionary
-        table.writeToBinary(fswtabdict, tabletype, tabfile, verbose)
+        table.writeToBinary(fswtabdict, tabletype, tabfile, verbose, outbin=args.binfile)
 
     log.end()
 
