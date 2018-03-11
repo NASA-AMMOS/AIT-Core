@@ -89,7 +89,7 @@ class FSWColDefn (object):
 
     @type.setter
     def type (self, value):
-        self._type = value if value is not None else '' 
+        self._type = value if value is not None else ''
 
     @property
     def items (self):
@@ -183,6 +183,7 @@ class FSWTabDefn (object):
     """
     __slots__ = ["name", "delimiter", "uptype", "size", "rows", "fswheaderdefns", "coldefns"]
 
+    MagicNumber = 0x0c03
 
     def __init__ (self, *args, **kwargs):
         """Creates a new Command Definition."""
@@ -226,7 +227,7 @@ class FSWTabDefn (object):
                    nobytes = 1
                 #print "bytes: " + str(fswcoldefn.bytes)
                 #print "nobytes: " + str(nobytes)
-    
+
                 strval = ""
                 if str(colpk) == "PrimitiveType('U8')" and nobytes>1:
                     strval = ""
@@ -245,8 +246,8 @@ class FSWTabDefn (object):
                     #print "noentries: " + strval
                 if self.name != "keep_out_zones" and self.name != "line_of_sight":
                     # Append the value to table row
-                    out += name+': %s\n'     % strval 
-    
+                    out += name+': %s\n'     % strval
+
             if verbose is not None and verbose != 0:
                print
                print out
@@ -260,7 +261,7 @@ class FSWTabDefn (object):
             norows = self.rows
             #print "norows: " + str(norows)
         else:
-            rowbytes = 0 
+            rowbytes = 0
             items = None
             for coldef in enumerate(self.coldefns):
                 fswcoldefn = coldef[1]
@@ -316,7 +317,7 @@ class FSWTabDefn (object):
                units = fswcoldefn.units
                #print "units: " + units
                enum = fswcoldefn.enum
-   
+
                items = fswcoldefn.items
                if items is not None:
                    #print "items: " + str(items)
@@ -354,7 +355,7 @@ class FSWTabDefn (object):
                           if self.name == "response" and "CONSTANT" in name and condition > 6:
                               strval = str('%d' % value)
                    #print "strval: " + strval
-   
+
                    if self.name == "response" and name == "CONDITION_TYPE":
                        #print "value: "+str(value)
                        condition = value
@@ -364,14 +365,14 @@ class FSWTabDefn (object):
                    if name == "RESERVED":
                        continue
                    out += strval + self.delimiter
-                   
-           out = out[:-1] + "\n" 
+
+           out = out[:-1] + "\n"
         #print
         #print out
         fswtab_f.write(out)
 
         # Once we are done appending all the columns to the row
-        # strip off last comma and append a \r 
+        # strip off last comma and append a \r
         # Note: Since it is Access, \n alone does not work
         return
 
@@ -396,36 +397,45 @@ class FSWTabDefn (object):
         stream.seek(0)
 
         fsw_header = bytearray(32)
-        sha1 = hash_file(tabfile)
+        # sha1 = hash_file(tabfile)
+        sha1 = 0
 
-        #version = "0"
-        if verbose is not None and verbose != 0:
-            print
-            print "MAGIC_NUMBER: 0x0c03"
-            print "UPLOAD_TYPE: "+str(self.uptype) 
-            print "VERSION: "+str(version)
-            print "NUMBER_ENTRIES: "+str(no_lines)
-            print "SHA-1: "+sha1
+        # Write magic number
+        fswbin_f.write( struct.pack('>H', self.MagicNumber             )  )
 
-        fswbin_f.write( struct.pack('>H', 0x0C03             )  )
+        # Write upload type
         fswbin_f.write( struct.pack('B', self.uptype         )  )
+
+        # Write version
         fswbin_f.write( struct.pack('B', int(version,16)&255 )  )
+
+        # Write number of lines
         if self.name == "memory":
             fswbin_f.write( struct.pack('>H', 0           )  )
         else:
             fswbin_f.write( struct.pack('>H', no_lines           )  )
-        fswbin_f.write( struct.pack('>H', 0                  )  )
 
-        data = bytearray(20)
-        i = 0
-        tmpbytes = list(sha1)
-        for x in range(0, len(sha1)/2):
-            tmp = ((int(tmpbytes[x],16)&255)<<4) + (int(tmpbytes[x+1],16)&255)
-            #print "tmp: "+ str(tmp)
-            data[i] = tmp&0xFF
-            i += 1
-        fswbin_f.write(data)
+        # Write ID (0)
+        fswbin_f.write( struct.pack('>H', 0) )
+
+        # # Write CRC placeholder
         fswbin_f.write( struct.pack('>I', 0) )
+
+        # SHA as 0
+        pad = struct.pack('B', 0)
+        for n in range(20):
+          fswbin_f.write(pad)
+
+        # data = bytearray(20)
+        # i = 0
+        # tmpbytes = list(sha1)
+        # for x in range(0, len(sha1)/2):
+        #     tmp = ((int(tmpbytes[x],16)&255)<<4) + (int(tmpbytes[x+1],16)&255)
+        #     #print "tmp: "+ str(tmp)
+        #     data[i] = tmp&0xFF
+        #     i += 1
+
+        # fswbin_f.write(data)
 
         for line in stream:
             #print "line: "+line
@@ -449,7 +459,7 @@ class FSWTabDefn (object):
                 idx = 0
                 #this is how to step into table definitions
                 for coldef in enumerate(self.coldefns):
-                    #print "column definition: " + str(coldef[1])
+                    # print "column definition: " + str(coldef[1])
                     fswcoldefn = coldef[1]
                     name = fswcoldefn.name
                     #print "name: " + name
@@ -458,19 +468,22 @@ class FSWTabDefn (object):
                     units = fswcoldefn.units
                     #print "units: " + units
                     enum = fswcoldefn.enum
-    
+
                     if isinstance(fswcoldefn.bytes,list):
                        nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
                     else:
                        nobytes = 1
-                    #print "bytes: " + str(fswcoldefn.bytes)
-                    #print "nobytes: " + str(nobytes)
+                    # print "bytes: " + str(fswcoldefn.bytes)
+                    # print "nobytes: " + str(nobytes)
                     if name == 'RESERVED':
-                        #add reserved bytes 
-                        for i in range(0,nobytes):
-                            fswbin_f.write(colpk.encode(0))
-                        continue
-        
+                        #add reserved bytes
+                        fswbin_f.write(colpk.encode(0))
+
+                        if coldef[0] != len(self.coldefns)-1:
+                          continue
+                        else:
+                          break
+
                     items = fswcoldefn.items
                     if items is not None:
                         #print "items: " + str(items)
@@ -521,11 +534,11 @@ class FSWTabDefn (object):
                                fswbin_f.write(colpk.encode(self.convertValue(val)))
                                #fswbin_f.write(colpk.encode(float(val)))
                     idx += 1
-    
+
         written = fswbin_f.tell()
         #print "written: "+str(written)
 
-        print str(self.size) + ", " + str(written)
+        # print str(self.size) + ", " + str(written)
         if self.size > written:
             padding = bytearray(self.size - (written))
             fswbin_f.write(padding)
@@ -534,17 +547,25 @@ class FSWTabDefn (object):
         fswbin_f.close()
         fname = fswbin_f.name
         crc32 = util.crc32File(fname, 0)
-        if verbose is not None and verbose != 0:
-            print "CRC: %x"%crc32
-        #print "fname: "+fname+", crc32: "+str(crc32)
         fswbin_f = open(fname, 'r+b')
         fswbin_f.seek(28)
         crcbuf = bytearray(4)
         crcbuf[0:4]  = struct.pack('>L',crc32)
         fswbin_f.write(crcbuf)
 
+        #version = "0"
+        if verbose is not None and verbose != 0:
+            log.info("CRC: %x" % crc32)
+            print "MAGIC_NUMBER: %x" % self.MagicNumber
+            print "UPLOAD_TYPE: " + str(self.uptype)
+            print "VERSION: " + str(version)
+            print "NUMBER_ENTRIES: " + str(no_lines)
+            # print "SHA-1: "+sha1
+
+        #print "fname: "+fname+", crc32: "+str(crc32)
+
         # Once we are done appending all the columns to the row
-        # strip off last comma and append a \r 
+        # strip off last comma and append a \r
         # Note: Since it is Access, \n alone does not work
         return
 
@@ -598,7 +619,7 @@ class FSWTabDict (dict):
 class FSWTabDictCache (object):
     def __init__ (self, filename=None):
         if filename is None:
-            filename = os.path.join(os.path.dirname(__file__), 
+            filename = os.path.join(os.path.dirname(__file__),
                 "../../config/table.yaml")
             filename = os.path.abspath(filename)
 
@@ -607,7 +628,7 @@ class FSWTabDictCache (object):
         self.fswtabdict  = None
 
     def dirty (self):
-        return (not os.path.exists(self.pcklname) or 
+        return (not os.path.exists(self.pcklname) or
             os.path.getmtime(self.filename) > os.path.getmtime(self.pcklname))
 
     def load (self):
@@ -655,17 +676,19 @@ def YAMLCtor_FSWTabDefn (loader, node):
     return FSWTabDefn(**fields)
 
 
-def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath='../output/', messages=None):
+def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath=None, messages=None):
 
     verStr = '%02d' % version
+
+    if not outpath:
+      outpath = os.path.dirname(os.path.abspath(binfile))
+    elif not os.path.isdir(outpath):
+      os.makedirs(outpath)
 
     #get the table definition
     if tabletype != "log":
         fswtabdefn = fswtabdict.get(tabletype)
         #print "TABLE definition: "+str(fswtabdefn)
-
-        if not os.path.isdir(outpath):
-            os.makedirs(outpath)
 
         # Get the files ready for writing
         fswtab_f = open(outpath + '/' + tabletype + '_table' + verStr + '.txt', 'w')
@@ -678,8 +701,7 @@ def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath='../o
     else:
         fswtabdefn = fswtabdict.get("log_main")
         #print "TABLE definition: "+str(fswtabdefn)
-        if not os.path.isdir(outpath):
-            os.makedirs(outpath)
+
         fswtab_f = open(outpath + '/log_main_table' + verStr + '.txt', 'w')
         stream = open(binfile, 'rb')
         fswtabdefn.toText(stream,fswtab_f,verbose)
@@ -708,26 +730,24 @@ def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath='../o
     stream.close()
 
 
-def writeToBinary (fswtabdict, tabletype, tabfile, verbose, outpath='../output/', messages=None):
+def writeToBinary (fswtabdict, tabletype, tabfile, verbose, outbin=None, version=0, binfilemessages=None):
 
     #get the table definition
     fswtabdefn = fswtabdict.get(tabletype)
     #print "TABLE definition: "+str(fswtabdefn)
 
-    if not os.path.isdir(outpath):
-        os.makedirs(outpath)
+    if not outbin:
+      # Get the files ready for writing
+      outbin = os.path.join(tabletype + '_table' + str(version) + '.bin')
 
-    # Get the files ready for writing
-    version = tabfile[tabfile.index("_table0",0)+6:tabfile.index(".txt",0)]
-    #print "tabfile.index('_table',0)+6: "+str(tabfile.index("_table0",0)+6)
-    #print "tabfile.index('.',0): "+str(tabfile.index(".txt",0))
-    #print "version: "+str(version)
-    fswbin_f = open(outpath + '/' + tabletype + '_table' + str(version) + '.bin', 'wb')
+    log.info("Generating binary: %s" % outbin)
+
+    fswbin_f = open(outbin, 'wb')
     #print "output bin file: "+outpath + '/' + tabletype + '_table' + str(version) + '.bin'
     stream = open(tabfile, 'r')
 
     #pass in stream, fswtab_f
-    fswtabdefn.toBinary(tabfile,stream,fswbin_f,verbose,version)
+    fswtabdefn.toBinary(tabfile, stream, fswbin_f, verbose, str(version))
 
     #close input and output files
     stream.close()
