@@ -151,7 +151,7 @@ class CmdAPI:
                 status = True
 
                 with pcap.open(self.CMD_HIST_FILE, 'a') as output:
-                    output.write(command)
+                    output.write(str(cmdobj))
             except socket.error as e:
                 log.error(e.message)
             except IOError as e:
