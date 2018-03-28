@@ -145,7 +145,7 @@ class CmdAPI:
                 gds.hexdump(encoded, preamble=cmdobj.name + ':' + pad)
 
             try:
-                values = (self._host, self._port, cmdobj.name)
+                values = (self._host, self._port, str(cmdobj))
                 log.command('Sending to %s:%d: %s' % values)
                 self._socket.sendto(encoded, (self._host, self._port))
                 status = True
