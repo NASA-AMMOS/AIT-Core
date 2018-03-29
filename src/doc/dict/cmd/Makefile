@@ -1,8 +1,6 @@
-PDFLATEX=/usr/local/texlive/2015/bin/x86_64-darwin/pdflatex
-
 LOWER_MISSION = $(shell echo $(BLISS_MISSION) | tr A-Z a-z)
-CMDDICT       = ../../../config/$(LOWER_MISSION)/cmd.yaml
-
+CMDDICT       = /Users/jpadams/Documents/proj/oco3/workspace/oco3-devmode/oco3mos/config/cmd.yaml
+#CMDDICT = /Users/jpadams/Documents/proj/ecostress/workspace/eco-mos/config/fsw2/cmd.yaml
 SOURCES = \
   cmddict.tex               \
   cmddict-01-defs.tex       \
@@ -29,8 +27,8 @@ cmddict-07-cmddefs.tex: ./bliss-cmddefs-tex $(CMDDICT)
 	./bliss-cmddefs-tex
 
 $(TEMPNAME): $(SOURCES)
-	$(PDFLATEX) $<
-	$(PDFLATEX) $<
+	pdflatex $<
+	pdflatex $<
 
 clean:
 	/bin/rm -f *~ *.aux *.log *.out *.toc

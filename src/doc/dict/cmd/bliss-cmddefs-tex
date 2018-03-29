@@ -13,9 +13,37 @@ Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
 U.S. Government Sponsorship acknowledged.
 """
 
+from bliss.core import cmd
 
 import bliss
 
+titles = {
+  'ANALOGS': 'Analogs',
+  'CMD'    : 'Commands and Sequences',
+  'CORE'    : 'C\&DH Core',
+  'CRYO': 'Cryocooler',
+  'DCC'      : 'Digital Context Camera System',
+  'ETHERNET'    : 'Ethernet',
+  'FP'   : 'Fault Protection',
+  'GPS' : 'Global Positioning System',
+  'IMU' : 'Inertial Measurement Unit',
+  'PCS' : 'Pointing Control System',
+  'PMA' : 'Pointing Mirror Assembly',
+  'REM' : 'Instrument Remote Electronics Module',
+  'SRU' : 'Stellar Reference Unit',
+  'TEMPCTL' : 'Temperature Control'
+}
+
+#titles = {
+#  'CMD'     : 'Commands and Sequences',
+#  'CORE'    : 'C\&DH Core',
+#  'CRYO'    : 'Cryocooler',
+#  'ETHERNET': 'Ethernet',
+#  'FP'      : 'Fault Protection',
+#  'FPIE'    : 'Focal Plane Interface Electronics',
+#  'MOTOR'   : 'Motor Control',
+#  'TEMPCTL' : 'Temperature Control'
+#}
 
 def argvalues (arg):
   """Returns either a value range or enumeration for the given ArgDefn."""
@@ -52,8 +80,9 @@ def argtype (arg):
 def sanitize (s):
   """Returns a santized string with special TeX characters escaped."""
   s = s.replace('&', '\&')
-  s = s.replace('<', '\\textless')
-  s = s.replace('>', '\\textgreater')
+  s = s.replace('<', '{\\textless}')
+  s = s.replace('>', '{\\textgreater}')
+  s = s.replace('^', '{\\textasciicircum}')
   return s
 
 
@@ -76,6 +105,7 @@ def writeSection (output, title, commands):
 
 def writeCommand (output, cmd):
   """Outputs a subsection for the given command."""
+  print cmd.name
   output.write('\\subsection{%s}\n' % cmd.title)
   output.write('\n')
   output.write('%s\n' % sanitize(cmd.desc).strip())
@@ -99,7 +129,7 @@ def writeCommand (output, cmd):
 
     output.write('\\begin{argdetails}\n')
     for arg in args:
-      values = arg.name, argtype(arg), argvalues(arg), arg.units
+      values = arg.name, argtype(arg), argvalues(arg), sanitize(arg.units)
       output.write('  \\cmdarg{%s} & %s & %s & %s\\\\\n' % values)
       output.write('  \\hline\n')
     output.write('\\end{argdetails}\n')
@@ -109,27 +139,16 @@ def writeCommand (output, cmd):
   output.write('\n')
   output.write('% ' + ('-' * 65) + '\n')
 
-
-titles = {
-  'CMD'     : 'Commands and Sequences',
-  'CORE'    : 'C\&DH Core',
-  'CRYO'    : 'Cryocooler',
-  'ETHERNET': 'Ethernet',
-  'FP'      : 'Fault Protection',
-  'FPIE'    : 'Focal Plane Interface Electronics',
-  'MOTOR'   : 'Motor Control',
-  'TEMPCTL' : 'Temperature Control'
-}
-
 filename = 'cmddict-07-cmddefs.tex'
 output   = open(filename, 'wt')
 
 for section in sorted( titles.keys() ):
   commands = [ ]
-  for cmd in bliss.cmd.getDefaultCmdDict().values():
-    if cmd.subsystem == section:
-      commands.append(cmd)
+  for c in cmd.getDefaultDict().values():
+    if c.subsystem == section:
+      commands.append(c)
   commands.sort(key=lambda c: c.name)
+  print commands
   writeSection(output, titles[section], commands)
 
 output.close()
