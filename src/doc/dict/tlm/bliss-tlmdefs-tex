@@ -14,27 +14,40 @@ U.S. Government Sponsorship acknowledged.
 """
 
 
-import bliss
+from bliss.core import tlm
+
+Packet = 'OCO3_1553_EHS'
+
+def sanitize (s):
+  """Returns a santized string with special TeX characters escaped."""
+  if s is None:
+    return s
+
+  s = s.replace('&', '\&')
+  s = s.replace('<', '{\\textless}')
+  s = s.replace('>', '{\\textgreater}')
+  s = s.replace('^', '{\\textasciicircum}')
+  return s
 
 
 filename = 'tlmdict-07-tlmdefs.tex'
 output   = open(filename, 'wt')
-d        = bliss.tlm.getDefaultDict()
+d        = tlm.getDefaultDict()
 
 n = 0
 output.write('\\begin{tlmdetails}\n')
 
-for defn in d['CCSDS_Packet'].flddefns[18:]:
-    if n == 28:
-        output.write('\\end{tlmdetails}\n')
-        output.write('\\begin{tlmdetails}\n')
-        n = 0
+for defn in d[Packet].fields[18:]:
+#    if n == 10:
+#        output.write('\\end{tlmdetails}\n')
+#        output.write('\\begin{tlmdetails}\n')
+#        n = 0
 
     if type(defn.bytes) is list:
       start = defn.bytes[0]
     else:
       start = defn.bytes
-    values = (start, defn.name, defn.desc, defn.type.name)
+    values = (start, defn.name, sanitize(defn.desc), defn.type.name)
     output.write('%d & \\tlmarg{%s} & %s & %s\\\\\n' % values)
     output.write('  \\hline\n')
 

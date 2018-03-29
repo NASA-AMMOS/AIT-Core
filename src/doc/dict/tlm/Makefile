@@ -1,7 +1,7 @@
-PDFLATEX=/usr/local/texlive/2015/bin/x86_64-darwin/pdflatex
+#PDFLATEX=/usr/local/texlive/2015/bin/x86_64-darwin/pdflatex
 
 LOWER_MISSION = $(shell echo $(BLISS_MISSION) | tr A-Z a-z)
-CMDDICT       = ../../../config/$(LOWER_MISSION)/cmd.yaml
+CMDDICT       = /Users/jpadams/Documents/proj/oco3/workspace/oco3-devmode/oco3mos/config/tlm/fsw3/tlm.yaml
 
 SOURCES = \
   tlmdict.tex               \
@@ -29,8 +29,8 @@ tlmdict-07-tlmdefs.tex: ./bliss-tlmdefs-tex $(TLMDICT)
 	./bliss-tlmdefs-tex
 
 $(TEMPNAME): $(SOURCES)
-	$(PDFLATEX) $<
-	$(PDFLATEX) $<
+	pdflatex $<
+	pdflatex $<
 
 clean:
 	/bin/rm -f *~ *.aux *.log *.out *.toc
