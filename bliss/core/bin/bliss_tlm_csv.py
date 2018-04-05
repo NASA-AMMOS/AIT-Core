@@ -79,8 +79,11 @@ def main():
 
     not_found = False
 
+    # TODO Rework this into the CSV generation. Not here.
+    # Duplicating effort
     for fldname in fields:
-        if fldname not in defn.fieldmap:
+        raw = fldname.split('.')
+        if fldname not in defn.fieldmap and (len(raw) == 2 and raw[0] != 'raw' or raw[1] not in defn.fieldmap):
             not_found = True
             log.error('No telemetry point named "%s"' % fldname)
 
@@ -127,7 +130,14 @@ def main():
                     row = []
                     for field in fields:
                         try:
-                            fieldVal = getattr(packet, field)
+                            # check if raw value requested
+                            _raw = False
+                            names = field.split('.')
+                            if len(names) == 2 and names[0] == 'raw':
+                                field = names[1]
+                                _raw = True
+
+                            fieldVal = packet._getattr(field, raw=_raw)
 
                             if hasattr(fieldVal, 'name'):
                                 fieldVal = fieldVal.name
