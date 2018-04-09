@@ -32,6 +32,9 @@ default:
         name: bliss
         hostname: bliss.jpl.nasa.gov
 
+    leapseconds:
+        filename: leapseconds.dat
+
     phase: 'dev'
 
     data:
