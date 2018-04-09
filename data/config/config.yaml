@@ -3,8 +3,13 @@ default:
         history:
             filename: ../../cmdhist.pcap
         port: 3075
+
     sequence:
         directory: ../../seq/
+
+    script:
+        directory: ../../script
+
     cmddict:
         filename:  cmd.yaml
 
@@ -26,6 +31,9 @@ default:
     logging:
         name: bliss
         hostname: bliss.jpl.nasa.gov
+
+    leapseconds:
+        filename: leapseconds.dat
 
     phase: 'dev'
 
@@ -49,5 +57,5 @@ default:
       port: 8080
       telemetry:
         - stream:
-            name: OCO3_1553_EHS
+            name: 1553_HS_Packet
             port: 3076
