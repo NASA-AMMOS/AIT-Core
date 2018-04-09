@@ -14,11 +14,9 @@
 
 """BLISS DeLorean Motor Company (DMC)
 
-The bliss.dmc module provides functions to represent, translate, and
+The bliss.dmc module provides utilities to represent, translate, and
 manipulate time, building upon Python's datetime and timedelta data
-types.  Originally, this module was named bliss.time, but time.py
-conflicts with Python's builtin module of the same name, which causes
-all sorts of subtle import issues and conflicts.
+types.
 
 Many functions assume the GPS (and ISS) epoch: January 6, 1980 at
 midnight.
@@ -28,9 +26,14 @@ midnight.
 import calendar
 import datetime
 import math
+import os.path
+import pickle
 import time
 
+import requests
 
+import bliss.core
+from bliss.core import log
 
 GPS_Epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
 TICs      = [ ]
@@ -39,6 +42,7 @@ TwoPi     = 2 * math.pi
 DOY_Format = '%Y-%jT%H:%M:%SZ'
 ISO_8601_Format = '%Y-%m-%dT%H:%M:%SZ'
 
+LeapSeconds = None
 
 def getTimestampUTC():
     """getTimestampUTC() -> (ts_sec, ts_usec)
@@ -116,7 +120,7 @@ def toGPSWeekAndSecs(timestamp=None):
 
     return (week, seconds)
 
-
+@bliss.deprecated('This will be removed in a future release. Please use dmc.LeapSeconds.get_GPS_offset_for_date')
 def getUTCtoGPSLeapSeconds(timestamp=None):
         """ Get the number of leap seconds for UTC->GPS conversion
 
@@ -296,3 +300,114 @@ def totalSeconds(td):
         ts = (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 1e6) / 1e6
 
     return ts
+
+
+class UTCLeapSeconds(object):
+    def __init__(self):
+        self._data = None
+        self._load_leap_second_data()
+
+    @property
+    def leapseconds(self):
+        return self._data['leapseconds']
+
+    @property
+    def valid_date(self):
+        return self._data['valid']
+
+    def is_valid(self):
+        return datetime.datetime.now() < self._data['valid']
+
+    def get_current_GPS_offset(self):
+        return self._data['leapseconds'][-1][-1]
+
+    def get_GPS_offset_for_date(self, timestamp):
+        if timestamp is None:
+                timestamp = datetime.datetime.utcnow()
+
+        if timestamp < GPS_Epoch:
+                e = "The timestamp date is before the GPS epoch"
+                raise ValueError(e)
+
+        for offset in reversed(self._data['leapseconds']):
+            # Offsets are stored as a tuple (date, offset)
+            # indicating the `date` when `offset` took effect.
+            if timestamp >= offset[0]:
+                return offset[1]
+        else:
+            return 0
+
+    def _load_leap_second_data(self):
+        ls_file = bliss.config.get(
+            'leapseconds.filename',
+            os.path.join(bliss.config._directory, 'leapseconds.pkl')
+        )
+
+        try:
+            with open(ls_file, 'r') as outfile:
+                self._data = pickle.load(outfile)
+        except IOError:
+            log.info('Unable to locate leapseconds config file')
+
+        if not (self._data and self.is_valid()):
+            try:
+                self._update_leap_second_data()
+            except ValueError:
+                msg = (
+                    'Leapsecond data update failed. '
+                    'This may cause problems with some functionality'
+                )
+                log.warn(msg)
+
+                if self._data:
+                    log.warn('Continuing with out of date leap second data')
+                else:
+                    raise ValueError('Could not load leap second data')
+
+    def _update_leap_second_data(self):
+        """ Updates the systems leap second information
+
+        Pulls the latest leap second information from
+        https://www.ietf.org/timezones/data/leap-seconds.list
+        and updates the leapsecond config file.
+
+        Raises:
+            ValueError: If the connection to IETF does not return 200
+            IOError: If the path to the leap seconds file is not valid
+        """
+
+        log.info('Attempting to acquire latest leapsecond data')
+
+        ls_file = bliss.config.get(
+            'leapseconds.filename',
+            os.path.join(bliss.config._directory, 'leapseconds.dat')
+        )
+
+        url = 'https://www.ietf.org/timezones/data/leap-seconds.list'
+        r = requests.get(url)
+
+        if r.status_code != 200:
+            msg = 'Unable to locate latest timezone data. Connection to IETF failed'
+            log.error(msg)
+            raise ValueError(msg)
+
+        text = r.text.split('\n')
+        lines = [l for l in text if l.startswith('#@') or not l.startswith('#')]
+
+        data = {'valid': None, 'leapseconds': []}
+        data['valid'] = datetime.datetime(1900, 1, 1) + datetime.timedelta(seconds=int(lines[0].split('\t')[1]))
+
+        leap = 1
+        for l in lines[1:-1]:
+            t = datetime.datetime(1900, 1, 1) + datetime.timedelta(seconds=int(l.split('\t')[0]))
+            if t < GPS_Epoch:
+                continue
+
+            data['leapseconds'].append((t, leap))
+            leap += 1
+
+        self._data = data
+        with open(ls_file, 'w') as outfile:
+            pickle.dump(data, outfile)
+
+if not LeapSeconds: LeapSeconds = UTCLeapSeconds()
