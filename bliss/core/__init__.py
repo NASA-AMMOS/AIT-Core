@@ -15,5 +15,16 @@
 import sys
 
 import cfg
+import log
 
+
+def deprecated(message):
+  def deprecated_decorator(func):
+      def deprecated_func(*args, **kwargs):
+          log.warn("{} is a deprecated function. {}".format(func.__name__, message))
+          return func(*args, **kwargs)
+      return deprecated_func
+  return deprecated_decorator
+
+sys.modules['bliss'].deprecated = deprecated
 sys.modules['bliss'].DEFAULT_CMD_PORT = 3075
