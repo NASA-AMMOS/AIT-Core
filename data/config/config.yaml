@@ -3,8 +3,13 @@ default:
         history:
             filename: ../../cmdhist.pcap
         port: 3075
+
     sequence:
         directory: ../../seq/
+
+    script:
+        directory: ../../script
+
     cmddict:
         filename:  cmd.yaml
 
