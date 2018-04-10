@@ -42,6 +42,7 @@ TwoPi     = 2 * math.pi
 DOY_Format = '%Y-%jT%H:%M:%SZ'
 ISO_8601_Format = '%Y-%m-%dT%H:%M:%SZ'
 
+_DEFAULT_FILE_NAME = 'leapseconds.dat'
 LeapSeconds = None
 
 def getTimestampUTC():
@@ -340,7 +341,7 @@ class UTCLeapSeconds(object):
     def _load_leap_second_data(self):
         ls_file = bliss.config.get(
             'leapseconds.filename',
-            os.path.join(bliss.config._directory, 'leapseconds.pkl')
+            os.path.join(bliss.config._directory, _DEFAULT_FILE_NAME)
         )
 
         try:
@@ -380,7 +381,7 @@ class UTCLeapSeconds(object):
 
         ls_file = bliss.config.get(
             'leapseconds.filename',
-            os.path.join(bliss.config._directory, 'leapseconds.dat')
+            os.path.join(bliss.config._directory, _DEFAULT_FILE_NAME)
         )
 
         url = 'https://www.ietf.org/timezones/data/leap-seconds.list'
