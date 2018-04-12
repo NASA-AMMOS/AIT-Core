@@ -153,6 +153,14 @@ def test_replaceVariables_strftime ():
 
     assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
 
+def test_replaceVariables_strftime_skip ():
+    # Ensure that strftime format strings aren't expanding in a
+    # path marked with `raw`
+    pathname = os.path.join('/', '%Y', '%Y-%j', 'bliss-orbits`raw`')
+    expected = [os.path.join('/', '%Y', '%Y-%j', 'bliss-orbits')]
+
+    assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
+
 def test_replaceVariables_strftime_addday ():
     # Test replaceVariables with strftime directives
     pathname = os.path.join('/', '%Y', '%Y-%j', 'bliss-orbits')

@@ -131,8 +131,14 @@ def replaceVariables(path, datetime=None, pathvars=None):
         # strftime translation
         # Loop through newpath_list to do strftime translation
         for index, newpath in enumerate(newpath_list):
-            # Apply strftime translation
-            newpath_list[index] = time.strftime(newpath, datetime)
+            # Apply strftime translation if path is not marked
+            # as a "raw string". I.e., any string with `raw` appended
+            # to the end. Otherwise, strip the "raw string" marker
+            # and return the path.
+            if newpath.endswith('`raw`'):
+                newpath_list[index] = newpath[:-5]
+            else:
+                newpath_list[index] = time.strftime(newpath, datetime)
 
     return newpath_list
 
