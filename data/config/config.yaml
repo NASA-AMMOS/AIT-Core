@@ -1,7 +1,7 @@
 default:
     command:
         history:
-            filename: ../../cmdhist.pcap
+            filename: ../../cmdhist-%Y-%m-%dT%H:%M:%S.pcap`raw`
         port: 3075
 
     sequence:

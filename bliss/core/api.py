@@ -120,6 +120,22 @@ class CmdAPI:
                 ).format(_def_cmd_hist)
                 bliss.core.log.warn(msg)
 
+        rollover = bliss.config.get('command.history.rollover.enable', True)
+        nbytes = bliss.config.get(
+            'command.history.rollover.nbytes',
+            None)
+        npackets = bliss.config.get(
+            'command.history.rollover.npackets',
+            None)
+        nseconds = bliss.config.get(
+            'command.history.rollover.nseconds',
+            86400 if nbytes is None and npackets is None else None)
+
+        self._cmd_log = pcap.open(self.CMD_HIST_FILE, 'a',
+            rollover=rollover, nbytes=nbytes,
+            npackets=npackets, nseconds=nseconds
+        )
+
 
     def send (self, command, *args, **kwargs):
         """Creates, validates, and sends the given command as a UDP
@@ -150,8 +166,7 @@ class CmdAPI:
                 self._socket.sendto(encoded, (self._host, self._port))
                 status = True
 
-                with pcap.open(self.CMD_HIST_FILE, 'a') as output:
-                    output.write(str(cmdobj))
+                self._cmd_log.write(str(cmdobj))
             except socket.error as e:
                 log.error(e.message)
             except IOError as e:
