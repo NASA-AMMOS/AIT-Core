@@ -1,5 +1,5 @@
-bliss.core.test.test_dtype module
-=================================
+bliss.core.test.test\_dtype module
+==================================
 
 .. automodule:: bliss.core.test.test_dtype
     :members:

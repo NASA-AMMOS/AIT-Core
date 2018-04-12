@@ -1,5 +1,5 @@
-bliss.core.test.test_log module
-===============================
+bliss.core.test.test\_log module
+================================
 
 .. automodule:: bliss.core.test.test_log
     :members:

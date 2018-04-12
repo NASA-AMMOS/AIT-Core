@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_create_dirs module
-=======================================
+bliss.core.bin.bliss\_create\_dirs module
+=========================================
 
 .. automodule:: bliss.core.bin.bliss_create_dirs
     :members:

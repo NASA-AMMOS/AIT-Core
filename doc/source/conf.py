@@ -17,6 +17,12 @@ import os
 
 import sphinx_rtd_theme
 
+# BLISS_CONFIG is set to empty string so that the build on ReadTheDocs will
+# pick up API Documentation.
+if os.environ.get('BLISS_CONFIG', None) is None:
+    config = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/config/config.yaml")
+    os.environ['BLISS_CONFIG'] = config
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
