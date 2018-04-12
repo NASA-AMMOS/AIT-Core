@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_tlm_csv module
-===================================
+bliss.core.bin.bliss\_tlm\_csv module
+=====================================
 
 .. automodule:: bliss.core.bin.bliss_tlm_csv
     :members:

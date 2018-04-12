@@ -1,5 +1,5 @@
-bliss.core.test.test_ccsds module
-=================================
+bliss.core.test.test\_ccsds module
+==================================
 
 .. automodule:: bliss.core.test.test_ccsds
     :members:

@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_tlm_send module
-====================================
+bliss.core.bin.bliss\_tlm\_send module
+======================================
 
 .. automodule:: bliss.core.bin.bliss_tlm_send
     :members:

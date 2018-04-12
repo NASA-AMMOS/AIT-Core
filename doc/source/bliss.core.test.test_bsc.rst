@@ -1,5 +1,5 @@
-bliss.core.test.test_bsc module
-===============================
+bliss.core.test.test\_bsc module
+================================
 
 .. automodule:: bliss.core.test.test_bsc
     :members:

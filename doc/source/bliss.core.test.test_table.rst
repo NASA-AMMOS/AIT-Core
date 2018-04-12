@@ -1,5 +1,5 @@
-bliss.core.test.test_table module
-=================================
+bliss.core.test.test\_table module
+==================================
 
 .. automodule:: bliss.core.test.test_table
     :members:

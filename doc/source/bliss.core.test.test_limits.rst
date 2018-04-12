@@ -1,5 +1,5 @@
-bliss.core.test.test_limits module
-==================================
+bliss.core.test.test\_limits module
+===================================
 
 .. automodule:: bliss.core.test.test_limits
     :members:

@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_seq_encode module
-======================================
+bliss.core.bin.bliss\_seq\_encode module
+========================================
 
 .. automodule:: bliss.core.bin.bliss_seq_encode
     :members:

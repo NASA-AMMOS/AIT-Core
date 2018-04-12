@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_pcap module
-================================
+bliss.core.bin.bliss\_pcap module
+=================================
 
 .. automodule:: bliss.core.bin.bliss_pcap
     :members:
