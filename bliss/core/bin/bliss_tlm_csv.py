@@ -15,7 +15,6 @@ def main():
     arguments = {
         '--all': {
             'action'  : 'store_true',
-            'default' : False,
             'help'    : 'output all fields/values',
         },
 
@@ -29,7 +28,7 @@ def main():
         '--fields': {
             'type'    : str,
             'metavar' : '</path/to/fields/file>',
-            'help'    : 'file containing all fields to query, separated by newline. Defaults to all fields.'
+            'help'    : 'file containing all fields to query, separated by newline.'
         },
 
         '--packet': {
@@ -40,13 +39,7 @@ def main():
 
         '--time_field': {
             'type'      : str,
-            'default'   : 'time_coarse',
-            'help'      : 'Time field name used for first column.'
-        },
-
-        '--ground_time': {
-            'action'  : 'store_true',
-            'help'    : 'Use ground receipt time for comparisons'
+            'help'      : 'Time field to use for time range comparisons. Ground receipt time will be used if nothing is specified.'
         },
 
         '--stime': {
@@ -67,6 +60,10 @@ def main():
 
     args = gds.arg_parse(arguments, description)
 
+    args.ground_time = True
+    if args.time_field is not None:
+        args.ground_time = False
+
     tlmdict = tlm.getDefaultDict()
     defn    = None
 
@@ -79,6 +76,7 @@ def main():
 
     if not args.all and args.fields is None:
         log.error('Must provide fields file with --fields or specify that all fields should be queried with --all')
+        gds.exit(2)
 
     if args.all:
         fields = [flddefn.name for flddefn in defn.fields]
