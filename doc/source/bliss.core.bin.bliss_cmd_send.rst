@@ -1,5 +1,5 @@
-bliss.core.bin.bliss_cmd_send module
-====================================
+bliss.core.bin.bliss\_cmd\_send module
+======================================
 
 .. automodule:: bliss.core.bin.bliss_cmd_send
     :members:

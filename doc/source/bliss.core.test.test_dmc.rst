@@ -1,5 +1,5 @@
-bliss.core.test.test_dmc module
-===============================
+bliss.core.test.test\_dmc module
+================================
 
 .. automodule:: bliss.core.test.test_dmc
     :members:
