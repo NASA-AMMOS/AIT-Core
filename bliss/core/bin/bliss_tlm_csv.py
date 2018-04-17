@@ -15,7 +15,6 @@ def main():
     arguments = {
         '--all': {
             'action'  : 'store_true',
-            'default' : False,
             'help'    : 'output all fields/values',
         },
 
@@ -29,8 +28,7 @@ def main():
         '--fields': {
             'type'    : str,
             'metavar' : '</path/to/fields/file>',
-            'required': True,
-            'help'    : 'file containing all fields to query, separated by newline. Defaults to all fields.'
+            'help'    : 'file containing all fields to query, separated by newline.'
         },
 
         '--packet': {
@@ -41,8 +39,7 @@ def main():
 
         '--time_field': {
             'type'      : str,
-            'default'   : 'time_coarse',
-            'help'      : 'Time field name used for first column.'
+            'help'      : 'Time field to use for time range comparisons. Ground receipt time will be used if nothing is specified.'
         },
 
         '--stime': {
@@ -63,6 +60,10 @@ def main():
 
     args = gds.arg_parse(arguments, description)
 
+    args.ground_time = True
+    if args.time_field is not None:
+        args.ground_time = False
+
     tlmdict = tlm.getDefaultDict()
     defn    = None
 
@@ -73,9 +74,16 @@ def main():
         log.error('Packet "%s" not defined in telemetry dictionary.' % args.packet)
         gds.exit(2)
 
-    # Parse the fields file into a list
-    with open(args.fields, 'rb') as stream:
-        fields = [ fldname.strip() for fldname in stream.readlines() ]
+    if not args.all and args.fields is None:
+        log.error('Must provide fields file with --fields or specify that all fields should be queried with --all')
+        gds.exit(2)
+
+    if args.all:
+        fields = [flddefn.name for flddefn in defn.fields]
+    else:
+        # Parse the fields file into a list
+        with open(args.fields, 'rb') as stream:
+            fields = [ fldname.strip() for fldname in stream.readlines() ]
 
     not_found = False
 
@@ -90,9 +98,6 @@ def main():
     if not_found:
         gds.exit(2)
 
-    if args.all:
-        fields = [flddefn.name for flddefn in defn.fields]
-
     if args.stime:
         start = datetime.strptime(args.stime, dmc.ISO_8601_Format)
     else:
@@ -104,7 +109,10 @@ def main():
         stop = datetime.utcnow()
 
     # Append time to beginning of each row
-    fields.insert(0, args.time_field)
+    if not args.ground_time:
+        fields.insert(0, args.time_field)
+    else:
+        fields.insert(0, 'Ground Receipt Time')
 
     csv_file = None
     csv_writer = None
@@ -114,6 +122,11 @@ def main():
         csv_writer = csv.writer(csv_file)
 
     output(csv_writer, fields)
+
+    # If we're comparing off ground receipt time we need to drop the header label to avoid
+    # indexing errors when processing the fields.
+    if args.ground_time:
+        fields = fields[1:]
 
     rowcnt = 0
 
@@ -126,7 +139,8 @@ def main():
             while data:
                 packet = tlm.Packet(defn, data)
 
-                if start < getattr(packet, args.time_field) < stop:
+                comp_time = header.timestamp if args.ground_time else getattr(packet, args.time_field)
+                if start < comp_time < stop:
                     row = []
                     for field in fields:
                         try:
@@ -152,6 +166,9 @@ def main():
                             fieldVal = packet._getattr(field, raw=True)
 
                         row.append(fieldVal)
+
+                    if args.ground_time:
+                        row = [comp_time] + row
 
                     rowcnt += 1
                     output(csv_writer, row)
