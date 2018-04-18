@@ -12,12 +12,23 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import io
+from os import path
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 
 import os
 import shutil
+
+description = "Python-based software suite developed to handle Ground Data System (GDS), " \
+              "Electronic Ground Support Equipment (EGSE), commanding, telemetry uplink/downlink, " \
+              "and sequencing for JPL International Space Station and CubeSat Missions"
+
+# Get the long description from the README file
+here = path.abspath(path.dirname(__file__))
+with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 class InstallWithGithooks(install):
     def run(self):
@@ -32,8 +43,12 @@ class DevWithGithooks(develop):
 setup(
     name         = 'bliss-core',
     version      = '0.35.0',
+    description  = description,
+    long_description = long_description,
+    long_description_content_type = 'text/markdown',
+    url          = 'https://github.com/NASA-AMMOS/AIT-Core',
     packages     = find_packages(exclude=['tests']),
-    author       = 'BLISS-Core Development Team',
+    author       = 'AMMOS Instrument Toolkit Development Team',
     author_email = 'bliss@jpl.nasa.gov',
 
     namespace_packages   = ['bliss'],
