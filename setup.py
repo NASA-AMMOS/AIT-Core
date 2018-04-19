@@ -42,7 +42,7 @@ class DevWithGithooks(develop):
 
 setup(
     name         = 'bliss-core',
-    version      = '0.35.0',
+    version      = '0.36.0',
     description  = description,
     long_description = long_description,
     long_description_content_type = 'text/markdown',
