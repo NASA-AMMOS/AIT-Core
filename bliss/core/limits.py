@@ -125,13 +125,13 @@ class LimitDefinition (json.SlotSerializer, object):
             value = self.convert(value, units, self.units)
 
         check = False
-        if self.lower:
+        if self.lower and hasattr(self.lower, 'error'):
             check = check or value < self.lower.error
 
-        if self.upper:
+        if self.upper and hasattr(self.upper, 'error'):
             check = check or value > self.upper.error
 
-        if self.value:
+        if self.value and hasattr(self.value, 'error'):
             if isinstance(self.value.error, list):
                 check = check or value in self.value.error
             else:
@@ -144,13 +144,13 @@ class LimitDefinition (json.SlotSerializer, object):
             value = self.convert(value, units, self.units)
 
         check = False
-        if self.lower:
+        if self.lower and hasattr(self.lower, 'warn'):
             check = check or value < self.lower.warn
 
-        if self.upper:
+        if self.upper and hasattr(self.upper, 'warn'):
             check = check or value > self.upper.warn
 
-        if self.value:
+        if self.value and hasattr(self.value, 'warn'):
             if isinstance(self.value.warn, list):
                 check = check or value in self.value.warn
             else:
