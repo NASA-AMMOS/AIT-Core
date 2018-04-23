@@ -16,6 +16,7 @@ Submodules
    bliss.core.test.test_evr
    bliss.core.test.test_limits
    bliss.core.test.test_log
+   bliss.core.test.test_notify
    bliss.core.test.test_pcap
    bliss.core.test.test_table
    bliss.core.test.test_tlm

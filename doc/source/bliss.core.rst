@@ -29,6 +29,7 @@ Submodules
    bliss.core.json
    bliss.core.limits
    bliss.core.log
+   bliss.core.notify
    bliss.core.pcap
    bliss.core.seq
    bliss.core.table
