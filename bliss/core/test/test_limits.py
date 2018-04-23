@@ -74,6 +74,98 @@ def test_check_upper_error():
     assert ldict['1553_HS_Packet.Voltage_A'].error(46)
 
 
+def test_check_missing_value_warn():
+    """
+    # test_check_missing_value_warn
+
+    - !Limit
+      source: CCSDS_HEADER.secondary_header_flag
+      desc: tbd
+      lower:
+        error: Not Present
+    """
+    ldict = limits.LimitsDict(test_check_missing_value_warn.__doc__)
+    assert ldict['CCSDS_HEADER.secondary_header_flag'].warn('Foo') == False
+
+
+def test_check_missing_value_error():
+    """
+    # test_check_missing_value_error
+
+    - !Limit
+      source: CCSDS_HEADER.secondary_header_flag
+      desc: tbd
+      lower:
+        warn: Not Present
+    """
+    ldict = limits.LimitsDict(test_check_missing_value_error.__doc__)
+    assert ldict['CCSDS_HEADER.secondary_header_flag'].error('Foo') == False
+
+
+def test_check_missing_lower_warn():
+    """
+    # test_check_missing_lower_warn
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limits.LimitsDict(test_check_missing_lower_warn.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].warn(6) == False
+
+
+def test_check_missing_upper_warn():
+    """
+    # test_check_missing_upper_warn
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        error: 45.0
+    """
+    ldict = limits.LimitsDict(test_check_missing_upper_warn.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].warn(15) == False
+
+
+def test_check_missing_lower_error():
+    """
+    # test_check_missing_lower_error
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        warn: 10.0
+      upper:
+        error: 45.0
+        warn: 40.0
+    """
+    ldict = limits.LimitsDict(test_check_missing_lower_error.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].error(15) == False
+
+
+def test_check_missing_upper_error():
+    """
+    # test_check_missing_upper_error
+    - !Limit
+      source: 1553_HS_Packet.Voltage_A
+      desc: tbd
+      lower:
+        error: 5.0
+        warn: 10.0
+      upper:
+        warn: 45.0
+    """
+    ldict = limits.LimitsDict(test_check_missing_upper_error.__doc__)
+    assert ldict['1553_HS_Packet.Voltage_A'].error(15) == False
+
+
 def test_check_lower_warn():
     """
     # test_check_lower_warn
