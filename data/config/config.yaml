@@ -35,6 +35,38 @@ default:
     leapseconds:
         filename: leapseconds.dat
 
+    notifications:
+        email:
+            # Specifies the triggers for which a type of notification
+            # (email, text) will be emitted.
+            triggers:
+                - limit-warn
+                - limit-error
+            recipients:
+                - email@address.com
+        text:
+            triggers:
+                - limit-warn
+                - limit-error
+            # Most wireless carriers provide SMS gateways for sending
+            # texts via email. You can look up the address format for your
+            # given carrier. A list of some popular carriers is below:
+            # AT&Tnumber@txt.att.net
+            # Sprintnumber@messaging.sprintpcs.com
+            # T-Mobilenumber@tmomail.net
+            # Verizonnumber@vtext.com
+            recipients:
+                - phonenumber@service.com
+        # Notifications require connection to an SMTP server for sending
+        # both emails and texts. You should configure this to point to
+        # your SMTP server with your credentials. You can use GMails
+        # servers if you have a GMail account.
+        smtp:
+            server: smtp.gmail.com
+            port: 465
+            username: yourSMTPServerUsername
+            password: yourSMTPServerPassword
+
     phase: 'dev'
 
     data:
