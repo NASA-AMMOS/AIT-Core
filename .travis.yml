@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 env:
-  - BLISS_CONFIG: $TRAVIS_BUILD_DIR/data/config/config.yaml
+  - BLISS_CONFIG: ${TRAVIS_BUILD_DIR}/data/config/config.yaml
 install:
   - pip install .[tests]
 script: nosetests
