@@ -216,6 +216,7 @@ def testTabDefnAndWrite():
 
     os.unlink('tempfile')
     os.unlink('tempfileb')
+    os.unlink('test_table_table00.txt')
     fileholder.tearDown()
 
 
