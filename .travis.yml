@@ -7,7 +7,7 @@ branches:
     - master
 
 env:
-  - BLISS_CONFIG: ${TRAVIS_BUILD_DIR}/data/config/config.yaml
+  - AIT_CONFIG: ${TRAVIS_BUILD_DIR}/data/config/config.yaml
 
 install:
   - pip install .[tests]

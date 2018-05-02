@@ -29,8 +29,8 @@ default:
         filename: bsc.yaml
 
     logging:
-        name: bliss
-        hostname: bliss.jpl.nasa.gov
+        name: ait
+        hostname: yourCustomHostForLogging
 
     leapseconds:
         filename: leapseconds.dat

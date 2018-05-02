@@ -4,9 +4,9 @@ Contributor Guides
 Installation
 ------------
 
-Before you install **bliss-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already.
+Before you install **ait-core** you should install `virtualenv <https://virtualenv.pypa.io/en/latest/installation.html>`_ to properly isolate your development environment. It is also recommended that you install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.org/en/latest/install.html>`_ for convenience. The following instructions will assume that you have installed both already.
 
-Installation is largely the same if you wish to contribute or make changes to the code compared to simply using the toolkit. The only real change is installing **bliss-core** as a "develop" mode package so we can make changes and test them without needing to reinstall the changed files.
+Installation is largely the same if you wish to contribute or make changes to the code compared to simply using the toolkit. The only real change is installing **ait-core** as a "develop" mode package so we can make changes and test them without needing to reinstall the changed files.
 
 .. code-block:: bash
 
@@ -64,11 +64,11 @@ with:
 To view the documentation, open **doc/build/html/index.html** in a web browser.
 
 If you need to update the auto-generated documentation you can run the
-following command to rebuild all of the **bliss** package documentation:
+following command to rebuild all of the **ait** package documentation:
 
 .. code-block:: bash
 
-    $ sphinx-apidoc --separate --force --no-toc -o doc/source bliss bliss/test
+    $ sphinx-apidoc --separate --force --no-toc -o doc/source ait ait/test
 
 Please make sure to update the docs if changes in a ticket result in the
 documentation being out of date.
@@ -77,7 +77,7 @@ Unit Tests
 ----------
 
 AIT uses the `Nose <https://nose.readthedocs.org/en/latest/>`_ unit
-test framework.  To run the tests in **python/bliss/test**:
+test framework.  To run the tests in **python/ait/test**:
 
 .. code-block:: bash
 
@@ -93,10 +93,4 @@ AIT makes a best-effort attempt at sticking with PEP-8 conventions.
 Mailing Lists
 -------------
 
-The AIT mailings lists are a good way to get in contact with people working on the project. If you need help with something on the project feel free to send an email to the AIT team at **bliss.support@jpl.nasa.gov**.
-
-Slack Channels
---------------
-
-AIT has three channels on the JPL team Slack. Generic AIT conversations happen on **#bliss**, development conversations happen on **#bliss-development**, and user support conversations happen on **#bliss-support**.
-
+The AIT mailings lists are a good way to get in contact with people working on the project. If you need help with something on the project feel free to send an email to the AIT team at **ait-dev@googlegroups.com**.

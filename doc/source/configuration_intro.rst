@@ -3,9 +3,9 @@ Introduction to AIT Configuration
 
 AIT uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup Language) and JSON files for project configuration.
 
-You must ensure that the **BLISS_CONFIG** environment variable points to your **config.yaml** file in order for AIT to properly configure your project. Given the default AIT project structure you would have the following setup. This assumes you've set **BLISS_ROOT** to the project's root directory::
+You must ensure that the **AIT_CONFIG** environment variable points to your **config.yaml** file in order for AIT to properly configure your project. Given the default AIT project structure you would have the following setup. This assumes you've set **AIT_ROOT** to the project's root directory::
 
-    export BLISS_CONFIG=$BLISS_ROOT/data/config/config.yaml
+    export AIT_CONFIG=$AIT_ROOT/data/config/config.yaml
 
 What is YAML?
 -------------
@@ -21,8 +21,8 @@ AIT uses **config.yaml** to load configuration data for the command (cmddict), t
 * **evrdict**   - defines the location of the Event Verification Record (EVR) Dictionary YAML file
 * **tlmdict**   - defines the location of the Telemetry Dictionary YAML file
 * **bsc**       - defines the location of the Binary Stream Capture (BSC) YAML configuration file.
-* **logging**   - defines the name to be associated with the Logger component (defaults to 'bliss') and the host to push the output syslog information (defaults to 'localhost')
-* **data**      - specifies all of the data paths associated with the GDS that can further be referenced by AIT or mission-specific tools. The paths specified can use path variables to allow for value substitution based upon date, hostname, platform, or any other configurable variable. See the *bliss-create-dirs* tool and *Path Expansion and Variables* section below for more details.
+* **logging**   - defines the name to be associated with the Logger component (defaults to 'ait') and the host to push the output syslog information (defaults to 'localhost')
+* **data**      - specifies all of the data paths associated with the GDS that can further be referenced by AIT or mission-specific tools. The paths specified can use path variables to allow for value substitution based upon date, hostname, platform, or any other configurable variable. See the *ait-create-dirs* tool and *Path Expansion and Variables* section below for more details.
 
 The filename paths should be considered relative to the location of **config.yaml**. If you have **hostname** specific configuration you can add another block of data. The **default** block is the fall back if a match cannot be found. Below is an example **config.yaml** file that defines the default configuration files for AIT.
 
@@ -49,8 +49,8 @@ AIT loads **config.yaml** on import. Here is an example **config.yaml**:
             filename:  bsc.yaml
 
         logging:
-            name:      bliss
-            hostname:  bliss.jpl.nasa.gov
+            name:      ait
+            hostname:  yourCustomHostForLogging
 
         phase: 'dev'
 
@@ -82,8 +82,8 @@ AIT loads **config.yaml** on import. Here is an example **config.yaml**:
 
 If you want to look at the contents of **config.yaml** programmatically you can access it with:
 
-    >>> bliss.config
-    BlissConfig(...)
+    >>> ait.config
+    AitConfig(...)
 
 You can read more about each component's configuration and configuration-schema files in the component-specific pages.
 
@@ -98,7 +98,7 @@ Absolute Path Expansion
 
 In the case where an absolute path is not specified for a 'file', 'filename', 'path', or 'pathname', the following are handled:
 
-* path does not begin with '/' (relative path) - the path or filename given is assumed from the BLISS_CONFIG directory.
+* path does not begin with '/' (relative path) - the path or filename given is assumed from the AIT_CONFIG directory.
 * path begins with '~' (User HOME directory)   - the current user's home directory is used
 
 Variable Substitution
@@ -154,12 +154,12 @@ If we have the following specified in **config.yaml**::
 
 If the machine hostname = 'oco3-gds1', and today is day 300 in 2016, we can programmatically access these paths:
 
-    >>> for k, v in bliss.config._datapaths.items():
+    >>> for k, v in ait.config._datapaths.items():
     >>>     print "%s - %s" % (k ,v)
     data1 - /dev/oco3-gds1/2016-300/data1
     data2 - /dev/oco3-gds1/2016-300/data2
 
-See **bliss-create-dir** software for more details on path substitution and how it can be leveraged.
+See **ait-create-dir** software for more details on path substitution and how it can be leveraged.
 
 
 YAML Idiosyncrasies
