@@ -23,4 +23,4 @@ Contributing
 For information on how to contribute please see the [AIT Contributors Guides](http://ait-core.readthedocs.io/en/latest/contribute.html)
 
 -----
-[![Build Status](https://travis-ci.org/NASA-AMMOS/AIT-Core.svg?branch=master)](https://travis-ci.org/NASA-AMMOS/AIT-Core)
+[![Build Status](https://travis-ci.org/NASA-AMMOS/AIT-Core.svg?branch=master)](https://travis-ci.org/NASA-AMMOS/AIT-Core) [![Documentation Status](https://readthedocs.org/projects/ait-core/badge/?version=master)](http://ait-core.readthedocs.io/en/master/?badge=master)
