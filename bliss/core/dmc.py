@@ -112,7 +112,7 @@ def toGPSWeekAndSecs(timestamp=None):
     if timestamp is None:
         timestamp = datetime.datetime.utcnow()
 
-    leap = getUTCtoGPSLeapSeconds(timestamp)
+    leap = LeapSeconds.get_GPS_offset_for_date(timestamp)
 
     secsInWeek = 604800
     delta      = totalSeconds(timestamp - GPS_Epoch) + leap
@@ -120,67 +120,6 @@ def toGPSWeekAndSecs(timestamp=None):
     week       = int( math.floor(delta / secsInWeek) )
 
     return (week, seconds)
-
-@bliss.deprecated('This will be removed in a future release. Please use dmc.LeapSeconds.get_GPS_offset_for_date')
-def getUTCtoGPSLeapSeconds(timestamp=None):
-        """ Get the number of leap seconds for UTC->GPS conversion
-
-        Args:
-                timestamp:
-                        A UTC datetime object (defaults to current time)
-
-        Returns:
-                Integer value specifying how many leap seconds to use for
-                conversion of the timestamp.
-
-        Raises:
-                ValueError:
-                        If the timestamp provided occurs before 01-01-1980.
-        """
-        if timestamp is None:
-                timestamp = datetime.datetime.utcnow()
-
-        if timestamp < datetime.datetime(1980, 1, 6):
-                e = "The timestamp date is before the GPS epoch"
-                raise ValueError(e)
-        elif datetime.datetime(1980, 1, 6) <= timestamp < datetime.datetime(1981, 7, 1):
-                return 0
-        elif datetime.datetime(1981, 7, 1) <= timestamp < datetime.datetime(1982, 7, 1):
-                return 1
-        elif datetime.datetime(1982, 7, 1) <= timestamp < datetime.datetime(1983, 7, 1):
-                return 2
-        elif datetime.datetime(1983, 7, 1) <= timestamp < datetime.datetime(1985, 7, 1):
-                return 3
-        elif datetime.datetime(1985, 7, 1) <= timestamp < datetime.datetime(1988, 1, 1):
-                return 4
-        elif datetime.datetime(1988, 1, 1) <= timestamp < datetime.datetime(1990, 1, 1):
-                return 5
-        elif datetime.datetime(1990, 1, 1) <= timestamp < datetime.datetime(1991, 1, 1):
-                return 6
-        elif datetime.datetime(1991, 1, 1) <= timestamp < datetime.datetime(1992, 7, 1):
-                return 7
-        elif datetime.datetime(1992, 7, 1) <= timestamp < datetime.datetime(1993, 7, 1):
-                return 8
-        elif datetime.datetime(1993, 7, 1) <= timestamp < datetime.datetime(1994, 7, 1):
-                return 9
-        elif datetime.datetime(1994, 7, 1) <= timestamp < datetime.datetime(1996, 1, 1):
-                return 10
-        elif datetime.datetime(1996, 1, 1) <= timestamp < datetime.datetime(1997, 7, 1):
-                return 11
-        elif datetime.datetime(1997, 7, 1) <= timestamp < datetime.datetime(1999, 1, 1):
-                return 12
-        elif datetime.datetime(1999, 1, 1) <= timestamp < datetime.datetime(2006, 1, 1):
-                return 13
-        elif datetime.datetime(2006, 1, 1) <= timestamp < datetime.datetime(2009, 1, 1):
-                return 14
-        elif datetime.datetime(2009, 1, 1) <= timestamp < datetime.datetime(2012, 7, 1):
-                return 15
-        elif datetime.datetime(2012, 7, 1) <= timestamp < datetime.datetime(2015, 7, 1):
-                return 16
-        elif datetime.datetime(2015, 7, 1) <= timestamp < datetime.datetime(2017, 1, 1):
-                return 17
-        elif timestamp >= datetime.datetime(2017, 1, 1):
-                return 18
 
 
 def toGPSSeconds(timestamp):
