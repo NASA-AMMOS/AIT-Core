@@ -27,7 +27,7 @@ description = "Python-based software suite developed to handle Ground Data Syste
 
 # Get the long description from the README file
 here = path.abspath(path.dirname(__file__))
-with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with io.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 class InstallWithGithooks(install):
@@ -45,7 +45,7 @@ setup(
     version      = '0.37.0',
     description  = description,
     long_description = long_description,
-    long_description_content_type = 'text/markdown',
+    long_description_content_type = 'text/x-rst',
     url          = 'https://github.com/NASA-AMMOS/AIT-Core',
     packages     = find_packages(exclude=['tests']),
     author       = 'AMMOS Instrument Toolkit Development Team',
