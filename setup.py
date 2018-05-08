@@ -42,7 +42,7 @@ class DevWithGithooks(develop):
 
 setup(
     name         = 'ait-core',
-    version      = '0.37.0',
+    version      = '1.0.0',
     description  = description,
     long_description = long_description,
     long_description_content_type = 'text/x-rst',
