@@ -32,10 +32,10 @@ AIT provides support for YAML-based configuration of Event Verification Records 
 Message Formatting
 ------------------
 
-AIT EVRs allow you to include common format strings in the **message** attribute so that EVR data can be decoded and included in displays. You can use the :meth:`bliss.core.evr.EVRDefn.format_message` method for this.
+AIT EVRs allow you to include common format strings in the **message** attribute so that EVR data can be decoded and included in displays. You can use the :meth:`ait.core.evr.EVRDefn.format_message` method for this.
 
->>> import bliss.core.evr
->>> evr = bliss.core.evr.getDefaultDict()[3]
+>>> import ait.core.evr
+>>> evr = ait.core.evr.getDefaultDict()[3]
 >>> evr.message
 'The third evr %s'
 
@@ -61,4 +61,4 @@ desc (optional):
     A human readable description of what the EVR represents
 
 message (optional):
-    A human readable description of what the EVR represents. The message attribute can contain **printf** strings. The :class:`bliss.core.evr.EVRDefn` class provides an interface for unpacking data into it's message attribute.
+    A human readable description of what the EVR represents. The message attribute can contain **printf** strings. The :class:`ait.core.evr.EVRDefn` class provides an interface for unpacking data into it's message attribute.

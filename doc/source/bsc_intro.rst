@@ -3,9 +3,9 @@ Binary Stream Capture Introduction
 
 The Binary Stream Capture (BSC) module provides tools for monitoring and capturing networking traffic and persisting it into PCap files. BSC can monitor  UDP, TCP, and raw Ethernet traffic and is configurable via YAML. BSC also provides a RESTful interface for the manipulation and instantiation of data handlers.
 
-To initialize BSC, run the ``bliss-bsc`` utility script::
+To initialize BSC, run the ``ait-bsc`` utility script::
 
-    $ bliss-bsc
+    $ ait-bsc
 
 If you want to customize BSC before you start it you can do so via a YAML file. By default this config file will be called ``bsc.yaml``. There are two main components of the configuration: The first is the ``capture_manager`` configuration. This sets high level configuration for the system that manages logging tasks as well as the webserver that handles the REST endpoints. The second is ``handler`` configuration which specifies tasks that will log specific connections.
 
@@ -65,7 +65,7 @@ rotate_log (optional):
     Set this to ``True`` if you want the log to be rotated.
 
 rotate_log_index (optional):
-    If *rotate_log* is set to ``True`` this controls the time frame of log rotations. By default this is set to ``day``. You can look at the :class:`bliss.core.bsc.SocketStreamCapturer` documentation for a list of valid options.
+    If *rotate_log* is set to ``True`` this controls the time frame of log rotations. By default this is set to ``day``. You can look at the :class:`ait.core.bsc.SocketStreamCapturer` documentation for a list of valid options.
 
 rotate_log_delta (optional):
     If *rotate_log* is ``True``, this controls the *rotate_log_index* delta between the current time at log rotation check versus the time the log file was open necessary to trigger a rotation. This defaults to ``1``.
@@ -81,7 +81,7 @@ pre_write_transforms (optional):
 
     .. note::
 
-        At the moment you can only specify functions that are global to the ``bliss.core.bsc`` module. This will be changed in the future.
+        At the moment you can only specify functions that are global to the ``ait.core.bsc`` module. This will be changed in the future.
 
 ----
 
@@ -287,21 +287,21 @@ Convenience Scripts
 Create Handler
 ^^^^^^^^^^^^^^
 
-The **bliss-bsc-create-handler** bin script provides a wrapper around the BSC REST endpoint for creating a log handler. It requires a name for the new handler, a hostname/interface name, port/protocol number, and the connection time (one of 'udp', 'tcp', or 'ethernet').
+The **ait-bsc-create-handler** bin script provides a wrapper around the BSC REST endpoint for creating a log handler. It requires a name for the new handler, a hostname/interface name, port/protocol number, and the connection time (one of 'udp', 'tcp', or 'ethernet').
 
 **Example:**
 
 .. code-block:: bash
 
-   bliss-bsc-create-handler new_handler '' 8123 udp
+   ait-bsc-create-handler new_handler '' 8123 udp
 
 Stop Handler
 ^^^^^^^^^^^^
 
-The **bliss-bsc-stop-handler** bin script provides a wrapper around the BSC REST endpoint for stopping a log handler. It requires the handlers name that you wish to stop.
+The **ait-bsc-stop-handler** bin script provides a wrapper around the BSC REST endpoint for stopping a log handler. It requires the handlers name that you wish to stop.
 
 **Example:**
 
 .. code-block:: bash
 
-   bliss-bsc-stop-handler new_handler
+   ait-bsc-stop-handler new_handler

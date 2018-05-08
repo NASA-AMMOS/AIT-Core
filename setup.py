@@ -41,7 +41,7 @@ class DevWithGithooks(develop):
         shutil.copy('./build/githooks/pre-commit', '.git/hooks')
 
 setup(
-    name         = 'bliss-core',
+    name         = 'ait-core',
     version      = '0.37.0',
     description  = description,
     long_description = long_description,
@@ -49,13 +49,13 @@ setup(
     url          = 'https://github.com/NASA-AMMOS/AIT-Core',
     packages     = find_packages(exclude=['tests']),
     author       = 'AMMOS Instrument Toolkit Development Team',
-    author_email = 'bliss@jpl.nasa.gov',
+    author_email = 'ait-pmc@googlegroups.com',
 
-    namespace_packages   = ['bliss'],
+    namespace_packages   = ['ait'],
     include_package_data = True,
 
     package_data = {
-        'bliss.core': ['data/*.json']
+        'ait.core': ['data/*.json']
     },
 
     install_requires = [
@@ -83,10 +83,10 @@ setup(
 
     entry_points = {
         'console_scripts': [
-            '{}=bliss.core.bin.{}:main'.format(
+            '{}=ait.core.bin.{}:main'.format(
                 f.split('.')[0].replace('_', '-'),
                 f.split('.')[0])
-            for f in os.listdir('./bliss/core/bin')
+            for f in os.listdir('./ait/core/bin')
             if f.endswith('.py') and
             f != '__init__.py'
         ]

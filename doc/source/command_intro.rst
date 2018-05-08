@@ -27,7 +27,7 @@ AIT provides support for YAML-based configuration of commands with enough detail
           2: SCANNING
           3: SCIENCE
 
-All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. You can view the full schema file in the AIT Core repo at **bliss/core/data/cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
+All the valid parameters and attributes that you can have in your command dictionary configuration file is controlled by the command dictionary schema file. You can view the full schema file in the AIT Core repo at **ait/core/data/cmd_schema.json**. A snippet of a schema is below. You can see that it allows for quite of bit of control over the command dictionary including nested object verification, individual attribute type checks, and required fields.
 
 .. code-block:: javascript
 
@@ -65,24 +65,24 @@ All the valid parameters and attributes that you can have in your command dictio
         }
     }
 
-AIT also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``bliss-yaml-validate`` it will check this for you.
+AIT also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``ait-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
     
-    $ bliss-yaml-validate --cmd
+    $ ait-yaml-validate --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
-AIT provides command encoding/decoding via :class:`bliss.core.cmd.CmdDict`.
+AIT provides command encoding/decoding via :class:`ait.core.cmd.CmdDict`.
 
-    >>> cmddict = bliss.core.cmd.getDefaultDict()
+    >>> cmddict = ait.core.cmd.getDefaultDict()
     >>> type(cmddict)
-    <class 'bliss.core.cmd.CmdDict'>
+    <class 'ait.core.cmd.CmdDict'>
 
 You can create and encode a command directly from the command dictionary.
 
     >>> noop = cmddict.create('NO_OP')
     >>> type(noop)
-    <class 'bliss.core.cmd.Cmd'>
+    <class 'ait.core.cmd.Cmd'>
     >>> noop
     NO_OP
     >>> bin_noop = noop.encode()
@@ -93,7 +93,7 @@ Given a binary blob, you can also decode into a command.
 
     >>> decoded_cmd = cmddict.decode(bin_noop)
     >>> type(decoded_cmd)
-    <class 'bliss.core.cmd.Cmd'>
+    <class 'ait.core.cmd.Cmd'>
     >>> decoded_cmd
     NO_OP
 
@@ -134,7 +134,7 @@ name:
     A **string** denoting the name of this argument
 
 type:
-    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.core.dtype.PrimitiveTypes``.
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``ait.core.dtype.PrimitiveTypes``.
 
 bytes:
     Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
@@ -159,7 +159,7 @@ enum (optional):
 The fixed constructor allows you to define constant values in your command.
 
 type:
-    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``bliss.core.dtype.PrimitiveTypes``.
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``ait.core.dtype.PrimitiveTypes``.
 
 bytes:
     Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).

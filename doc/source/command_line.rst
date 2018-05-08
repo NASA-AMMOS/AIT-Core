@@ -10,9 +10,9 @@ Component Initialization Utilities
 
 The following commands are used to start up AIT services or components.
 
-bliss-bsc
+ait-bsc
 ^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_bsc.py
+.. literalinclude:: ../../ait/core/bin/ait_bsc.py
    :start-after: '''
    :end-before: '''
 
@@ -23,21 +23,21 @@ Sequence Utilities
 
 Utilities for the manipulation of command sequences.
 
-bliss-seq-encode
+ait-seq-encode
 ^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_seq_encode.py
+.. literalinclude:: ../../ait/core/bin/ait_seq_encode.py
    :start-after: '''
    :end-before: '''
 
-bliss-seq-decode
+ait-seq-decode
 ^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_seq_decode.py
+.. literalinclude:: ../../ait/core/bin/ait_seq_decode.py
    :start-after: '''
    :end-before: '''
 
-bliss-seq-print
+ait-seq-print
 ^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_seq_print.py
+.. literalinclude:: ../../ait/core/bin/ait_seq_print.py
    :start-after: '''
    :end-before: '''
 
@@ -46,9 +46,9 @@ ____
 Telemetry Utilities
 ___________________
 
-bliss-tlm-send
+ait-tlm-send
 ^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_tlm_send.py
+.. literalinclude:: ../../ait/core/bin/ait_tlm_send.py
    :start-after: '''
    :end-before: '''
 
@@ -57,9 +57,9 @@ ____
 Command Utilities
 _________________
 
-bliss-cmd-send
+ait-cmd-send
 ^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_cmd_send.py
+.. literalinclude:: ../../ait/core/bin/ait_cmd_send.py
    :start-after: '''
    :end-before: '''
 
@@ -68,15 +68,15 @@ ____
 BSC Utilities
 _____________
 
-bliss-bsc-create-handler
+ait-bsc-create-handler
 ^^^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_bsc_create_handler.py
+.. literalinclude:: ../../ait/core/bin/ait_bsc_create_handler.py
    :start-after: '''
    :end-before: '''
 
-bliss-bsc-stop-handler
+ait-bsc-stop-handler
 ^^^^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_bsc_stop_handler.py
+.. literalinclude:: ../../ait/core/bin/ait_bsc_stop_handler.py
    :start-after: '''
    :end-before: '''
 
@@ -85,15 +85,15 @@ ____
 Command Table Utilities
 _______________________
 
-bliss-table-decode
+ait-table-decode
 ^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_table_decode.py
+.. literalinclude:: ../../ait/core/bin/ait_table_decode.py
    :start-after: '''
    :end-before: '''
 
-bliss-table-encode
+ait-table-encode
 ^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_table_encode.py
+.. literalinclude:: ../../ait/core/bin/ait_table_encode.py
    :start-after: '''
    :end-before: '''
 
@@ -102,20 +102,20 @@ ____
 Miscellaneous Utilities
 _______________________
 
-bliss-create-dirs
+ait-create-dirs
 ^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_create_dirs.py
+.. literalinclude:: ../../ait/core/bin/ait_create_dirs.py
    :start-after: '''
    :end-before: '''
 
-bliss-orbits
+ait-orbits
 ^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_orbits.py
+.. literalinclude:: ../../ait/core/bin/ait_orbits.py
    :start-after: '''
    :end-before: '''
 
-bliss-yaml-validate
+ait-yaml-validate
 ^^^^^^^^^^^^^^^^^^^
-.. literalinclude:: ../../bliss/core/bin/bliss_yaml_validate.py
+.. literalinclude:: ../../ait/core/bin/ait_yaml_validate.py
    :start-after: '''
    :end-before: '''

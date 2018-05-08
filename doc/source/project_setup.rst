@@ -12,19 +12,15 @@ If you use a requirements file for specifying dependencies:
 
 .. code-block:: bash
 
-   --extra-index-url https://bliss.jpl.nasa.gov/pypi/simple/
-   bliss-core==1.0.0
+   ait-core==1.0.0
 
 If you use **setup.py** for specifying dependencies:
 
 .. code-block:: bash
 
    install_requires = [
-       bliss-core==1.0.0
+       ait-core==1.0.0
    ],
-   dependency_links = [
-       'https://bliss.jpl.nasa.gov/pypi/simple/bliss-core/'
-   ]
 
 Set AIT Config Values
 ---------------------
