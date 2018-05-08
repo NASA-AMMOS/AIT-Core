@@ -1,7 +1,7 @@
 Limits Introduction
 ===================
 
-The :class:`bliss.core.limits` module provides support for specifying acceptable value ranges for telemetry fields.
+The :class:`ait.core.limits` module provides support for specifying acceptable value ranges for telemetry fields.
 
 Consider the below example telemetry packet and fields for which we'll specify limit values.
 

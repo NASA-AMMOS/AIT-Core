@@ -26,32 +26,32 @@ AIT provides support for YAML-based configuration of telemetry data within the s
             0: 'Core'
             1: 'Payload'
 
-All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  AIT also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``bliss-yaml-validate`` it will check this for you.
+All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  AIT also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``ait-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
 
-    $ bliss-yaml-validate --tlm
+    $ ait-yaml-validate --tlm
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
-AIT provides telemetry dictionary processing via :class:`bliss.core.tlm.TlmDict` which gives a mapping of Packet names and :class:`bliss.core.tlm.PacketDefinition` instances.
+AIT provides telemetry dictionary processing via :class:`ait.core.tlm.TlmDict` which gives a mapping of Packet names and :class:`ait.core.tlm.PacketDefinition` instances.
 
-    >>> import bliss.core.tlm
-    >>> tlmdict = bliss.core.tlm.getDefaultDict()
+    >>> import ait.core.tlm
+    >>> tlmdict = ait.core.tlm.getDefaultDict()
     >>> type(tlmdict)
-    <class 'bliss.core.tlm.TlmDict'>
+    <class 'ait.core.tlm.TlmDict'>
     >>> tlmdict.keys()
     ['Ethernet_HS_Packet', 'CCSDS_HEADER', '1553_HS_Packet']
     >>> type(tlmdict['CCSDS_HEADER'])
-    <class 'bliss.core.tlm.PacketDefinition'>
+    <class 'ait.core.tlm.PacketDefinition'>
 
-We can look at a specific field via a :class:`bliss.core.tlm.PacketDefinition`. For instance, we can look at the **version** field from the CCSDS packet defined in `Example Telemetry Packet Definition`
+We can look at a specific field via a :class:`ait.core.tlm.PacketDefinition`. For instance, we can look at the **version** field from the CCSDS packet defined in `Example Telemetry Packet Definition`
 
     >>> ccsds_pkt = tlmdict['CCSDS_HEADER']
     >>> ccsds_pkt.fieldmap['version']
     FieldDefinition(bytes=0, desc='CCSDS Version', dntoeu=None, enum=None, expr=None, mask=224, name='version', shift=5, _type=PrimitiveType('U8'), units=None, when=None)
 
 
-Decoding binary into a :class:`bliss.core.tlm.Packet` allows us to easily decode downlink data and check values. Let's look at an example CCSDS Primary Packet Header:
+Decoding binary into a :class:`ait.core.tlm.Packet` allows us to easily decode downlink data and check values. Let's look at an example CCSDS Primary Packet Header:
 
 .. code-block:: none
 
@@ -63,14 +63,14 @@ Decoding binary into a :class:`bliss.core.tlm.Packet` allows us to easily decode
    sequence count:         00000000000000      # Since it's the first segment, the count is 0
    packet length:          0000010010101111    # '1200' byte packet encoded as 1199 per the CCSDS spec
 
-We'll create a packet from this binary using the CCSDS Primary Packet Header :class:`bliss.core.tlm.PacketDefinition` that we were using earlier.
+We'll create a packet from this binary using the CCSDS Primary Packet Header :class:`ait.core.tlm.PacketDefinition` that we were using earlier.
 
     >>> type(ccsds_pkt)
-    <class 'bliss.core.tlm.PacketDefinition'>
+    <class 'ait.core.tlm.PacketDefinition'>
     >>> data = bytearray(b'\x0A\xE7\x40\x00\x04\xAF')
-    >>> pkt = bliss.core.tlm.Packet(ccsds_pkt, data=data)
+    >>> pkt = ait.core.tlm.Packet(ccsds_pkt, data=data)
 
-With the :class:`bliss.core.tlm.Packet` object we can check each of those values above.
+With the :class:`ait.core.tlm.Packet` object we can check each of those values above.
 
     >>> pkt.version
     0
@@ -157,7 +157,7 @@ name:
     A **string** denoting the name of this field in the packet.
 
 type:
-    A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``bliss.dtype.PrimitiveTypes``. Arrays of types are also supported, e.g. ``MSB_U16[32]``.  You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
+    A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``ait.dtype.PrimitiveTypes``. Arrays of types are also supported, e.g. ``MSB_U16[32]``.  You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
 
 desc (optional):
     A **string** for providing a description of the field.

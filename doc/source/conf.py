@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# BLISS-Core documentation build configuration file, created by
+# AIT-Core documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr  6 12:19:38 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -17,11 +17,11 @@ import os
 
 import sphinx_rtd_theme
 
-# BLISS_CONFIG is set to empty string so that the build on ReadTheDocs will
+# AIT_CONFIG is set to empty string so that the build on ReadTheDocs will
 # pick up API Documentation.
-if os.environ.get('BLISS_CONFIG', None) is None:
+if os.environ.get('AIT_CONFIG', None) is None:
     config = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/config/config.yaml")
-    os.environ['BLISS_CONFIG'] = config
+    os.environ['AIT_CONFIG'] = config
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -131,7 +131,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
-#html_title = u'BLISS-Core v0.1'
+#html_title = u'AIT-Core v0.1'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -213,7 +213,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'BLISS-Coredoc'
+htmlhelp_basename = 'AIT-Coredoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -235,8 +235,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'BLISS-Core.tex', u'BLISS-Core Documentation',
-     u'BLISS-Core Development Team', 'manual'),
+    (master_doc, 'AIT-Core.tex', u'AIT-Core Documentation',
+     u'AIT-Core Development Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -265,7 +265,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'bliss-core', u'BLISS-Core Documentation',
+    (master_doc, 'ait-core', u'AIT-Core Documentation',
      [author], 1)
 ]
 
@@ -279,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'BLISS-Core', u'BLISS-Core Documentation',
-     author, 'BLISS-Core', 'One line description of project.',
+    (master_doc, 'AIT-Core', u'AIT-Core Documentation',
+     author, 'AIT-Core', 'One line description of project.',
      'Miscellaneous'),
 ]
 

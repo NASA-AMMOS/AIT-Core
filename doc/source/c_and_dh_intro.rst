@@ -1,7 +1,7 @@
 Introduction to Command & Data Handling Tables and Products
 ===========================================================
 
-The `bliss.core.table` module provides interfaces for encoding and decoding flight software tables to and from text and binary.
+The `ait.core.table` module provides interfaces for encoding and decoding flight software tables to and from text and binary.
 
 The flight software table formats are defined in YAML and usually stored in a configuration file called **table.yaml**. Tables are constructed from **header** definitions and **column** definitions.
 
