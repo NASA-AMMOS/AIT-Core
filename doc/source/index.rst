@@ -22,7 +22,6 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    limits_intro
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
-   contribute
 
 Indices and tables
 ==================
