@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-BLISS Telemetry Defintions to TeX
+AIT Telemetry Definitions to TeX
 
-Outputs BLISS Telemetry Definitions in TeX format.
+Outputs AIT Telemetry Definitions in TeX format.
 """
 
 """
@@ -14,7 +14,7 @@ U.S. Government Sponsorship acknowledged.
 """
 
 
-from bliss.core import tlm
+from ait.core import tlm
 
 Packet = 'OCO3_1553_EHS'
 

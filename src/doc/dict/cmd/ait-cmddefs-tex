@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-BLISS Command Defintions to TeX
+AIT Command Definitions to TeX
 
-Outputs BLISS Command Definitions in TeX format.
+Outputs AIT Command Definitions in TeX format.
 """
 
 """
@@ -13,9 +13,9 @@ Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
 U.S. Government Sponsorship acknowledged.
 """
 
-from bliss.core import cmd
+from ait.core import cmd
 
-import bliss
+import ait
 
 titles = {
   'ANALOGS': 'Analogs',

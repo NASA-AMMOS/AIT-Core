@@ -1,7 +1,7 @@
 #PDFLATEX=/usr/local/texlive/2015/bin/x86_64-darwin/pdflatex
 
-LOWER_MISSION = $(shell echo $(BLISS_MISSION) | tr A-Z a-z)
-CMDDICT       = /Users/jpadams/Documents/proj/oco3/workspace/oco3-devmode/oco3mos/config/tlm/fsw3/tlm.yaml
+LOWER_MISSION = $(shell echo $(AIT_MISSION) | tr A-Z a-z)
+CMDDICT       = /path/to/tlm.yaml
 
 SOURCES = \
   tlmdict.tex               \
@@ -16,7 +16,7 @@ SOURCES = \
 
 YYYYMMDD=$(shell date "+%Y-%m-%d")
 TEMPNAME=tlmdict.pdf
-FULLNAME=$(BLISS_MISSION)_TLM_Dictionary_$(YYYYMMDD).pdf
+FULLNAME=$(AIT_MISSION)_TLM_Dictionary_$(YYYYMMDD).pdf
 
 .PHONY: all copy
 
@@ -25,8 +25,8 @@ all: $(TEMPNAME) copy
 copy: $(TEMPNAME)
 	/bin/cp $(TEMPNAME) $(FULLNAME)
 
-tlmdict-07-tlmdefs.tex: ./bliss-tlmdefs-tex $(TLMDICT)
-	./bliss-tlmdefs-tex
+tlmdict-07-tlmdefs.tex: ./ait-tlmdefs-tex $(TLMDICT)
+	./ait-tlmdefs-tex
 
 $(TEMPNAME): $(SOURCES)
 	pdflatex $<
