@@ -1,6 +1,5 @@
-LOWER_MISSION = $(shell echo $(BLISS_MISSION) | tr A-Z a-z)
-CMDDICT       = /Users/jpadams/Documents/proj/oco3/workspace/oco3-devmode/oco3mos/config/cmd.yaml
-#CMDDICT = /Users/jpadams/Documents/proj/ecostress/workspace/eco-mos/config/fsw2/cmd.yaml
+LOWER_MISSION = $(shell echo $(AIT_MISSION) | tr A-Z a-z)
+CMDDICT       = /path/to/cmd.yaml
 SOURCES = \
   cmddict.tex               \
   cmddict-01-defs.tex       \
@@ -14,7 +13,7 @@ SOURCES = \
 
 YYYYMMDD=$(shell date "+%Y-%m-%d")
 TEMPNAME=cmddict.pdf
-FULLNAME=$(BLISS_MISSION)_CMD_Dictionary_$(YYYYMMDD).pdf
+FULLNAME=$(AIT_MISSION)_CMD_Dictionary_$(YYYYMMDD).pdf
 
 .PHONY: all copy
 
@@ -23,8 +22,8 @@ all: $(TEMPNAME) copy
 copy: $(TEMPNAME)
 	/bin/cp $(TEMPNAME) $(FULLNAME)
 
-cmddict-07-cmddefs.tex: ./bliss-cmddefs-tex $(CMDDICT)
-	./bliss-cmddefs-tex
+cmddict-07-cmddefs.tex: ./ait-cmddefs-tex $(CMDDICT)
+	./ait-cmddefs-tex
 
 $(TEMPNAME): $(SOURCES)
 	pdflatex $<
