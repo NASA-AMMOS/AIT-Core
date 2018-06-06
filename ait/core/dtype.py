@@ -682,6 +682,8 @@ class Time40Type(PrimitiveType):
 
         self._pdt  = self.name
         self._name = 'TIME40'
+        self._nbits = 40
+        self._nbytes = 5
 
     @property
     def pdt(self):
