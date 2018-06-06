@@ -16,7 +16,6 @@ import io
 from os import path
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
-from setuptools.command.install import install
 
 import os
 import shutil
@@ -30,15 +29,11 @@ here = path.abspath(path.dirname(__file__))
 with io.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-class InstallWithGithooks(install):
-    def run(self):
-        install.run(self)
-        shutil.copy('./build/githooks/pre-commit', '.git/hooks')
-
 class DevWithGithooks(develop):
     def run(self):
         develop.run(self)
-        shutil.copy('./build/githooks/pre-commit', '.git/hooks')
+        if path.exists('.git/hooks'):
+            shutil.copy('./build/githooks/pre-commit', '.git/hooks')
 
 setup(
     name         = 'ait-core',
@@ -93,7 +88,6 @@ setup(
     },
 
     cmdclass = {
-        'develop': DevWithGithooks,
-        'install': InstallWithGithooks
+        'develop': DevWithGithooks
     }
 )
