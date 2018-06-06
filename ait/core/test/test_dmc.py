@@ -125,6 +125,10 @@ def test_leap_second_by_date():
     assert ls.get_GPS_offset_for_date(datetime.datetime(2015, 7, 1)) == 17
     assert ls.get_GPS_offset_for_date(datetime.datetime(2017, 1, 1)) == 18
 
+    # Make sure not supplying a date returns the offset for the current date
+    assert (ls.get_GPS_offset_for_date(datetime.datetime.utcnow()) ==
+            ls.get_GPS_offset_for_date())
+
 def test_leap_second_data_load():
     ait.config.leapseconds._config['filename'] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"

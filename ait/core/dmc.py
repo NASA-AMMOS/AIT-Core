@@ -261,7 +261,7 @@ class UTCLeapSeconds(object):
     def get_current_GPS_offset(self):
         return self._data['leapseconds'][-1][-1]
 
-    def get_GPS_offset_for_date(self, timestamp):
+    def get_GPS_offset_for_date(self, timestamp=None):
         if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
 
