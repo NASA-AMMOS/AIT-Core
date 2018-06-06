@@ -11,6 +11,7 @@ Submodules
    ait.core.test.test_cfg
    ait.core.test.test_cmd
    ait.core.test.test_coord
+   ait.core.test.test_db
    ait.core.test.test_dmc
    ait.core.test.test_dtype
    ait.core.test.test_evr
