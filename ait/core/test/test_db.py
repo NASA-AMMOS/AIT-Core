@@ -219,12 +219,12 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend = db.SQLiteBackend()
         sqlbackend.connect = mock.MagicMock()
-        sqlbackend.create_table = mock.MagicMock()
+        sqlbackend._create_table = mock.MagicMock()
 
         sqlbackend.create(tlmdict=tlmdict)
         
         assert sqlbackend.connect.called
-        sqlbackend.create_table.assert_called_with(tlmdict['Packet1'])
+        sqlbackend._create_table.assert_called_with(tlmdict['Packet1'])
 
         os.remove(self.test_yaml_file)
 
@@ -254,7 +254,7 @@ class TestSQLiteBackend(unittest.TestCase):
         sqlbackend = db.SQLiteBackend()
         sqlbackend._conn = mock.MagicMock()
 
-        sqlbackend.create_table(tlmdict['Packet1'])
+        sqlbackend._create_table(tlmdict['Packet1'])
         sqlbackend._conn.execute.assert_called_with(
             'CREATE TABLE IF NOT EXISTS Packet1 (col1 INTEGER, SampleTime REAL)'
         )

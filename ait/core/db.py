@@ -130,21 +130,21 @@ class GenericBackend(object):
             backend implementations if they're applicable to the given backend
 
             database.host
-                The host to connect to. Defaults to 'localhost'
+                The host to connect to. Defaults to **localhost**
 
             database.port
-                The port to connect to. Defaults to technology specific value
+                The port to connect to. Defaults to technology specific value.
 
             database.un
                 The username to use when connecting to the database. Defaults
-                to a technology specific value
+                to a technology specific value.
 
             database.pw
                 The password to use when connecting to the database. Defaults
-                to a technology specific value
+                to a technology specific value.
 
             database.dbname
-                The name of the database to create/use. Defaults to 'ait'
+                The name of the database to create/use. Defaults to **ait**.
 
         create
             Create a database in the database instance
@@ -175,27 +175,27 @@ class GenericBackend(object):
 
     @abstractmethod
     def connect(self, **kwargs):
-        '''Connect to a backend's database instance'''
+        ''' Connect to a backend's database instance. '''
         pass
 
     @abstractmethod
     def create(self, **kwargs):
-        '''Create a database in the instance'''
+        ''' Create a database in the instance. '''
         pass
 
     @abstractmethod
     def insert(self, packet, **kwargs):
-        '''Insert a record into the database'''
+        ''' Insert a record into the database. '''
         pass
 
     @abstractmethod
     def query(self, query, **kwargs):
-        '''Query the database instance and return results'''
+        ''' Query the database instance and return results. '''
         pass
 
     @abstractmethod
     def close(self, **kwargs):
-        '''Close connection to the database instance'''
+        ''' Close connection to the database instance. '''
         pass
 
 
@@ -219,7 +219,38 @@ class InfluxDBBackend(GenericBackend):
         super(InfluxDBBackend, self).__init__()
 
     def connect(self, **kwargs):
-        ''''''
+        ''' Connect to an InfluxDB instance
+
+        Connects to an InfluxDB instance and switches to a given database.
+        If the database doesn't exist it is created first via :func:`create`.
+        
+        **Configuration Parameters**
+
+        host
+          The host for the connection. Passed as either the config key
+          **database.host** or the kwargs argument **host**. Defaults to
+          **localhost**.
+
+        port
+          The port for the connection. Passed as either the config key
+          **database.port** or the kwargs argument **port**. Defaults to
+          **8086**.
+
+        un
+          The un for the connection. Passed as either the config key
+          **database.un** or the kwargs argument **un**. Defaults to
+          **root**.
+
+        pw
+          The pw for the connection. Passed as either the config key
+          **database.pw** or the kwargs argument **pw**. Defaults to
+          **pw**.
+
+        database name
+          The database name for the connection. Passed as either
+          the config key **database.dbname** or the kwargs argument
+          **database**. Defaults to **ait**.
+        '''
         host = ait.config.get('database.host', kwargs.get('host', 'localhost'))
         port = ait.config.get('database.port', kwargs.get('port', 8086))
         un = ait.config.get('database.un', kwargs.get('un', 'root'))
@@ -234,7 +265,19 @@ class InfluxDBBackend(GenericBackend):
         self._conn.switch_database(dbname)
 
     def create(self, **kwargs):
-        ''''''
+        ''' Create a database in a connected InfluxDB instance
+
+        **Configuration Parameters**
+
+        database name
+          The database name to create. Passed as either the config
+          key **database.dbname** or the kwargs argument
+          **database**. Defaults to **ait**.
+        
+        Raises:
+            AttributeError:
+                If a connection to the database doesn't exist
+        '''
         dbname = ait.config.get('database.dbname', kwargs.get('database', 'ait'))
 
         if self._conn is None:
@@ -244,7 +287,24 @@ class InfluxDBBackend(GenericBackend):
         self._conn.switch_database(dbname)
 
     def insert(self, packet, time=None, **kwargs):
-        ''''''
+        ''' Insert a packet into the database
+
+        Arguments
+            packet
+                The :class:`ait.core.tlm.Packet` instance to insert into
+                the database
+
+            time
+                Optional parameter specifying the time value to use when inserting
+                the record into the database. Default case does not provide a time
+                value so Influx defaults to the current time when inserting the
+                record.
+
+            tags
+                Optional kwargs argument for specifying a dictionary of tags to
+                include when adding the values. Defaults to nothing.
+        
+        '''
         fields = {}
         pd = packet._defn
 
@@ -278,11 +338,20 @@ class InfluxDBBackend(GenericBackend):
         self._conn.write_points([data])
 
     def query(self, query, **kwargs):
-        ''''''
+        ''' Query the database and return results
+
+        Queries the Influx instance and returns a ResultSet of values. For
+        API documentation for InfluxDB-Python check out the project
+        documentation. https://github.com/influxdata/influxdb-python
+
+        Arguments
+            query
+                The query string to send to the database
+        '''
         return self._conn.query(query)
 
     def close(self, **kwargs):
-        ''''''
+        ''' Close the database connection '''
         if self._conn:
             self._conn.close()
 
@@ -297,7 +366,7 @@ class InfluxDBBackend(GenericBackend):
         query result. If there is no opcode / EVR-code for a particular raw
         value the value is skipped (and thus defaulted to 0).
 
-        Args
+        Arguments
             packet_name (string)
                 The name of the AIT Packet to create from each result entry
 
@@ -363,23 +432,46 @@ class SQLiteBackend(GenericBackend):
         super(SQLiteBackend, self).__init__()
 
     def connect(self, **kwargs):
-        ''''''
+        ''' Connect to a SQLite instance
+        
+        **Configuration Parameters**
+
+        database
+            The database name or file to "connect" to. Defaults to **ait**.
+        '''
         if 'database' not in kwargs:
             kwargs['database'] = 'ait'
 
         self._conn = self._backend.connect(kwargs['database'])
 
     def create(self, **kwargs):
-        ''''''
+        '''  Create a database for the current telemetry dictionary
+
+        Connects to a SQLite instance via :func:`connect` and creates a
+        skeleton database for future data inserts.
+
+        **Configuration Parameters**
+
+        tlmdict
+            The :class:`ait.core.tlm.TlmDict` instance to use. Defaults to
+            the currently configured telemetry dictionary.
+
+        '''
         tlmdict = kwargs.get('tlmdict', tlm.getDefaultDict())
         
         self.connect(**kwargs)
 
         for name, defn in tlmdict.items():
-            self.create_table(defn)
+            self._create_table(defn)
 
-    def create_table(self, packet_defn):
-        '''Creates a database table for the given PacketDefinition.'''
+    def _create_table(self, packet_defn):
+        ''' Creates a database table for the given PacketDefinition
+
+        Arguments
+            packet_defn
+                The :class:`ait.core.tlm.PacketDefinition` instance for which a table entry
+                should be made.
+        '''
         cols = ('%s %s' % (defn.name, self._getTypename(defn)) for defn in packet_defn.fields)
         sql  = 'CREATE TABLE IF NOT EXISTS %s (%s)' % (packet_defn.name, ', '.join(cols))
 
@@ -387,7 +479,14 @@ class SQLiteBackend(GenericBackend):
         self._conn.commit()
 
     def insert(self, packet, **kwargs):
-        ''''''
+        ''' Insert a packet into the database
+
+        Arguments
+            packet
+                The :class:`ait.core.tlm.Packet` instance to insert into
+                the database
+
+        '''
         values = [ ]
         pd     = packet._defn
 
@@ -406,15 +505,21 @@ class SQLiteBackend(GenericBackend):
         self._conn.execute(sql, values)
 
     def query(self, query, **kwargs):
-        ''''''
+        ''' Query the database and return results
+
+        Queries the SQLite instance and returns a list of tuples of values.
+
+        Arguments
+            query
+                The query string to send to the database
+        '''
         return self._conn.execute(query)
     
     def close(self, **kwargs):
-        ''''''
+        ''' Close the database connection. '''
         if self._conn:
             self._conn.close()
 
     def _getTypename(self, defn):
-        """Returns the SQL typename required to store the given
-        FieldDefinition."""
+        """ Returns the SQL typename required to store the given FieldDefinition """
         return 'REAL' if defn.type.float or 'TIME' in defn.type.name or defn.dntoeu else 'INTEGER'
