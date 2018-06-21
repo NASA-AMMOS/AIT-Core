@@ -15,7 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 """
-Inserts telemetry into a database from one or more files.
+Inserts telemetry into a database from one or more PCAP files.
 """
 
 
@@ -23,10 +23,11 @@ import argparse
 import os
 import sys
 import socket
+import struct
 import time
 
 import ait
-from ait.core import db, log, tlm
+from ait.core import db, log, tlm, pcap
 
 
 def main():
@@ -53,6 +54,21 @@ def main():
             'required': ait.config.get('database.name') is None
         },
 
+        '--backend': {
+            'default': 'sqlite',
+            'choices': ['sqlite', 'influx'],
+            'action' : 'store',
+            'help'   : ('Name of database in which to insert packets (may '
+                         'also be specified in config.yaml database.name)')
+        },
+
+        '--use-current-time': {
+            'action': 'store_true',
+            'help'  : ('Use current time stamps when insert packets instead '
+                       'of ground receipt time (or the time written in the '
+                       'PCAP header).')
+        },
+
         'file': {
             'nargs': '+',
             'help' : 'File(s) containing telemetry packets'
@@ -72,22 +88,31 @@ def main():
         defn     = tlm.getDefaultDict()[args.packet]
         nbytes   = defn.nbytes
 
-        if args.database == ':memory:' or not os.path.exists(args.database):
-            dbconn = db.create(args.database)
+        if args.backend == 'sqlite':
+            dbconn = db.SQLiteBackend()
+        elif args.backend == 'influx':
+            dbconn = db.InfluxDBBackend()
+
+        if args.backend == 'sqlite' and (args.database == ':memory:' or not os.path.exists(args.database)):
+            dbconn.create(database=args.database)
         else:
-            dbconn = db.connect(args.database)
+            dbconn.connect(database=args.database)
 
         for filename in args.file:
             log.info('Processing %s' % filename)
-            with dbconn:
-                with open(filename, 'rb') as stream:
-                    data = stream.read(nbytes)
+            with pcap.open(filename) as stream:
+                for header, pkt_data in stream:
+                    try:
+                        packet = tlm.Packet(defn, pkt_data)
 
-                    while len(data) > 0:
-                        packet = tlm.Packet(defn, data)
-                        db.insert(dbconn, packet)
-                        data      = stream.read(nbytes)
+                        time = header.timestamp
+                        if args.use_current_time:
+                            time = None
+
+                        dbconn.insert(packet, time=time)
                         npackets += 1
+                    except struct.error:
+                        log.error("Unable to unpack data into packet. Skipping ...")
 
     except KeyboardInterrupt:
         log.info('Received Ctrl-C.  Stopping database insert.')
@@ -96,8 +121,7 @@ def main():
         log.error(str(e))
 
     finally:
-        if dbconn:
-            dbconn.close()
+        dbconn.close()
 
     values = npackets, args.packet, args.database
     log.info('Inserted %d %s packets into database %s.' % values)
