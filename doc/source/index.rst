@@ -21,6 +21,7 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    EVR Introduction <evr_intro>
    limits_intro
    Database API <databases>
+   Extensions <extensions>
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
 
