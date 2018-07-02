@@ -66,15 +66,20 @@ def _send_email(message, recipients):
         log.error('Email SMTP connection parameter error. Please check config.')
         return
 
+    subject = ait.config.get('notifications.smtp.subject', 'AIT Notification')
+
+    # From address must have a valid @server, otherwise texts will not works
+    fromaddr = ait.config.get('notifications.smtp.from', 'ait-notify@%s' % server)
+
     msg = MIMEText(message)
-    msg['Subject'] = 'AIT Notification'
+    msg['Subject'] = subject
     msg['To'] = ', '.join(recipients)
-    msg['From'] = un
+    msg['From'] = fromaddr
 
     try:
         s = smtplib.SMTP_SSL(server, port)
         s.login(un, pw)
-        s.sendmail(un, recipients, msg.as_string())
+        s.sendmail(fromaddr, recipients, msg.as_string())
         s.quit()
         log.info('Email notification sent')
     except smtplib.SMTPException as e:
