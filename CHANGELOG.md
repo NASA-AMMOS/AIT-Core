@@ -1,12 +1,37 @@
 # Change Log
 
-## [Unreleased](https://github.com/NASA-AMMOS/AIT-Core/tree/HEAD)
-
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.0.0...HEAD)
+## [1.1.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.1.0) (2018-07-03)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.0.0...1.1.0)
 
 **Closed issues:**
 
+- Allow configurable Subject and From for ait.notify notifications [\#97](https://github.com/NASA-AMMOS/AIT-Core/issues/97)
+- Typo in AIT index header [\#94](https://github.com/NASA-AMMOS/AIT-Core/issues/94)
+- Add documentation explaining "extensions" [\#92](https://github.com/NASA-AMMOS/AIT-Core/issues/92)
+- Drop changelog gen script and pypi setup scripts [\#89](https://github.com/NASA-AMMOS/AIT-Core/issues/89)
+- Expand core.db backend support [\#85](https://github.com/NASA-AMMOS/AIT-Core/issues/85)
+- TIME40 dtype doesn't take up the proper number of bytes [\#81](https://github.com/NASA-AMMOS/AIT-Core/issues/81)
+- UTCLeapSeconds. get\_GPS\_offset\_for\_date missing default value for timestamp argument [\#80](https://github.com/NASA-AMMOS/AIT-Core/issues/80)
+- Install errors when using a non-cloned version of the code [\#65](https://github.com/NASA-AMMOS/AIT-Core/issues/65)
+- Update README to match wiki [\#59](https://github.com/NASA-AMMOS/AIT-Core/issues/59)
+- Remove Contributing Guide from Sphinx docs [\#58](https://github.com/NASA-AMMOS/AIT-Core/issues/58)
+- Update CHANGELOG [\#55](https://github.com/NASA-AMMOS/AIT-Core/issues/55)
 - Update deprecated method call in dmc.py [\#51](https://github.com/NASA-AMMOS/AIT-Core/issues/51)
+- Search doesn't work on docs hosted on ReadTheDocs [\#27](https://github.com/NASA-AMMOS/AIT-Core/issues/27)
+
+**Merged pull requests:**
+
+- Issue \#97: add configurable subject and from address [\#98](https://github.com/NASA-AMMOS/AIT-Core/pull/98) ([jordanpadams](https://github.com/jordanpadams))
+- Issue \#94 - Fix typo in docs index [\#95](https://github.com/NASA-AMMOS/AIT-Core/pull/95) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#92 - Add extensions documentation [\#93](https://github.com/NASA-AMMOS/AIT-Core/pull/93) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#89 - Drop changelog and pypi scripts [\#90](https://github.com/NASA-AMMOS/AIT-Core/pull/90) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#65 - Fix git hooks install on non-checkout version of repo [\#88](https://github.com/NASA-AMMOS/AIT-Core/pull/88) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#80 - Add default timestamp for get\_GPS\_offset\_for\_date [\#87](https://github.com/NASA-AMMOS/AIT-Core/pull/87) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#85 - Expand core.db backend support [\#86](https://github.com/NASA-AMMOS/AIT-Core/pull/86) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#34: BLISS to AIT change for Latex dict software [\#82](https://github.com/NASA-AMMOS/AIT-Core/pull/82) ([jordanpadams](https://github.com/jordanpadams))
+- Issue \#59 - Update README to match wiki landing page [\#61](https://github.com/NASA-AMMOS/AIT-Core/pull/61) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#58 - Remove contributing guide from Sphinx docs [\#60](https://github.com/NASA-AMMOS/AIT-Core/pull/60) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#55 - Fix missing CHANGELOG releases [\#56](https://github.com/NASA-AMMOS/AIT-Core/pull/56) ([MJJoyce](https://github.com/MJJoyce))
 
 ## [1.0.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.0.0) (2018-05-08)
 [Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/0.37.0...1.0.0)
