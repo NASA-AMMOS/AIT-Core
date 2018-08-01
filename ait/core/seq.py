@@ -443,7 +443,7 @@ class SeqCmd (SeqAtom):
     if comment:
       stop = comment.pos.col.start - 1
 
-    if attrs and attrs.pos.col.start != -1:
+    if attrs and attrs.pos.col.stop != -1:
       stop = attrs.pos.col.start - 1
 
     tokens = line[:stop].split()
