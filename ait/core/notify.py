@@ -62,7 +62,8 @@ def _send_email(message, recipients):
     un = ait.config.get('notifications.smtp.username', None)
     pw = ait.config.get('notifications.smtp.password', None)
 
-    if server is None or port is None or un is None or pw is None:
+    # if server is None or port is None or un is None or pw is None:
+    if server is None or port is None:
         log.error('Email SMTP connection parameter error. Please check config.')
         return
 
@@ -77,10 +78,16 @@ def _send_email(message, recipients):
     msg['From'] = fromaddr
 
     try:
-        s = smtplib.SMTP_SSL(server, port)
-        s.login(un, pw)
-        s.sendmail(fromaddr, recipients, msg.as_string())
-        s.quit()
+        if un is None or pw is None:
+            s = smtplib.SMTP()
+            s.connect(server, port)
+            s.sendmail(fromaddr, recipients, msg.as_string())
+            s.quit()
+        else:
+            s = smtplib.SMTP_SSL(server, port)
+            s.login(un, pw)
+            s.sendmail(fromaddr, recipients, msg.as_string())
+            s.quit()
         log.info('Email notification sent')
     except smtplib.SMTPException as e:
         log.error('Failed to send email notification.')
