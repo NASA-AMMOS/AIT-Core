@@ -48,13 +48,15 @@ def main():
         '--stime': {
             'default' : dmc.GPS_Epoch,
             'help'    : ('Starting time for desired telemetry range in '
-                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
+                         'ISO 8601 Format "YYYY-MM-DDThh:mm:SSZ" (default: '
+                         '1980-01-06T00:00:00Z)')
         },
 
         '--etime': {
             'default' : datetime.datetime.now(),
             'help'    : ('Ending time for desired telemetry range in '
-                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
+                         'ISO 8601 Format "YYYY-MM-DDThh:mm:SSZ" (default: '
+                         'the current time; example: 2018-05-23T18:54:31Z)')
         },
 
         '--output': {
