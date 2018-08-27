@@ -159,7 +159,7 @@ def main():
                                 fieldVal = str(fieldVal)
 
                         except KeyError:
-                            log.warn('%s not found in Packet' % field)
+                            log.debug('%s not found in Packet' % field)
                             fieldVal = None
                         except ValueError:
                             # enumeration not found. just get the raw value
