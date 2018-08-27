@@ -48,13 +48,15 @@ def main():
         '--stime': {
             'default' : dmc.GPS_Epoch,
             'help'    : ('Starting time for desired telemetry range in '
-                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
+                         'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
+                         '1980-01-06T00:00:00Z)')
         },
 
         '--etime': {
             'default' : datetime.datetime.now(),
             'help'    : ('Ending time for desired telemetry range in '
-                         'ISO 8601 Format "YY-MM-DDThh:mm:SSZ"')
+                         'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
+                         'the current time; example: 2018-05-23T18:54:31Z)')
         },
 
         '--output': {
@@ -109,7 +111,7 @@ def main():
             ap.print_help()
             print
             print
-            raise ValueError("Start and end time must be formatted as YY-MM-DDThh:mm:SSZ")
+            raise ValueError("Start and end time must be formatted as YYYY-MM-DDThh:mm:ssZ")
 
         pcap.query(starttime, endtime, output, *pcapfiles)
 
