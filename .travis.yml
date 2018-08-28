@@ -1,15 +1,25 @@
 language: python
 python:
-  - "2.7"
-
+- '2.7'
 branches:
   only:
-    - master
-
+  - master
 env:
-  - AIT_CONFIG: ${TRAVIS_BUILD_DIR}/data/config/config.yaml
-
+- AIT_CONFIG: "${TRAVIS_BUILD_DIR}/data/config/config.yaml"
 install:
-  - pip install .[tests]
-
+- pip install .[tests]
 script: nosetests
+before_deploy:
+  - git config --global user.email "builds@travis-ci.com"
+  - git config --global user.name "Travis CI"
+  - git tag "master-latest"
+  - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
+  - git push --tags
+deploy:
+  provider: releases
+  api_key:
+    secure: w9yIo7tQCBbf2B3oTcWbntFPwaor0m3aGX8O+jX0toFyaHZnkWSA6080ecKcc0NNeoqbFZ6Ryl3vYrZw4i77+MeMyp1OGRjdVWu1I56PoiDh4//RRs2hC8PkpCU+2VqMb58VsmO5GUFG/G2TTCXnF+X5R6Mx5J4iVSES7lnVCn6HcKTfqBdf+PhHj8XT5F3w2FYrsmHt+eHez5i0OPGAqXiXX4743BfCLBvpqcQAP/7PHkxMYOJfDGAgWGm/yf+LEdY+M9X7Vs11Hhv4TbYd3Md9TCzy0livwuGVvFHIpR5iHjD65uqW1iqZhmFDV+iJ93k8pfAsZY4oQt2MHqKFglCX9wyk3Tt2y5RRBjkz150dBmv38Nxb0Star2mfVWk1vcbDn7oTcp/LrHryZl/26+6EfMfG4Gi0oQR8uhaBRXMYBTPP4d3ut+21XPsizjbMuFEVK89zLz+1HWh0SOzOgcJQlfuA4jvXDTfkIhxMx09SGKBz4iGa6vZZfoR5eFxfzByOKfz+ubJ79ei2rbdLBTushddrXyQ1MBUPZhUG2UT/+r9NthsyieN67s9Jpjikwc+G5Il0S4q06tT6IKptwULetZsnAXeOMJLK2L3e/v46cHHJFKauYseZtUQLnVGiFl5eoRdE5m2558DbHrsQqqp6igV398eJkGtWwRbjmLA=
+  file: ''
+  on:
+    repo: NASA-AMMOS/AIT-Core
+    tags: true
