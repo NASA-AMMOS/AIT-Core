@@ -13,7 +13,8 @@ before_deploy:
   - git config --global user.email "builds@travis-ci.com"
   - git config --global user.name "Travis CI"
   - git tag -f -a "master-latest" -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-  - git push -f --tags
+  - git remote add ciorigin https://${GH_TOKEN}@github.com/NASA-AMMOS/AIT-Core.git > /dev/null 2>&1
+  - git push ciorigin "master-latest" >/dev/null 2>&1
 deploy:
   provider: releases
   api_key:
