@@ -34,7 +34,7 @@ Install the **ait.core** package and its dependencies:
 
     $ pip install .
 
-From AIT PyPi
+From PyPi
 ^^^^^^^^^^^^^^^
 
 You can also install AIT Core directly from PyPi if you don't want to keep a local copy of the code.
@@ -70,7 +70,7 @@ AIT uses two environment variables for configuration.
 
     /<project root path>/data/config/config.yaml
 
-We recommend that you set this in your **postactivate** file from **virtualenvwrapper**. This will ensure that each time you activate the virtual environment that your **AIT_CONFIG** environment variable is set properly. By default, this file is located at **~/.virtualenvs/postactive**.
+We recommend that you set this in your **postactivate** file from **virtualenvwrapper**. This will ensure that each time you activate the virtual environment that your **AIT_CONFIG** environment variable is set properly. By default, this file is located at **~/.virtualenvs/postactivate**.
 
 .. code-block:: bash
 
@@ -105,6 +105,8 @@ If the last command **doesn't** generate any errors your installation is all set
    Traceback (most recent call last):
      File "<string>", line 1, in <module>
    ImportError: No module named ait.core
+
+If warnings of the format ``WARNING  | Config parameter <param> specifies nonexistant path <path>`` are printed, don't worry - this just means the default configurations are incorrect for the current state of your machine.
 
 Working with AIT
 ----------------
