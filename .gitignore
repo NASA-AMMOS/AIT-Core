@@ -43,3 +43,6 @@ src/doc/dict/cmd/cmddict-07-cmddefs.tex
 
 # Nosetests ouptut file
 nosetests.xml
+
+# Macintosh file
+*.DS_Store
