@@ -70,7 +70,7 @@ import datetime
 import struct
 import sys
 
-from ait.core import cmd, dmc, evr, log, util
+from ait.core import cmd, dmc, log, util
 
 
 # PrimitiveTypes
@@ -535,6 +535,7 @@ class EVRType(PrimitiveType):
     def evrs(self):
         """Getter EVRs dictionary"""
         if self._evrs is None:
+            import ait.core.evr as evr
             self._evrs = evr.getDefaultDict()
 
         return self._evrs
