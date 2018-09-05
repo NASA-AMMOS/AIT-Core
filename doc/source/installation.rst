@@ -68,7 +68,7 @@ AIT uses two environment variables for configuration.
 
 .. code-block:: bash
 
-    /<project root path>/data/config/config.yaml
+    /<project root path>/config/config.yaml
 
 We recommend that you set this in your **postactivate** file from **virtualenvwrapper**. This will ensure that each time you activate the virtual environment that your **AIT_CONFIG** environment variable is set properly. By default, this file is located at **~/.virtualenvs/postactivate**.
 
@@ -77,7 +77,7 @@ We recommend that you set this in your **postactivate** file from **virtualenvwr
    if [ $VIRTUAL_ENV == "$HOME/.virtualenvs/ait" ] 
    then
       export AIT_ROOT=/path/to/ait-core
-      export AIT_CONFIG=/path/to/ait-core/data/config/config.yaml
+      export AIT_CONFIG=/path/to/ait-core/config/config.yaml
    fi
 
 Check Installation

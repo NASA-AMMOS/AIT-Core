@@ -5,7 +5,7 @@ AIT uses a number of `YAML <http://www.yaml.org/start.html>`_ (YAML Ain't Markup
 
 You must ensure that the **AIT_CONFIG** environment variable points to your **config.yaml** file in order for AIT to properly configure your project. Given the default AIT project structure you would have the following setup. This assumes you've set **AIT_ROOT** to the project's root directory::
 
-    export AIT_CONFIG=$AIT_ROOT/data/config/config.yaml
+    export AIT_CONFIG=$AIT_ROOT/config/config.yaml
 
 What is YAML?
 -------------
