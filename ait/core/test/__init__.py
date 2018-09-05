@@ -26,7 +26,7 @@ import ait
 import ait.core
 
 
-ait.config.reload('data/config/config.yaml')
+ait.config.reload('config/config.yaml')
 
 def setUp():
     """Set up tests.
