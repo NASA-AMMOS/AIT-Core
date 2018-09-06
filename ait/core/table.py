@@ -620,7 +620,7 @@ class FSWTabDictCache (object):
     def __init__ (self, filename=None):
         if filename is None:
             filename = os.path.join(os.path.dirname(__file__),
-                "../../config/table.yaml")
+                "../config/table.yaml")
             filename = os.path.abspath(filename)
 
         self.filename = filename
