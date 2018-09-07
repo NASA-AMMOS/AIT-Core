@@ -645,6 +645,11 @@ class PacketDefinition(json.SlotSerializer, object):
         return obj
 
 
+    def simulate(self, fill=None):
+        size   = self.nbytes
+        values = xrange(size) if fill is None else ((fill,) * size)
+        return Packet(self, bytearray(values))
+
 
 class PacketExpression(object):
     """PacketExpression
