@@ -47,6 +47,11 @@ def main():
             'default' : ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
             'help'    : 'Port on which to send data'
         },
+        '--host': {
+            'type'    : str,
+            'default' : "127.0.0.1",
+            'help'    : 'Host to which to send data'
+        },
         '--verbose': {
             'action'  : 'store_true',
             'default' : False,
@@ -68,7 +73,7 @@ def main():
 
     args = gds.arg_parse(arguments, description)
 
-    host     = "127.0.0.1"
+    host     = args.host
     port     = args.port
     verbose  = args.verbose
     cmd = api.CmdAPI(port, verbose=verbose)
