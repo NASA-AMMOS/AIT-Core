@@ -34,7 +34,6 @@ Examples:
 '''
 
 
-import sys
 import socket
 import time
 import argparse
