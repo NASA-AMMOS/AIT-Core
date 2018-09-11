@@ -24,8 +24,7 @@ import pkg_resources
 import re
 import yaml
 
-import ait
-from ait.core import json, log, util
+from ait.core import dtype, json, log, util
 
 
 class EVRDict(dict):
@@ -107,10 +106,12 @@ class EVRDefn(json.SlotSerializer, object):
 
         Given a byte array of EVR data, format the EVR's message attribute
         printf format strings and split the byte array into appropriately
-        sized chunks.
+        sized chunks. Supports most format strings containing length and type
+        fields.
 
         Args:
-            evr_hist_data: A bytearray of EVR data.
+            evr_hist_data: A bytearray of EVR data. Bytes are expected to be in
+             MSB ordering.
 
             Example formatting::
 
@@ -127,43 +128,74 @@ class EVRDefn(json.SlotSerializer, object):
                 specified format strings. This is usually a result of the
                 expected data length and the byte array length not matching.
         '''
-        formatter_info = {
-            's': (-1, str),
-            'c': (1, str),
-            'i': (4, lambda h: int(binascii.hexlify(h), 16)),
-            'd': (4, lambda h: int(binascii.hexlify(h), 16)),
-            'u': (4, lambda h: int(binascii.hexlify(h), 16)),
-            'f': (4, lambda h: float(binascii.hexlify(h), 16)),
-            'e': (4, lambda h: float(binascii.hexlify(h), 16)),
-            'g': (4, lambda h: float(binascii.hexlify(h), 16)),
+        size_formatter_info = {
+            's' : -1,
+            'c' : 1,
+            'i' : 4,
+            'd' : 4,
+            'u' : 4,
+            'x' : 4,
+            'hh': 1,
+            'h' : 2,
+            'l' : 4,
+            'll': 8,
+            'f' : 8,
+            'g' : 8,
+            'e' : 8,
         }
-        formatters = re.findall("%(?:\d+\$)?([cdifosuxXhlL]+)", self._message)
+        type_formatter_info = {
+            'c' : 'U{}',
+            'i' : 'MSB_I{}',
+            'd' : 'MSB_I{}',
+            'u' : 'MSB_U{}',
+            'f' : 'MSB_D{}',
+            'e' : 'MSB_D{}',
+            'g' : 'MSB_D{}',
+            'x' : 'MSB_U{}',
+        }
+
+        formatters = re.findall("%(?:\d+\$)?([cdieEfgGosuxXhlL]+)", self._message)
 
         cur_byte_index = 0
         data_chunks = []
 
         for f in formatters:
-            format_size, format_func = formatter_info[f]
+            # If the format string we found is > 1 character we know that a length
+            # field is included and we need to adjust our sizing accordingly.
+            f_size_char = f_type = f[-1]
+            if len(f) > 1:
+                f_size_char = f[:-1]
+
+            fsize = size_formatter_info[f_size_char.lower()]
 
             try:
-                # Normal data chunking is the current byte index + the size
-                # of the relevant data type for the formatter
-                if format_size > 0:
-                    end_index = cur_byte_index + format_size
+                if f_type != 's':
+                    end_index = cur_byte_index + fsize
+                    fstr = type_formatter_info[f_type.lower()].format(fsize*8)
+
+                    # Type formatting can give us incorrect format strings when
+                    # a size formatter promotes a smaller data type. For instnace,
+                    # 'hhu' says we'll promote a char (1 byte) to an unsigned
+                    # int for display. Here, the type format string would be
+                    # incorrectly set to 'MSB_U8' if we didn't correct.
+                    if fsize == 1 and 'MSB_' in fstr:
+                        fstr = fstr[4:]
+
+                    d = dtype.PrimitiveType(fstr).decode(
+                        evr_hist_data[cur_byte_index:end_index]
+                    )
 
                 # Some formatters have an undefined data size (such as strings)
                 # and require additional processing to determine the length of
-                # the data.
+                # the data and decode data.
                 else:
-                    if f == 's':
-                        end_index = str(evr_hist_data).index('\x00', cur_byte_index)
-                    else:
-                        end_index = format_size
+                    end_index = str(evr_hist_data).index('\x00', cur_byte_index)
+                    d = str(evr_hist_data[cur_byte_index:end_index])
 
-                data_chunks.append(format_func(evr_hist_data[cur_byte_index:end_index]))
+                data_chunks.append(d)
             except:
                 msg = "Unable to format EVR Message with data {}".format(evr_hist_data)
-                ait.core.log.error(msg)
+                log.error(msg)
                 raise ValueError(msg)
 
             cur_byte_index = end_index
@@ -178,7 +210,15 @@ class EVRDefn(json.SlotSerializer, object):
         if len(formatters) == 0:
             return self._message
         else:
-            return self._message % tuple(data_chunks)
+            # Python format strings cannot handle size formatter information. So something
+            # such as %llu needs to be adjusted to be a valid identifier in python by
+            # removing the size formatter.
+            msg = self._message
+            for f in formatters:
+                if len(f) > 1:
+                    msg = msg.replace('%{}'.format(f), '%{}'.format(f[-1]))
+
+            return msg % tuple(data_chunks)
 
     @property
     def message(self):
