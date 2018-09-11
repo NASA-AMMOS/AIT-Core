@@ -1,5 +1,30 @@
 # Change Log
 
+## [1.2.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.2.0) (2018-09-11)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.1.0...1.2.0)
+
+**Closed issues:**
+
+- Expand EVR Format Message [\#112](https://github.com/NASA-AMMOS/AIT-Core/issues/112)
+- Allow Notifications over unsecured SMTP servers [\#104](https://github.com/NASA-AMMOS/AIT-Core/issues/104)
+- Update seq-encode to allow for comments [\#102](https://github.com/NASA-AMMOS/AIT-Core/issues/102)
+- ait-tlm-csv warning when field not detected results in a lot of spam [\#101](https://github.com/NASA-AMMOS/AIT-Core/issues/101)
+- Update out-of-limit message to include time [\#100](https://github.com/NASA-AMMOS/AIT-Core/issues/100)
+- ait-pcap help message cleanup [\#79](https://github.com/NASA-AMMOS/AIT-Core/issues/79)
+- Ensure ait-pcap.py outputs a PCAP Global Header [\#78](https://github.com/NASA-AMMOS/AIT-Core/issues/78)
+- Typos in install documentation [\#63](https://github.com/NASA-AMMOS/AIT-Core/issues/63)
+- BLISS to AIT Name Change [\#34](https://github.com/NASA-AMMOS/AIT-Core/issues/34)
+
+**Merged pull requests:**
+
+- Issue \#112 - Expand EVR Format Message Handling [\#113](https://github.com/NASA-AMMOS/AIT-Core/pull/113) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#63 - Typos in install documentation [\#111](https://github.com/NASA-AMMOS/AIT-Core/pull/111) ([aywaldron](https://github.com/aywaldron))
+- Issue \#109 - Add latest build release to travisci config [\#110](https://github.com/NASA-AMMOS/AIT-Core/pull/110) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#101: ait-tlm-csv warning when field not detected results in a … [\#108](https://github.com/NASA-AMMOS/AIT-Core/pull/108) ([aywaldron](https://github.com/aywaldron))
+- Issue \#79: ait-pcap help message cleanup [\#107](https://github.com/NASA-AMMOS/AIT-Core/pull/107) ([aywaldron](https://github.com/aywaldron))
+- Issue \#104: add unsecured SMTP server access [\#105](https://github.com/NASA-AMMOS/AIT-Core/pull/105) ([jordanpadams](https://github.com/jordanpadams))
+- Issue \#102: Allow comments inline with commands [\#103](https://github.com/NASA-AMMOS/AIT-Core/pull/103) ([jordanpadams](https://github.com/jordanpadams))
+
 ## [1.1.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.1.0) (2018-07-03)
 [Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.0.0...1.1.0)
 
