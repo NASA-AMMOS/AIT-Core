@@ -86,5 +86,4 @@
       value: 0x89ABCDEF
 
 - !include ccsds_header.yaml
-- !include sle_tlm.yaml
 
