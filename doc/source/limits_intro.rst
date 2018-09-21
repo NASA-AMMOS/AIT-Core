@@ -40,7 +40,7 @@ Limit values can be specified for fields with a value range and for fields with 
 .. code-block:: YAML
 
     limits:
-        filename:  limits/limits.yaml
+        filename:  limits.yaml
 
 Value-Range Limits
 ^^^^^^^^^^^^^^^^^^

@@ -1,6 +1,7 @@
 # Distribution / Packaging / Build files
 .coverage
 doc/build/*
+build/lib/*
 *.egg-info/
 *.egg
 

@@ -20,13 +20,36 @@ default:
         filename:  tlm.yaml
 
     limits:
-        filename:  limits/limits.yaml
+        filename:  limits.yaml
       
     table:
         filename: table.yaml
 
     bsc:
         filename: bsc.yaml
+
+    dsn:
+        sle:
+            initiator_id: uname
+            password: pw
+            responder_id: uname
+            peer_password: pw
+            version: 5
+        cfdp:
+            mib:
+                path: ./mib
+            datasink:
+                outgoing:
+                    path: ../ait/dsn/cfdp/datasink/outgoing
+                incoming:
+                    path: ../ait/dsn/cfdp/datasink/incoming
+                tempfiles:
+                    path: ../ait/dsn/cfdp/datasink/tempfiles
+                pdusink:
+                    path: ../ait/dsn/cfdp/datasink/pdusink
+            max_file_name_length: 64
+            max_entity_id_length: 8
+            max_transaction_id_length: 8
 
     logging:
         name: ait

@@ -20,7 +20,7 @@ import sphinx_rtd_theme
 # AIT_CONFIG is set to empty string so that the build on ReadTheDocs will
 # pick up API Documentation.
 if os.environ.get('AIT_CONFIG', None) is None:
-    config = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data/config/config.yaml")
+    config = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config/config.yaml")
     os.environ['AIT_CONFIG'] = config
 
 # If extensions (or modules to document with autodoc) are in another directory,
