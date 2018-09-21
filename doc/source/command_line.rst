@@ -52,6 +52,12 @@ ait-tlm-send
    :start-after: '''
    :end-before: '''
 
+ait-tlm-simulate
+^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../ait/core/bin/ait_tlm_simulate.py
+   :start-after: '''
+   :end-before: '''
+
 ____
 
 Command Utilities

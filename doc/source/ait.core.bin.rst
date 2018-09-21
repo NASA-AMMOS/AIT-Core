@@ -24,6 +24,7 @@ Submodules
    ait.core.bin.ait_tlm_csv
    ait.core.bin.ait_tlm_db_insert
    ait.core.bin.ait_tlm_send
+   ait.core.bin.ait_tlm_simulate
    ait.core.bin.ait_yaml_validate
 
 Module contents
