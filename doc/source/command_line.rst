@@ -108,12 +108,6 @@ ait-create-dirs
    :start-after: '''
    :end-before: '''
 
-ait-orbits
-^^^^^^^^^^^^
-.. literalinclude:: ../../ait/core/bin/ait_orbits.py
-   :start-after: '''
-   :end-before: '''
-
 ait-yaml-validate
 ^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../ait/core/bin/ait_yaml_validate.py
