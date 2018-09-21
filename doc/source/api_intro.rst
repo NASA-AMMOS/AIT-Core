@@ -37,7 +37,7 @@ If our command required arguments we could specify them a number of ways::
 Wait
 ----
 
-The :func:`blis.core.api.wait` function allows us to halt execution in a script until a specified number of seconds have passed or until a supplied condition evaluates to ``True``. 
+The :func:`ait.core.api.wait` function allows us to halt execution in a script until a specified number of seconds have passed or until a supplied condition evaluates to ``True``. 
 
 Wait until 2 seconds have passed::
 
