@@ -39,14 +39,15 @@ The handler configuration section allows you to set up one or more handlers to b
 
 .. code-block:: yaml
 
-    - name: test1
-      conn_type: udp
-      address: ['', 8500]
-      path: additional_dir/test/%j
-      file_name_pattern: %Y-%m-%d-randomUDPtestData-{name}.pcap
-      rotate_log: True
-      rotate_log_index: day
-      rotate_log_delta: 1
+    handlers:
+        - name: test1
+          conn_type: udp
+          address: ['', 8500]
+          path: additional_dir/test/%j
+          file_name_pattern: %Y-%m-%d-randomUDPtestData-{name}.pcap
+          rotate_log: True
+          rotate_log_index: day
+          rotate_log_delta: 1
 
 You only need to provide a few of the available configuration options and BSC will handle the remaining options.
 

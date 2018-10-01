@@ -52,6 +52,12 @@ ait-tlm-send
    :start-after: '''
    :end-before: '''
 
+ait-tlm-simulate
+^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../ait/core/bin/ait_tlm_simulate.py
+   :start-after: '''
+   :end-before: '''
+
 ____
 
 Command Utilities
@@ -105,12 +111,6 @@ _______________________
 ait-create-dirs
 ^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../ait/core/bin/ait_create_dirs.py
-   :start-after: '''
-   :end-before: '''
-
-ait-orbits
-^^^^^^^^^^^^
-.. literalinclude:: ../../ait/core/bin/ait_orbits.py
    :start-after: '''
    :end-before: '''
 

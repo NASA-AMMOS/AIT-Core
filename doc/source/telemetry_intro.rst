@@ -26,7 +26,7 @@ AIT provides support for YAML-based configuration of telemetry data within the s
             0: 'Core'
             1: 'Payload'
 
-All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is co-located with *config.yaml*.  AIT also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``ait-yaml-validate`` it will check this for you.
+All the valid parameters and attributes that can be present in the telemetry dictionary definition are defined in the telemetry schema file. By default this is called *tlm_schema.json* and is located in **ait/core/data/**.  AIT also provides a command line utility for verifying that your telemetry dictionary configuration is valid given that you have a defined schema file. If you pass the ``--tlm`` or ``-t`` flag to ``ait-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
 
@@ -56,7 +56,7 @@ Decoding binary into a :class:`ait.core.tlm.Packet` allows us to easily decode d
 .. code-block:: none
 
    version:                000                 # Set to '000' per the CCSDS spec
-   packet type:            0                   # Set per the CCSDS spec
+   type:                   0                   # Set per the CCSDS spec
    secondary header flag:  1
    apid:                   01011100111
    sequence flag:          01                  # Indicate this is 'first' segment of a sequence
@@ -74,7 +74,7 @@ With the :class:`ait.core.tlm.Packet` object we can check each of those values a
 
     >>> pkt.version
     0
-    >>> pkt.packet_type
+    >>> pkt.type
     'Core'
     >>> pkt.secondary_header_flag
     'Present'
