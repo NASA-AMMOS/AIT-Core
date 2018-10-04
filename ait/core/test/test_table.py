@@ -193,17 +193,16 @@ def testTabDefnAndWrite():
     # Version in toBinary does not appear to be handled properly
     #assert tabledefn.toBinary('tempfile', stream, outstream, 1, 0.0) is None
 
-    # Test that getDefaultFSWTabDict exits without an error code
-    # and does not erroneously produce a dictionary when none exists
-    assert table.getDefaultFSWTabDict() is None
-
     # Create a new table dictionary
     tabdict = table.FSWTabDict()
     tabdict.add(tabledefn)
     tabdict.create('test',{'colnames':tabledefn.coldefns})
 
     # Load a table definition to the dictionary
-    tabdict.load('ait/core/test/testdata/val/testCmdValidator6.yaml')
+    tabdict.load(os.path.join(os.path.dirname(__file__), 
+                              "testdata", 
+                              "val", 
+                              "testCmdValidator6.yaml"))
 
     # Assert writing to text does not exit with an error code
     assert table.writeToText(tabdict,'test_table','tempfileb',0,0.0) is None
