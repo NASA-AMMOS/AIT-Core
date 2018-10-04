@@ -138,6 +138,58 @@ functions (optional):
          type:   LSB_U16
          when:   HKMux1 == 18
 
+    .. warning::
+
+       The intention of the **function** support is not to facilitate embedding scripts into your telemetry dictionary. In general, the above mathematical experssions are what should be expected in function definitions. Of course sometimes you need to access language features or core mathematical functions and you'll need to use the below approach. Just be cautious with how much logic you embed in your telemetry functions and avoid the temptation to move some of your Science Data System processing into your Ground Data System.
+
+    Sometimes you'll need to support more complicated use cases in your functions. If you need to access language features that are more complicated than basic mathematical operators you'll need to take into consideration how the function is handled by the **Core** library and extensions such as the **GUI**. Telemetry functions are processed as Python expressions in **AIT Core** but as Javascript expressions in **AIT GUI**. This can cause problems if you want to embed more complicated functionality. As an example let's add a function that takes 1 or more float values and returns a calculated value.
+
+    .. code-block:: yaml
+
+       - !Field
+         name:   Example_Field
+         bytes:  MSB_U16
+         dntoeu:
+           equation: MyComplexFunction(raw.Example_Field, 1.243267047024234, 5.3478290342342342, 72347089237402342)
+
+    We'll need to define **MyComplexFunction** in both Python and Javascript since we're going to need different language features in both. In our project Python package we'll add a **functions.py** file containing the following::
+
+       import math
+
+       def MyComplexFunction(k, *args):
+           return sum(a * math.cos(i * math.acos(k)) for i, a in enumerate(args))
+
+    We also need to tell **AIT Core** where to look for our custom function. We can do this by specifying the path to **functions.py** via the **functions** attribute in **Config.yaml**.
+
+    .. code-block:: yaml
+
+       functions:
+          myprojectdirectory.functions
+
+    Next we'll define **MyComplexFunction** in Javascript. Let's call this **functions.js** for consistency.
+
+    .. code-block:: javascript
+
+       window.MyComplexFunction = function (k) {
+           var sum = 0.0
+
+           for (var i = 1; i < arguments.length; ++i) {
+               sum += arguments[i] * Math.cos((i - 1) * Math.acos(k))
+           }
+
+           return sum
+       }
+
+    And we'll add it the GUI's index file. Your path will be different of course!
+
+    .. code-block:: html
+
+       <head>
+         <script src="js/functions.js"></script>
+       </head>
+
+    Now your function will work as expected in Core and GUI.
+
 history (optional):
     A **list** of *!Field* names for which previous values should be stored. The previous value of a !Field can be reference via ``history.fieldName``.
 
@@ -181,12 +233,20 @@ dntoeu (optional):
            units:    volts
            when:     history.VX0 > 2000
 
+    The **equation** attribute can also reference a function defined in your telemetry dictionary. See the above *RT2* field definition above as an example.
+
 when (optional):
     An expression defining when a !Field's value is valid.
 
     .. code-block:: yaml
 
        when: HKMux1 == 0
+
+    A **when** expression can be set at a **!Field** block level or at a **dntoeu** level as shown in the *RT2* field example above.
+    
+    If specified at the **!Field** block level the **when** expression determines when the entire **!Field**'s value is valid. If the **when** expression is true, the Field will have a value, otherwise the field will not have any value.
+    
+    If specified at the **dntoeu** level the when expression determines when the DN-to-EU will be run for the field value. If the **when** expression is true, the field's DN-to-EU will be run, otherwise the field will only have a raw value associated with it.
 
 ----
 
