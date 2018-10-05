@@ -26,7 +26,8 @@ import binascii
 import array
 import hashlib
 
-from ait.core import dtype, log, util
+import ait
+from ait.core import dtype, log, util, cfg
 
 
 class FSWColDefn (object):
@@ -619,9 +620,7 @@ class FSWTabDict (dict):
 class FSWTabDictCache (object):
     def __init__ (self, filename=None):
         if filename is None:
-            filename = os.path.join(os.path.dirname(__file__),
-                "../config/table.yaml")
-            filename = os.path.abspath(filename)
+            filename = ait.config.get('table.filename')
 
         self.filename = filename
         self.pcklname = os.path.splitext(filename)[0] + '.pkl'
