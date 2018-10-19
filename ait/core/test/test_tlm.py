@@ -19,6 +19,7 @@ import csv
 import struct
 
 import nose
+from nose.tools import *
 
 from ait.core import tlm
 
@@ -116,6 +117,72 @@ class TestFieldDefinition(object):
         assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'field_1'
 
         os.remove(test_yaml_test2)
+
+
+class TestDerivationDefinition(object):
+    test_yaml_deriv1 = '/tmp/test_deriv1.yaml'
+
+    yaml_docs_deriv1 = (
+        '- !Packet\n'
+        '  name: OCO3_1553_EHS\n'
+        '  derivations:\n'
+        '    - !Derivation\n'
+        '      name: deriv_1\n'
+        '      equation: field_1 + field_2\n'
+        '      type: MSB_U16\n'
+    )
+
+    def setUp(self):
+        with open(self.test_yaml_deriv1, 'wb') as out:
+            out.write(self.yaml_docs_deriv1)
+
+    def tearDown(self):
+        os.remove(self.test_yaml_deriv1)
+
+    def test_derivation_definition(self):
+        tlmdict = tlm.TlmDict(self.test_yaml_deriv1)
+        deriv1 = tlmdict['OCO3_1553_EHS'].derivations[0]
+        assert deriv1.name == 'deriv_1'
+        assert type(deriv1.equation) == tlm.PacketExpression
+        assert deriv1.equation.toJSON() == 'field_1 + field_2'
+
+    def test_deriv_defn_notitle(self):
+        test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
+        yaml_docs_deriv2 = (
+            '- !Packet\n'
+            '  name: OCO3_1553_EHS\n'
+            '  derivations:\n'
+            '    - !Derivation\n'
+            '      name: deriv_1\n'
+            '      equation: field_1 + field_2\n'
+        )
+
+        with open(test_yaml_deriv2, 'wb') as out:
+            out.write(yaml_docs_deriv2)
+
+        tlmdict = tlm.TlmDict(test_yaml_deriv2)
+
+        assert tlmdict['OCO3_1553_EHS'].derivations[0].title == 'deriv_1'
+
+        os.remove(test_yaml_deriv2)
+
+    @raises(Exception)
+    def test_deriv_defn_noeqn(self):
+        test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
+        yaml_docs_deriv2 = (
+            '- !Packet\n'
+            '  name: OCO3_1553_EHS\n'
+            '  derivations:\n'
+            '    - !Derivation\n'
+            '      name: deriv_1\n'
+        )
+
+        with open(test_yaml_deriv2, 'wb') as out:
+            out.write(yaml_docs_deriv2)
+
+        tlmdict = tlm.TlmDict(test_yaml_deriv2)
+
+        os.remove(test_yaml_deriv2)
 
 
 class TestTlmConfig(object):
