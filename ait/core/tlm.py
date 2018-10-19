@@ -138,6 +138,83 @@ class FieldList(collections.Sequence):
 
 
 
+class DerivationDefinition(json.SlotSerializer, object):
+    """DerivationDefinition
+
+    DerivationDefinition encapsulates all information required to define
+    a single derivation. This includes the field name and equation.
+
+    """
+
+    __slots__ = [
+        "name", "desc", "equation", "units", "_type", "_title", "enum",
+        "when"
+    ]
+
+    def __init__(self, *args, **kwargs):
+        """Creates a new DerivationDefinition."""
+        for slot in DerivationDefinition.__slots__:
+            name = slot[1:] if slot.startswith("_") else slot
+            setattr(self, name, kwargs.get(name, None))
+
+        self.equation = createPacketExpression(self.equation)
+
+    def __repr__(self):
+        return util.toRepr(self)
+
+    @property
+    def title(self):
+        """The argument title."""
+        if not self._title:
+            return self.name
+        else:
+            return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+
+    @property
+    def type(self):
+        """The argument type."""
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        if type(value) is str and dtype.get(value) is not None:
+            self._type = dtype.get(value)
+        else:
+            self._type = value
+            log.error("Invalid field type '%s' " % value)
+
+    def validate(self, value, messages=None):
+        """Returns True if the given field value is valid, False otherwise.
+        Validation error messages are appended to an optional messages
+        array.
+        """
+        valid     = True
+        primitive = value
+
+        def log(msg):
+            if messages is not None:
+                messages.append(msg)
+
+        if self.enum:
+            if value not in self.enum.values():
+                valid = False
+                flds = (self.name, str(value))
+                log("%s value '%s' not in allowed enumerated values." % flds)
+            else:
+                primitive = int(self.enum.keys()[self.enum.values().index(value)])
+
+        if self.type:
+            if self.type.validate(primitive, messages, self.name) is False:
+                valid = False
+
+        return valid
+
+
+
 class FieldDefinition(json.SlotSerializer, object):
     """FieldDefinition
 
@@ -407,13 +484,18 @@ class Packet(object):
         elif fieldname == 'history':
             value = self._defn.history
         else:
-            defn = self._defn.fieldmap[fieldname]
+            if fieldname in self._defn.derivationmap:
+                defn = self._defn.derivationmap[fieldname]
+            else:
+                defn = self._defn.fieldmap[fieldname]
 
             if isinstance(defn.type, dtype.ArrayType) and index is None:
                 return createFieldList(self, defn, raw)
 
             if defn.when is None or defn.when.eval(self):
-                if raw or (defn.dntoeu is None and defn.expr is None):
+                if isinstance(defn, DerivationDefinition):
+                    value = defn.equation.eval(self)
+                elif raw or (defn.dntoeu is None and defn.expr is None):
                     value = defn.decode(self._data, raw, index)
                 elif defn.dntoeu is not None:
                     value = defn.dntoeu.eval(self)
@@ -497,8 +579,9 @@ class PacketDefinition(json.SlotSerializer, object):
     """PacketDefinition
     """
     NextUID   = 1
-    __slots__ = [ 'ccsds', 'constants', 'desc', 'fields', 'fieldmap',
-                  'functions', 'globals', 'history', 'name', 'uid' ]
+    __slots__ = [ 'ccsds', 'constants', 'desc', 'fields', 'fieldmap', 'uid',
+                  'functions', 'globals', 'history', 'name', 'derivations',
+                  'derivationmap' ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new PacketDefinition."""
@@ -509,6 +592,13 @@ class PacketDefinition(json.SlotSerializer, object):
         if self.ccsds:
             import ccsds
             self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
+
+        if self.derivations is None:
+            self.derivations   = [ ]
+            self.derivationmap = { }
+        else:
+            self.derivations   = handle_includes(self.derivations)
+            self.derivationmap = { defn.name: defn for defn in self.derivations }
 
         if self.fields is None:
             self.fields   = [ ]
@@ -634,11 +724,14 @@ class PacketDefinition(json.SlotSerializer, object):
         return valid
 
 
-    def toJSON(self):
+    def toJSON(self, derivations=False):
         slots = ['name', 'desc', 'constants', 'functions', 'history', 'uid']
 
         if self.ccsds is not None:
             slots += 'ccsds'
+
+        if derivations:
+            slots += 'derivations'
 
         obj   = json.slotsToJSON(self, slots)
         obj['fields'] = { defn.name: defn.toJSON() for defn in self.fields }
@@ -1051,6 +1144,11 @@ def YAMLCtor_FieldDefinition(loader, node):
     return createFieldDefinition(**fields)
 
 
+def YAMLCtor_DerivationDefinition(loader, node):
+    fields = loader.construct_mapping(node, deep=True)
+    return createDerivationDefinition(**fields)
+
+
 def YAMLCtor_include(loader, node):
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
@@ -1059,8 +1157,11 @@ def YAMLCtor_include(loader, node):
         data = yaml.load(f)
     return data
 
-yaml.add_constructor('!include', YAMLCtor_include)
-yaml.add_constructor('!Packet' , YAMLCtor_PacketDefinition)
-yaml.add_constructor('!Field'  , YAMLCtor_FieldDefinition)
+
+yaml.add_constructor('!include'   , YAMLCtor_include)
+yaml.add_constructor('!Packet'    , YAMLCtor_PacketDefinition)
+yaml.add_constructor('!Field'     , YAMLCtor_FieldDefinition)
+yaml.add_constructor('!Derivation', YAMLCtor_DerivationDefinition)
+
 
 util.__init_extensions__(__name__, globals())
