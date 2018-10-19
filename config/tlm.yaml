@@ -2,7 +2,8 @@
   name: 1553_HS_Packet
   desc: Ethernet 1553 packet used to monitor telemetry in real-time
   functions:
-        CurrA_Fx(dn):   (dn - 2) / 1234.0
+        CurrA_Fx(dn):     (dn - 2) / 1234.0
+        Difference(x,y):  x - y
 
   fields:
     - !Field
@@ -33,6 +34,14 @@
       dntoeu:
         equation: CurrA_Fx(raw.Current_A)
         units:    amperes
+
+  derivations:
+    - !Derivation 
+      name: Volt_Diff
+      desc: Difference between Voltage_A and Voltage_B
+      type: MSB_U16
+      equation: Difference(Voltage_A, Voltage_B)
+      units: Volts
 
 - !Packet
   name: Ethernet_HS_Packet
