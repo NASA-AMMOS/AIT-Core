@@ -574,11 +574,11 @@ class EVRType(PrimitiveType):
 
         if raw:
             result = code
-        else:
+        elif code in self.evrs.codes:
             result = self.evrs.codes[code]
-
-        if result is None:
-            raise ValueError('Unrecognized EVR code: %d' % code)
+        else:
+            result = code
+            log.warn('Unrecognized EVR code: %d' % code)
 
         return result
 
