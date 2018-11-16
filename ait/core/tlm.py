@@ -508,7 +508,9 @@ class Packet(object):
     def _hasattr(self, fieldname):
         """Returns True if this packet contains fieldname, False otherwise."""
         special = 'history', 'raw'
-        return fieldname in special or fieldname in self._defn.fieldmap
+        return (fieldname in special or 
+                fieldname in self._defn.fieldmap or
+                fieldname in self._defn.derivationmap)
 
 
     @property
