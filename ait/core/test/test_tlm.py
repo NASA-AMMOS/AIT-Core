@@ -125,6 +125,13 @@ class TestDerivationDefinition(object):
     yaml_docs_deriv1 = (
         '- !Packet\n'
         '  name: OCO3_1553_EHS\n'
+        '  fields:\n'
+        '    - !Field\n'
+        '      name: field_1\n'
+        '      type: MSB_U16\n'
+        '    - !Field\n'
+        '      name: field_2\n'
+        '      type: MSB_U16\n'
         '  derivations:\n'
         '    - !Derivation\n'
         '      name: deriv_1\n'
@@ -141,10 +148,16 @@ class TestDerivationDefinition(object):
 
     def test_derivation_definition(self):
         tlmdict = tlm.TlmDict(self.test_yaml_deriv1)
-        deriv1 = tlmdict['OCO3_1553_EHS'].derivations[0]
+        pktdefn = tlmdict['OCO3_1553_EHS']
+        deriv1 = pktdefn.derivations[0]
         assert deriv1.name == 'deriv_1'
         assert type(deriv1.equation) == tlm.PacketExpression
         assert deriv1.equation.toJSON() == 'field_1 + field_2'
+
+        pkt = tlm.Packet(pktdefn)
+        pkt.field_1 = 1
+        pkt.field_2 = 2
+        assert pkt.deriv_1 == 3
 
     def test_deriv_defn_notitle(self):
         test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
