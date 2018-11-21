@@ -89,6 +89,9 @@ default:
             port: 465
             username: yourSMTPServerUsername
             password: yourSMTPServerPassword
+        options:
+            frequency: 1
+            threshold: 1
 
     phase: 'dev'
 
