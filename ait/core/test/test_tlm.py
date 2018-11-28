@@ -19,6 +19,7 @@ import csv
 import struct
 
 import nose
+from nose.tools import *
 
 from ait.core import tlm
 
@@ -77,7 +78,7 @@ class TestFieldDefinition(object):
 
     yaml_docs_test1 = (
         '- !Packet\n'
-        '  name: OCO3_1553_EHS\n'
+        '  name: Test_Packet\n'
         '  fields:\n'
         '    - !Field\n'
         '      name: field_1\n'
@@ -94,14 +95,14 @@ class TestFieldDefinition(object):
 
     def test_field_definition(self):
         tlmdict = tlm.TlmDict(self.test_yaml_test1)
-        assert tlmdict['OCO3_1553_EHS'].fields[0].name == 'field_1'
-        assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'Field 1'
+        assert tlmdict['Test_Packet'].fields[0].name == 'field_1'
+        assert tlmdict['Test_Packet'].fields[0].title == 'Field 1'
 
     def test_fld_defn_notitle(self):
         test_yaml_test2 = '/tmp/test_test2.yaml'
         yaml_docs_test2 = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !Field\n'
             '      name: field_1\n'
@@ -113,9 +114,88 @@ class TestFieldDefinition(object):
 
         tlmdict = tlm.TlmDict(test_yaml_test2)
 
-        assert tlmdict['OCO3_1553_EHS'].fields[0].title == 'field_1'
+        assert tlmdict['Test_Packet'].fields[0].title == 'field_1'
 
         os.remove(test_yaml_test2)
+
+
+class TestDerivationDefinition(object):
+    test_yaml_deriv1 = '/tmp/test_deriv1.yaml'
+
+    yaml_docs_deriv1 = (
+        '- !Packet\n'
+        '  name: Test_Packet\n'
+        '  fields:\n'
+        '    - !Field\n'
+        '      name: field_1\n'
+        '      type: MSB_U16\n'
+        '    - !Field\n'
+        '      name: field_2\n'
+        '      type: MSB_U16\n'
+        '  derivations:\n'
+        '    - !Derivation\n'
+        '      name: deriv_1\n'
+        '      equation: field_1 + field_2\n'
+        '      type: MSB_U16\n'
+    )
+
+    def setUp(self):
+        with open(self.test_yaml_deriv1, 'wb') as out:
+            out.write(self.yaml_docs_deriv1)
+
+    def tearDown(self):
+        os.remove(self.test_yaml_deriv1)
+
+    def test_derivation_definition(self):
+        tlmdict = tlm.TlmDict(self.test_yaml_deriv1)
+        pktdefn = tlmdict['Test_Packet']
+        deriv1 = pktdefn.derivations[0]
+        assert deriv1.name == 'deriv_1'
+        assert type(deriv1.equation) == tlm.PacketExpression
+        assert deriv1.equation.toJSON() == 'field_1 + field_2'
+
+        pkt = tlm.Packet(pktdefn)
+        pkt.field_1 = 1
+        pkt.field_2 = 2
+        assert pkt.deriv_1 == 3
+
+    def test_deriv_defn_notitle(self):
+        test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
+        yaml_docs_deriv2 = (
+            '- !Packet\n'
+            '  name: Test_Packet\n'
+            '  derivations:\n'
+            '    - !Derivation\n'
+            '      name: deriv_1\n'
+            '      equation: field_1 + field_2\n'
+        )
+
+        with open(test_yaml_deriv2, 'wb') as out:
+            out.write(yaml_docs_deriv2)
+
+        tlmdict = tlm.TlmDict(test_yaml_deriv2)
+
+        assert tlmdict['Test_Packet'].derivations[0].title == 'deriv_1'
+
+        os.remove(test_yaml_deriv2)
+
+    @raises(Exception)
+    def test_deriv_defn_noeqn(self):
+        test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
+        yaml_docs_deriv2 = (
+            '- !Packet\n'
+            '  name: Test_Packet\n'
+            '  derivations:\n'
+            '    - !Derivation\n'
+            '      name: deriv_1\n'
+        )
+
+        with open(test_yaml_deriv2, 'wb') as out:
+            out.write(yaml_docs_deriv2)
+
+        tlmdict = tlm.TlmDict(test_yaml_deriv2)
+
+        os.remove(test_yaml_deriv2)
 
 
 class TestTlmConfig(object):
@@ -155,7 +235,7 @@ class TestTlmConfig(object):
     def test_yaml_fld_includes(self):
         yaml_docs_main = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !include /tmp/test_inc1.yaml\n'
             '    - !Field\n'
@@ -167,9 +247,9 @@ class TestTlmConfig(object):
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
-        assert len(tlmdict['OCO3_1553_EHS'].fields) == 3
-        assert tlmdict['OCO3_1553_EHS'].fields[1].name == 'field_B'
-        assert tlmdict['OCO3_1553_EHS'].fields[1].bytes == 1
+        assert len(tlmdict['Test_Packet'].fields) == 3
+        assert tlmdict['Test_Packet'].fields[1].name == 'field_B'
+        assert tlmdict['Test_Packet'].fields[1].bytes == 1
 
         try:
             os.remove(self.test_yaml_main)
@@ -180,7 +260,7 @@ class TestTlmConfig(object):
     def test_yaml_fld_includesx2(self):
         yaml_docs_main = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !include /tmp/test_inc1.yaml\n'
             '    - !Field\n'
@@ -193,9 +273,9 @@ class TestTlmConfig(object):
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
-        assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
-        assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
-        assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
+        assert len(tlmdict['Test_Packet'].fields) == 5
+        assert tlmdict['Test_Packet'].fields[4].name == 'field_Z'
+        assert tlmdict['Test_Packet'].fields[4].bytes == 5
 
         try:
             os.remove(self.test_yaml_main)
@@ -215,7 +295,7 @@ class TestTlmConfig(object):
 
         yaml_docs_main = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !Field\n'
             '      name: field_1\n'
@@ -227,9 +307,9 @@ class TestTlmConfig(object):
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
-        assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
-        assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
-        assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
+        assert len(tlmdict['Test_Packet'].fields) == 5
+        assert tlmdict['Test_Packet'].fields[4].name == 'field_Z'
+        assert tlmdict['Test_Packet'].fields[4].bytes == 5
 
         try:
             os.remove(test_yaml_inc3)
@@ -261,7 +341,7 @@ class TestTlmConfig(object):
 
         yaml_docs_main = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !Field\n'
             '      name: field_1\n'
@@ -273,9 +353,9 @@ class TestTlmConfig(object):
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
-        assert len(tlmdict['OCO3_1553_EHS'].fields) == 6
-        assert tlmdict['OCO3_1553_EHS'].fields[5].name == 'field_FOO'
-        assert tlmdict['OCO3_1553_EHS'].fields[5].bytes == [6, 7]
+        assert len(tlmdict['Test_Packet'].fields) == 6
+        assert tlmdict['Test_Packet'].fields[5].name == 'field_FOO'
+        assert tlmdict['Test_Packet'].fields[5].bytes == [6, 7]
 
         try:
             os.remove(test_yaml_inc3)
@@ -288,7 +368,7 @@ class TestTlmConfig(object):
     def test_yaml_pkt_includes(self):
         yaml_docs_inc3 = (
             '- !Packet\n'
-            '  name: OCO3_TEST1\n'
+            '  name: Test_Packet_1\n'
             '  fields:\n'
             '    - !include /tmp/test_inc1.yaml\n'
         )
@@ -299,7 +379,7 @@ class TestTlmConfig(object):
 
         yaml_docs_inc4 = (
             '- !Packet\n'
-            '  name: OCO3_TEST_2\n'
+            '  name: Test_Packet_2\n'
             '  fields:\n'
             '    - !include /tmp/test_inc2.yaml\n'
         )
@@ -310,7 +390,7 @@ class TestTlmConfig(object):
 
         yaml_docs_main = (
             '- !Packet\n'
-            '  name: OCO3_1553_EHS\n'
+            '  name: Test_Packet\n'
             '  fields:\n'
             '    - !include /tmp/test_inc1.yaml\n'
             '    - !Field\n'
@@ -325,13 +405,13 @@ class TestTlmConfig(object):
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
-        assert len(tlmdict['OCO3_1553_EHS'].fields) == 5
-        assert tlmdict['OCO3_1553_EHS'].fields[4].name == 'field_Z'
-        assert tlmdict['OCO3_1553_EHS'].fields[4].bytes == 5
+        assert len(tlmdict['Test_Packet'].fields) == 5
+        assert tlmdict['Test_Packet'].fields[4].name == 'field_Z'
+        assert tlmdict['Test_Packet'].fields[4].bytes == 5
 
-        assert len(tlmdict['OCO3_TEST1'].fields) == 2
-        assert tlmdict['OCO3_TEST1'].fields[1].name == 'field_B'
-        assert tlmdict['OCO3_TEST1'].fields[1].bytes == 1
+        assert len(tlmdict['Test_Packet_1'].fields) == 2
+        assert tlmdict['Test_Packet_1'].fields[1].name == 'field_B'
+        assert tlmdict['Test_Packet_1'].fields[1].bytes == 1
 
         try:
             os.remove(test_yaml_inc3)

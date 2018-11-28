@@ -127,6 +127,59 @@
                         }
                     }
                 }
+            },
+            "derivations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "oneOf" : [{
+                    "required" : ["name", "equation"]
+                        }, {
+                    "required" : ["include"]
+                    }],
+                    "properties": {
+                        "include": {
+                            "type": "string"
+                        },
+                        "derivation": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "units": {
+                            "type": "string"
+                        },
+                        "desc": {
+                            "type": "string"
+                        },
+                        "aliases": {
+                            "type": "object"
+                        },
+                        "enum": {
+                            "type": "object",
+                            "description": "TODO: Does not check valid enumeration"
+                        },
+                        "value": {
+                            "type": "integer",
+                            "description": "Expected value for this field."
+                        },
+                        "when": {
+                            "type": "string",
+                            "description": "An expression defining when a !Derivation's value is valid."
+                        },
+                        "equation": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         }
     }
