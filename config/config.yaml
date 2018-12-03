@@ -90,7 +90,7 @@ default:
             username: yourSMTPServerUsername
             password: yourSMTPServerPassword
         options:
-            frequency: 1
+            frequency: 25
             threshold: 1
 
     phase: 'dev'
