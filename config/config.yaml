@@ -111,9 +111,31 @@ default:
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-    gui:
-      port: 8080
-      telemetry:
-        - stream:
-            name: 1553_HS_Packet
-            port: 3076
+    server:
+        plugins:
+            - ait-gui
+            - ait-datastore-writer
+            - openmct-bridge
+
+        inbound-streams:
+            - stream:
+                name: sle_data_stream
+                input: 
+                    port: 3078
+                handlers:
+                    - tm-trans-frame-decode-handler
+
+            - stream:
+                name: sle_data_stream_ccsds
+                input: 
+                    stream: sle_data_stream
+                handlers:
+                    - ccsds-packet-handler
+
+            - stream:
+                name: sle_data_stream_parallel
+                input: 
+                    something:
+                handlers:
+                    - parallel-handler
+                    - another-handler
