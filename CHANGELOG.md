@@ -1,5 +1,43 @@
 # Change Log
 
+## [1.4.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.4.0) (2018-12-12)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.3.0...1.4.0)
+
+**Closed issues:**
+
+- Get builds onto PyPi [\#14](https://github.com/NASA-AMMOS/AIT-Core/issues/14)
+- Add support for derived telemetry values [\#7](https://github.com/NASA-AMMOS/AIT-Core/issues/7)
+
+**Merged pull requests:**
+
+- AIT-GUI Issue \#92 - Update monitoring with notification throttling  [\#133](https://github.com/NASA-AMMOS/AIT-Core/pull/133) ([aywaldron](https://github.com/aywaldron))
+- Issue \#7 - Add support for derived telemetry values [\#126](https://github.com/NASA-AMMOS/AIT-Core/pull/126) ([aywaldron](https://github.com/aywaldron))
+
+## [1.3.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.3.0) (2018-11-08)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.2.0...1.3.0)
+
+**Closed issues:**
+
+- Update EVRType to better handle unknown EVRs [\#129](https://github.com/NASA-AMMOS/AIT-Core/issues/129)
+- Config file reload on test initialization uses relative path [\#124](https://github.com/NASA-AMMOS/AIT-Core/issues/124)
+- Expand the telemetry when and dntoeu documentation [\#121](https://github.com/NASA-AMMOS/AIT-Core/issues/121)
+- Update documentation on telemetry dictionary  [\#119](https://github.com/NASA-AMMOS/AIT-Core/issues/119)
+- Config file referenced with relative path in FSWTabDictCache class [\#115](https://github.com/NASA-AMMOS/AIT-Core/issues/115)
+- Baseline example configs across repos [\#83](https://github.com/NASA-AMMOS/AIT-Core/issues/83)
+- Create script for generating dummy telemetry data for tests [\#75](https://github.com/NASA-AMMOS/AIT-Core/issues/75)
+- bliss\_cmd\_send hardcoded to 127.0.0.1 [\#25](https://github.com/NASA-AMMOS/AIT-Core/issues/25)
+
+**Merged pull requests:**
+
+- Issue \#129: Update EVRType to better handle unknown EVRs [\#130](https://github.com/NASA-AMMOS/AIT-Core/pull/130) ([jordanpadams](https://github.com/jordanpadams))
+- Issue \#124 - Config file reload on test initialization uses relative path [\#125](https://github.com/NASA-AMMOS/AIT-Core/pull/125) ([aywaldron](https://github.com/aywaldron))
+- Issue \#115 - Config file referenced with relative path [\#123](https://github.com/NASA-AMMOS/AIT-Core/pull/123) ([aywaldron](https://github.com/aywaldron))
+- Issue \#121 - Expand telemetry when and dntoeu documentation [\#122](https://github.com/NASA-AMMOS/AIT-Core/pull/122) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#119 - Update documentation on telemetry dictionary [\#120](https://github.com/NASA-AMMOS/AIT-Core/pull/120) ([aywaldron](https://github.com/aywaldron))
+- Issue \#25 - bliss\_cmd\_send hardcoded to 127.0.0.1 [\#117](https://github.com/NASA-AMMOS/AIT-Core/pull/117) ([aywaldron](https://github.com/aywaldron))
+- Issue \#75 - Create script for generating dummy telemetry data for tests [\#116](https://github.com/NASA-AMMOS/AIT-Core/pull/116) ([aywaldron](https://github.com/aywaldron))
+- Issue \#83 - Baseline example configs across repos [\#114](https://github.com/NASA-AMMOS/AIT-Core/pull/114) ([aywaldron](https://github.com/aywaldron))
+
 ## [1.2.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.2.0) (2018-09-11)
 [Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.1.0...1.2.0)
 
