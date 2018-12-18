@@ -120,22 +120,19 @@ default:
         inbound-streams:
             - stream:
                 name: sle_data_stream
-                input: 
-                    port: 3078
+                input: 3078
                 handlers:
                     - tm-trans-frame-decode-handler
 
             - stream:
                 name: sle_data_stream_ccsds
-                input: 
-                    stream: sle_data_stream
+                input: sle_data_stream
                 handlers:
                     - ccsds-packet-handler
 
             - stream:
                 name: sle_data_stream_parallel
                 input: 
-                    something:
                 handlers:
                     - parallel-handler
                     - another-handler
