@@ -18,48 +18,36 @@ class AitBroker:
         self.subscribe_streams()
 
     def load_streams(self):
-        inbound_streams = ait.config.get('server.inbound-streams')
-        outbound_streams = ait.config.get('server.outbound-streams')
+        error_msg = {'inbound': 'No telemetry will be received (or displayed).',
+                     'outbound': 'No telemetry will be published.'}
 
-        if inbound_streams is None:
-            msg = cfg.AitConfigMissing('server.inbound-streams').args[0]
-            msg += '  No telemetry will be received (or displayed).'
-            log.error(msg)
-        else:
-            for index, s in enumerate(inbound_streams):
-                try:
-                    config_path = 'server.%s-streams[%d].stream' % ('inbound', index)
-                    config = cfg.AitConfig(config=s).get('stream')
-                    strm = self.create_stream(config, config_path, stream_type='inbound')
-                    self.inbound_streams.append(strm)
-                    log.info('Added inbound stream %s' % strm)
-                except Exception as e:
-                    log.error(e)
+        for stream_type in ['inbound', 'outbound']:
+            streams = ait.config.get('server.%s-streams' % stream_type)
+
+            if streams is None:
+                msg = cfg.AitConfigMissing('server.%s-streams' % stream_type).args[0]
+                log.error(msg + '  ' + error_msg[stream_type])
+            else:
+                for index, s in enumerate(streams):
+                    try:
+                        config_path = 'server.%s-streams[%d].stream' % (stream_type, index)
+                        config = cfg.AitConfig(config=s).get('stream')
+                        strm = self.create_stream(config, config_path, stream_type=stream_type)
+                        if stream_type == 'inbound':
+                            self.inbound_streams.append(strm)
+                        elif stream_type == 'outbound':
+                            self.outbound_streams.append(strm)
+                        log.info('Added %s stream %s' % (stream_type, strm))
+                    except Exception as e:
+                        log.error(e)
 
             if not self.inbound_streams:
                 msg  = 'No valid inbound telemetry stream configurations found.'
-                msg += '  No telemetry will be received (or displayed).'
-                log.error(msg)
-
-        if outbound_streams is None:
-            msg = cfg.AitConfigMissing('server.outbound-streams').args[0]
-            msg += '  No telemetry will be published.'
-            log.warn(msg)
-        else:
-            for index, s in enumerate(outbound_streams):
-                try:
-                    config_path = 'server.%s-streams[%d].stream' % ('outbound', index)
-                    config = cfg.AitConfig(config=s).get('stream')
-                    strm = self.create_stream(config, config_path, stream_type='outbound')
-                    self.outbound_streams.append(strm)
-                    log.info('Added outbound stream %s' % strm)
-                except Exception as e:
-                    log.error(e)
+                log.warn(msg + '  ' + error_msg[stream_type])
 
             if not self.outbound_streams:
                 msg  = 'No valid outbound telemetry stream configurations found.'
-                msg += '  No handled telemetry will be published.'
-                log.warn(msg)
+                log.warn(msg + '  ' + error_msg[stream_type])
 
     def create_stream(self, config, config_path, stream_type):
         """
