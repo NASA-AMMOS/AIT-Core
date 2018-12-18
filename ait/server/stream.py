@@ -3,31 +3,14 @@ from ait.core import cfg
 
 
 class Stream(object):
-    VALID_INPUTS = [ ]
+    STR_INPUT_TYPE = [ ]
 
-    def __init__(self, s, index):
-        self.config_path = 'server.%s-streams[%d].stream' % (self._type(), index)
-        stream = cfg.AitConfig(config=s).get('stream')
-
-        if stream is None:
-            msg = cfg.AitConfigMissing(self.config_path).args[0]
-            raise ValueError(msg)
-
-        self.name = stream.get('name', '<unnamed>')
-        stream_input = stream.get('input', None)
-
-        if stream_input is None:
-            msg = cfg.AitConfigMissing(self.config_path + '.input').args[0]
-            raise ValueError(msg)
-
-        # choosing first input type for now
-        self.input_type = stream_input._config.keys()[0]
-
-        if self.input_type not in self.VALID_INPUTS:
-            msg = '%s\'s input type "%s" is not valid.' % (self.config_path, self.input_type)
-            raise ValueError(msg)
-        else:
-            self.input = stream_input.get(self.input_type)
+    def __init__(self, name, input_, input_type, handlers):
+        # determine input type
+        self.name = name
+        self.input_type = input_type
+        self.input_ = input_
+        self.handlers = handlers
 
     def _type(self):
         return self.__class__.__name__.split('Stream')[0].lower()
@@ -43,14 +26,14 @@ class Stream(object):
 
 
 class InboundStream(Stream):
-    VALID_INPUTS = ['port', 'stream']
+    STR_INPUT_TYPE = ['stream']
 
-    def __init__(self, stream, index):
-        super(InboundStream, self).__init__(stream, index)
+    def __init__(self, name, input_, input_type, handlers):
+        super(InboundStream, self).__init__(name, input_, input_type, handlers)
 
 
 class OutboundStream(Stream):
-    VALID_INPUTS = ['plugin', 'stream']
+    STR_INPUT_TYPE = ['plugin', 'stream']
 
-    def __init__(self, stream, index):
-        super(OutboundStream, self).__init__(stream, index)
+    def __init__(self, name, input_, input_type, handlers):
+        super(OutboundStream, self).__init__(name, input_, input_type, handlers)
