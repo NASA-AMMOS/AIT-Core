@@ -2,7 +2,7 @@ import sys
 import zmq
 import ait.core
 from ait.core import cfg, log
-from stream import (InboundStream, OutboundStream)
+from stream import Stream
 
 
 class AitBroker:
@@ -33,6 +33,7 @@ class AitBroker:
 
         except Exception as e:
             log.error('ZeroMQ Error: %s' % e)
+            raise(e)
 
         finally:
             frontend.close()
@@ -102,60 +103,22 @@ class AitBroker:
             raise ValueError('Stream name already exists. Please rename.')
 
         stream_input = config.get('input', None)
-        # I think we are getting rid of this error
         if stream_input is None:
             msg = cfg.AitConfigMissing(config_path + '.input').args[0]
             raise ValueError(msg)
 
-        # determine input type
-        if stream_type == 'outbound':
-            # look for name in plugins first, then streams
-            if stream_input in self.plugins:
-                input_type = 'plugin'
-            elif stream_input in self.streams:
-                input_type = 'stream'
-
-        if stream_type == 'inbound':
-            # check if input is port by attempting conversion to int;
-            # otherwise assume it is stream
-            try:
-                stream_input = int(stream_input)
-                input_type = 'port'
-            except ValueError:
-                input_type = 'stream'
-
         handlers = config.get('handlers', None)
 
-        if stream_type == 'outbound':
-            return OutboundStream(name, stream_input, input_type, handlers,
-                                  self.context, self.XPUB_URL, self.XSUB_URL)
-        if stream_type == 'inbound':
-            return InboundStream(name, stream_input, input_type, handlers,
-                                 self.context, self.XPUB_URL, self.XSUB_URL)
+        return Stream(name, stream_input, handlers,
+                      self.context, self.XPUB_URL, self.XSUB_URL)
 
     def subscribe_streams(self):
         for stream in (self.inbound_streams + self.outbound_streams):
-            if stream.input_type == 'port':
-                # renaming Servers to Ports
-                if stream.input_ not in self.ports:
-                    self.ports.append(stream.input_)
-                # subscribe to it
-                stream.sub.setsockopt(zmq.SUBSCRIBE, str(stream.input_))
-
-            elif stream.input_type == 'stream':
-                # check if stream already created?
-                # if not, create it??
-                # subscribe to it
-                stream.sub.setsockopt(zmq.SUBSCRIBE, stream.input_)
-
-            elif stream.input_type == 'plugin':
-                # check if plugin registered with broker
-                # if not register it?
-                # subscribe to it
-                stream.sub.setsockopt(zmq.SUBSCRIBE, stream.input_)
+            self.subscribe(stream, stream.input_)
 
     def subscribe(self, subscriber, publisher):
         subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
+        log.info('Subscribed %s to topic %s' % (subscriber, publisher))
 
 
 # Create a singleton Broker accessible via ait.server.broker
