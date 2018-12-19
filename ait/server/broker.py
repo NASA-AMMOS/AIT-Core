@@ -1,12 +1,13 @@
 import sys
-
-from stream import (InboundStream, OutboundStream)
-
+import zmq
 import ait.core
 from ait.core import cfg, log
+from stream import (InboundStream, OutboundStream)
 
 
 class AitBroker:
+    XSUB_URL = "tcp://*:5559"
+    XPUB_URL = "tcp://*:5560"
 
     def __init__(self):
         self.inbound_streams = [ ]
@@ -14,8 +15,32 @@ class AitBroker:
         self.ports = [ ]
         self.plugins = [ ]
 
+        self.context = zmq.Context()
+
         self.load_streams()
         self.subscribe_streams()
+        self.start_broker()
+
+    def start_broker(self):
+        try:
+            # Socket facing clients
+            frontend = self.context.socket(zmq.XSUB)
+            frontend.bind(self.XSUB_URL)
+
+            # Socket facing services
+            backend = self.context.socket(zmq.XPUB)
+            backend.bind(self.XPUB_URL)
+
+            zmq.proxy(frontend, backend)
+
+        except Exception as e:
+            log.error('ZeroMQ Error: %s' % e)
+
+        finally:
+            # We never get here...
+            frontend.close()
+            backend.close()
+            self.context.term()
 
     def load_streams(self):
         error_msg = {'inbound': 'No telemetry will be received (or displayed).',
@@ -79,25 +104,31 @@ class AitBroker:
             msg = cfg.AitConfigMissing(config_path + '.input').args[0]
             raise ValueError(msg)
 
-        try:
-            stream_input = int(stream_input)
-            input_type = 'port'
-        except ValueError:
-            if stream_type == 'outbound':
-                # look for name in plugins, then streams
-                if stream_input in self.plugins:
-                    input_type = 'plugin'
-                elif stream_input in self.streams:
-                    input_type = 'stream'
-            if stream_type == 'inbound':
+        # determine input type
+        if stream_type == 'outbound':
+            # look for name in plugins, then streams
+            if stream_input in self.plugins:
+                input_type = 'plugin'
+            elif stream_input in self.streams:
+                input_type = 'stream'
+
+        if stream_type == 'inbound':
+            # check if input is port by attempting conversion to int;
+            # otherwise stream
+            try:
+                stream_input = int(stream_input)
+                input_type = 'port'
+            except ValueError:
                 input_type = 'stream'
 
         handlers = config.get('handlers', None)
 
         if stream_type == 'outbound':
-            return OutboundStream(name, stream_input, input_type, handlers)
+            return OutboundStream(name, stream_input, input_type, handlers,
+                                  self.context, self.XPUB_URL, self.XSUB_URL)
         if stream_type == 'inbound':
-            return InboundStream(name, stream_input, input_type, handlers)
+            return InboundStream(name, stream_input, input_type, handlers,
+                                 self.context, self.XPUB_URL, self.XSUB_URL)
 
     def subscribe_streams(self):
         for stream in (self.inbound_streams + self.outbound_streams):
@@ -107,20 +138,24 @@ class AitBroker:
                 if port not in self.ports:
                     self.ports.append(port)
                 # subscribe to it
+                topicfilter = ""
+                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
 
             elif stream.input_type == 'stream':
                 input_stream = stream.input_
-                # check if stream already created
-                # if not, create it
+                # check if stream already created?
+                # if not, create it??
                 # subscribe to it
-                pass
+                topicfilter = ""
+                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
 
             elif stream.input_type == 'plugin':
                 plugin = stream.input_
                 # check if plugin registered with broker
                 # if not register it
                 # subscribe to it
-                pass
+                topicfilter = ""
+                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
 
     def subscribe(self, subscriber, publisher):
         pass

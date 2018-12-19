@@ -1,16 +1,23 @@
-import ait.core
-from ait.core import cfg
+import zmq
 
 
 class Stream(object):
     STR_INPUT_TYPE = [ ]
 
-    def __init__(self, name, input_, input_type, handlers):
-        # determine input type
+    def __init__(self, name, input_, input_type, handlers,
+                       zmq_context, broker_xpub, broker_xsub):
         self.name = name
         self.input_type = input_type
         self.input_ = input_
         self.handlers = handlers
+        self.context = zmq_context
+
+        # open PUB and SUB socket
+        self.pub = self.context.socket(zmq.PUB)
+        self.sub = self.context.socket(zmq.SUB)
+        # connect to broker
+        self.sub.connect(broker_xpub)
+        self.pub.connect(broker_xsub)
 
     def _type(self):
         return self.__class__.__name__.split('Stream')[0].lower()
@@ -18,8 +25,8 @@ class Stream(object):
     def __repr__(self):
         return '<stream.%s name=%s>' % (self.__class__.__name__, self.name)
 
-    def publish(self):
-        pass
+    def publish(self, msg, topic):
+        self.pub.send("%d %d" % (topic, msg))
 
     def validate_workflow(self):
         pass
@@ -28,12 +35,16 @@ class Stream(object):
 class InboundStream(Stream):
     STR_INPUT_TYPE = ['stream']
 
-    def __init__(self, name, input_, input_type, handlers):
-        super(InboundStream, self).__init__(name, input_, input_type, handlers)
+    def __init__(self, name, input_, input_type, handlers,
+                 zmq_context, broker_xpub, broker_xsub):
+        super(InboundStream, self).__init__(name, input_, input_type, handlers,
+                                            zmq_context, broker_xpub, broker_xsub)
 
 
 class OutboundStream(Stream):
     STR_INPUT_TYPE = ['plugin', 'stream']
 
-    def __init__(self, name, input_, input_type, handlers):
-        super(OutboundStream, self).__init__(name, input_, input_type, handlers)
+    def __init__(self, name, input_, input_type, handlers,
+                 zmq_context, broker_xpub, broker_xsub):
+        super(OutboundStream, self).__init__(name, input_, input_type, handlers,
+                                             zmq_context, broker_xpub, broker_xsub)
