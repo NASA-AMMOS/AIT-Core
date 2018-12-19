@@ -25,8 +25,9 @@ class Stream(object):
     def __repr__(self):
         return '<stream.%s name=%s>' % (self.__class__.__name__, self.name)
 
-    def publish(self, msg, topic):
-        self.pub.send("%d %d" % (topic, msg))
+    def publish(self, msg):
+        # msg topic is stream name
+        self.pub.send("%d %d" % (self.name, msg))
 
     def validate_workflow(self):
         pass
