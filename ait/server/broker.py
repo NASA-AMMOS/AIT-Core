@@ -23,11 +23,9 @@ class AitBroker:
 
     def start_broker(self):
         try:
-            # Socket facing clients
             frontend = self.context.socket(zmq.XSUB)
             frontend.bind(self.XSUB_URL)
 
-            # Socket facing services
             backend = self.context.socket(zmq.XPUB)
             backend.bind(self.XPUB_URL)
 
@@ -37,7 +35,6 @@ class AitBroker:
             log.error('ZeroMQ Error: %s' % e)
 
         finally:
-            # We never get here...
             frontend.close()
             backend.close()
             self.context.term()
@@ -57,22 +54,23 @@ class AitBroker:
                     try:
                         config_path = 'server.%s-streams[%d].stream' % (stream_type, index)
                         config = cfg.AitConfig(config=s).get('stream')
-                        strm = self.create_stream(config, config_path, stream_type=stream_type)
+                        strm = self.create_stream(config, config_path, stream_type)
                         if stream_type == 'inbound':
                             self.inbound_streams.append(strm)
                         elif stream_type == 'outbound':
                             self.outbound_streams.append(strm)
                         log.info('Added %s stream %s' % (stream_type, strm))
-                    except Exception as e:
-                        log.error(e)
+                    except Exception:
+                        exc_type, value, traceback = sys.exc_info()
+                        log.error('%s creating stream at %s: %s' % (exc_type, config_path, value))
 
-            if not self.inbound_streams:
-                msg  = 'No valid inbound telemetry stream configurations found.'
-                log.warn(msg + '  ' + error_msg[stream_type])
+        if not self.inbound_streams:
+            msg  = 'No valid inbound telemetry stream configurations found.'
+            log.warn(msg + '  ' + error_msg['inbound'])
 
-            if not self.outbound_streams:
-                msg  = 'No valid outbound telemetry stream configurations found.'
-                log.warn(msg + '  ' + error_msg[stream_type])
+        if not self.outbound_streams:
+            msg  = 'No valid outbound telemetry stream configurations found.'
+            log.warn(msg + '  ' + error_msg['outbound'])
 
     def create_stream(self, config, config_path, stream_type):
         """
@@ -98,15 +96,20 @@ class AitBroker:
         if name is None:
             msg = cfg.AitConfigMissing(config_path + '.name').args[0]
             raise ValueError(msg)
+        if name in [x.name for x in (self.outbound_streams +
+                                     self.inbound_streams +
+                                     self.plugins)]:
+            raise ValueError('Stream name already exists. Please rename.')
 
         stream_input = config.get('input', None)
+        # I think we are getting rid of this error
         if stream_input is None:
             msg = cfg.AitConfigMissing(config_path + '.input').args[0]
             raise ValueError(msg)
 
         # determine input type
         if stream_type == 'outbound':
-            # look for name in plugins, then streams
+            # look for name in plugins first, then streams
             if stream_input in self.plugins:
                 input_type = 'plugin'
             elif stream_input in self.streams:
@@ -114,7 +117,7 @@ class AitBroker:
 
         if stream_type == 'inbound':
             # check if input is port by attempting conversion to int;
-            # otherwise stream
+            # otherwise assume it is stream
             try:
                 stream_input = int(stream_input)
                 input_type = 'port'
@@ -133,32 +136,26 @@ class AitBroker:
     def subscribe_streams(self):
         for stream in (self.inbound_streams + self.outbound_streams):
             if stream.input_type == 'port':
-                port = stream.input_
                 # renaming Servers to Ports
-                if port not in self.ports:
-                    self.ports.append(port)
+                if stream.input_ not in self.ports:
+                    self.ports.append(stream.input_)
                 # subscribe to it
-                topicfilter = ""
-                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
+                stream.sub.setsockopt(zmq.SUBSCRIBE, str(stream.input_))
 
             elif stream.input_type == 'stream':
-                input_stream = stream.input_
                 # check if stream already created?
                 # if not, create it??
                 # subscribe to it
-                topicfilter = ""
-                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
+                stream.sub.setsockopt(zmq.SUBSCRIBE, stream.input_)
 
             elif stream.input_type == 'plugin':
-                plugin = stream.input_
                 # check if plugin registered with broker
-                # if not register it
+                # if not register it?
                 # subscribe to it
-                topicfilter = ""
-                stream.sub.setsockopt(zmq.SUBSCRIBE, topicfilter)
+                stream.sub.setsockopt(zmq.SUBSCRIBE, stream.input_)
 
     def subscribe(self, subscriber, publisher):
-        pass
+        subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
 
 
 # Create a singleton Broker accessible via ait.server.broker
