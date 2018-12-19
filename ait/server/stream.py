@@ -4,10 +4,9 @@ import zmq
 class Stream(object):
     STR_INPUT_TYPE = [ ]
 
-    def __init__(self, name, input_, input_type, handlers,
+    def __init__(self, name, input_, handlers,
                        zmq_context, broker_xpub, broker_xsub):
         self.name = name
-        self.input_type = input_type
         self.input_ = input_
         self.handlers = handlers
         self.context = zmq_context
@@ -16,8 +15,8 @@ class Stream(object):
         self.pub = self.context.socket(zmq.PUB)
         self.sub = self.context.socket(zmq.SUB)
         # connect to broker
-        self.sub.connect(broker_xpub)
-        self.pub.connect(broker_xsub)
+        self.sub.connect(broker_xpub.replace('*', 'localhost'))
+        self.pub.connect(broker_xsub.replace('*', 'localhost'))
 
     def _type(self):
         return self.__class__.__name__.split('Stream')[0].lower()
@@ -31,21 +30,3 @@ class Stream(object):
 
     def validate_workflow(self):
         pass
-
-
-class InboundStream(Stream):
-    STR_INPUT_TYPE = ['stream']
-
-    def __init__(self, name, input_, input_type, handlers,
-                 zmq_context, broker_xpub, broker_xsub):
-        super(InboundStream, self).__init__(name, input_, input_type, handlers,
-                                            zmq_context, broker_xpub, broker_xsub)
-
-
-class OutboundStream(Stream):
-    STR_INPUT_TYPE = ['plugin', 'stream']
-
-    def __init__(self, name, input_, input_type, handlers,
-                 zmq_context, broker_xpub, broker_xsub):
-        super(OutboundStream, self).__init__(name, input_, input_type, handlers,
-                                             zmq_context, broker_xpub, broker_xsub)
