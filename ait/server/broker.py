@@ -1,13 +1,12 @@
 import sys
 import zmq
 import ait.core
+import ait.server
 from ait.core import cfg, log
 from stream import Stream
 
 
 class AitBroker:
-    XSUB_URL = "tcp://*:5559"
-    XPUB_URL = "tcp://*:5560"
 
     def __init__(self):
         self.inbound_streams = [ ]
@@ -22,6 +21,10 @@ class AitBroker:
         self.start_broker()
 
     def start_broker(self):
+        self.XSUB_URL = ait.config.get('server.xsub',
+                                        ait.server.DEFAULT_XSUB_URL)
+        self.XPUB_URL = ait.config.get('server.xpub',
+                                        ait.server.DEFAULT_XPUB_URL)
         try:
             frontend = self.context.socket(zmq.XSUB)
             frontend.bind(self.XSUB_URL)
@@ -29,6 +32,7 @@ class AitBroker:
             backend = self.context.socket(zmq.XPUB)
             backend.bind(self.XPUB_URL)
 
+            log.info('Starting up broker...')
             zmq.proxy(frontend, backend)
 
         except Exception as e:
