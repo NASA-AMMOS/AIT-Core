@@ -128,7 +128,10 @@ default:
                 name: sle_data_stream_ccsds
                 input: sle_data_stream
                 handlers:
-                    - ccsds-packet-handler
+                    - ccsds-packet-handler:
+                        input_type: int
+                        output_type: int
+                    - second-handler
 
             - stream:
                 name: sle_data_stream_parallel

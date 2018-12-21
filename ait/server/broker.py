@@ -4,6 +4,7 @@ import ait.core
 import ait.server
 from ait.core import cfg, log
 from stream import Stream
+import handler
 
 
 class AitBroker:
@@ -15,16 +16,16 @@ class AitBroker:
         self.plugins = [ ]
 
         self.context = zmq.Context()
+        self.XSUB_URL = ait.config.get('server.xsub',
+                                        ait.server.DEFAULT_XSUB_URL)
+        self.XPUB_URL = ait.config.get('server.xpub',
+                                        ait.server.DEFAULT_XPUB_URL)
 
         self.load_streams()
         self.subscribe_streams()
         self.start_broker()
 
     def start_broker(self):
-        self.XSUB_URL = ait.config.get('server.xsub',
-                                        ait.server.DEFAULT_XSUB_URL)
-        self.XPUB_URL = ait.config.get('server.xpub',
-                                        ait.server.DEFAULT_XPUB_URL)
         try:
             frontend = self.context.socket(zmq.XSUB)
             frontend.bind(self.XSUB_URL)
@@ -86,7 +87,7 @@ class AitBroker:
             config_path:  string path to stream's yaml config
             stream_type:  either 'inbound' or 'outbound'
         Returns:
-            stream:       either an OutboundStream() or an InboundStream()
+            stream:       a Stream
         Raises:
             ValueError:   if any of the required config values are missing
         """
@@ -111,10 +112,41 @@ class AitBroker:
             msg = cfg.AitConfigMissing(config_path + '.input').args[0]
             raise ValueError(msg)
 
-        handlers = config.get('handlers', None)
+        handlers = [ ]
+        handler_list = config.get('handlers', None)
+        for handler_ in handler_list:
+            handlers.append(self.create_handler(handler_, config_path))
 
         return Stream(name, stream_input, handlers,
                       self.context, self.XPUB_URL, self.XSUB_URL)
+
+    def create_handler(self, handler_, config_path):
+        """
+        Creates a handler from its config.
+
+        Params:
+            handler_:
+            config:      stream config
+            config_path: config path of stream
+        """
+        # check if input/output types specified
+        if type(handler_) == str:
+            handler_name = handler_
+            input_type, output_type = None, None
+        else:
+            handler_name = handler_.keys()[0]
+            input_type = handler_[handler_name]['input_type']
+            output_type = handler_[handler_name]['output_type']
+
+        # try to create handler
+        class_name = handler_name.title().replace('-', '')
+        try:
+            handler_class = getattr(handler, class_name)
+            instance = handler_class(handler_name, input_type, output_type)
+        except AttributeError as e:
+            raise(e)
+
+        return instance
 
     def subscribe_streams(self):
         for stream in (self.inbound_streams + self.outbound_streams):
