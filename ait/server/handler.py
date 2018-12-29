@@ -10,15 +10,22 @@ class Handler(object):
 
     def validate_input(self, input_):
         if self.input_type:
-            return type(input_) == self.input_type
+            try:
+                converted = eval("%s(%s)" % (self.input_type, input_))
+            except Exception as e:
+                raise(e)
 
-        return True
+            return converted
+
+        return input_
 
     def execute_handler(self, input_):
-        if not self.validate_input(input_):
-            raise ValueError('Input is not of valid type.')
+        try:
+            checked_input = self.validate_input(input_)
+        except Exception as e:
+            raise ValueError('Input is not of valid type: ', e)
 
-        return self.handle(input_)
+        return self.handle(checked_input)
 
     def handle(self, input_):
         raise NotImplementedError((
