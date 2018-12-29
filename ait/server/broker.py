@@ -1,5 +1,6 @@
 import sys
 import zmq
+from threading import Thread
 import ait.core
 import ait.server
 from ait.core import cfg, log
@@ -23,7 +24,10 @@ class AitBroker:
 
         self.load_streams()
         self.subscribe_streams()
-        self.start_broker()
+
+        thread = Thread(target=self.start_broker, args=())
+        thread.daemon = True
+        thread.start()
 
     def start_broker(self):
         try:
@@ -156,6 +160,24 @@ class AitBroker:
         subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
         log.info('Subscribed %s to topic %s' % (subscriber, publisher))
 
+    def get_stream(self, name):
+        return next(strm
+                    for strm in self.inbound_streams + self.outbound_streams
+                    if strm.name == name)
+
 
 # Create a singleton Broker accessible via ait.server.broker
 sys.modules['ait'].broker = AitBroker()
+
+
+def main():
+    import time
+    sle_stream = ait.broker.get_stream('sle_data_stream')
+    log.info('Got stream.')
+    while True:
+        sle_stream.publish(str(4))
+        time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
