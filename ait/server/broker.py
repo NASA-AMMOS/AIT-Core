@@ -8,7 +8,7 @@ from stream import Stream
 import handler
 
 
-class AitBroker:
+class AitBroker(object):
 
     def __init__(self):
         self.inbound_streams = [ ]
@@ -50,15 +50,18 @@ class AitBroker:
             self.context.term()
 
     def load_streams(self):
-        error_msg = {'inbound': 'No telemetry will be received (or displayed).',
-                     'outbound': 'No telemetry will be published.'}
+        common_err_msg = 'No valid %s telemetry stream configurations found. '
+        specific_err_msg = {'inbound': 'No telemetry will be received (or displayed).',
+                            'outbound': 'No telemetry will be published.'}
+        err_msgs = {}
 
         for stream_type in ['inbound', 'outbound']:
+            err_msgs[stream_type] = common_err_msg % stream_type + specific_err_msg[stream_type]
             streams = ait.config.get('server.%s-streams' % stream_type)
 
             if streams is None:
                 msg = cfg.AitConfigMissing('server.%s-streams' % stream_type).args[0]
-                log.error(msg + '  ' + error_msg[stream_type])
+                log.error(msg + '  ' + err_msgs[stream_type])
             else:
                 for index, s in enumerate(streams):
                     try:
@@ -75,12 +78,10 @@ class AitBroker:
                         log.error('%s creating stream at %s: %s' % (exc_type, config_path, value))
 
         if not self.inbound_streams:
-            msg  = 'No valid inbound telemetry stream configurations found.'
-            log.warn(msg + '  ' + error_msg['inbound'])
+            log.warn(err_msgs['inbound'])
 
         if not self.outbound_streams:
-            msg  = 'No valid outbound telemetry stream configurations found.'
-            log.warn(msg + '  ' + error_msg['outbound'])
+            log.warn(err_msgs['outbound'])
 
     def create_stream(self, config, config_path, stream_type):
         """
@@ -118,8 +119,9 @@ class AitBroker:
 
         handlers = [ ]
         handler_list = config.get('handlers', None)
-        for handler_ in handler_list:
-            handlers.append(self.create_handler(handler_, config_path))
+        if handler_list:
+            for handler_ in handler_list:
+                handlers.append(self.create_handler(handler_, config_path))
 
         return Stream(name, stream_input, handlers,
                       self.context, self.XPUB_URL, self.XSUB_URL)
@@ -172,6 +174,8 @@ sys.modules['ait'].broker = AitBroker()
 
 def main():
     import time
+    print(ait.config.get('server.inbound-streams'))
+    print(ait.config.get('server.outbound-streams'))
     sle_stream = ait.broker.get_stream('sle_data_stream')
     log.info('Got stream.')
     while True:

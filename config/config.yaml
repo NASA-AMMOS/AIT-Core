@@ -132,9 +132,10 @@ default:
                         input_type: int
                         output_type: int
 
+        outbound-streams:
             - stream:
                 name: sle_data_stream_parallel
-                input: 
+                input: sle_data_stream_ccsds
                 handlers:
                     - parallel-handler
                     - another-handler
