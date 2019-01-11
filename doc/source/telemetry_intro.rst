@@ -200,6 +200,20 @@ history (optional):
            - VX1
            - VX2
 
+derivations (optional):
+    A **list** of *!Derivation* definitions that this packet contains. Derived telemetry values are telemetry points derived from other telemetry values. They're handled similarly to *!Field* definitions except they require an **equation** attribute so their value can be calculated. Derived telemetry values are accessed the same way as normal field definitions.
+
+    .. code-block:: yaml
+
+        functions:
+           Difference(x,y):  x - y
+
+        derivations:
+           - !Derivation
+              name: Volt_Diff
+              desc: Difference between Voltage_A and Voltage_B
+              equation: Difference(Voltage_A, Voltage_B)
+              units: Volts
 ----
 
 !Field
@@ -210,6 +224,9 @@ name:
 
 type:
     A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``ait.dtype.PrimitiveTypes``. Arrays of types are also supported, e.g. ``MSB_U16[32]``.  You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
+
+units (optional):
+    a **string** specifying the units of the derived field's value.
 
 desc (optional):
     A **string** for providing a description of the field.
@@ -243,10 +260,39 @@ when (optional):
        when: HKMux1 == 0
 
     A **when** expression can be set at a **!Field** block level or at a **dntoeu** level as shown in the *RT2* field example above.
-    
+
     If specified at the **!Field** block level the **when** expression determines when the entire **!Field**'s value is valid. If the **when** expression is true, the Field will have a value, otherwise the field will not have any value.
-    
+
     If specified at the **dntoeu** level the when expression determines when the DN-to-EU will be run for the field value. If the **when** expression is true, the field's DN-to-EU will be run, otherwise the field will only have a raw value associated with it.
+
+
+----
+
+!Derivation
+-----------
+
+name:
+    A **string** denoting the name of this field in the packet.
+
+equation:
+    A function defining the value of the derived field.
+
+units (optional):
+    a **string** specifying the units of the derived field's value.
+
+desc (optional):
+    A **string** for providing a description of the field.
+
+enum (optional):
+    A **dict** of key, value pairs listing the enumeration of values for the field. The **key** matches with the value in the field. The **value** is a **string** describing what the value in the enumeration represents.
+
+when (optional):
+    An expression defining when a !Derivation's value is valid.
+
+    .. code-block:: yaml
+
+       when: HKMux1 == 0
+
 
 ----
 
