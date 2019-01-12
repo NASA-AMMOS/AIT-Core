@@ -23,7 +23,8 @@ class AitBroker(object):
                                         ait.server.DEFAULT_XPUB_URL)
 
         self.load_streams()
-        self.subscribe_streams()
+        self.load_plugins()
+        self.subscribe_all()
 
         thread = Thread(target=self.start_broker, args=())
         thread.daemon = True
@@ -154,9 +155,13 @@ class AitBroker(object):
 
         return instance
 
-    def subscribe_streams(self):
+    def subscribe_all(self):
         for stream in (self.inbound_streams + self.outbound_streams):
             self.subscribe(stream, stream.input_)
+
+        for plugin in self.plugins:
+            for input_ in plugin.inputs:
+                self.subscribe(plugin, input_)
 
     def subscribe(self, subscriber, publisher):
         subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
@@ -167,6 +172,30 @@ class AitBroker(object):
                     for strm in self.inbound_streams + self.outbound_streams
                     if strm.name == name)
 
+    def load_plugins(self):
+        plugins = ait.config.get('server.plugins')
+
+        if plugins is None:
+            log.warn(cfg.AitConfigMissing('server.plugins').args[0])
+        else:
+            for index, p in enumerate(plugins):
+                try:
+                    config_path = 'server.plugins[%d]' % (index)
+                    # TO DO - fix this
+                    # config = cfg.AitConfig(config=p).get('stream')
+                    plugin = self.create_plugin(config, config_path)
+                    self.plugins.append(plugin)
+                    log.info('Added plugin %s' % (plugin))
+                except Exception:
+                    exc_type, value, traceback = sys.exc_info()
+                    log.error('%s creating plugin at %s: %s' % (exc_type, config_path, value))
+
+        if not self.plugins:
+            log.warn('No valid plugin configurations found. No plugins will be added.')
+
+    def create_plugin(self, config, config_path):
+        pass
+
 
 # Create a singleton Broker accessible via ait.server.broker
 sys.modules['ait'].broker = AitBroker()
@@ -174,8 +203,8 @@ sys.modules['ait'].broker = AitBroker()
 
 def main():
     import time
-    print(ait.config.get('server.inbound-streams'))
-    print(ait.config.get('server.outbound-streams'))
+    # print(ait.config.get('server.inbound-streams'))
+    # print(ait.config.get('server.outbound-streams'))
     sle_stream = ait.broker.get_stream('sle_data_stream')
     log.info('Got stream.')
     while True:
