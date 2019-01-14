@@ -3,10 +3,19 @@ from .client import Client
 
 class Plugin(Client):
 
-    def __init__(self, name, inputs, zmq_context,
-                 broker_xpub, broker_xsub):
+    def __init__(self, name, inputs):
         self.name = name
         self.inputs = inputs
 
-        super(Plugin, self).__init__(zmq_context, broker_xpub, broker_xsub)
+        self.start_greenlet()
 
+        super(Plugin, self).__init__()
+
+    def start_greenlet(self):
+        pass
+
+
+class ExamplePlugin(Plugin):
+
+    def __init__(self, name, inputs, **kwargs):
+        super(ExamplePlugin, self).__init__(name, inputs)

@@ -124,8 +124,7 @@ class AitBroker(object):
             for handler_ in handler_list:
                 handlers.append(self.create_handler(handler_, config_path))
 
-        return Stream(name, stream_input, handlers,
-                      self.context, self.XPUB_URL, self.XSUB_URL)
+        return Stream(name, stream_input, handlers)
 
     def create_handler(self, handler_, config_path):
         """

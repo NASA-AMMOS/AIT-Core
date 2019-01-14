@@ -1,19 +1,20 @@
 import zmq
+import ait
 from ait.core import log
 from threading import Thread
 
 
 class Client(object):
 
-    def __init__(self, zmq_context, broker_xpub, broker_xsub):
-        self.context = zmq_context
+    def __init__(self):
+        self.context = ait.broker.context
 
         # open PUB and SUB socket
         self.pub = self.context.socket(zmq.PUB)
         self.sub = self.context.socket(zmq.SUB)
         # connect to broker
-        self.sub.connect(broker_xpub.replace('*', 'localhost'))
-        self.pub.connect(broker_xsub.replace('*', 'localhost'))
+        self.sub.connect(ait.broker.XPUB_URL.replace('*', 'localhost'))
+        self.pub.connect(ait.broker.XSUB_URL.replace('*', 'localhost'))
 
         # start receiving messages
         thread = Thread(target=self.recv, args=())

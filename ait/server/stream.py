@@ -4,8 +4,7 @@ from .client import Client
 
 class Stream(Client):
 
-    def __init__(self, name, input_, handlers,
-                       zmq_context, broker_xpub, broker_xsub):
+    def __init__(self, name, input_, handlers):
         self.name = name
         self.input_ = input_
         self.handlers = handlers
@@ -14,7 +13,7 @@ class Stream(Client):
             raise ValueError('Sequential workflow inputs and outputs ' +
                              'are not compatible. Workflow is invalid.')
 
-        super(Stream, self).__init__(zmq_context, broker_xpub, broker_xsub)
+        super(Stream, self).__init__()
 
     def _type(self):
         if self in ait.broker.inbound_streams:
