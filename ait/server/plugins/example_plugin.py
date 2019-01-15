@@ -3,11 +3,11 @@ from ait.server.plugin import Plugin
 
 class ExamplePlugin(Plugin):
 
-    def __init__(self, name, inputs, **kwargs):
-        super(ExamplePlugin, self).__init__(name, inputs)
+    def __init__(self, name, **kwargs):
+        super(ExamplePlugin, self).__init__(name, **kwargs)
 
-        # do something with kwargs
+        # do something here if desired
 
-    def execute(self):
+    def process(self):
         # implement here
         pass

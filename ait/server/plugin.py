@@ -1,27 +1,21 @@
-from .client import Client
-import gevent
+from client import Client
 
 
 class Plugin(Client):
 
-    def __init__(self, name, inputs):
-        self.name = name
-        self.inputs = inputs
-
-        self.start_greenlet()
-
+    def __init__(self, name, **kwargs):
         super(Plugin, self).__init__()
+
+        self.name = name
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def __repr__(self):
         return '<Plugin name=%s>' % (self.name)
 
-    def start_greenlet(self):
-        telem_handler = gevent.util.wrap_errors(KeyboardInterrupt, self.execute())
-        # s below was a session - should be something different now
-        Greenlets.append(gevent.spawn(telem_handler, s))
-
-    def execute(self):
+    def process(self, input_data, topic=None):
         raise NotImplementedError((
-            'This execute method must be implemented by a custom plugin class ' +
+            'This process method must be implemented by a custom plugin class ' +
             'that inherits from this abstract plugin. This abstract Plugin ' +
-            'class should not be instantiated.'))
+            'class should not be instantiated. This process method will be '
+            'called whenever a message is received by the plugin.'))

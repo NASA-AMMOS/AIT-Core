@@ -26,10 +26,10 @@ class Stream(Client):
     def __repr__(self):
         return '<Stream name=%s>' % (self.name)
 
-    def process(self, input_):
+    def process(self, input_data, topic=None):
         for handler in self.handlers:
-            output = handler.execute_handler(input_)
-            input_ = output
+            output = handler.execute_handler(input_data)
+            input_data = output
 
     def valid_workflow(self):
         """
