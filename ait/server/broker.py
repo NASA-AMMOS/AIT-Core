@@ -1,11 +1,11 @@
 import sys
 import zmq
 from threading import Thread
+import importlib
 import ait.core
 import ait.server
 from ait.core import cfg, log
 from stream import Stream
-import handlers
 
 
 class AitBroker(object):
@@ -118,13 +118,18 @@ class AitBroker(object):
             msg = cfg.AitConfigMissing(config_path + '.input').args[0]
             raise ValueError(msg)
 
-        handlers = [ ]
-        handler_list = config.get('handlers', None)
-        if handler_list:
-            for handler_ in handler_list:
-                handlers.append(self.create_handler(handler_, config_path))
+        stream_handlers = [ ]
+        handler_cfg_list = config.get('handlers', None)
+        if handler_cfg_list:
+            for handler_ in handler_cfg_list:
+                stream_handlers.append(self.create_handler(handler_, config_path))
 
-        return Stream(name, stream_input, handlers)
+        return Stream(name,
+                      stream_input,
+                      stream_handlers,
+                      zmq_args={'context': self.context,
+                                'XSUB_URL': self.XSUB_URL,
+                                'XPUB_URL': self.XPUB_URL})
 
     def create_handler(self, config, config_path):
         """
@@ -146,9 +151,10 @@ class AitBroker(object):
         # try to create handler
         class_name = handler_name.title().replace('-', '')
         try:
-            handler_class = getattr(handlers, class_name)
-            instance = handler_class(handler_name, input_type, output_type)
-        except AttributeError as e:
+            module = importlib.import_module('handlers.%s' % handler_name)
+            handler_class = getattr(module, class_name)
+            instance = handler_class(input_type, output_type)
+        except Exception as e:
             raise(e)
 
         return instance

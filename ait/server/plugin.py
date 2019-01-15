@@ -1,14 +1,19 @@
 from client import Client
+import ait
 
 
 class Plugin(Client):
 
-    def __init__(self, name, **kwargs):
-        super(Plugin, self).__init__()
-
+    def __init__(self, name, zmq_args=None, **kwargs):
+        if zmq_args is None:
+            zmq_args = {'context': ait.broker.context,
+                        'XSUB_URL': ait.broker.XSUB_URL,
+                        'XPUB_URL': ait.broker.XPUB_URL}
         self.name = name
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+        super(Plugin, self).__init__(zmq_args)
 
     def __repr__(self):
         return '<Plugin name=%s>' % (self.name)
