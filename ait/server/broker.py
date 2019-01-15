@@ -5,7 +5,7 @@ import ait.core
 import ait.server
 from ait.core import cfg, log
 from stream import Stream
-import handler
+import handlers
 
 
 class AitBroker(object):
@@ -126,28 +126,27 @@ class AitBroker(object):
 
         return Stream(name, stream_input, handlers)
 
-    def create_handler(self, handler_, config_path):
+    def create_handler(self, config, config_path):
         """
         Creates a handler from its config.
 
         Params:
-            handler_:
-            config:      stream config
+            config:      handler config
             config_path: config path of stream
         """
         # check if input/output types specified
-        if type(handler_) == str:
-            handler_name = handler_
+        if type(config) == str:
+            handler_name = config
             input_type, output_type = None, None
         else:
-            handler_name = handler_.keys()[0]
-            input_type = handler_[handler_name]['input_type']
-            output_type = handler_[handler_name]['output_type']
+            handler_name = config.keys()[0]
+            input_type = config[handler_name]['input_type']
+            output_type = config[handler_name]['output_type']
 
         # try to create handler
         class_name = handler_name.title().replace('-', '')
         try:
-            handler_class = getattr(handler, class_name)
+            handler_class = getattr(handlers, class_name)
             instance = handler_class(handler_name, input_type, output_type)
         except AttributeError as e:
             raise(e)
@@ -167,9 +166,10 @@ class AitBroker(object):
         log.info('Subscribed %s to topic %s' % (subscriber, publisher))
 
     def get_stream(self, name):
-        return next(strm
-                    for strm in self.inbound_streams + self.outbound_streams
-                    if strm.name == name)
+        return next((strm
+                     for strm in (self.inbound_streams + self.outbound_streams)
+                     if strm.name == name),
+                     None)
 
     def load_plugins(self):
         plugins = ait.config.get('server.plugins')
@@ -205,7 +205,10 @@ def main():
     # print(ait.config.get('server.inbound-streams'))
     # print(ait.config.get('server.outbound-streams'))
     sle_stream = ait.broker.get_stream('sle_data_stream')
-    log.info('Got stream.')
+    if sle_stream:
+        log.info('Got stream.')
+    else:
+        raise(Exception('Couldn\'t find stream'))
     while True:
         sle_stream.publish(str(4))
         time.sleep(1)

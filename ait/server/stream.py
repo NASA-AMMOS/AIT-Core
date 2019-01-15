@@ -1,5 +1,5 @@
-import ait
-from .client import Client
+import ait.server.broker
+from client import Client
 
 
 class Stream(Client):

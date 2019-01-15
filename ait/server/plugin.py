@@ -1,4 +1,5 @@
 from .client import Client
+import gevent
 
 
 class Plugin(Client):
@@ -11,11 +12,16 @@ class Plugin(Client):
 
         super(Plugin, self).__init__()
 
+    def __repr__(self):
+        return '<Plugin name=%s>' % (self.name)
+
     def start_greenlet(self):
-        pass
+        telem_handler = gevent.util.wrap_errors(KeyboardInterrupt, self.execute())
+        # s below was a session - should be something different now
+        Greenlets.append(gevent.spawn(telem_handler, s))
 
-
-class ExamplePlugin(Plugin):
-
-    def __init__(self, name, inputs, **kwargs):
-        super(ExamplePlugin, self).__init__(name, inputs)
+    def execute(self):
+        raise NotImplementedError((
+            'This execute method must be implemented by a custom plugin class ' +
+            'that inherits from this abstract plugin. This abstract Plugin ' +
+            'class should not be instantiated.'))
