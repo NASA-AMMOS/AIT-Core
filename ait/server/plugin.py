@@ -4,12 +4,15 @@ import ait
 
 class Plugin(Client):
 
-    def __init__(self, name, zmq_args=None, **kwargs):
+    def __init__(self, inputs, zmq_args=None, **kwargs):
         if zmq_args is None:
             zmq_args = {'context': ait.broker.context,
                         'XSUB_URL': ait.broker.XSUB_URL,
                         'XPUB_URL': ait.broker.XPUB_URL}
-        self.name = name
+
+        self.type = 'Plugin'
+        self.name = type(self).__name__
+        self.inputs = inputs
         for key, value in kwargs.items():
             setattr(self, key, value)
 

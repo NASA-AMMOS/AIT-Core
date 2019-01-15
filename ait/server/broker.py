@@ -1,7 +1,7 @@
 import sys
 import zmq
 from threading import Thread
-import importlib
+from importlib import import_module
 import ait.core
 import ait.server
 from ait.core import cfg, log
@@ -151,7 +151,7 @@ class AitBroker(object):
         # try to create handler
         class_name = handler_name.title().replace('-', '')
         try:
-            module = importlib.import_module('handlers.%s' % handler_name)
+            module = import_module('handlers.%s' % handler_name)
             handler_class = getattr(module, class_name)
             instance = handler_class(input_type, output_type)
         except Exception as e:
@@ -186,8 +186,7 @@ class AitBroker(object):
             for index, p in enumerate(plugins):
                 try:
                     config_path = 'server.plugins[%d]' % (index)
-                    # TO DO - fix this
-                    # config = cfg.AitConfig(config=p).get('stream')
+                    config = cfg.AitConfig(config=p).get('plugin')
                     plugin = self.create_plugin(config, config_path)
                     self.plugins.append(plugin)
                     log.info('Added plugin %s' % (plugin))
@@ -199,7 +198,49 @@ class AitBroker(object):
             log.warn('No valid plugin configurations found. No plugins will be added.')
 
     def create_plugin(self, config, config_path):
-        pass
+        """
+        Creates a plugin from its config.
+
+        Params:
+            config:       plugin configuration as read by ait.config
+            config_path:  string path to plugin's yaml config
+        Returns:
+            plugin:       a Plugin
+        Raises:
+            ValueError:   if any of the required config values are missing
+        """
+        if config is None:
+            msg = cfg.AitConfigMissing(config_path).args[0]
+            raise ValueError(msg)
+
+        name = config.get('name', None)
+        if name is None:
+            msg = cfg.AitConfigMissing(config_path + '.name').args[0]
+            raise ValueError(msg)
+        if name in [x.name for x in (self.outbound_streams +
+                                     self.inbound_streams +
+                                     self.plugins)]:
+            raise ValueError('Plugin name already exists. Please rename.')
+
+        plugin_inputs = config.get('inputs', None)
+        if plugin_inputs is None:
+            msg = cfg.AitConfigMissing(config_path + '.inputs').args[0]
+            log.warn(msg)
+            plugin_inputs = [ ]
+
+        # try to create plugin
+        class_name = name.title().replace('-', '')
+        try:
+            module = import_module('plugins.%s' % name)
+            plugin_class = getattr(module, class_name)
+            instance = plugin_class(plugin_inputs,
+                                    zmq_args={'context': self.context,
+                                              'XSUB_URL': self.XSUB_URL,
+                                              'XPUB_URL': self.XPUB_URL})
+        except Exception as e:
+            raise(e)
+
+        return instance
 
 
 # Create a singleton Broker accessible via ait.server.broker
