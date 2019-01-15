@@ -20,13 +20,17 @@ class Stream(Client):
 
         super(Stream, self).__init__(zmq_args)
 
-    def _type(self):
-        if self in ait.broker.inbound_streams:
-            return 'inbound'
-        elif self in ait.broker.outbound_streams:
-            return 'outbound'
-        else:
-            raise(Exception('Stream %s not registered with broker.' % self.name))
+    @property
+    def type(self):
+        try:
+            if self in ait.broker.inbound_streams:
+                return 'Inbound Stream'
+            elif self in ait.broker.outbound_streams:
+                return 'Outbound Stream'
+            else:
+                raise(Exception('Stream %s not registered with broker.' % self.name))
+        except AttributeError:
+            return 'Stream'
 
     def __repr__(self):
         return '<Stream name=%s>' % (self.name)

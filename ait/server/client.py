@@ -28,17 +28,17 @@ class Client(object):
     def recv(self):
         try:
             log.info('%s %s open to recieving messages'
-                      % (type(self).__name__, self.name))
+                      % (self.type, self.name))
             while True:
                 string = self.sub.recv()
                 topic, messagedata = string.split()
                 log.info('%s %s recieved message \"%s\" from %s'
-                         % (type(self).__name__, self.name, messagedata, topic))
+                         % (self.type, self.name, messagedata, topic))
                 self.process(messagedata, topic=topic)
 
         except Exception as e:
             log.error('Exception raised in %s %s while receiving messages: %s'
-                        % (type(self).__name__, self.name, e))
+                        % (self.type, self.name, e))
             raise(e)
 
     def publish(self, msg):
@@ -47,7 +47,7 @@ class Client(object):
         """
         self.pub.send("%s %s" % (self.name, msg))
         log.info('Published message %s from %s %s'
-                   % (msg, type(self).__name__, self.name))
+                   % (msg, self.type, self.name))
 
     def process(self, input_data, topic=None):
         """ Called whenever a message is received """

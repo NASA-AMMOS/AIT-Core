@@ -113,7 +113,10 @@ default:
 
     server:
         plugins:
-            - ait-gui
+            - plugin:
+                name: ait-gui-plugin
+                inputs:
+                    - sle_data_stream
             - ait-datastore-writer
             - openmct-bridge
 
