@@ -30,7 +30,7 @@ class Client(object):
                 topic, messagedata = string.split()
                 log.info('%s %s recieved message \"%s\" from %s'
                          % (type(self).__name__, self.name, messagedata, topic))
-                self.process(messagedata)
+                self.process(messagedata, topic=topic)
 
         except Exception as e:
             log.error('Exception raised in %s %s while receiving messages: %s'
@@ -44,3 +44,8 @@ class Client(object):
         self.pub.send("%s %s" % (self.name, msg))
         log.info('Published message %s from %s %s'
                    % (msg, type(self).__name__, self.name))
+
+    def process(self, input_data, topic=None):
+        """ Called whenever a message is received """
+        raise(NotImplementedError('This method must be implemented in all '
+                                  'subclasses of Client.'))
