@@ -6,15 +6,19 @@ from threading import Thread
 
 class Client(object):
 
-    def __init__(self):
-        self.context = ait.broker.context
+    def __init__(self, zmq_args=None):
+        if zmq_args is None:
+            zmq_args = {'context': ait.broker.context,
+                        'XSUB_URL': ait.broker.XSUB_URL,
+                        'XPUB_URL': ait.broker.XPUB_URL}
 
+        self.context = zmq_args['context']
         # open PUB and SUB socket
         self.pub = self.context.socket(zmq.PUB)
         self.sub = self.context.socket(zmq.SUB)
         # connect to broker
-        self.sub.connect(ait.broker.XPUB_URL.replace('*', 'localhost'))
-        self.pub.connect(ait.broker.XSUB_URL.replace('*', 'localhost'))
+        self.sub.connect(zmq_args['XPUB_URL'].replace('*', 'localhost'))
+        self.pub.connect(zmq_args['XSUB_URL'].replace('*', 'localhost'))
 
         # start receiving messages
         thread = Thread(target=self.recv, args=())

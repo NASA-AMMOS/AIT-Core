@@ -1,7 +1,6 @@
 class Handler(object):
 
-    def __init__(self, name, input_type=None, output_type=None):
-        self.name = name
+    def __init__(self, input_type=None, output_type=None):
         self.input_type = input_type
         self.output_type = output_type
 
