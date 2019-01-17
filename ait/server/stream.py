@@ -1,4 +1,5 @@
 import ait
+from ait.core import log
 from client import Client
 
 
@@ -28,8 +29,9 @@ class Stream(Client):
             elif self in ait.broker.outbound_streams:
                 return 'Outbound Stream'
             else:
-                raise(Exception('Stream %s not registered with broker.' % self.name))
-        except AttributeError:
+                log.warn('Stream %s not registered with broker.' % self.name)
+                raise(Exception)
+        except Exception:
             return 'Stream'
 
     def __repr__(self):

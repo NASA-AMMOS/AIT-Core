@@ -1,3 +1,6 @@
+import __builtin__
+
+
 class Handler(object):
 
     def __init__(self, input_type=None, output_type=None):
@@ -5,12 +8,17 @@ class Handler(object):
         self.output_type = output_type
 
     def __repr__(self):
-        return '<handler.%s' % (self.__class__.__name__)
+        return '<handler.%s>' % (self.__class__.__name__)
 
     def validate_input(self, input_data):
+        """ Attempts to convert input_data to input_type, if specified.
+        If no input_type specified, returns input_data.
+        If conversion fails, raises Exception.
+        If conversion successful, returns converted data. """
         if self.input_type:
             try:
-                converted = eval("%s(%s)" % (self.input_type, input_data))
+                converted = getattr(__builtin__,
+                                    self.input_type.decode())(input_data)
             except Exception as e:
                 raise(e)
 
@@ -22,7 +30,7 @@ class Handler(object):
         try:
             checked_input = self.validate_input(input_data)
         except Exception as e:
-            raise ValueError('Input is not of valid type: ', e)
+            raise(ValueError('Input is not of valid type: ', e))
 
         return self.handle(checked_input)
 
