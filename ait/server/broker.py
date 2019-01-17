@@ -119,10 +119,18 @@ class AitBroker(object):
             raise ValueError(msg)
 
         stream_handlers = [ ]
-        handler_cfg_list = config.get('handlers', None)
+        handler_cfg_list = cfg.AitConfig(config=config).get('handlers')
         if handler_cfg_list:
-            for handler_ in handler_cfg_list:
-                stream_handlers.append(self.create_handler(handler_, config_path))
+            for handler in handler_cfg_list:
+                try:
+                    hndlr = self.create_handler(handler,
+                                                config_path + '.handlers')
+                except Exception as e:
+                    raise(e)
+
+                stream_handlers.append(hndlr)
+                log.info('Created handler %s for stream %s'
+                         % (type(hndlr).__name__, name))
 
         return Stream(name,
                       stream_input,
@@ -139,6 +147,11 @@ class AitBroker(object):
             config:      handler config
             config_path: config path of stream
         """
+        print(config)
+        if config is None:
+            msg = cfg.AitConfigMissing(config_path).args[0]
+            raise ValueError(msg)
+
         # check if input/output types specified
         if type(config) == str:
             handler_name = config
@@ -149,9 +162,9 @@ class AitBroker(object):
             output_type = config[handler_name]['output_type']
 
         # try to create handler
-        class_name = handler_name.title().replace('-', '')
+        class_name = handler_name.title().replace('_', '')
         try:
-            module = import_module('handlers.%s' % handler_name)
+            module = import_module('ait.server.handlers.%s' % handler_name)
             handler_class = getattr(module, class_name)
             instance = handler_class(input_type, output_type)
         except Exception as e:
@@ -217,9 +230,11 @@ class AitBroker(object):
         if name is None:
             msg = cfg.AitConfigMissing(config_path + '.name').args[0]
             raise ValueError(msg)
-        if name in [x.name for x in (self.outbound_streams +
-                                     self.inbound_streams +
-                                     self.plugins)]:
+
+        class_name = name.title().replace('_', '')
+        if class_name in [x.name for x in (self.outbound_streams +
+                                           self.inbound_streams +
+                                           self.plugins)]:
             raise ValueError('Plugin name already exists. Please rename.')
 
         plugin_inputs = config.get('inputs', None)
@@ -229,9 +244,8 @@ class AitBroker(object):
             plugin_inputs = [ ]
 
         # try to create plugin
-        class_name = name.title().replace('-', '')
         try:
-            module = import_module('plugins.%s' % name)
+            module = import_module('ait.server.plugins.%s' % name)
             plugin_class = getattr(module, class_name)
             instance = plugin_class(plugin_inputs,
                                     zmq_args={'context': self.context,

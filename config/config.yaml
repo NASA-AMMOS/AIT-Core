@@ -114,24 +114,25 @@ default:
     server:
         plugins:
             - plugin:
-                name: ait-gui-plugin
+                name: ait_gui_plugin
                 inputs:
                     - sle_data_stream
-            - ait-datastore-writer
-            - openmct-bridge
+            - plugin:
+            - plugin:
+                name: openmct-bridge
 
         inbound-streams:
             - stream:
                 name: sle_data_stream
                 input: 3078
                 handlers:
-                    - tm-trans-frame-decode-handler
+                    - tm_trans_frame_decode_handler
 
             - stream:
                 name: sle_data_stream_ccsds
                 input: sle_data_stream
                 handlers:
-                    - ccsds-packet-handler:
+                    - ccsds_packet_handler:
                         input_type: int
                         output_type: int
 
@@ -140,5 +141,5 @@ default:
                 name: sle_data_stream_parallel
                 input: sle_data_stream_ccsds
                 handlers:
-                    - parallel-handler
-                    - another-handler
+                    - parallel_handler
+                    - another_handler
