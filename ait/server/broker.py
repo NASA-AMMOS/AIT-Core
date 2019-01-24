@@ -1,4 +1,5 @@
 import sys
+import traceback
 import zmq
 from threading import Thread
 from importlib import import_module
@@ -75,7 +76,7 @@ class AitBroker(object):
                             self.outbound_streams.append(strm)
                         log.info('Added %s stream %s' % (stream_type, strm))
                     except Exception:
-                        exc_type, value, traceback = sys.exc_info()
+                        exc_type, value, tb = sys.exc_info()
                         log.error('%s creating stream at %s: %s' % (exc_type, config_path, value))
 
         if not self.inbound_streams:
@@ -204,8 +205,9 @@ class AitBroker(object):
                     self.plugins.append(plugin)
                     log.info('Added plugin %s' % (plugin))
                 except Exception:
-                    exc_type, value, traceback = sys.exc_info()
-                    log.error('%s creating plugin at %s: %s' % (exc_type, config_path, value))
+                    exc_type, value, tb = sys.exc_info()
+                    log.error('%s creating plugin at %s: %s'
+                               % (exc_type, config_path, value))
 
         if not self.plugins:
             log.warn('No valid plugin configurations found. No plugins will be added.')
@@ -252,6 +254,7 @@ class AitBroker(object):
                                               'XSUB_URL': self.XSUB_URL,
                                               'XPUB_URL': self.XPUB_URL})
         except Exception as e:
+            print(traceback.format_exc())
             raise(e)
 
         return instance
