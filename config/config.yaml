@@ -116,10 +116,6 @@ default:
             - plugin:
                 name: ait_gui_plugin
                 inputs:
-                    - sle_data_stream
-            - plugin:
-            - plugin:
-                name: openmct-bridge
 
         inbound-streams:
             - stream:

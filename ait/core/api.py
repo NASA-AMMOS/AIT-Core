@@ -27,7 +27,7 @@ script instrument interactions, e.g.:
 
 from __future__ import absolute_import
 
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey; gevent.monkey.patch_all(thread=False)
 import gevent
 import gevent.event
 import gevent.server

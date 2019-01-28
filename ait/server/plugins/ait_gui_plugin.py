@@ -1,10 +1,9 @@
 from ait.server.plugin import Plugin
-"""
 import gevent
 import gevent.event
 import gevent.util
 import gevent.lock
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey; gevent.monkey.patch_all(thread=False)
 import geventwebsocket
 
 import bdb
@@ -17,16 +16,16 @@ import sys
 import time
 import urllib
 import webbrowser
-"""
-#import bottle
-#import pkg_resources
 
-#import ait.core
+import bottle
+import pkg_resources
+
+import ait.core
 
 from ait.core import api, ccsds, cfg, cmd, dmc, evr, limits, log, notify, pcap, tlm
 from ait.core import util
 
-'''
+
 class Session (object):
     """Session
 
@@ -215,22 +214,22 @@ try:
 except:
     VERSION = ''
     log.warn('Unable to determine which AIT GUI Version is running')
-'''
+
 
 
 class AitGuiPlugin(Plugin):
 
     def __init__(self, inputs, zmq_args=None, **kwargs):
         super(AitGuiPlugin, self).__init__(inputs, zmq_args, **kwargs)
-      #  self.init()
-       
-       # self.wait()
+
+        self.init()
+        self.wait()
 
     def process(self):
         # implement here
         pass
 
-'''
+
     def getBrowserName(browser):
         return getattr(browser, 'name', getattr(browser, '_name', '(none)'))
 
@@ -692,7 +691,7 @@ class AitGuiPlugin(Plugin):
 
     @App.route('/cmd/validate', method='POST')
     def handle():
-        
+        ''''''
         command = bottle.request.forms.get('command').strip()
 
         args = command.split()
@@ -1166,4 +1165,3 @@ class AitGuiPlugin(Plugin):
                 s += ': ' + self._msg
 
             return s
-'''
