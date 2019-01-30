@@ -1,6 +1,6 @@
 import sys
 import traceback
-import zmq
+import zmq.green as zmq
 from threading import Thread
 from importlib import import_module
 import ait.core
