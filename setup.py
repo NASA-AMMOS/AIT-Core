@@ -57,7 +57,7 @@ setup(
         'bottle==0.12.9',
         'jsonschema==2.5.1',
         'pyyaml==3.11',
-        'requests==2.9.1',
+        'requests>=2.17.0',
         'gevent==1.1.2',
         'gevent-websocket==0.9.5',
     ],
