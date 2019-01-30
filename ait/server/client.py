@@ -1,4 +1,4 @@
-import zmq
+import zmq.green as zmq
 import ait
 from ait.core import log
 from threading import Thread

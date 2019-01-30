@@ -111,6 +111,13 @@ default:
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
+    gui:
+      port: 8080
+      telemetry:
+        - stream:
+            name: 1553_HS_Packet
+            port: 3076
+            
     server:
         plugins:
             - plugin:
