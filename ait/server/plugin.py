@@ -1,8 +1,11 @@
+import gevent
+import gevent.monkey; gevent.monkey.patch_all()
+
 from client import Client
 import ait
 
 
-class Plugin(Client):
+class Plugin(Client, gevent.Greenlet):
 
     def __init__(self, inputs, zmq_args=None, **kwargs):
         if zmq_args is None:
@@ -16,14 +19,27 @@ class Plugin(Client):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+        gevent.Greenlet.__init__(self)
         super(Plugin, self).__init__(zmq_args)
 
     def __repr__(self):
-        return '<Plugin name=%s>' % (self.name)
+        return '<Plugin name={}>'.format(self.name)
 
-    def process(self, input_data, topic=None):
+    def process_telemetry(self, input_data, topic=None):
         raise NotImplementedError((
-            'This process method must be implemented by a custom plugin class ' +
-            'that inherits from this abstract plugin. This abstract Plugin ' +
+            'This process method must be implemented by a custom plugin class '
+            'that inherits from this abstract plugin. This abstract Plugin '
             'class should not be instantiated. This process method will be '
             'called whenever a message is received by the plugin.'))
+
+    def _run(self):
+        while True:
+            self.run()
+            gevent.sleep(1)
+
+    def run(self):
+        raise NotImplementedError((
+            'This run method can be implemented by a custom plugin class '
+            'that inherits from this abstract plugin. This abstract Plugin '
+            'class should not be instantiated. This run method will be '
+            'run indefinitely in a while True loop in a Greenlet.'))
