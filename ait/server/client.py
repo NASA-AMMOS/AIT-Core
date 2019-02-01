@@ -1,10 +1,12 @@
 import zmq.green as zmq
+import gevent
+import gevent.monkey; gevent.monkey.patch_all()
+
 import ait
 from ait.core import log
-from threading import Thread
 
 
-class Client(object):
+class Client(gevent.Greenlet):
 
     def __init__(self, zmq_args=None):
         if zmq_args is None:
@@ -20,15 +22,10 @@ class Client(object):
         self.sub.connect(zmq_args['XPUB_URL'].replace('*', 'localhost'))
         self.pub.connect(zmq_args['XSUB_URL'].replace('*', 'localhost'))
 
-        # start receiving messages
-        thread = Thread(target=self.recv, args=())
-        thread.daemon = True
-        thread.start()
-
-    def recv(self):
+    def _run(self):
         try:
-            log.info('%s %s open to recieving messages'
-                      % (self.type, self.name))
+            log.info('{} {} open to recieving messages'.format(self.type,
+                                                               self.name))
             while True:
                 string = self.sub.recv()
                 topic, messagedata = string.split()

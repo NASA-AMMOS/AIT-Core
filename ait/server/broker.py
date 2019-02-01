@@ -1,17 +1,19 @@
 import sys
-import traceback
 import zmq.green as zmq
-from threading import Thread
+import gevent
+import gevent.monkey; gevent.monkey.patch_all()
 from importlib import import_module
+
 import ait.core
 import ait.server
 from ait.core import cfg, log
 from stream import Stream
 
 
-class AitBroker(object):
+class AitBroker(gevent.Greenlet):
 
     def __init__(self):
+
         self.inbound_streams = [ ]
         self.outbound_streams = [ ]
         self.ports = [ ]
@@ -27,11 +29,9 @@ class AitBroker(object):
         self.load_plugins()
         self.subscribe_all()
 
-        thread = Thread(target=self.start_broker, args=())
-        thread.daemon = True
-        thread.start()
+        gevent.Greenlet.__init__(self)
 
-    def start_broker(self):
+    def _run(self):
         try:
             frontend = self.context.socket(zmq.XSUB)
             frontend.bind(self.XSUB_URL)
@@ -41,6 +41,7 @@ class AitBroker(object):
 
             log.info('Starting up broker...')
             zmq.proxy(frontend, backend)
+            print("Started broker")
 
         except Exception as e:
             log.error('ZeroMQ Error: {}'.format(e))
@@ -235,25 +236,3 @@ class AitBroker(object):
                                           'XPUB_URL': self.XPUB_URL})
 
         return instance
-
-
-# Create a singleton Broker accessible via ait.server.broker
-sys.modules['ait'].broker = AitBroker()
-
-
-def main():
-    import time
-    # print(ait.config.get('server.inbound-streams'))
-    # print(ait.config.get('server.outbound-streams'))
-    sle_stream = ait.broker.get_stream('sle_data_stream')
-    if sle_stream:
-        log.info('Got stream.')
-    else:
-        raise(Exception('Couldn\'t find stream'))
-    while True:
-        sle_stream.publish(str(4))
-        time.sleep(1)
-
-
-if __name__ == "__main__":
-    main()

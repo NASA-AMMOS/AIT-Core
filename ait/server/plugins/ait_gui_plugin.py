@@ -3,7 +3,7 @@ import gevent
 import gevent.event
 import gevent.util
 import gevent.lock
-import gevent.monkey; gevent.monkey.patch_all(thread=False)
+import gevent.monkey; gevent.monkey.patch_all()
 import geventwebsocket
 
 import bdb
