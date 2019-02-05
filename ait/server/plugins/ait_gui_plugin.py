@@ -232,8 +232,10 @@ class AitGuiPlugin(Plugin):
         pass
 
     def init_and_wait(self):
+        print("initializing gui plugin")
         self.init()
-        self.wait()
+        #self.wait()
+        print("done initializing gui plugin")
 
     def getBrowserName(browser):
         return getattr(browser, 'name', getattr(browser, '_name', '(none)'))

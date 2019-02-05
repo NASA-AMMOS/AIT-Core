@@ -5,21 +5,15 @@ from client import Client
 import ait
 
 
-class Plugin(Client, gevent.Greenlet):
+class Plugin(Client):
 
     def __init__(self, inputs, zmq_args=None, **kwargs):
-        if zmq_args is None:
-            zmq_args = {'context': ait.broker.context,
-                        'XSUB_URL': ait.broker.XSUB_URL,
-                        'XPUB_URL': ait.broker.XPUB_URL}
-
         self.type = 'Plugin'
         self.name = type(self).__name__
         self.inputs = inputs
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        gevent.Greenlet.__init__(self)
         super(Plugin, self).__init__(zmq_args)
 
     def __repr__(self):
@@ -31,15 +25,3 @@ class Plugin(Client, gevent.Greenlet):
             'that inherits from this abstract plugin. This abstract Plugin '
             'class should not be instantiated. This process method will be '
             'called whenever a message is received by the plugin.'))
-
-    def _run(self):
-        while True:
-            self.run()
-            gevent.sleep(1)
-
-    def run(self):
-        raise NotImplementedError((
-            'This run method can be implemented by a custom plugin class '
-            'that inherits from this abstract plugin. This abstract Plugin '
-            'class should not be instantiated. This run method will be '
-            'run indefinitely in a while True loop in a Greenlet.'))

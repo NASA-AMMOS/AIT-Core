@@ -27,6 +27,7 @@ class Client(gevent.Greenlet):
             log.info('{} {} open to recieving messages'.format(self.type,
                                                                self.name))
             while True:
+                gevent.sleep(0)
                 string = self.sub.recv()
                 topic, messagedata = string.split()
                 log.info('%s %s recieved message \"%s\" from %s'
