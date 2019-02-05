@@ -26,6 +26,7 @@ class AitServer(object):
         self.start_all_greenlets()
 
     def start_all_greenlets(self):
+        print("starting greenlets")
         for greenlet in self.greenlets:
             greenlet.start()
 
@@ -35,7 +36,7 @@ class AitServer(object):
 
 def main():
     server = AitServer()
-
+    print("done creating server")
     try:
         import time
 

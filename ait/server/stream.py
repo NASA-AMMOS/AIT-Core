@@ -6,11 +6,6 @@ from client import Client
 class Stream(Client):
 
     def __init__(self, name, input_, handlers, zmq_args=None):
-        if zmq_args is None:
-            zmq_args = {'context': ait.broker.context,
-                        'XSUB_URL': ait.broker.XSUB_URL,
-                        'XPUB_URL': ait.broker.XPUB_URL}
-
         self.name = name
         self.input_ = input_
         self.handlers = handlers
