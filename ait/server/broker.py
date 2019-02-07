@@ -27,30 +27,37 @@ class AitBroker(gevent.Greenlet):
 
         self.load_streams()
         self.load_plugins()
+        self.setup_proxy()
         self.subscribe_all()
 
         gevent.Greenlet.__init__(self)
 
     def _run(self):
-        try:
-            frontend = self.context.socket(zmq.XSUB)
-            frontend.bind(self.XSUB_URL)
+        log.info("Starting proxy...")
+        while True:
+            log.info('Polling...')
+            gevent.sleep(0)
+            socks = dict(self.poller.poll())
 
-            backend = self.context.socket(zmq.XPUB)
-            backend.bind(self.XPUB_URL)
+            if socks.get(self.frontend) == zmq.POLLIN:
+                message = self.frontend.recv_multipart()
+                self.backend.send_multipart(message)
 
-            log.info('Starting up broker...')
-            zmq.proxy(frontend, backend)
-            print("Started broker")
+            if socks.get(self.backend) == zmq.POLLIN:
+                message = self.backend.recv_multipart()
+                self.frontend.send_multipart(message)
 
-        except Exception as e:
-            log.error('ZeroMQ Error: {}'.format(e))
-            raise(e)
+    def setup_proxy(self):
+        self.frontend = self.context.socket(zmq.XSUB)
+        self.frontend.bind(self.XSUB_URL)
 
-        finally:
-            frontend.close()
-            backend.close()
-            self.context.term()
+        self.backend = self.context.socket(zmq.XPUB)
+        self.backend.bind(self.XPUB_URL)
+
+        # Initialize poll set
+        self.poller = zmq.Poller()
+        self.poller.register(self.frontend, zmq.POLLIN)
+        self.poller.register(self.backend, zmq.POLLIN)
 
     def load_streams(self):
         common_err_msg = 'No valid {} telemetry stream configurations found. '

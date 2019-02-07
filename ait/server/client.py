@@ -22,6 +22,8 @@ class Client(gevent.Greenlet):
         self.sub.connect(zmq_args['XPUB_URL'].replace('*', 'localhost'))
         self.pub.connect(zmq_args['XSUB_URL'].replace('*', 'localhost'))
 
+        gevent.Greenlet.__init__(self)
+
     def _run(self):
         try:
             log.info('{} {} open to recieving messages'.format(self.type,
