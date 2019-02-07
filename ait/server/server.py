@@ -17,17 +17,19 @@ class AitServer(object):
     plugins = [ ]
 
     def __init__(self):
-        self.broker = AitBroker()
-        self.greenlets = (self.plugins +
-                          self.inbound_streams +
-                          self.outbound_streams +
-                          [self.broker])
+        broker = AitBroker()
+        self.greenlets = (broker.plugins +
+                          broker.inbound_streams +
+                          broker.outbound_streams +
+                          [broker])
 
         self.start_all_greenlets()
 
     def start_all_greenlets(self):
         print("starting greenlets")
+        print("all greenlets:", self.greenlets)
         for greenlet in self.greenlets:
+            print(greenlet)
             greenlet.start()
 
         gevent.joinall(self.greenlets)

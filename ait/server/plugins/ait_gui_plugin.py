@@ -223,19 +223,15 @@ class AitGuiPlugin(Plugin):
     def __init__(self, inputs, zmq_args=None, **kwargs):
         super(AitGuiPlugin, self).__init__(inputs, zmq_args, **kwargs)
 
-        thread = Thread(target=self.init_and_wait, args=())
-        thread.daemon = True
-        thread.start()
+        g = gevent.spawn(self.init_and_wait)
 
     def process(self):
         # implement here
         pass
 
     def init_and_wait(self):
-        print("initializing gui plugin")
         self.init()
         #self.wait()
-        print("done initializing gui plugin")
 
     def getBrowserName(browser):
         return getattr(browser, 'name', getattr(browser, '_name', '(none)'))
