@@ -1,11 +1,11 @@
 import ait
 from ait.core import log
-from client import Client
+from client import ZMQInputClient, PortInputClient
 
 
-class Stream(Client):
+class Stream(object):
 
-    def __init__(self, name, input_, handlers, zmq_args=None):
+    def __init__(self, name, input_, handlers, zmq_args={}):
         self.name = name
         self.input_ = input_
         self.handlers = handlers
@@ -14,15 +14,18 @@ class Stream(Client):
             raise ValueError('Sequential workflow inputs and outputs ' +
                              'are not compatible. Workflow is invalid.')
 
-        super(Stream, self).__init__(zmq_args)
+        # This calls __init__ on subclass of ZMQClient
+        super(Stream, self).__init__(input_=self.input_, **zmq_args)
 
     @property
     def type(self):
         try:
             if self in ait.broker.inbound_streams:
-                return 'Inbound Stream'
+                return 'Inbound Stream with ZMQ input'
             elif self in ait.broker.outbound_streams:
                 return 'Outbound Stream'
+            elif self in ait.broker.servers:
+                return 'Inbound Stream with port input'
             else:
                 log.warn('Stream %s not registered with broker.' % self.name)
                 raise(Exception)
@@ -36,6 +39,8 @@ class Stream(Client):
         for handler in self.handlers:
             output = handler.execute_handler(input_data)
             input_data = output
+
+        self.publish(input_data)
 
     def valid_workflow(self):
         """
@@ -51,3 +56,15 @@ class Stream(Client):
                     return False
 
         return True
+
+
+class PortInputStream(Stream, PortInputClient):
+
+    def __init__(self, name, input_, handlers, zmq_args={}):
+        super(PortInputStream, self).__init__(name, input_, handlers, zmq_args)
+
+
+class ZMQInputStream(Stream, ZMQInputClient):
+
+    def __init__(self, name, input_, handlers, zmq_args={}):
+        super(ZMQInputStream, self).__init__(name, input_, handlers, zmq_args)

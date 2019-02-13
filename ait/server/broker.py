@@ -7,7 +7,7 @@ from importlib import import_module
 import ait.core
 import ait.server
 from ait.core import cfg, log
-from stream import Stream
+from stream import PortInputStream, ZMQInputStream
 
 
 class AitBroker(gevent.Greenlet):
@@ -16,6 +16,7 @@ class AitBroker(gevent.Greenlet):
 
         self.inbound_streams = [ ]
         self.outbound_streams = [ ]
+        self.servers = [ ]
         self.ports = [ ]
         self.plugins = [ ]
 
@@ -75,7 +76,10 @@ class AitBroker(gevent.Greenlet):
                 for index, s in enumerate(streams):
                     try:
                         strm = self.create_stream(s['stream'], stream_type)
-                        if stream_type == 'inbound':
+                        if stream_type == 'inbound' and type(strm) == PortInputStream:
+                            strm.start()
+                            self.servers.append(strm)
+                        elif stream_type == 'inbound':
                             self.inbound_streams.append(strm)
                         elif stream_type == 'outbound':
                             self.outbound_streams.append(strm)
@@ -124,7 +128,7 @@ class AitBroker(gevent.Greenlet):
             raise(cfg.AitConfigMissing(stream_type + ' stream input'))
 
         stream_handlers = [ ]
-        if config['handlers']:
+        if 'handlers' in config:
             for handler in config['handlers']:
                 hndlr = self.create_handler(handler)
                 stream_handlers.append(hndlr)
@@ -134,12 +138,20 @@ class AitBroker(gevent.Greenlet):
             log.warn('No handlers specified for {} stream {}'.format(stream_type,
                                                                      name))
 
-        return Stream(name,
-                      stream_input,
-                      stream_handlers,
-                      zmq_args={'context': self.context,
-                                'XSUB_URL': self.XSUB_URL,
-                                'XPUB_URL': self.XPUB_URL})
+        if type(stream_input) is int:
+            return PortInputStream(name,
+                                   stream_input,
+                                   stream_handlers,
+                                   zmq_args={'zmq_context': self.context,
+                                             'zmq_proxy_xsub_url': self.XSUB_URL,
+                                             'zmq_proxy_xpub_url': self.XPUB_URL})
+        else:
+            return ZMQInputStream(name,
+                                  stream_input,
+                                  stream_handlers,
+                                  zmq_args={'zmq_context': self.context,
+                                            'zmq_proxy_xsub_url': self.XSUB_URL,
+                                            'zmq_proxy_xpub_url': self.XPUB_URL})
 
     def create_handler(self, config):
         """
@@ -170,15 +182,16 @@ class AitBroker(gevent.Greenlet):
 
     def subscribe_all(self):
         for stream in (self.inbound_streams + self.outbound_streams):
-            self.subscribe(stream, stream.input_)
+            if not type(stream.input_) is int:
+                self.subscribe(stream, stream.input_)
 
         for plugin in self.plugins:
             for input_ in plugin.inputs:
                 self.subscribe(plugin, input_)
 
     def subscribe(self, subscriber, publisher):
+        log.info('Subscribing {} to topic {}'.format(subscriber, publisher))
         subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
-        log.info('Subscribed {} to topic {}'.format(subscriber, publisher))
 
     def get_stream(self, name):
         return next((strm
@@ -238,8 +251,8 @@ class AitBroker(gevent.Greenlet):
         module = import_module('ait.server.plugins.{}'.format(name))
         plugin_class = getattr(module, class_name)
         instance = plugin_class(plugin_inputs,
-                                zmq_args={'context': self.context,
-                                          'XSUB_URL': self.XSUB_URL,
-                                          'XPUB_URL': self.XPUB_URL})
+                                zmq_args={'zmq_context': self.context,
+                                          'zmq_proxy_xsub_url': self.XSUB_URL,
+                                          'zmq_proxy_xpub_url': self.XPUB_URL})
 
         return instance
