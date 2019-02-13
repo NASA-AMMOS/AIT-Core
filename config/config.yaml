@@ -120,16 +120,14 @@ default:
             
     server:
         plugins:
-            - plugin:
-                name: ait_gui_plugin
-                inputs:
+            # - plugin:
+            #     name: ait_gui_plugin
+            #     inputs:
 
         inbound-streams:
             - stream:
                 name: sle_data_stream
-                input: 3078
-                handlers:
-                    - tm_trans_frame_decode_handler
+                input: 3076
 
             - stream:
                 name: sle_data_stream_ccsds

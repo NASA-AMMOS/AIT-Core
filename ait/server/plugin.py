@@ -7,14 +7,14 @@ import ait
 
 class Plugin(Client):
 
-    def __init__(self, inputs, zmq_args=None, **kwargs):
+    def __init__(self, inputs, zmq_args={}, **kwargs):
         self.type = 'Plugin'
         self.name = type(self).__name__
         self.inputs = inputs
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        super(Plugin, self).__init__(zmq_args)
+        super(Plugin, self).__init__(**zmq_args)
 
     def __repr__(self):
         return '<Plugin name={}>'.format(self.name)

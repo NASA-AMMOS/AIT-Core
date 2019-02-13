@@ -3,6 +3,7 @@ import gevent
 import gevent.monkey; gevent.monkey.patch_all()
 
 from broker import AitBroker
+from stream import PortInputStream
 from ait.core import log
 
 # manages plugin gevents
@@ -32,8 +33,8 @@ class AitServer(object):
             print(greenlet)
             greenlet.start()
 
+        print("joining greenlets")
         gevent.joinall(self.greenlets)
-        print("joined greenlets")
 
 
 def main():
