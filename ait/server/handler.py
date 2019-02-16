@@ -3,9 +3,12 @@ import __builtin__
 
 class Handler(object):
 
-    def __init__(self, input_type=None, output_type=None):
+    def __init__(self, input_type=None, output_type=None, **kwargs):
         self.input_type = input_type
         self.output_type = output_type
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def __repr__(self):
         return '<handler.%s>' % (self.__class__.__name__)

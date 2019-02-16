@@ -231,7 +231,6 @@ class AitGuiPlugin(Plugin):
 
     def init_and_wait(self):
         self.init()
-        #self.wait()
 
     def getBrowserName(browser):
         return getattr(browser, 'name', getattr(browser, '_name', '(none)'))
@@ -289,7 +288,7 @@ class AitGuiPlugin(Plugin):
                         log.warn(msg + '  Skipping stream.')
                         continue
 
-                    Servers.append( UdpRawTelemetryServer(tport, defn) )
+                    #Servers.append( UdpRawTelemetryServer(tport, defn) )
                     nstreams += 1
 
         if streams and nstreams == 0:

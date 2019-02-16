@@ -42,10 +42,10 @@ class ZMQClient(object):
 class ZMQInputClient(ZMQClient, gevent.Greenlet):
 
     def __init__(self,
-                 input_,
                  zmq_context,
                  zmq_proxy_xsub_url=ait.server.DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.server.DEFAULT_XPUB_URL):
+                 zmq_proxy_xpub_url=ait.server.DEFAULT_XPUB_URL,
+                 **kwargs):
 
         super(ZMQInputClient, self).__init__(zmq_context,
                                              zmq_proxy_xsub_url,

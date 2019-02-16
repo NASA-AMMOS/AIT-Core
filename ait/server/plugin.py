@@ -1,16 +1,16 @@
 import gevent
 import gevent.monkey; gevent.monkey.patch_all()
 
-from client import Client
-import ait
+from client import ZMQInputClient
 
 
-class Plugin(Client):
+class Plugin(ZMQInputClient):
 
     def __init__(self, inputs, zmq_args={}, **kwargs):
         self.type = 'Plugin'
         self.name = type(self).__name__
         self.inputs = inputs
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
