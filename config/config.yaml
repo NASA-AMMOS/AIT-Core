@@ -120,9 +120,10 @@ default:
             
     server:
         plugins:
-            # - plugin:
-            #     name: ait_gui_plugin
-            #     inputs:
+            - plugin:
+                name: ait.server.plugins.ait_gui_plugin
+                inputs: 
+                    - sle_data_stream_ccsds
 
         inbound-streams:
             - stream:
@@ -133,14 +134,13 @@ default:
                 name: sle_data_stream_ccsds
                 input: sle_data_stream
                 handlers:
-                    - ccsds_packet_handler:
-                        input_type: int
-                        output_type: int
+                    - name: ait.server.handlers.ait_packet_handler
+                      packet: Ethernet_HS_Packet
 
         outbound-streams:
             - stream:
                 name: sle_data_stream_parallel
-                input: sle_data_stream_ccsds
+                input: sle_data_stream
                 handlers:
-                    - parallel_handler
-                    - another_handler
+                    - name: parallel_handler
+                    - name: another_handler
