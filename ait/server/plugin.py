@@ -19,7 +19,7 @@ class Plugin(ZMQInputClient):
     def __repr__(self):
         return '<Plugin name={}>'.format(self.name)
 
-    def process_telemetry(self, input_data, topic=None):
+    def process(self, input_data, topic=None):
         raise NotImplementedError((
             'This process method must be implemented by a custom plugin class '
             'that inherits from this abstract plugin. This abstract Plugin '
