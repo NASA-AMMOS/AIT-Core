@@ -36,11 +36,10 @@ class AitServer(object):
                            self.broker.inbound_streams +
                            self.broker.outbound_streams)
 
-        print([x.name for x in (self.plugins + self.inbound_streams + self.outbound_streams + self.servers)])
         self.start_all_greenlets()
 
     def start_all_greenlets(self):
-        for greenlet in self.greenlets:
+        for greenlet in (self.greenlets + self.servers):
             log.info("Starting {} greenlet...".format(greenlet))
             greenlet.start()
 
@@ -63,7 +62,6 @@ class AitServer(object):
                     try:
                         strm = self.create_stream(s['stream'], stream_type)
                         if stream_type == 'inbound' and type(strm) == PortInputStream:
-                            strm.start()
                             self.servers.append(strm)
                         elif stream_type == 'inbound':
                             self.inbound_streams.append(strm)

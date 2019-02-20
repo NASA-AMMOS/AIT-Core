@@ -29,9 +29,9 @@ class ZMQClient(object):
         """
         Publish specified message with client name as topic.
         """
-        self.pub.send("%s %s" % (self.name, msg))
-        log.info('Published message %s from %s %s'
-                   % (msg, self.type, self.name))
+        self.pub.send("{} {}".format(self.name, msg))
+        log.info('Published message from {} {}'
+                  .format(self.type, self.name))
 
     def process(self, input_data, topic=None):
         """ Called whenever a message is received """
@@ -65,11 +65,11 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
             while True:
                 gevent.sleep(0)
                 string = self.sub.recv()
-                print("Message recieved:", string.split())
-                topic, messagedata = string.split()
-                log.info('{} {} recieved message \"{}\" from {}'
-                         .format(self.type, self.name, messagedata, topic))
-                self.process(messagedata, topic=topic)
+                split_msg = string.split()
+                topic, message = split_msg[0], "".join(split_msg[1:])
+                log.info('{} {} recieved message from {}'
+                         .format(self.type, self.name, topic))
+                self.process(message, topic=topic)
 
         except Exception as e:
             log.error('Exception raised in {} {} while receiving messages: {}'
@@ -94,6 +94,6 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
 
     def handle(self, packet, address):
         # This function provided for gs.DatagramServer class
-        log.info('{} {} recieved message \"{}\" from port {}'
-                 .format(self.type, self.name, packet, address))
+        log.info('{} {} recieved message from port {}'
+                 .format(self.type, self.name, address))
         self.process(packet)

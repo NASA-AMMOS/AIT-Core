@@ -111,36 +111,34 @@ default:
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-    gui:
-      port: 8080
-      telemetry:
-        - stream:
-            name: 1553_HS_Packet
-            port: 3076
+    # gui:
+    #   port: 8080
+    #   telemetry:
+    #     - stream:
+    #         name: telem_stream
+    #         port: 3076
             
     server:
         plugins:
             - plugin:
                 name: ait.server.plugins.ait_gui_plugin
                 inputs: 
-                    - sle_data_stream_ccsds
+                    - log_stream
+                    - telem_stream
 
         inbound-streams:
             - stream:
-                name: sle_data_stream
-                input: 3076
+                name: log_stream
+                input: 3075
 
             - stream:
-                name: sle_data_stream_ccsds
-                input: sle_data_stream
+                name: telem_stream
+                input: 3076
                 handlers:
                     - name: ait.server.handlers.ait_packet_handler
-                      packet: Ethernet_HS_Packet
+                      packet: 1553_HS_Packet
 
         outbound-streams:
             - stream:
-                name: sle_data_stream_parallel
-                input: sle_data_stream
-                handlers:
-                    - name: parallel_handler
-                    - name: another_handler
+                name: command_stream
+                input: ait_gui_plugin

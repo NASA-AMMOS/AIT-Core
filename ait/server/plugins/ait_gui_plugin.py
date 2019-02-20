@@ -16,7 +16,7 @@ import sys
 import time
 import urllib
 import webbrowser
-from threading import Thread
+import re
 
 import bottle
 import pkg_resources
@@ -127,58 +127,6 @@ class SessionStore (dict):
 Sessions = SessionStore()
 
 
-class UdpSysLogServer (gevent.server.DatagramServer):
-    def __init__ (self, *args, **kwargs):
-        gevent.server.DatagramServer.__init__(self, *args, **kwargs)
-
-    def start (self):
-        values = self.server_host, self.server_port
-        log.info('Listening for Syslog messages on %s:%d (UDP)' % values)
-        super(UdpSysLogServer, self).start()
-
-    def handle (self, data, address):
-        msg = log.parseSyslog(data)
-        Sessions.addMessage(msg)
-
-
-class UdpCcsdsTelemetryServer(gevent.server.DatagramServer):
-    """A UdpCcsdsTelemetryServer listens for CCSDS telemetry packets on
-    the given (hostname, port) and forwards those packets to the GUI
-    client with minimal sanity checking.
-    """
-
-    def __init__ (self, listener):
-        super(UdpCcsdsTelemetryServer, self).__init__(listener)
-
-    def start (self):
-        values = self.server_host, self.server_port
-        log.info('Listening for CCSDS telemetry on %s:%d (UDP)' % values)
-        super(UdpCcsdsTelemetryServer, self).start()
-
-    def handle (self, data, address):
-        if len(data) > ccsds.CcsdsHeader.Definition.nbytes:
-            header = ccsds.CcsdsHeader(data)
-            Sessions.addTelemetry(header.apid, data)
-        else:
-            values = len(data), self.server_host, self.server_port
-            msg    = 'Ignoring %d byte packet fragment on %s:%d (UDP)'
-            log.warn(msg % values)
-
-
-class UdpRawTelemetryServer(gevent.server.DatagramServer):
-    def __init__ (self, listener, defn):
-        super(UdpRawTelemetryServer, self).__init__(listener)
-        self._defn = defn
-
-    def start (self):
-        values = self._defn.name, self.server_host, self.server_port
-        log.info('Listening for %s telemetry on %s:%d (UDP)' % values)
-        super(UdpRawTelemetryServer, self).start()
-
-    def handle (self, packet, address):
-        Sessions.addTelemetry(self._defn.uid, packet)
-
-
 _RUNNING_SCRIPT = None
 _RUNNING_SEQ = None
 CMD_API = ait.core.api.CmdAPI(ait.config.get('command.port', ait.DEFAULT_CMD_PORT))
@@ -217,24 +165,36 @@ except:
     log.warn('Unable to determine which AIT GUI Version is running')
 
 
-
 class AitGuiPlugin(Plugin):
 
     def __init__(self, inputs, zmq_args=None, **kwargs):
         super(AitGuiPlugin, self).__init__(inputs, zmq_args, **kwargs)
 
-        g = gevent.spawn(self.init_and_wait)
+        gevent.spawn(self.init)
 
-    def process(self):
-        # implement here
-        pass
+    def process(self, input_data, topic=None):
+        # msg is going to be a tuple from the ait_packet_handler
+        # (packet_uid, packet)
+        # need to handle log/telem messages differently based on topic
+        # Sessions.addMessage vs Sessions.addTelemetry
+        if topic == "telem_stream":
+            self.process_telem_msg(input_data)
+        elif topic == "log_stream":
+            self.process_log_msg(input_data)
 
-    def init_and_wait(self):
-        self.init()
+    def process_telem_msg(self, msg):
+        global Sessions
+        split = re.split(r'\((\d),(\'.*\')\)', msg)
+        Sessions.addTelemetry(int(split[1]), split[2])
 
-    def getBrowserName(browser):
+        self.publish(split[2])
+
+    def process_log_msg(self, msg):
+        parsed = log.parseSyslog(msg)
+        Sessions.addMessage(parsed)
+
+    def getBrowserName(self, browser):
         return getattr(browser, 'name', getattr(browser, '_name', '(none)'))
-
 
     def init(self, host=None, port=8080):
 
@@ -251,54 +211,53 @@ class AitGuiPlugin(Plugin):
 
         streams = ait.config.get('gui.telemetry')
 
-        if streams is None:
-            msg  = cfg.AitConfigMissing('gui.telemetry').args[0]
-            msg += '  No telemetry will be received (or displayed).'
-            log.error(msg)
-        else:
-            nstreams = 0
+        # if streams is None:
+        #     msg  = cfg.AitConfigMissing('gui.telemetry').args[0]
+        #     msg += '  No telemetry will be received (or displayed).'
+        #     log.error(msg)
+        # else:
+        #     nstreams = 0
 
-            for index, s in enumerate(streams):
-                param  = 'gui.telemetry[%d].stream' % index
-                stream = cfg.AitConfig(config=s).get('stream')
+        #     for index, s in enumerate(streams):
+        #         param  = 'gui.telemetry[%d].stream' % index
+        #         stream = cfg.AitConfig(config=s).get('stream')
 
-                if stream is None:
-                    msg = cfg.AitConfigMissing(param).args[0]
-                    log.warn(msg + '  Skipping stream.')
-                    continue
+        #         if stream is None:
+        #             msg = cfg.AitConfigMissing(param).args[0]
+        #             log.warn(msg + '  Skipping stream.')
+        #             continue
 
-                name  = stream.get('name', '<unnamed>')
-                type  = stream.get('type', 'raw').lower()
-                tport = stream.get('port', None)
+        #         name  = stream.get('name', '<unnamed>')
+        #         type  = stream.get('type', 'raw').lower()
+        #         tport = stream.get('port', None)
 
-                if tport is None:
-                    msg = cfg.AitConfigMissing(param + '.port').args[0]
-                    log.warn(msg + '  Skipping stream.')
-                    continue
+        #         if tport is None:
+        #             msg = cfg.AitConfigMissing(param + '.port').args[0]
+        #             log.warn(msg + '  Skipping stream.')
+        #             continue
 
-                if type == 'ccsds':
-                    Servers.append( UdpCcsdsTelemetryServer(tport) )
-                    nstreams += 1
-                else:
-                    defn = tlm.getDefaultDict().get(name, None)
+        #         if type == 'ccsds':
+        #             # Servers.append( UdpCcsdsTelemetryServer(tport) )
+        #             nstreams += 1
+        #         else:
+        #             defn = tlm.getDefaultDict().get(name, None)
 
-                    if defn is None:
-                        values = (name, param)
-                        msg    = 'Packet name "%s" not found (%s.name).' % values
-                        log.warn(msg + '  Skipping stream.')
-                        continue
+        #             if defn is None:
+        #                 values = (name, param)
+        #                 msg    = 'Packet name "%s" not found (%s.name).' % values
+        #                 log.warn(msg + '  Skipping stream.')
+        #                 continue
 
-                    #Servers.append( UdpRawTelemetryServer(tport, defn) )
-                    nstreams += 1
+        #             nstreams += 1
 
         if streams and nstreams == 0:
             msg  = 'No valid telemetry stream configurations found.'
             msg += '  No telemetry will be received (or displayed).'
             log.error(msg)
 
-        Servers.append(
-            UdpSysLogServer(':%d' % ait.config.get('logging.port', 2514))
-        )
+        # Servers.append(
+        #     UdpSysLogServer(':%d' % ait.config.get('logging.port', 2514))
+        # )
 
         Servers.append( gevent.pywsgi.WSGIServer(
             ('0.0.0.0', port),
@@ -309,7 +268,6 @@ class AitGuiPlugin(Plugin):
         for s in Servers:
             s.start()
 
-
     def cleanup(self):
         global Servers
 
@@ -317,7 +275,6 @@ class AitGuiPlugin(Plugin):
             s.stop()
 
         gevent.killall(Greenlets)
-
 
     def startBrowser(self, url, name=None):
         browser = None
@@ -332,15 +289,14 @@ class AitGuiPlugin(Plugin):
             old     = name or 'default'
             msg     = 'Could not find browser: %s.  Will use: %s.'
             browser = webbrowser.get()
-            log.warn(msg, name, getBrowserName(browser))
+            log.warn(msg, name, self.getBrowserName(browser))
 
         if type(browser) is webbrowser.GenericBrowser:
             msg = 'Will not start text-based browser: %s.'
-            log.info(msg % getBrowserName(browser))
+            log.info(msg % self.getBrowserName(browser))
         elif browser is not None:
-            log.info('Starting browser: %s' % getBrowserName(browser))
+            log.info('Starting browser: %s' % self.getBrowserName(browser))
             browser.open_new(url)
-
 
     def wait(self):
         if len(Greenlets) > 0:
@@ -350,7 +306,6 @@ class AitGuiPlugin(Plugin):
                     raise d.value
         else:
             gevent.wait()
-
 
     def enable_monitoring(self):
         def telem_handler(session):
@@ -419,7 +374,6 @@ class AitGuiPlugin(Plugin):
         s = ait.gui.Sessions.create()
         telem_handler = gevent.util.wrap_errors(KeyboardInterrupt, telem_handler)
         Greenlets.append(gevent.spawn(telem_handler, s))
-
 
     def enable_data_archiving(self, datastore='ait.core.db.InfluxDBBackend', **kwargs):
         packet_dict = defaultdict(dict)

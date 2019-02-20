@@ -46,6 +46,7 @@ class AitBroker(gevent.Greenlet):
         # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.frontend, zmq.POLLIN)
+        self.poller.register(self.backend, zmq.POLLIN)
 
     def subscribe_all(self):
         for stream in (self.inbound_streams + self.outbound_streams):
