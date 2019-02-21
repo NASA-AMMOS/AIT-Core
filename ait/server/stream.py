@@ -1,5 +1,3 @@
-import ait
-from ait.core import log
 from client import ZMQInputClient, PortInputClient
 
 
@@ -17,23 +15,12 @@ class Stream(object):
         # This calls __init__ on subclass of ZMQClient
         super(Stream, self).__init__(input_=self.input_, **zmq_args)
 
+    def __repr__(self):
+        return '<%s name=%s>' % (self.type, self.name)
+
     @property
     def type(self):
-        try:
-            if self in ait.broker.inbound_streams:
-                return 'Inbound Stream with ZMQ input'
-            elif self in ait.broker.outbound_streams:
-                return 'Outbound Stream'
-            elif self in ait.broker.servers:
-                return 'Inbound Stream with port input'
-            else:
-                log.warn('Stream %s not registered with broker.' % self.name)
-                raise(Exception)
-        except Exception:
-            return 'Stream'
-
-    def __repr__(self):
-        return '<Stream name=%s>' % (self.name)
+        return type(self)
 
     def process(self, input_data, topic=None):
         for handler in self.handlers:
