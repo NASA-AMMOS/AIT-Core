@@ -60,6 +60,7 @@ setup(
         'requests==2.9.1',
         'gevent==1.1.2',
         'gevent-websocket==0.9.5',
+        'pyzmq==17.1.2'
     ],
 
     extras_require = {
