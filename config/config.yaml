@@ -129,7 +129,7 @@ default:
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 3075
+                input: 3077
 
             - stream:
                 name: telem_stream
@@ -141,4 +141,5 @@ default:
         outbound-streams:
             - stream:
                 name: command_stream
-                input: ait_gui_plugin
+                input: AitGuiPlugin
+                output: 3075

@@ -4,6 +4,7 @@ import gevent.server as gs
 import gevent.monkey; gevent.monkey.patch_all()
 
 import zmq.green as zmq
+import socket
 
 import ait
 from ait.core import log
@@ -75,6 +76,30 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
             log.error('Exception raised in {} {} while receiving messages: {}'
                        .format(self.type, self.name, e))
             raise(e)
+
+
+class PortOutputClient(ZMQInputClient):
+
+    def __init__(self,
+                 input_,
+                 zmq_context,
+                 zmq_proxy_xsub_url=ait.server.DEFAULT_XSUB_URL,
+                 zmq_proxy_xpub_url=ait.server.DEFAULT_XPUB_URL,
+                 **kwargs):
+
+        super(PortOutputClient, self).__init__(zmq_context,
+                                               zmq_proxy_xsub_url,
+                                               zmq_proxy_xpub_url)
+        self.out_port = kwargs['output']
+        self.context = zmq_context
+        # override pub to be udp socket
+        self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def publish(self, msg):
+        self.pub.sendto("{} {}".format(self.name, msg),
+                        ('localhost', int(self.out_port)))
+        log.info('Published message from {} {}'
+                  .format(self.type, self.name))
 
 
 class PortInputClient(ZMQClient, gs.DatagramServer):
