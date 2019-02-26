@@ -1,5 +1,5 @@
 from ait.core import log, tlm
-from handler import Handler
+from ait.server.handler import Handler
 
 
 class AitPacketHandler(Handler):

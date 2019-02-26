@@ -23,7 +23,7 @@ import pkg_resources
 
 import ait.core
 
-from ait.core import api, ccsds, cfg, cmd, dmc, evr, limits, log, notify, pcap, tlm
+from ait.core import api, cmd, dmc, evr, limits, log, notify, pcap, tlm, gds
 from ait.core import util
 
 
@@ -183,11 +183,8 @@ class AitGuiPlugin(Plugin):
             self.process_log_msg(input_data)
 
     def process_telem_msg(self, msg):
-        global Sessions
         split = re.split(r'\((\d),(\'.*\')\)', msg)
         Sessions.addTelemetry(int(split[1]), split[2])
-
-        self.publish(split[2])
 
     def process_log_msg(self, msg):
         parsed = log.parseSyslog(msg)
@@ -409,6 +406,40 @@ class AitGuiPlugin(Plugin):
         s = ait.gui.Sessions.create()
         data_archiver = gevent.util.wrap_errors(KeyboardInterrupt, data_archiver)
         Greenlets.append(gevent.spawn(data_archiver, s))
+
+    def send(self, command, *args, **kwargs):
+        """Creates, validates, and sends the given command as a UDP
+        packet to the destination (host, port) specified when this
+        CmdAPI was created.
+
+        Returns True if the command was created, valid, and sent,
+        False otherwise.
+        """
+        status   = False
+        cmdobj   = CMD_API._cmddict.create(command, *args, **kwargs)
+        messages = []
+
+        if not cmdobj.validate(messages):
+            for msg in messages:
+                log.error(msg)
+        else:
+            encoded = cmdobj.encode()
+
+            if CMD_API._verbose:
+                size = len(cmdobj.name)
+                pad  = (size - len(cmdobj.name) + 1) * ' '
+                gds.hexdump(encoded, preamble=cmdobj.name + ':' + pad)
+
+            try:
+                self.publish(encoded)
+                status = True
+
+                with pcap.open(CMD_API.CMD_HIST_FILE, 'a') as output:
+                    output.write(str(cmdobj))
+            except IOError as e:
+                log.error(e.message)
+
+        return status
 
 
 def __setResponseToEventStream():
@@ -635,12 +666,15 @@ def handle():
         command = bottle.request.forms.get('command').strip()
 
         args = command.split()
-        name = args[0].upper()
-        args = [util.toNumber(t, t) for t in args[1:]]
+        if args:
+            name = args[0].upper()
+            args = [util.toNumber(t, t) for t in args[1:]]
 
-        if CMD_API.send(name, *args):
-            Sessions.addEvent('cmd:hist', command)
-            bottle.response.status = 200
+            if ait.GUI.send(name, *args):
+                Sessions.addEvent('cmd:hist', command)
+                bottle.response.status = 200
+            else:
+                bottle.response.status = 400
         else:
             bottle.response.status = 400
 

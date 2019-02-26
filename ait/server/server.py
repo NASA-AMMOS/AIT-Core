@@ -5,7 +5,7 @@ import sys
 
 import ait
 import ait.server
-from stream import PortInputStream, ZMQInputStream
+from stream import PortInputStream, ZMQInputStream, PortOutputStream
 from broker import AitBroker
 from ait.core import log, cfg
 
@@ -123,7 +123,17 @@ class AitServer(object):
             log.warn('No handlers specified for {} stream {}'.format(stream_type,
                                                                      name))
 
-        if type(stream_input) is int:
+        if 'output' in config:
+            stream_output = config.get('output', None)
+            if type(stream_output) is int:
+                return PortOutputStream(name,
+                                        stream_input,
+                                        stream_output,
+                                        stream_handlers,
+                                        zmq_args={'zmq_context': self.broker.context,
+                                                  'zmq_proxy_xsub_url': self.broker.XSUB_URL,
+                                                  'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+        elif type(stream_input) is int:
             return PortInputStream(name,
                                    stream_input,
                                    stream_handlers,
@@ -171,6 +181,10 @@ class AitServer(object):
                     plugin = self.create_plugin(p['plugin'])
                     self.plugins.append(plugin)
                     log.info('Added plugin {}'.format(plugin))
+
+                    if plugin.name == 'AitGuiPlugin':
+                        sys.modules['ait'].GUI = plugin
+
                 except Exception:
                     exc_type, value, tb = sys.exc_info()
                     log.error('{} creating plugin {}: {}'.format(exc_type,

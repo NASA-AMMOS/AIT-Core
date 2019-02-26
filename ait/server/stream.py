@@ -1,9 +1,9 @@
-from client import ZMQInputClient, PortInputClient
+from client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
 class Stream(object):
 
-    def __init__(self, name, input_, handlers, zmq_args={}):
+    def __init__(self, name, input_, handlers, zmq_args={}, **kwargs):
         self.name = name
         self.input_ = input_
         self.handlers = handlers
@@ -13,7 +13,13 @@ class Stream(object):
                              'are not compatible. Workflow is invalid.')
 
         # This calls __init__ on subclass of ZMQClient
-        super(Stream, self).__init__(input_=self.input_, **zmq_args)
+        if 'output' in kwargs:
+            super(Stream, self).__init__(input_=self.input_,
+                                         output=kwargs['output'],
+                                         **zmq_args)
+        else:
+            super(Stream, self).__init__(input_=self.input_,
+                                         **zmq_args)
 
     def __repr__(self):
         return '<%s name=%s>' % (self.type, self.name)
@@ -55,3 +61,9 @@ class ZMQInputStream(Stream, ZMQInputClient):
 
     def __init__(self, name, input_, handlers, zmq_args={}):
         super(ZMQInputStream, self).__init__(name, input_, handlers, zmq_args)
+
+
+class PortOutputStream(Stream, PortOutputClient):
+
+    def __init__(self, name, input_, output, handlers, zmq_args={}):
+        super(PortOutputStream, self).__init__(name, input_, handlers, zmq_args, output=output)
