@@ -88,7 +88,7 @@ def insert(dbconn, packet):
 
         if val is None and defn.name in pd.history:
             val = getattr(packet.history, defn.name)
-        
+
         values.append(val)
 
     qmark = ['?'] * len(values)
@@ -201,7 +201,7 @@ class GenericBackend(object):
 
 class InfluxDBBackend(GenericBackend):
     ''' InfluxDB Backend Abstraction
-    
+
     This requires the InfluxDB Python library to be installed and InfluxDB
     to be installed. Note, the InfluxDB Python library is only supports up
     to version 1.2.4. As such, this is only tested against 1.2.4. Newer
@@ -223,7 +223,7 @@ class InfluxDBBackend(GenericBackend):
 
         Connects to an InfluxDB instance and switches to a given database.
         If the database doesn't exist it is created first via :func:`create`.
-        
+
         **Configuration Parameters**
 
         host
