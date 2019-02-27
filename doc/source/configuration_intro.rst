@@ -70,15 +70,6 @@ AIT loads **config.yaml** on import. Here is an example **config.yaml**:
             ats:
                 path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-        gui:
-            port: 8080
-            telemetry:
-                - stream:
-                    name: AIT_1553_EHS
-                    port: 3076
-            html:
-                directory: ../gui/
-
 
 If you want to look at the contents of **config.yaml** programmatically you can access it with:
 

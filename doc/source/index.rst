@@ -15,6 +15,7 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    API Documentation <ait>
    command_line
    configuration_intro
+   server_architecture
    Command Dictionary Introduction <command_intro>
    Telemetry Dictionary Introduction <telemetry_intro>
    API Module Introduction <api_intro>
