@@ -125,6 +125,10 @@ default:
                 inputs: 
                     - log_stream
                     - telem_stream
+            - plugin:
+                name: ait.server.plugins.data_archival_plugin
+                inputs: 
+                    - telem_stream
 
         inbound-streams:
             - stream:
