@@ -2,6 +2,12 @@ from client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
 class Stream(object):
+    """
+    This is the base Stream class that all streams will inherit from.
+    It calls its handlers to execute on all input messages sequentially,
+    and validates the handler workflow if handler input and output
+    types were specified.
+    """
 
     def __init__(self, name, input_, handlers, zmq_args={}, **kwargs):
         self.name = name
@@ -29,6 +35,10 @@ class Stream(object):
         return type(self)
 
     def process(self, input_data, topic=None):
+        """
+        Invokes each handler in sequence.
+        Publishes final output data.
+        """
         for handler in self.handlers:
             output = handler.execute_handler(input_data)
             input_data = output
@@ -52,18 +62,29 @@ class Stream(object):
 
 
 class PortInputStream(Stream, PortInputClient):
+    """
+    This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
+    """
 
     def __init__(self, name, input_, handlers, zmq_args={}):
         super(PortInputStream, self).__init__(name, input_, handlers, zmq_args)
 
 
 class ZMQInputStream(Stream, ZMQInputClient):
+    """
+    This stream type listens for messages from another stream or plugin and publishes
+    to a ZMQ socket.
+    """
 
     def __init__(self, name, input_, handlers, zmq_args={}):
         super(ZMQInputStream, self).__init__(name, input_, handlers, zmq_args)
 
 
 class PortOutputStream(Stream, PortOutputClient):
+    """
+    This stream type listens for messages from another stream or plugin and
+    publishes to a UDP port.
+    """
 
     def __init__(self, name, input_, output, handlers, zmq_args={}):
         super(PortOutputStream, self).__init__(name, input_, handlers, zmq_args, output=output)

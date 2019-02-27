@@ -9,12 +9,13 @@ from stream import PortInputStream, ZMQInputStream, PortOutputStream
 from broker import AitBroker
 from ait.core import log, cfg
 
-# manages plugin gevents
-# eventually move config parsing & stream/handler/plugin creation from broker to here and then sent to broker on broker init
-# streams/handlers/plugins are attribute of server rather than broker; server notifies broker of clients
-
 
 class AitServer(object):
+    """
+    This server reads and parses config.yaml to create all streams, plugins and handlers
+    specified. It starts all greenlets that run these components and calls on the broker
+    to manage the ZeroMQ connections.
+    """
     inbound_streams = [ ]
     outbound_streams = [ ]
     servers = [ ]
@@ -23,29 +24,37 @@ class AitServer(object):
     def __init__(self):
         self.broker = AitBroker()
 
-        self.load_streams()
-        self.load_plugins()
+        self._load_streams()
+        self._load_plugins()
 
         self.broker.inbound_streams = self.inbound_streams
         self.broker.outbound_streams = self.outbound_streams
-        self.broker.servers = self.servers,
+        self.broker.servers = self.servers
         self.broker.plugins = self.plugins
 
+        # defining greenlets that need to be joined over
         self.greenlets = ([self.broker] +
                            self.broker.plugins +
                            self.broker.inbound_streams +
                            self.broker.outbound_streams)
 
-        self.start_all_greenlets()
+        self._start_all_greenlets()
 
-    def start_all_greenlets(self):
+    def _start_all_greenlets(self):
+        """
+        Starts all greenlets for concurrent processing.
+        Joins over all greenlets that are not servers.
+        """
         for greenlet in (self.greenlets + self.servers):
             log.info("Starting {} greenlet...".format(greenlet))
             greenlet.start()
 
         gevent.joinall(self.greenlets)
 
-    def load_streams(self):
+    def _load_streams(self):
+        """
+        Reads, parses and creates streams specified in config.yaml.
+        """
         common_err_msg = 'No valid {} telemetry stream configurations found. '
         specific_err_msg = {'inbound': 'No telemetry will be received (or displayed).',
                             'outbound': 'No telemetry will be published.'}
@@ -60,7 +69,7 @@ class AitServer(object):
             else:
                 for index, s in enumerate(streams):
                     try:
-                        strm = self.create_stream(s['stream'], stream_type)
+                        strm = self._create_stream(s['stream'], stream_type)
                         if stream_type == 'inbound' and type(strm) == PortInputStream:
                             self.servers.append(strm)
                         elif stream_type == 'inbound':
@@ -80,7 +89,7 @@ class AitServer(object):
         if not self.outbound_streams:
             log.warn(err_msgs['outbound'])
 
-    def create_stream(self, config, stream_type):
+    def _create_stream(self, config, stream_type):
         """
         Creates a stream from its config.
 
@@ -115,7 +124,7 @@ class AitServer(object):
         if 'handlers' in config:
             if config['handlers'] is not None:
                 for handler in config['handlers']:
-                    hndlr = self.create_handler(handler)
+                    hndlr = self._create_handler(handler)
                     stream_handlers.append(hndlr)
                     log.info('Created handler {} for stream {}'.format(type(hndlr).__name__,
                                                                        name))
@@ -148,12 +157,14 @@ class AitServer(object):
                                             'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                             'zmq_proxy_xpub_url': self.broker.XPUB_URL})
 
-    def create_handler(self, config):
+    def _create_handler(self, config):
         """
         Creates a handler from its config.
 
         Params:
             config:      handler config
+        Returns:
+            handler instance
         """
         if config is None:
             raise ValueError('No handler config to create handler from.')
@@ -170,7 +181,10 @@ class AitServer(object):
 
         return instance
 
-    def load_plugins(self):
+    def _load_plugins(self):
+        """
+        Reads, parses and creates plugins specified in config.yaml.
+        """
         plugins = ait.config.get('server.plugins')
 
         if plugins is None:
@@ -178,7 +192,7 @@ class AitServer(object):
         else:
             for index, p in enumerate(plugins):
                 try:
-                    plugin = self.create_plugin(p['plugin'])
+                    plugin = self._create_plugin(p['plugin'])
                     self.plugins.append(plugin)
                     log.info('Added plugin {}'.format(plugin))
 
@@ -193,7 +207,7 @@ class AitServer(object):
             if not self.plugins:
                 log.warn('No valid plugin configurations found. No plugins will be added.')
 
-    def create_plugin(self, config):
+    def _create_plugin(self, config):
         """
         Creates a plugin from its config.
 

@@ -5,6 +5,10 @@ from client import ZMQInputClient
 
 
 class Plugin(ZMQInputClient):
+    """
+    This is the parent class for all plugins. All plugins must implement
+    their own process method which is called when a message is received.
+    """
 
     def __init__(self, inputs, zmq_args={}, **kwargs):
         self.type = 'Plugin'

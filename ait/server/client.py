@@ -11,6 +11,11 @@ from ait.core import log
 
 
 class ZMQClient(object):
+    """
+    This is the base ZeroMQ client class that all streams and plugins
+    inherit from. It opens a ZMQ PUB socket to publish messages to
+    and publishes to it.
+    """
 
     def __init__(self,
                  zmq_context,
@@ -35,12 +40,21 @@ class ZMQClient(object):
                   .format(self.type, self.name))
 
     def process(self, input_data, topic=None):
-        """ Called whenever a message is received """
+        """ This method must be implemented by all streams and plugins that
+        inherit from ZMQClient. It is called whenever a message is received.
+        """
         raise(NotImplementedError('This method must be implemented in all '
                                   'subclasses of Client.'))
 
 
 class ZMQInputClient(ZMQClient, gevent.Greenlet):
+    """
+    This is the parent class for all streams and plugins with
+    input streams. It opens a ZeroMQ SUB socket for receiving
+    ZMQ messages from the input streams it is subscribed to and stays
+    open to receiving those messages, calling the process method
+    on all messages received.
+    """
 
     def __init__(self,
                  zmq_context,
@@ -61,8 +75,6 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
 
     def _run(self):
         try:
-            log.info('{} {} open to recieving messages'.format(self.type,
-                                                               self.name))
             while True:
                 gevent.sleep(0)
                 string = self.sub.recv()
@@ -79,6 +91,11 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
 
 
 class PortOutputClient(ZMQInputClient):
+    """
+    This is the parent class for all outbound streams which publish
+    to a port. It opens a UDP port to publish to and publishes
+    outgoing messages to this port.
+    """
 
     def __init__(self,
                  input_,
@@ -103,6 +120,11 @@ class PortOutputClient(ZMQInputClient):
 
 
 class PortInputClient(ZMQClient, gs.DatagramServer):
+    """
+    This is the parent class for all inbound streams which receive messages
+    on a port. It opens a UDP port for receiving messages, listens for them,
+    and calls the process method on all messages received.
+    """
     def __init__(self,
                  input_,
                  zmq_context,

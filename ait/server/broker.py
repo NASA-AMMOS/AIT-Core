@@ -8,6 +8,11 @@ from ait.core import log
 
 
 class AitBroker(gevent.Greenlet):
+    """
+    This broker contains the ZeroMQ context and proxy that connects all
+    streams and plugins to each other through publish-subscribe sockets.
+    This broker subscribes all ZMQ clients to their input topics.
+    """
 
     def __init__(self):
         self.context = zmq.Context()
@@ -19,8 +24,8 @@ class AitBroker(gevent.Greenlet):
         gevent.Greenlet.__init__(self)
 
     def _run(self):
-        self.setup_proxy()
-        self.subscribe_all()
+        self._setup_proxy()
+        self._subscribe_all()
 
         log.info("Starting proxy...")
         while True:
@@ -36,7 +41,7 @@ class AitBroker(gevent.Greenlet):
                 message = self.backend.recv_multipart()
                 self.frontend.send_multipart(message)
 
-    def setup_proxy(self):
+    def _setup_proxy(self):
         self.frontend = self.context.socket(zmq.XSUB)
         self.frontend.bind(self.XSUB_URL)
 
@@ -48,15 +53,15 @@ class AitBroker(gevent.Greenlet):
         self.poller.register(self.frontend, zmq.POLLIN)
         self.poller.register(self.backend, zmq.POLLIN)
 
-    def subscribe_all(self):
+    def _subscribe_all(self):
         for stream in (self.inbound_streams + self.outbound_streams):
             if not type(stream.input_) is int:
-                self.subscribe(stream, stream.input_)
+                self._subscribe(stream, stream.input_)
 
         for plugin in self.plugins:
             for input_ in plugin.inputs:
-                self.subscribe(plugin, input_)
+                self._subscribe(plugin, input_)
 
-    def subscribe(self, subscriber, publisher):
+    def _subscribe(self, subscriber, publisher):
         log.info('Subscribing {} to topic {}'.format(subscriber, publisher))
         subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
