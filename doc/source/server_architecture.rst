@@ -22,7 +22,7 @@ Data will generally flow through the components as follows:
 * Outbound streams can have either plugin or inbound stream names as inputs. They can output to other outbound streams or to an integer port.
 * Streams can have any number of handlers that will be executed in sequence.
 
-In order to accomplish parallel processing paths with handlers, .....
+In order to accomplish parallel processing paths with handlers, multiple streams that each contain a handler to be executed in parallel should be created and given the same input stream, so that when the original input stream receives a message it will pass it onto all streams subscribed to it, which will each execute their own handlers independently and concurrently.
 
 To customize the functionality of AIT, users may add custom handlers and plugins, and customize their configurations.
 

@@ -11,7 +11,7 @@ import mock
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch('ait.server.broker.AitBroker')
 @mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
-@mock.patch.object(ait.server.server.AitServer, 'create_stream')
+@mock.patch.object(ait.server.server.AitServer, '_create_stream')
 class TestStreamConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
 
@@ -90,7 +90,7 @@ class TestStreamCreation(object):
         server = AitServer()
         with assert_raises_regexp(ValueError,
                                   'Stream type must be \'inbound\' or \'outbound\'.'):
-            server.create_stream('some_config', None)
+            server._create_stream('some_config', None)
 
     def test_bad_stream_type(self,
                              server_init_mock,
@@ -100,7 +100,7 @@ class TestStreamCreation(object):
         server = AitServer()
         with assert_raises_regexp(ValueError,
                                   'Stream type must be \'inbound\' or \'outbound\'.'):
-            server.create_stream('some_config', 'some_type')
+            server._create_stream('some_config', 'some_type')
 
     def test_no_stream_config(self,
                               server_init_mock,
@@ -110,7 +110,7 @@ class TestStreamCreation(object):
         server = AitServer()
         with assert_raises_regexp(ValueError,
                                   'No stream config to create stream from.'):
-            server.create_stream(None, 'inbound')
+            server._create_stream(None, 'inbound')
 
     def test_no_stream_name(self,
                             server_init_mock,
@@ -123,7 +123,7 @@ class TestStreamCreation(object):
         with assert_raises_regexp(cfg.AitConfigMissing,
                                   'The parameter %s is missing from config.yaml'
                                   % 'inbound stream name'):
-            server.create_stream(config, 'inbound')
+            server._create_stream(config, 'inbound')
 
     def test_duplicate_stream_name(self,
                                    server_init_mock,
@@ -139,19 +139,19 @@ class TestStreamCreation(object):
         # Testing existing name in plugins
         server.plugins = [FakeStream(name='myname')]
         with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server.create_stream(config, 'outbound')
+            server._create_stream(config, 'outbound')
 
         # Testing existing name in inbound_streams
         server.plugins = [ ]
         server.inbound_streams = [FakeStream(name='myname')]
         with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server.create_stream(config, 'inbound')
+            server._create_stream(config, 'inbound')
 
         # Testing existing name in outbound_streams
         server.inbound_streams = [ ]
         server.outbound_streams = [FakeStream(name='myname')]
         with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server.create_stream(config, 'inbound')
+            server._create_stream(config, 'inbound')
 
     def test_no_stream_input(self,
                              server_init_mock,
@@ -166,9 +166,9 @@ class TestStreamCreation(object):
         with assert_raises_regexp(cfg.AitConfigMissing,
                                   'The parameter %s is missing from config.yaml'
                                   % 'inbound stream input'):
-            server.create_stream(config, 'inbound')
+            server._create_stream(config, 'inbound')
 
-    @mock.patch.object(ait.server.server.AitServer, 'create_handler')
+    @mock.patch.object(ait.server.server.AitServer, '_create_handler')
     def test_successful_stream_creation(self,
                                         create_handler_mock,
                                         server_init_mock,
@@ -182,7 +182,7 @@ class TestStreamCreation(object):
         config = {'name': 'some_stream',
                   'input': 'some_input',
                   'handlers': ['some-handler']}
-        created_stream = server.create_stream(config, 'inbound')
+        created_stream = server._create_stream(config, 'inbound')
         assert type(created_stream) == ait.server.stream.ZMQInputStream
         assert created_stream.name == 'some_stream'
         assert created_stream.input_ == 'some_input'
@@ -191,7 +191,7 @@ class TestStreamCreation(object):
         # Testing stream creation without handlers
         config = cfg.AitConfig(config={'name': 'some_stream',
                                        'input': 'some_input'})
-        created_stream = server.create_stream(config, 'inbound')
+        created_stream = server._create_stream(config, 'inbound')
         assert type(created_stream) == ait.server.stream.ZMQInputStream
         assert created_stream.name == 'some_stream'
         assert created_stream.input_ == 'some_input'
@@ -210,7 +210,7 @@ class TestHandlerCreation(object):
         server = AitServer()
         with assert_raises_regexp(ValueError,
                                   'No handler config to create handler from.'):
-            server.create_handler(None)
+            server._create_handler(None)
 
     def test_handler_creation_with_no_configs(self,
                                               server_init_mock,
@@ -219,7 +219,7 @@ class TestHandlerCreation(object):
         server = AitServer()
 
         config = {'name': 'ait.server.handlers.example_handler'}
-        handler = server.create_handler(config)
+        handler = server._create_handler(config)
         assert type(handler) == ait.server.handlers.example_handler.ExampleHandler
         assert handler.input_type is None
         assert handler.output_type is None
@@ -231,7 +231,7 @@ class TestHandlerCreation(object):
         server = AitServer()
 
         config = {'name': 'ait.server.handlers.example_handler', 'input_type': 'int', 'output_type': 'int'}
-        handler = server.create_handler(config)
+        handler = server._create_handler(config)
         assert type(handler) == ait.server.handlers.example_handler.ExampleHandler
         assert handler.input_type == 'int'
         assert handler.output_type == 'int'
@@ -244,7 +244,7 @@ class TestHandlerCreation(object):
 
         config = {'name': 'some_nonexistant_handler'}
         with assert_raises_regexp(ImportError, 'No module named %s' % config['name']):
-            server.create_handler(config)
+            server._create_handler(config)
 
 
 @mock.patch.object(ait.core.log, 'warn')
@@ -288,7 +288,7 @@ class TestPluginCreation(object):
         config = None
         with assert_raises_regexp(ValueError,
                                   'No plugin config to create plugin from.'):
-            server.create_plugin(config)
+            server._create_plugin(config)
 
     def test_plugin_missing_name(self,
                                  server_init_mock,
@@ -299,7 +299,7 @@ class TestPluginCreation(object):
         config = {'inputs': 'some_inputs'}
         with assert_raises_regexp(cfg.AitConfigMissing,
                                   'The parameter plugin name is missing from config.yaml'):
-            server.create_plugin(config)
+            server._create_plugin(config)
 
     @mock.patch.object(ait.core.log, 'warn')
     def test_plugin_missing_inputs(self,
@@ -312,7 +312,7 @@ class TestPluginCreation(object):
         server.broker = ait.server.broker.AitBroker()
 
         config = {'name': 'ait.server.plugins.example_plugin'}
-        server.create_plugin(config)
+        server._create_plugin(config)
 
         log_warn_mock.assert_called_with('No plugin inputs specified for ait.server.plugins.example_plugin')
 
@@ -326,7 +326,7 @@ class TestPluginCreation(object):
         config = {'name': 'example_plugin', 'inputs': 'some_inputs'}
         with assert_raises_regexp(ValueError,
                                   'Plugin name already exists. Please rename.'):
-            server.create_plugin(config)
+            server._create_plugin(config)
 
     def test_plugin_doesnt_exist(self,
                                  server_init_mock,
@@ -337,7 +337,7 @@ class TestPluginCreation(object):
         config = {'name': 'some_nonexistant_plugin', 'inputs': 'some_inputs'}
         with assert_raises_regexp(ImportError,
                                   'No module named some_nonexistant_plugin'):
-            server.create_plugin(config)
+            server._create_plugin(config)
 
 
 def rewrite_and_reload_config(filename, yaml):

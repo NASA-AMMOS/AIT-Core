@@ -21,7 +21,6 @@ Submodules
    ait.server.plugin
    ait.server.server
    ait.server.stream
-   ait.server.utils
 
 Module contents
 ---------------
