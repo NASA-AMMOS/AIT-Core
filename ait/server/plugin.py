@@ -10,10 +10,11 @@ class Plugin(ZMQInputClient):
     their own process method which is called when a message is received.
     """
 
-    def __init__(self, inputs, zmq_args={}, **kwargs):
+    def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
         self.type = 'Plugin'
         self.name = type(self).__name__
         self.inputs = inputs
+        self.outputs = outputs
 
         for key, value in kwargs.items():
             setattr(self, key, value)

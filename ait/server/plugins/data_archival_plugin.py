@@ -9,8 +9,8 @@ from ait.core import tlm, log, db
 
 class DataArchivalPlugin(Plugin):
 
-    def __init__(self, name, datastore='ait.core.db.InfluxDBBackend', **kwargs):
-        super(DataArchivalPlugin, self).__init__(name, **kwargs)
+    def __init__(self, inputs, outputs, datastore='ait.core.db.InfluxDBBackend', **kwargs):
+        super(DataArchivalPlugin, self).__init__(inputs, outputs, **kwargs)
 
         self.datastore = datastore
 

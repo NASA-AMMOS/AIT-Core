@@ -167,8 +167,8 @@ except:
 
 class AitGuiPlugin(Plugin):
 
-    def __init__(self, inputs, zmq_args=None, **kwargs):
-        super(AitGuiPlugin, self).__init__(inputs, zmq_args, **kwargs)
+    def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
+        super(AitGuiPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
 
         gevent.spawn(self.init)
 
