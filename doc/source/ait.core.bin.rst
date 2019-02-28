@@ -19,6 +19,7 @@ Submodules
    ait.core.bin.ait_seq_encode
    ait.core.bin.ait_seq_print
    ait.core.bin.ait_seq_send
+   ait.core.bin.ait_server
    ait.core.bin.ait_table_decode
    ait.core.bin.ait_table_encode
    ait.core.bin.ait_tlm_csv
