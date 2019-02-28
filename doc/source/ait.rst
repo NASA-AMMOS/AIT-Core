@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     ait.core
-    ait.server
 
 Module contents
 ---------------

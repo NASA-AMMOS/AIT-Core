@@ -121,14 +121,14 @@ default:
     server:
         plugins:
             - plugin:
-                name: ait.server.plugins.ait_gui_plugin
+                name: ait.core.server.plugins.ait_gui_plugin.AITGUIPlugin
                 inputs: 
                     - log_stream
                     - telem_stream
                 outputs:
                     - command_stream
             - plugin:
-                name: ait.server.plugins.data_archival_plugin
+                name: ait.core.server.plugin.DataArchive
                 inputs: 
                     - telem_stream
 
@@ -141,7 +141,7 @@ default:
                 name: telem_stream
                 input: 3076
                 handlers:
-                    - name: ait.server.handlers.ait_packet_handler
+                    - name: ait.core.server.handler.PacketHandler
                       packet: 1553_HS_Packet
 
         outbound-streams:
