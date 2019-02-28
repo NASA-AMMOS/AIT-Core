@@ -37,7 +37,7 @@ class TestStreamConfigParsing(object):
         rewrite_and_reload_config(self.test_yaml_file, yaml)
 
         server = AitServer()
-        server.load_streams()
+        server._load_streams()
 
         # assert warning is logged
         log_warn_mock.assert_called_with(
@@ -68,7 +68,7 @@ class TestStreamConfigParsing(object):
         rewrite_and_reload_config(self.test_yaml_file, yaml)
 
         server = AitServer()
-        server.load_streams()
+        server._load_streams()
 
         # assert warning is logged
         log_warn_mock.assert_called_with(
@@ -269,7 +269,7 @@ class TestPluginConfigParsing(object):
                """
         rewrite_and_reload_config(self.test_yaml_file, yaml)
 
-        server.load_plugins()
+        server._load_plugins()
 
         log_warn_mock.assert_called_with(
             'No plugins specified in config.')
