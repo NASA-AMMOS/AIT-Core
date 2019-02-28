@@ -10,7 +10,7 @@ from broker import AitBroker
 from ait.core import log, cfg
 
 
-class AitServer(object):
+class AITServer(object):
     """
     This server reads and parses config.yaml to create all streams, plugins and handlers
     specified. It starts all greenlets that run these components and calls on the broker
@@ -252,7 +252,7 @@ class AitServer(object):
 
 def main():
     log.info("Starting AIT Server...")
-    AitServer()
+    AITServer()
 
 
 if __name__ == "__main__":
