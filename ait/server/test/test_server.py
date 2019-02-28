@@ -2,7 +2,7 @@ import ait
 from ait.core import cfg
 import ait.server
 from ait.server.handlers import *
-from ait.server.server import AitServer
+from ait.server.server import AITServer
 import nose
 from nose.tools import *
 import mock
@@ -10,8 +10,8 @@ import mock
 
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch('ait.server.broker.AitBroker')
-@mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
-@mock.patch.object(ait.server.server.AitServer, '_create_stream')
+@mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
+@mock.patch.object(ait.server.server.AITServer, '_create_stream')
 class TestStreamConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
 
@@ -36,7 +36,7 @@ class TestStreamConfigParsing(object):
                """
         rewrite_and_reload_config(self.test_yaml_file, yaml)
 
-        server = AitServer()
+        server = AITServer()
         server._load_streams()
 
         # assert warning is logged
@@ -67,7 +67,7 @@ class TestStreamConfigParsing(object):
                """
         rewrite_and_reload_config(self.test_yaml_file, yaml)
 
-        server = AitServer()
+        server = AITServer()
         server._load_streams()
 
         # assert warning is logged
@@ -79,7 +79,7 @@ class TestStreamConfigParsing(object):
 
 
 @mock.patch('ait.server.broker.AitBroker')
-@mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
+@mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestStreamCreation(object):
 
     def test_no_stream_type(self,
@@ -87,7 +87,7 @@ class TestStreamCreation(object):
                             broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         stream_type of None """
-        server = AitServer()
+        server = AITServer()
         with assert_raises_regexp(ValueError,
                                   'Stream type must be \'inbound\' or \'outbound\'.'):
             server._create_stream('some_config', None)
@@ -97,7 +97,7 @@ class TestStreamCreation(object):
                              broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         a stream_type not equal to either 'inbound' or 'outboud' """
-        server = AitServer()
+        server = AITServer()
         with assert_raises_regexp(ValueError,
                                   'Stream type must be \'inbound\' or \'outbound\'.'):
             server._create_stream('some_config', 'some_type')
@@ -107,7 +107,7 @@ class TestStreamCreation(object):
                               broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         a config of None """
-        server = AitServer()
+        server = AITServer()
         with assert_raises_regexp(ValueError,
                                   'No stream config to create stream from.'):
             server._create_stream(None, 'inbound')
@@ -119,7 +119,7 @@ class TestStreamCreation(object):
         no name specified in the config """
         config = {'input': 'some_stream',
                   'handlers': ['some-handler']}
-        server = AitServer()
+        server = AITServer()
         with assert_raises_regexp(cfg.AitConfigMissing,
                                   'The parameter %s is missing from config.yaml'
                                   % 'inbound stream name'):
@@ -130,7 +130,7 @@ class TestStreamCreation(object):
                                    broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         a name that already belongs to another stream or plugin """
-        server = AitServer()
+        server = AITServer()
 
         config = {'input': 'some_stream',
                   'name': 'myname',
@@ -158,7 +158,7 @@ class TestStreamCreation(object):
                              broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         no input specified in the config """
-        server = AitServer()
+        server = AITServer()
 
         config = {'name': 'some_stream',
                   'handlers': ['some-handler']}
@@ -168,7 +168,7 @@ class TestStreamCreation(object):
                                   % 'inbound stream input'):
             server._create_stream(config, 'inbound')
 
-    @mock.patch.object(ait.server.server.AitServer, '_create_handler')
+    @mock.patch.object(ait.server.server.AITServer, '_create_handler')
     def test_successful_stream_creation(self,
                                         create_handler_mock,
                                         server_init_mock,
@@ -176,7 +176,7 @@ class TestStreamCreation(object):
         """ Tests that streams are successfully created both with or without
         handlers """
         # Testing stream creating with handlers
-        server = AitServer()
+        server = AITServer()
         server.broker = ait.server.broker.AitBroker()
 
         config = {'name': 'some_stream',
@@ -199,7 +199,7 @@ class TestStreamCreation(object):
 
 
 @mock.patch('ait.server.broker.AitBroker')
-@mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
+@mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestHandlerCreation(object):
 
     def test_no_handler_config(self,
@@ -207,7 +207,7 @@ class TestHandlerCreation(object):
                                broker_mock):
         """ Tests that a ValueError is raised when creating a handler with
         a config of None """
-        server = AitServer()
+        server = AITServer()
         with assert_raises_regexp(ValueError,
                                   'No handler config to create handler from.'):
             server._create_handler(None)
@@ -216,7 +216,7 @@ class TestHandlerCreation(object):
                                               server_init_mock,
                                               broker_mock):
         """ Tests handler is successfully created when it has no configs """
-        server = AitServer()
+        server = AITServer()
 
         config = {'name': 'ait.server.handlers.example_handler'}
         handler = server._create_handler(config)
@@ -228,7 +228,7 @@ class TestHandlerCreation(object):
                                            server_init_mock,
                                            broker_mock):
         """ Tests handler is successfully created when it has configs """
-        server = AitServer()
+        server = AITServer()
 
         config = {'name': 'ait.server.handlers.example_handler', 'input_type': 'int', 'output_type': 'int'}
         handler = server._create_handler(config)
@@ -240,7 +240,7 @@ class TestHandlerCreation(object):
                                        server_init_mock,
                                        broker_mock):
         """ Tests that exception thrown if handler doesn't exist """
-        server = AitServer()
+        server = AITServer()
 
         config = {'name': 'some_nonexistant_handler'}
         with assert_raises_regexp(ImportError, 'No module named %s' % config['name']):
@@ -250,7 +250,7 @@ class TestHandlerCreation(object):
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch.object(ait.core.log, 'error')
 @mock.patch('ait.server.broker.AitBroker')
-@mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
+@mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestPluginConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
 
@@ -260,7 +260,7 @@ class TestPluginConfigParsing(object):
                                log_error_mock,
                                log_warn_mock):
         """ Tests that warning logged if no plugins configured """
-        server = AitServer()
+        server = AITServer()
 
         yaml = """
                 default:
@@ -276,14 +276,14 @@ class TestPluginConfigParsing(object):
 
 
 @mock.patch('ait.server.broker.AitBroker')
-@mock.patch.object(ait.server.server.AitServer, '__init__', return_value=None)
+@mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestPluginCreation(object):
 
     def test_plugin_with_no_config(self,
                                    server_init_mock,
                                    broker_mock):
         """ Tests that error raised if plugin not configured """
-        server = AitServer()
+        server = AITServer()
 
         config = None
         with assert_raises_regexp(ValueError,
@@ -294,7 +294,7 @@ class TestPluginCreation(object):
                                  server_init_mock,
                                  broker_mock):
         """ Tests that error raised if plugin has no name """
-        server = AitServer()
+        server = AITServer()
 
         config = {'inputs': 'some_inputs'}
         with assert_raises_regexp(cfg.AitConfigMissing,
@@ -308,7 +308,7 @@ class TestPluginCreation(object):
                                    broker_mock):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
-        server = AitServer()
+        server = AITServer()
         server.broker = ait.server.broker.AitBroker()
 
         config = {'name': 'ait.server.plugins.example_plugin',
@@ -324,7 +324,7 @@ class TestPluginCreation(object):
                                     broker_mock):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
-        server = AitServer()
+        server = AITServer()
         server.broker = ait.server.broker.AitBroker()
 
         config = {'name': 'ait.server.plugins.example_plugin',
@@ -337,7 +337,7 @@ class TestPluginCreation(object):
                                         server_init_mock,
                                         broker_mock):
         """ Tests that error raised if name already in use """
-        server = AitServer()
+        server = AITServer()
 
         server.plugins = [FakeStream(name='ExamplePlugin')]
         config = {'name': 'example_plugin', 'inputs': 'some_inputs'}
@@ -349,7 +349,7 @@ class TestPluginCreation(object):
                                  server_init_mock,
                                  broker_mock):
         """ Tests that error raised if plugin doesn't exist """
-        server = AitServer()
+        server = AITServer()
 
         config = {'name': 'some_nonexistant_plugin', 'inputs': 'some_inputs'}
         with assert_raises_regexp(ImportError,
