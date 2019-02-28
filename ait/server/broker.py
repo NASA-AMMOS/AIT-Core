@@ -7,7 +7,7 @@ import ait.server
 from ait.core import log
 
 
-class AitBroker(gevent.Greenlet):
+class AITBroker(gevent.Greenlet):
     """
     This broker contains the ZeroMQ context and proxy that connects all
     streams and plugins to each other through publish-subscribe sockets.

@@ -1,4 +1,4 @@
-from ait.server.broker import AitBroker
+from ait.server.broker import AITBroker
 from ait.server.stream import ZMQInputStream
 from ait.server.handlers.example_handler import ExampleHandler
 from nose.tools import *
@@ -8,7 +8,7 @@ import ait
 
 
 class TestStream(object):
-    broker = AitBroker()
+    broker = AITBroker()
     stream = ZMQInputStream('some_stream',
                             'input_stream',
                             [ExampleHandler(input_type=int,
