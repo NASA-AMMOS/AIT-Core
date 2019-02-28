@@ -6,7 +6,7 @@ import sys
 import ait
 import ait.server
 from stream import PortInputStream, ZMQInputStream, PortOutputStream
-from broker import AitBroker
+from broker import AITBroker
 from ait.core import log, cfg
 
 
@@ -22,7 +22,7 @@ class AITServer(object):
     plugins = [ ]
 
     def __init__(self):
-        self.broker = AitBroker()
+        self.broker = AITBroker()
 
         self._load_streams()
         self._load_plugins()

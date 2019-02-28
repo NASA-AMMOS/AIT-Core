@@ -9,7 +9,7 @@ import mock
 
 
 @mock.patch.object(ait.core.log, 'warn')
-@mock.patch('ait.server.broker.AitBroker')
+@mock.patch('ait.server.broker.AITBroker')
 @mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 @mock.patch.object(ait.server.server.AITServer, '_create_stream')
 class TestStreamConfigParsing(object):
@@ -78,7 +78,7 @@ class TestStreamConfigParsing(object):
         assert len(server.inbound_streams) == 1
 
 
-@mock.patch('ait.server.broker.AitBroker')
+@mock.patch('ait.server.broker.AITBroker')
 @mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestStreamCreation(object):
 
@@ -177,7 +177,7 @@ class TestStreamCreation(object):
         handlers """
         # Testing stream creating with handlers
         server = AITServer()
-        server.broker = ait.server.broker.AitBroker()
+        server.broker = ait.server.broker.AITBroker()
 
         config = {'name': 'some_stream',
                   'input': 'some_input',
@@ -198,7 +198,7 @@ class TestStreamCreation(object):
         assert type(created_stream.handlers) == list
 
 
-@mock.patch('ait.server.broker.AitBroker')
+@mock.patch('ait.server.broker.AITBroker')
 @mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestHandlerCreation(object):
 
@@ -249,7 +249,7 @@ class TestHandlerCreation(object):
 
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch.object(ait.core.log, 'error')
-@mock.patch('ait.server.broker.AitBroker')
+@mock.patch('ait.server.broker.AITBroker')
 @mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestPluginConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
@@ -275,7 +275,7 @@ class TestPluginConfigParsing(object):
             'No plugins specified in config.')
 
 
-@mock.patch('ait.server.broker.AitBroker')
+@mock.patch('ait.server.broker.AITBroker')
 @mock.patch.object(ait.server.server.AITServer, '__init__', return_value=None)
 class TestPluginCreation(object):
 
@@ -309,7 +309,7 @@ class TestPluginCreation(object):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
         server = AITServer()
-        server.broker = ait.server.broker.AitBroker()
+        server.broker = ait.server.broker.AITBroker()
 
         config = {'name': 'ait.server.plugins.example_plugin',
                   'outputs': 'some_stream'}
@@ -325,7 +325,7 @@ class TestPluginCreation(object):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
         server = AITServer()
-        server.broker = ait.server.broker.AitBroker()
+        server.broker = ait.server.broker.AITBroker()
 
         config = {'name': 'ait.server.plugins.example_plugin',
                   'inputs': 'some_stream'}
