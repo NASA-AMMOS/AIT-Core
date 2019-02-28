@@ -117,7 +117,7 @@ class AitServer(object):
             raise ValueError('Stream name already exists. Please rename.')
 
         stream_input = config.get('input', None)
-        if stream_input is None:
+        if stream_input is None and stream_type is 'inbound':
             raise(cfg.AitConfigMissing(stream_type + ' stream input'))
 
         stream_handlers = [ ]
@@ -132,16 +132,15 @@ class AitServer(object):
             log.warn('No handlers specified for {} stream {}'.format(stream_type,
                                                                      name))
 
-        if 'output' in config:
-            stream_output = config.get('output', None)
-            if type(stream_output) is int:
-                return PortOutputStream(name,
-                                        stream_input,
-                                        stream_output,
-                                        stream_handlers,
-                                        zmq_args={'zmq_context': self.broker.context,
-                                                  'zmq_proxy_xsub_url': self.broker.XSUB_URL,
-                                                  'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+        stream_output = config.get('output', None)
+        if type(stream_output) is int and stream_type is 'outbound':
+            return PortOutputStream(name,
+                                    stream_input,
+                                    stream_output,
+                                    stream_handlers,
+                                    zmq_args={'zmq_context': self.broker.context,
+                                              'zmq_proxy_xsub_url': self.broker.XSUB_URL,
+                                              'zmq_proxy_xpub_url': self.broker.XPUB_URL})
         elif type(stream_input) is int:
             return PortInputStream(name,
                                    stream_input,
@@ -237,10 +236,16 @@ class AitServer(object):
             log.warn('No plugin inputs specified for {}'.format(name))
             plugin_inputs = [ ]
 
+        subscribers = config.get('outputs', None)
+        if subscribers is None:
+            log.warn('No plugin outputs specified for {}'.format(name))
+            subscribers = [ ]
+
         # try to create plugin
         module = import_module(name)
         plugin_class = getattr(module, class_name)
         instance = plugin_class(plugin_inputs,
+                                subscribers,
                                 zmq_args={'zmq_context': self.broker.context,
                                           'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                           'zmq_proxy_xpub_url': self.broker.XPUB_URL})

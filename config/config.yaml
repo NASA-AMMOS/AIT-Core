@@ -125,6 +125,8 @@ default:
                 inputs: 
                     - log_stream
                     - telem_stream
+                outputs:
+                    - command_stream
             - plugin:
                 name: ait.server.plugins.data_archival_plugin
                 inputs: 
@@ -145,5 +147,4 @@ default:
         outbound-streams:
             - stream:
                 name: command_stream
-                input: AitGuiPlugin
                 output: 3075

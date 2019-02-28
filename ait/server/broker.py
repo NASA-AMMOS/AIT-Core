@@ -13,6 +13,10 @@ class AitBroker(gevent.Greenlet):
     streams and plugins to each other through publish-subscribe sockets.
     This broker subscribes all ZMQ clients to their input topics.
     """
+    inbound_streams = [ ]
+    outbound_streams = [ ]
+    servers = [ ]
+    plugins = [ ]
 
     def __init__(self):
         self.context = zmq.Context()
@@ -55,12 +59,24 @@ class AitBroker(gevent.Greenlet):
 
     def _subscribe_all(self):
         for stream in (self.inbound_streams + self.outbound_streams):
-            if not type(stream.input_) is int:
+            if not type(stream.input_) is int and stream.input_ is not None:
                 self._subscribe(stream, stream.input_)
 
         for plugin in self.plugins:
             for input_ in plugin.inputs:
                 self._subscribe(plugin, input_)
+
+            for output in plugin.outputs:
+                # find output stream instance
+                subscriber = next((x for x in self.outbound_streams
+                                  if x.name == output), None)
+                if subscriber is None:
+                    log.warn('The outbound stream {} does not '
+                             'exist so will not receive messages '
+                             'from {}'.format(output, plugin))
+
+                else:
+                    self._subscribe(subscriber, plugin.name)
 
     def _subscribe(self, subscriber, publisher):
         log.info('Subscribing {} to topic {}'.format(subscriber, publisher))

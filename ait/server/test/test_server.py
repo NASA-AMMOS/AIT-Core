@@ -311,10 +311,27 @@ class TestPluginCreation(object):
         server = AitServer()
         server.broker = ait.server.broker.AitBroker()
 
-        config = {'name': 'ait.server.plugins.example_plugin'}
+        config = {'name': 'ait.server.plugins.example_plugin',
+                  'outputs': 'some_stream'}
         server._create_plugin(config)
 
         log_warn_mock.assert_called_with('No plugin inputs specified for ait.server.plugins.example_plugin')
+
+    @mock.patch.object(ait.core.log, 'warn')
+    def test_plugin_missing_outputs(self,
+                                    log_warn_mock,
+                                    server_init_mock,
+                                    broker_mock):
+        """ Tests that warning logged if plugin has no inputs and
+        plugin created anyways """
+        server = AitServer()
+        server.broker = ait.server.broker.AitBroker()
+
+        config = {'name': 'ait.server.plugins.example_plugin',
+                  'inputs': 'some_stream'}
+        server._create_plugin(config)
+
+        log_warn_mock.assert_called_with('No plugin outputs specified for ait.server.plugins.example_plugin')
 
     def test_plugin_name_already_in_use(self,
                                         server_init_mock,
