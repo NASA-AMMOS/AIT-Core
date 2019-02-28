@@ -195,6 +195,40 @@ class AitGuiPlugin(Plugin):
 
     def init(self, host=None, port=8080):
 
+        # The /cmd endpoint requires access to the AITGUIPlugin object so it
+        # can publish commands via the Plugin interface. It's defined here with
+        # the static file routes so that things are grouped semi-neatly.
+        @App.route('/cmd', method='POST')
+        def handle():
+            """Send a given command
+
+            :formparam command: The command that should be sent. If arguments
+                                are to be included they should be separated via
+                                whitespace.
+
+            **Example command format**
+
+            .. sourcecode:
+
+               myExampleCommand argumentOne argumentTwo
+
+            """
+            with Sessions.current() as session:
+                command = bottle.request.forms.get('command').strip()
+
+                args = command.split()
+                if args:
+                    name = args[0].upper()
+                    args = [util.toNumber(t, t) for t in args[1:]]
+
+                    if self.send(name, *args):
+                        Sessions.addEvent('cmd:hist', command)
+                        bottle.response.status = 200
+                    else:
+                        bottle.response.status = 400
+                else:
+                    bottle.response.status = 400
+
         @App.route('/ait/gui/static/<pathname:path>')
         def handle(pathname):
             return bottle.static_file(pathname, root=HTMLRoot.Static)
@@ -645,38 +679,6 @@ def handle():
                 return json.dumps(list(set(cmds)))
     except IOError:
         pass
-
-
-@App.route('/cmd', method='POST')
-def handle():
-    """Send a given command
-
-    :formparam command: The command that should be sent. If arguments
-                        are to be included they should be separated via
-                        whitespace.
-
-    **Example command format**
-
-    .. sourcecode:
-
-       myExampleCommand argumentOne argumentTwo
-
-    """
-    with Sessions.current() as session:
-        command = bottle.request.forms.get('command').strip()
-
-        args = command.split()
-        if args:
-            name = args[0].upper()
-            args = [util.toNumber(t, t) for t in args[1:]]
-
-            if ait.GUI.send(name, *args):
-                Sessions.addEvent('cmd:hist', command)
-                bottle.response.status = 200
-            else:
-                bottle.response.status = 400
-        else:
-            bottle.response.status = 400
 
 
 @App.route('/cmd/validate', method='POST')

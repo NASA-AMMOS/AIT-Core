@@ -195,9 +195,6 @@ class AitServer(object):
                     self.plugins.append(plugin)
                     log.info('Added plugin {}'.format(plugin))
 
-                    if plugin.name == 'AitGuiPlugin':
-                        sys.modules['ait'].GUI = plugin
-
                 except Exception:
                     exc_type, value, tb = sys.exc_info()
                     log.error('{} creating plugin {}: {}'.format(exc_type,
