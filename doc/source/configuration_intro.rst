@@ -74,7 +74,7 @@ AIT loads **config.yaml** on import. Here is an example **config.yaml**:
             port: 8080
             telemetry:
                 - stream:
-                    name: OCO3_1553_EHS
+                    name: AIT_1553_EHS
                     port: 3076
             html:
                 directory: ../gui/
