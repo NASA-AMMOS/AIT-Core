@@ -35,7 +35,7 @@ class TestStream(object):
     def test_repr(self):
         assert self.stream.__repr__() == '<ZMQInputStream name=some_stream>'
 
-    @mock.patch.object(PacketHandler, 'execute_handler')
+    @mock.patch.object(PacketHandler, 'handle')
     def test_process(self, execute_handler_mock):
         self.stream.process('input_data')
         execute_handler_mock.assert_called_with('input_data')

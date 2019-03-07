@@ -38,7 +38,7 @@ class Stream(object):
         Publishes final output data.
         """
         for handler in self.handlers:
-            output = handler.execute_handler(input_data)
+            output = handler.handle(input_data)
             input_data = output
 
         self.publish(input_data)
