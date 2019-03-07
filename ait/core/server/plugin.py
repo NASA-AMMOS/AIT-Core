@@ -1,6 +1,7 @@
 from collections import defaultdict
 import importlib
 import re
+from abc import ABCMeta, abstractmethod
 
 import gevent
 import gevent.monkey; gevent.monkey.patch_all()
@@ -16,8 +17,9 @@ class Plugin(ZMQInputClient):
     their own process method which is called when a message is received.
     """
 
+    __metaclass__ = ABCMeta
+
     def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
-        self.type = 'Plugin'
         self.name = type(self).__name__
         self.inputs = inputs
         self.outputs = outputs
@@ -30,12 +32,9 @@ class Plugin(ZMQInputClient):
     def __repr__(self):
         return '<Plugin name={}>'.format(self.name)
 
+    @abstractmethod
     def process(self, input_data, topic=None):
-        raise NotImplementedError((
-            'This process method must be implemented by a custom plugin class '
-            'that inherits from this abstract plugin. This abstract Plugin '
-            'class should not be instantiated. This process method will be '
-            'called whenever a message is received by the plugin.'))
+        pass
 
 
 class DataArchive(Plugin):

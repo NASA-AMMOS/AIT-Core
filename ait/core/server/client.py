@@ -36,8 +36,8 @@ class ZMQClient(object):
         Publish specified message with client name as topic.
         """
         self.pub.send("{} {}".format(self.name, msg))
-        log.info('Published message from {} {}'
-                  .format(self.type, self.name))
+        log.info('Published message from {}'
+                  .format(self))
 
     def process(self, input_data, topic=None):
         """ This method must be implemented by all streams and plugins that
@@ -80,13 +80,13 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
                 string = self.sub.recv()
                 split_msg = string.split()
                 topic, message = split_msg[0], "".join(split_msg[1:])
-                log.info('{} {} recieved message from {}'
-                         .format(self.type, self.name, topic))
+                log.info('{} recieved message from {}'
+                         .format(self, topic))
                 self.process(message, topic=topic)
 
         except Exception as e:
-            log.error('Exception raised in {} {} while receiving messages: {}'
-                       .format(self.type, self.name, e))
+            log.error('Exception raised in {} while receiving messages: {}'
+                       .format(self, e))
             raise(e)
 
 
@@ -115,8 +115,8 @@ class PortOutputClient(ZMQInputClient):
     def publish(self, msg):
         self.pub.sendto("{} {}".format(self.name, msg),
                         ('localhost', int(self.out_port)))
-        log.info('Published message from {} {}'
-                  .format(self.type, self.name))
+        log.info('Published message from {}'
+                  .format(self))
 
 
 class PortInputClient(ZMQClient, gs.DatagramServer):
@@ -141,6 +141,6 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
 
     def handle(self, packet, address):
         # This function provided for gs.DatagramServer class
-        log.info('{} {} recieved message from port {}'
-                 .format(self.type, self.name, address))
+        log.info('{} recieved message from port {}'
+                 .format(self, address))
         self.process(packet)

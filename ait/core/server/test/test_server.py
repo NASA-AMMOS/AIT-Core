@@ -227,9 +227,10 @@ class TestHandlerCreation(object):
         """ Tests handler is successfully created when it has no configs """
         server = Server()
 
-        config = {'name': 'ait.core.server.handler.Handler'}
+        config = {'name': 'ait.core.server.handler.PacketHandler',
+                  'packet': 'CCSDS_HEADER'}
         handler = server._create_handler(config)
-        assert type(handler) == ait.core.server.handler.Handler
+        assert type(handler) == ait.core.server.handler.PacketHandler
         assert handler.input_type is None
         assert handler.output_type is None
 
@@ -240,9 +241,12 @@ class TestHandlerCreation(object):
         server = Server()
 
         # config = {'name': 'ait.core.server.handlers.example_handler', 'input_type': 'int', 'output_type': 'int'}
-        config = {'name': 'ait.core.server.handler.Handler', 'input_type': 'int', 'output_type': 'int'}
+        config = {'name': 'ait.core.server.handler.PacketHandler',
+                  'input_type': 'int',
+                  'output_type': 'int',
+                  'packet': 'CCSDS_HEADER'}
         handler = server._create_handler(config)
-        assert type(handler) == ait.core.server.handler.Handler
+        assert type(handler) == ait.core.server.handler.PacketHandler
         assert handler.input_type == 'int'
         assert handler.output_type == 'int'
 

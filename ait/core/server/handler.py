@@ -1,6 +1,7 @@
 import __builtin__
 
-from ait.core import log, tlm
+from ait.core import tlm
+from abc import ABCMeta, abstractmethod
 
 
 class Handler(object):
@@ -10,6 +11,7 @@ class Handler(object):
     called by the stream the handler is attached to when the stream receives
     data.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, input_type=None, output_type=None, **kwargs):
         self.input_type = input_type
@@ -53,16 +55,14 @@ class Handler(object):
 
         return self.handle(checked_input)
 
+    @abstractmethod
     def handle(self, input_data):
         """
         Not implemented by base Handler class.
         This handle method must be implemented by any custom handler class
         that inherits from this base Handler.
         """
-        raise NotImplementedError((
-            'This handle method must be implemented by a custom handler class ' +
-            'that inherits from this abstract Handler. This abstract Handler ' +
-            'class should not be instantiated.'))
+        pass
 
 
 class PacketHandler(Handler):
@@ -86,21 +86,3 @@ class PacketHandler(Handler):
     def handle(self, input_data):
         # this is being published to ZMQ - needs to work
         return (self._pkt_defn.uid, input_data)
-
-
-class CcsdsPacketHandler(Handler):
-
-    def __init__(self, input_type, output_type=None):
-        super(CcsdsPacketHandler, self).__init__(input_type, output_type)
-
-    def handle(self, input_data):
-        return input_data + 5
-
-
-class TmTransFrameDecodeHandler(Handler):
-
-    def __init__(self, input_type, output_type=None):
-        super(TmTransFrameDecodeHandler, self).__init__(input_type, output_type)
-
-    def handle(self, input_data):
-        return input_data + 5

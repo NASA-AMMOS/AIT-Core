@@ -163,10 +163,10 @@ except:
     log.warn('Unable to determine which AIT GUI Version is running')
 
 
-class AitGuiPlugin(Plugin):
+class AITGUIPlugin(Plugin):
 
     def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
-        super(AitGuiPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
+        super(AITGUIPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
 
         gevent.spawn(self.init)
 
