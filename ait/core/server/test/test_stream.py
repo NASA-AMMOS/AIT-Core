@@ -3,13 +3,13 @@ import mock
 import zmq.green
 
 import ait.core
-from ait.core.server.broker import AITBroker
+from ait.core.server.broker import Broker
 from ait.core.server.stream import ZMQInputStream
 from ait.core.server.handler import Handler
 
 
 class TestStream(object):
-    broker = AITBroker()
+    broker = Broker()
     stream = ZMQInputStream('some_stream',
                             'input_stream',
                             [Handler(input_type=int,

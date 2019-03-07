@@ -6,11 +6,11 @@ import sys
 # import ait
 import ait.core.server
 from stream import PortInputStream, ZMQInputStream, PortOutputStream
-from broker import AITBroker
+from broker import Broker
 from ait.core import log, cfg
 
 
-class AITServer(object):
+class Server(object):
     """
     This server reads and parses config.yaml to create all streams, plugins and handlers
     specified. It starts all greenlets that run these components and calls on the broker
@@ -22,7 +22,7 @@ class AITServer(object):
     plugins = [ ]
 
     def __init__(self):
-        self.broker = AITBroker()
+        self.broker = Broker()
 
         self._load_streams()
         self._load_plugins()
