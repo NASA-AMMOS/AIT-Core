@@ -31,9 +31,8 @@ class Broker(gevent.Greenlet):
         self._setup_proxy()
         self._subscribe_all()
 
-        log.info("Starting proxy...")
+        log.info("Starting broker...")
         while True:
-            log.info('Polling...')
             gevent.sleep(0)
             socks = dict(self.poller.poll())
 
@@ -52,7 +51,6 @@ class Broker(gevent.Greenlet):
         self.backend = self.context.socket(zmq.XPUB)
         self.backend.bind(self.XPUB_URL)
 
-        # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.frontend, zmq.POLLIN)
         self.poller.register(self.backend, zmq.POLLIN)
@@ -67,7 +65,7 @@ class Broker(gevent.Greenlet):
                 self._subscribe(plugin, input_)
 
             for output in plugin.outputs:
-                # find output stream instance
+                # Find output stream instance
                 subscriber = next((x for x in self.outbound_streams
                                   if x.name == output), None)
                 if subscriber is None:

@@ -28,11 +28,9 @@ class Stream(object):
                                          **zmq_args)
 
     def __repr__(self):
-        return '<%s name=%s>' % (self.type, self.name)
-
-    @property
-    def type(self):
-        return type(self)
+        return '<{} name={}>'.format(
+                    str(type(self)).split('.')[-1].split('\'')[0],
+                    self.name)
 
     def process(self, input_data, topic=None):
         """
