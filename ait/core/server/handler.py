@@ -1,7 +1,6 @@
-import __builtin__
+from abc import ABCMeta, abstractmethod
 
 from ait.core import tlm
-from abc import ABCMeta, abstractmethod
 
 
 class Handler(object):
@@ -22,38 +21,6 @@ class Handler(object):
 
     def __repr__(self):
         return '<handler.%s>' % (self.__class__.__name__)
-
-    def validate_input(self, input_data):
-        """
-        Attempts to convert input data to expected input type, if specified.
-        If no input type specified, returns input data.
-        If conversion fails, raises Exception.
-        If conversion successful, returns converted data.
-        """
-        if self.input_type:
-            try:
-                converted = getattr(__builtin__,
-                                    self.input_type.decode())(input_data)
-            except Exception as e:
-                raise(e)
-
-            return converted
-
-        return input_data
-
-    def execute_handler(self, input_data):
-        """
-        Checks that the input data to the handler matches the expected
-        input type. If input data is of the correct type, calls the
-        handle method. If input data is not the correct type, raises a
-        ValueError.
-        """
-        try:
-            checked_input = self.validate_input(input_data)
-        except Exception as e:
-            raise(ValueError('Input is not of valid type: ', e))
-
-        return self.handle(checked_input)
 
     @abstractmethod
     def handle(self, input_data):
