@@ -9,7 +9,7 @@ command outputs, processing handlers, and plugins.
 
 import argparse
 
-from ait.core.server import AITServer
+from ait.core.server import Server
 
 def main():
     ap = argparse.ArgumentParser(
@@ -18,7 +18,7 @@ def main():
     )
     args = ap.parse_args()
 
-    tlm_cmd_serv = AITServer()
+    tlm_cmd_serv = Server()
     tlm_cmd_serv.wait()
 
 if __name__ == '__main__':
