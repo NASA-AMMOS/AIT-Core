@@ -43,35 +43,32 @@ class DataArchive(Plugin):
         super(DataArchive, self).__init__(inputs, outputs, **kwargs)
 
         self.datastore = datastore
-
-    def process(self, input_data, topic=None, **kwargs):
-        packet_dict = defaultdict(dict)
+        self.packet_dict = defaultdict(dict)
         for k, v in tlm.getDefaultDict().iteritems():
-            packet_dict[v.uid] = v
+            self.packet_dict[v.uid] = v
 
         try:
             mod, cls = self.datastore.rsplit('.', 1)
-            dbconn = getattr(importlib.import_module(mod), cls)()
-            dbconn.connect(**kwargs)
-        except ImportError:
-            log.error("Could not import specified datastore {}".format(self.datastore))
-            return
-        except Exception as e:
-            log.error("Unable to connect to InfluxDB backend. Disabling data archive.\n{}".format(e))
-            return
-
-        try:
+            self.dbconn = getattr(importlib.import_module(mod), cls)()
+            self.dbconn.connect(**kwargs)
             log.info('Starting telemetry data archiving')
-            split = re.split(r'\((\d),(\'.*\')\)', input_data)
-            uid, pkt = int(split[1]), split[2]
-            defn = packet_dict[uid]
-            decoded = tlm.Packet(defn, data=bytearray(pkt))
-            dbconn.insert(decoded, **kwargs)
+        except ImportError as e:
+            log.error("Could not import specified datastore {}".format(self.datastore))
+            raise(e)
+        except Exception as e:
+            log.error("Unable to connect to {} backend. Disabling data archive."
+                        .format(self.datastore))
+            raise(e)
 
-            gevent.sleep(0)
-        finally:
-            dbconn.close()
-            log.info('Telemetry data archiving terminated')
+    def process(self, input_data, topic=None, **kwargs):
+        try:
+            split = input_data[1:-1].split(',', 1)
+            uid, pkt = int(split[0]), split[1]
+            defn = self.packet_dict[uid]
+            decoded = tlm.Packet(defn, data=bytearray(pkt))
+            self.dbconn.insert(decoded, **kwargs)
+        except Exception as e:
+            log.error('Data archival failed with error: {}.'.format(e))
 
 
 class TelemetryLimitMonitor(Plugin):
