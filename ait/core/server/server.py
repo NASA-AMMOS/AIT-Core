@@ -5,7 +5,7 @@ import sys
 
 # import ait
 import ait.core.server
-from stream import PortInputStream, ZMQInputStream, PortOutputStream
+from stream import PortInputStream, ZMQStream, PortOutputStream
 from broker import Broker
 from ait.core import log, cfg
 
@@ -53,9 +53,9 @@ class Server(object):
         """
         Reads, parses and creates streams specified in config.yaml.
         """
-        common_err_msg = 'No valid {} telemetry stream configurations found. '
-        specific_err_msg = {'inbound': 'No telemetry will be received (or displayed).',
-                            'outbound': 'No telemetry will be published.'}
+        common_err_msg = 'No valid {} stream configurations found. '
+        specific_err_msg = {'inbound': 'No data will be received (or displayed).',
+                            'outbound': 'No data will be published.'}
         err_msgs = {}
 
         for stream_type in ['inbound', 'outbound']:
@@ -67,12 +67,14 @@ class Server(object):
             else:
                 for index, s in enumerate(streams):
                     try:
-                        strm = self._create_stream(s['stream'], stream_type)
-                        if stream_type == 'inbound' and type(strm) == PortInputStream:
-                            self.servers.append(strm)
-                        elif stream_type == 'inbound':
-                            self.inbound_streams.append(strm)
+                        if stream_type == 'inbound':
+                            strm = self._create_inbound_stream(s['stream'])
+                            if type(strm) == PortInputStream:
+                                self.servers.append(strm)
+                            else:
+                                self.inbound_streams.append(strm)
                         elif stream_type == 'outbound':
+                            strm = self._create_outbound_stream(s['stream'])
                             self.outbound_streams.append(strm)
                         log.info('Added {} stream {}'.format(stream_type, strm))
                     except Exception:
@@ -87,37 +89,20 @@ class Server(object):
         if not self.outbound_streams:
             log.warn(err_msgs['outbound'])
 
-    def _create_stream(self, config, stream_type):
-        """
-        Creates a stream from its config.
-
-        Params:
-            config:       stream configuration as read by ait.config
-            stream_type:  either 'inbound' or 'outbound'
-        Returns:
-            stream:       a Stream
-        Raises:
-            ValueError:   if any of the required config values are missing
-        """
-        if stream_type not in ['inbound', 'outbound']:
-            raise ValueError('Stream type must be \'inbound\' or \'outbound\'.')
-
-        if config is None:
-            raise ValueError('No stream config to create stream from.')
-
+    def _get_stream_name(self, config):
         name = config.get('name', None)
         if name is None:
-            raise(cfg.AitConfigMissing(stream_type + ' stream name'))
+            raise(cfg.AitConfigMissing(' stream name'))
         if name in [x.name for x in (self.outbound_streams +
                                      self.inbound_streams +
                                      self.servers +
                                      self.plugins)]:
-            raise ValueError('Stream name already exists. Please rename.')
+            raise ValueError('Duplicate stream name "{}" encountered. '
+                             'Stream names must be unique.'.format(name))
 
-        stream_input = config.get('input', None)
-        if stream_input is None and stream_type is 'inbound':
-            raise(cfg.AitConfigMissing(stream_type + ' stream input'))
+        return name
 
+    def _get_stream_handlers(self, config, name):
         stream_handlers = [ ]
         if 'handlers' in config:
             if config['handlers'] is not None:
@@ -127,19 +112,31 @@ class Server(object):
                     log.info('Created handler {} for stream {}'.format(type(hndlr).__name__,
                                                                        name))
         else:
-            log.warn('No handlers specified for {} stream {}'.format(stream_type,
-                                                                     name))
+            log.warn('No handlers specified for stream {}'.format(name))
 
-        stream_output = config.get('output', None)
-        if type(stream_output) is int and stream_type is 'outbound':
-            return PortOutputStream(name,
-                                    stream_input,
-                                    stream_output,
-                                    stream_handlers,
-                                    zmq_args={'zmq_context': self.broker.context,
-                                              'zmq_proxy_xsub_url': self.broker.XSUB_URL,
-                                              'zmq_proxy_xpub_url': self.broker.XPUB_URL})
-        elif type(stream_input) is int:
+        return stream_handlers
+
+    def _create_inbound_stream(self, config=None):
+        """
+        Creates an inbound stream from its config.
+
+        Params:
+            config:       stream configuration as read by ait.config
+        Returns:
+            stream:       a Stream
+        Raises:
+            ValueError:   if any of the required config values are missing
+        """
+        if config is None:
+            raise ValueError('No stream config to create stream from.')
+
+        name = self._get_stream_name(config)
+        stream_handlers = self._get_stream_handlers(config, name)
+        stream_input = config.get('input', None)
+        if stream_input is None:
+            raise(cfg.AitConfigMissing('inbound stream {} input').format(name))
+
+        if type(stream_input) is int:
             return PortInputStream(name,
                                    stream_input,
                                    stream_handlers,
@@ -147,12 +144,47 @@ class Server(object):
                                              'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                              'zmq_proxy_xpub_url': self.broker.XPUB_URL})
         else:
-            return ZMQInputStream(name,
-                                  stream_input,
-                                  stream_handlers,
-                                  zmq_args={'zmq_context': self.broker.context,
-                                            'zmq_proxy_xsub_url': self.broker.XSUB_URL,
-                                            'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+            return ZMQStream(name,
+                             stream_input,
+                             stream_handlers,
+                             zmq_args={'zmq_context': self.broker.context,
+                                       'zmq_proxy_xsub_url': self.broker.XSUB_URL,
+                                       'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+
+    def _create_outbound_stream(self, config=None):
+        """
+        Creates an outbound stream from its config.
+
+        Params:
+            config:       stream configuration as read by ait.config
+        Returns:
+            stream:       a Stream
+        Raises:
+            ValueError:   if any of the required config values are missing
+        """
+        if config is None:
+            raise ValueError('No stream config to create stream from.')
+
+        name = self._get_stream_name(config)
+        stream_handlers = self._get_stream_handlers(config, name)
+        stream_input = config.get('input', None)
+        stream_output = config.get('output', None)
+
+        if type(stream_output) is int:
+            return PortOutputStream(name,
+                                    stream_input,
+                                    stream_output,
+                                    stream_handlers,
+                                    zmq_args={'zmq_context': self.broker.context,
+                                              'zmq_proxy_xsub_url': self.broker.XSUB_URL,
+                                              'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+        else:
+            return ZMQStream(name,
+                             stream_input,
+                             stream_handlers,
+                             zmq_args={'zmq_context': self.broker.context,
+                                       'zmq_proxy_xsub_url': self.broker.XSUB_URL,
+                                       'zmq_proxy_xpub_url': self.broker.XPUB_URL})
 
     def _create_handler(self, config):
         """

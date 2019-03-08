@@ -192,7 +192,7 @@ class TestStreamCreation(object):
                   'input': 'some_input',
                   'handlers': ['some-handler']}
         created_stream = server._create_stream(config, 'inbound')
-        assert type(created_stream) == ait.core.server.stream.ZMQInputStream
+        assert type(created_stream) == ait.core.server.stream.ZMQStream
         assert created_stream.name == 'some_stream'
         assert created_stream.input_ == 'some_input'
         assert type(created_stream.handlers) == list
@@ -201,7 +201,7 @@ class TestStreamCreation(object):
         config = cfg.AitConfig(config={'name': 'some_stream',
                                        'input': 'some_input'})
         created_stream = server._create_stream(config, 'inbound')
-        assert type(created_stream) == ait.core.server.stream.ZMQInputStream
+        assert type(created_stream) == ait.core.server.stream.ZMQStream
         assert created_stream.name == 'some_stream'
         assert created_stream.input_ == 'some_input'
         assert type(created_stream.handlers) == list
