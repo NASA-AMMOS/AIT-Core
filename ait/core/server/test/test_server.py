@@ -14,7 +14,8 @@ from ait.core.server.server import Server
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch('ait.core.server.broker.Broker')
 @mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
-@mock.patch.object(ait.core.server.server.Server, '_create_stream')
+@mock.patch.object(ait.core.server.server.Server, '_create_outbound_stream')
+@mock.patch.object(ait.core.server.server.Server, '_create_inbound_stream')
 class TestStreamConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
 
@@ -25,7 +26,8 @@ class TestStreamConfigParsing(object):
             os.remove(self.test_yaml_file)
 
     def test_no_inbound_streams(self,
-                                create_stream_mock,
+                                create_inbound_stream_mock,
+                                create_outbound_stream_mock,
                                 server_init_mock,
                                 broker_class_mock,
                                 log_warn_mock):
@@ -50,13 +52,14 @@ class TestStreamConfigParsing(object):
 
         # assert warning is logged
         log_warn_mock.assert_called_with(
-            'No valid inbound telemetry stream configurations found. '
-            'No telemetry will be received (or displayed).')
+            'No valid inbound stream configurations found. '
+            'No data will be received (or displayed).')
         # assert outbound stream is added successfully
         assert len(server.outbound_streams) == 1
 
     def test_no_outbound_streams(self,
-                                 create_stream_mock,
+                                 create_inbound_stream_mock,
+                                 create_outbound_stream_mock,
                                  server_init_mock,
                                  broker_class_mock,
                                  log_warn_mock):
@@ -81,8 +84,8 @@ class TestStreamConfigParsing(object):
 
         # assert warning is logged
         log_warn_mock.assert_called_with(
-            'No valid outbound telemetry stream configurations found. '
-            'No telemetry will be published.')
+            'No valid outbound stream configurations found. '
+            'No data will be published.')
         # assert inbound stream is added successfully
         assert len(server.inbound_streams) == 1
 
@@ -91,48 +94,32 @@ class TestStreamConfigParsing(object):
 @mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
 class TestStreamCreation(object):
 
-    def test_no_stream_type(self,
-                            server_init_mock,
-                            broker_class_mock):
-        """ Tests that a ValueError is raised when creating a stream with
-        stream_type of None """
-        server = Server()
-        with assert_raises_regexp(ValueError,
-                                  'Stream type must be \'inbound\' or \'outbound\'.'):
-            server._create_stream('some_config', None)
-
-    def test_bad_stream_type(self,
-                             server_init_mock,
-                             broker_class_mock):
-        """ Tests that a ValueError is raised when creating a stream with
-        a stream_type not equal to either 'inbound' or 'outboud' """
-        server = Server()
-        with assert_raises_regexp(ValueError,
-                                  'Stream type must be \'inbound\' or \'outbound\'.'):
-            server._create_stream('some_config', 'some_type')
-
     def test_no_stream_config(self,
-                              server_init_mock,
-                              broker_class_mock):
-        """ Tests that a ValueError is raised when creating a stream with
-        a config of None """
+                                      server_init_mock,
+                                      broker_class_mock):
+        """ Tests that a ValueError is raised when creating streams
+        with a config of None """
         server = Server()
         with assert_raises_regexp(ValueError,
                                   'No stream config to create stream from.'):
-            server._create_stream(None, 'inbound')
+            server._create_inbound_stream(None)
+
+        with assert_raises_regexp(ValueError,
+                                  'No stream config to create stream from.'):
+            server._create_outbound_stream(None)
 
     def test_no_stream_name(self,
                             server_init_mock,
                             broker_class_mock):
-        """ Tests that a ValueError is raised when creating a stream with
-        no name specified in the config """
+        """ Tests that a ValueError is raised when creating a stream
+        with no name specified in the config """
         config = {'input': 'some_stream',
-                  'handlers': ['some-handler']}
+                  'handlers': [{'name': 'some-handler'}]}
         server = Server()
         with assert_raises_regexp(cfg.AitConfigMissing,
                                   'The parameter %s is missing from config.yaml'
-                                  % 'inbound stream name'):
-            server._create_stream(config, 'inbound')
+                                  % 'stream name'):
+            server._get_stream_name(config)
 
     def test_duplicate_stream_name(self,
                                    server_init_mock,
@@ -143,68 +130,101 @@ class TestStreamCreation(object):
 
         config = {'input': 'some_stream',
                   'name': 'myname',
-                  'handlers': ['some-handler']}
+                  'handlers': [{'name': 'some-handler'}]}
 
         # Testing existing name in plugins
         server.plugins = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server._create_stream(config, 'outbound')
+        with assert_raises_regexp(ValueError,
+                                  ('Duplicate stream name "{}" encountered.'
+                                   ' Stream names must be unique.').format('myname')):
+            server._get_stream_name(config)
 
         # Testing existing name in inbound_streams
         server.plugins = [ ]
         server.inbound_streams = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server._create_stream(config, 'inbound')
+        with assert_raises_regexp(ValueError,
+                                  ('Duplicate stream name "{}" encountered.'
+                                   ' Stream names must be unique.').format('myname')):
+            server._get_stream_name(config)
 
         # Testing existing name in outbound_streams
         server.inbound_streams = [ ]
         server.outbound_streams = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError, 'Stream name already exists. Please rename.'):
-            server._create_stream(config, 'inbound')
+        with assert_raises_regexp(ValueError,
+                                  ('Duplicate stream name "{}" encountered.'
+                                   ' Stream names must be unique.').format('myname')):
+            server._get_stream_name(config)
 
-    def test_no_stream_input(self,
-                             server_init_mock,
-                             broker_class_mock):
+    @mock.patch.object(ait.core.server.server.Server, '_create_handler')
+    def test_no_inbound_stream_input(self,
+                                     create_handler_mock,
+                                     server_init_mock,
+                                     broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         no input specified in the config """
         server = Server()
 
         config = {'name': 'some_stream',
-                  'handlers': ['some-handler']}
+                  'handlers': [{'name': 'some-handler'}]}
 
         with assert_raises_regexp(cfg.AitConfigMissing,
-                                  'The parameter %s is missing from config.yaml'
-                                  % 'inbound stream input'):
-            server._create_stream(config, 'inbound')
+                                  'The parameter {} is missing from config.yaml'
+                                  .format('inbound stream {}\'s input'.format('some_stream'))):
+            server._create_inbound_stream(config)
 
     @mock.patch.object(ait.core.server.server.Server, '_create_handler')
-    def test_successful_stream_creation(self,
-                                        create_handler_mock,
-                                        server_init_mock,
-                                        broker_class_mock):
-        """ Tests that streams are successfully created both with or without
-        handlers """
-        # Testing stream creating with handlers
+    def test_successful_inbound_stream_creation(self,
+                                                create_handler_mock,
+                                                server_init_mock,
+                                                broker_class_mock):
+        """ Tests that all types of inbound streams are successfully created """
+        # Testing creation of inbound stream with ZMQ input/output
         server = Server()
         server.broker = ait.core.server.broker.Broker()
 
         config = {'name': 'some_stream',
                   'input': 'some_input',
-                  'handlers': ['some-handler']}
-        created_stream = server._create_stream(config, 'inbound')
+                  'handlers': [{'name': 'some-handler'}]}
+        created_stream = server._create_inbound_stream(config)
         assert type(created_stream) == ait.core.server.stream.ZMQStream
         assert created_stream.name == 'some_stream'
         assert created_stream.input_ == 'some_input'
         assert type(created_stream.handlers) == list
 
-        # Testing stream creation without handlers
+        # Testing creation of inbound stream with port input
         config = cfg.AitConfig(config={'name': 'some_stream',
-                                       'input': 'some_input'})
-        created_stream = server._create_stream(config, 'inbound')
+                                       'input': 3333})
+        created_stream = server._create_inbound_stream(config)
+        assert type(created_stream) == ait.core.server.stream.PortInputStream
+        assert created_stream.name == 'some_stream'
+        assert created_stream.input_ == 3333
+        assert created_stream.handlers == [ ]
+
+    @mock.patch.object(ait.core.server.server.Server, '_create_handler')
+    def test_successful_outbound_stream_creation(self,
+                                                 create_handler_mock,
+                                                 server_init_mock,
+                                                 broker_class_mock):
+        """ Tests that all types of outbound streams are successfully created """
+        # Testing creation of outbound stream with ZMQ input/output
+        server = Server()
+        server.broker = ait.core.server.broker.Broker()
+
+        config = {'name': 'some_stream',
+                  'handlers': [{'name': 'some-handler'}]}
+        created_stream = server._create_outbound_stream(config)
         assert type(created_stream) == ait.core.server.stream.ZMQStream
         assert created_stream.name == 'some_stream'
-        assert created_stream.input_ == 'some_input'
         assert type(created_stream.handlers) == list
+
+        # Testing creation of outbound stream with port output
+        config = cfg.AitConfig(config={'name': 'some_stream',
+                                       'output': 3333})
+        created_stream = server._create_outbound_stream(config)
+        assert type(created_stream) == ait.core.server.stream.PortOutputStream
+        assert created_stream.name == 'some_stream'
+        assert created_stream.out_port == 3333
+        assert created_stream.handlers == [ ]
 
 
 @mock.patch('ait.core.server.broker.Broker')

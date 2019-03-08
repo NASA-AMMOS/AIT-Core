@@ -92,7 +92,7 @@ class Server(object):
     def _get_stream_name(self, config):
         name = config.get('name', None)
         if name is None:
-            raise(cfg.AitConfigMissing(' stream name'))
+            raise(cfg.AitConfigMissing('stream name'))
         if name in [x.name for x in (self.outbound_streams +
                                      self.inbound_streams +
                                      self.servers +
@@ -134,7 +134,7 @@ class Server(object):
         stream_handlers = self._get_stream_handlers(config, name)
         stream_input = config.get('input', None)
         if stream_input is None:
-            raise(cfg.AitConfigMissing('inbound stream {} input').format(name))
+            raise(cfg.AitConfigMissing('inbound stream {}\'s input'.format(name)))
 
         if type(stream_input) is int:
             return PortInputStream(name,
