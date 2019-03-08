@@ -68,14 +68,14 @@ class PortInputStream(Stream, PortInputClient):
         super(PortInputStream, self).__init__(name, input_, handlers, zmq_args)
 
 
-class ZMQInputStream(Stream, ZMQInputClient):
+class ZMQStream(Stream, ZMQInputClient):
     """
     This stream type listens for messages from another stream or plugin and publishes
     to a ZMQ socket.
     """
 
     def __init__(self, name, input_, handlers, zmq_args={}):
-        super(ZMQInputStream, self).__init__(name, input_, handlers, zmq_args)
+        super(ZMQStream, self).__init__(name, input_, handlers, zmq_args)
 
 
 class PortOutputStream(Stream, PortOutputClient):

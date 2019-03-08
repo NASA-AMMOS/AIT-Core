@@ -4,13 +4,13 @@ import zmq.green
 
 import ait.core
 from ait.core.server.broker import Broker
-from ait.core.server.stream import ZMQInputStream
+from ait.core.server.stream import ZMQStream
 from ait.core.server.handler import PacketHandler
 
 
 class TestStream(object):
     broker = Broker()
-    stream = ZMQInputStream('some_stream',
+    stream = ZMQStream('some_stream',
                             'input_stream',
                             [PacketHandler(input_type=int,
                                            output_type=str,
@@ -33,7 +33,7 @@ class TestStream(object):
         assert type(self.stream.sub) == zmq.green.core._Socket
 
     def test_repr(self):
-        assert self.stream.__repr__() == '<ZMQInputStream name=some_stream>'
+        assert self.stream.__repr__() == '<ZMQStream name=some_stream>'
 
     @mock.patch.object(PacketHandler, 'handle')
     def test_process(self, execute_handler_mock):
@@ -55,7 +55,7 @@ class TestStream(object):
         with assert_raises_regexp(ValueError,
                                   'Sequential workflow inputs and outputs ' +
                                   'are not compatible. Workflow is invalid.'):
-            ZMQInputStream('some_stream',
+            ZMQStream('some_stream',
                            'input_stream',
                            [PacketHandler(input_type=int, output_type=str, packet='CCSDS_HEADER'),
                             PacketHandler(input_type=int, packet='CCSDS_HEADER')],
