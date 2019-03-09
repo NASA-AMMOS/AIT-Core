@@ -33,7 +33,7 @@ class ZMQClient(object):
 
     def publish(self, msg):
         """
-        Publish specified message with client name as topic.
+        Publishes input message with client name as topic.
         """
         self.pub.send("{} {}".format(self.name, msg))
         log.info('Published message from {}'
@@ -42,6 +42,13 @@ class ZMQClient(object):
     def process(self, input_data, topic=None):
         """ This method must be implemented by all streams and plugins that
         inherit from ZMQClient. It is called whenever a message is received.
+
+        Params:
+            input_data:  message received by client
+            topic:       name of component message received from, if received
+                         through ZeroMQ
+        Raises:
+            NotImplementedError since not implemented in base parent class
         """
         raise(NotImplementedError('This method must be implemented in all '
                                   'subclasses of Client.'))

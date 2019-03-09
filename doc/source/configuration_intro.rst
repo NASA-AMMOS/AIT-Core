@@ -1,3 +1,4 @@
+.. _Config_Intro:
 Introduction to AIT Configuration
 =================================
 

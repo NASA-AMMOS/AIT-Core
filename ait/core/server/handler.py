@@ -13,6 +13,14 @@ class Handler(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, input_type=None, output_type=None, **kwargs):
+        """
+        Params:
+            input_type:   (optional) Specifies expected input type, used to
+                                     validate handler workflow. Defaults to None.
+            output_type:  (optional) Specifies expected output type, used to
+                                     validate handler workflow. Defaults to None
+            **kwargs:     (optional) Requirements dependent on child class.
+        """
         self.input_type = input_type
         self.output_type = output_type
 
@@ -28,6 +36,11 @@ class Handler(object):
         Not implemented by base Handler class.
         This handle method must be implemented by any custom handler class
         that inherits from this base Handler.
+
+        Params:
+            input_data: If this is a stream's first handler, the input_data will
+                        be the message received by the stream. Otherwise it will
+                        be the output of the previous handler.
         """
         pass
 
@@ -35,6 +48,18 @@ class Handler(object):
 class PacketHandler(Handler):
 
     def __init__(self, input_type=None, output_type=None, **kwargs):
+        """
+        Params:
+            input_type:   (optional) Specifies expected input type, used to
+                                     validate handler workflow. Defaults to None.
+            output_type:  (optional) Specifies expected output type, used to
+                                     validate handler workflow. Defaults to None
+            **kwargs:
+                packet:   (required) Name of packet, present in default tlm dict.
+        Raises:
+            ValuError:    If packet is not present in kwargs.
+                          If packet is specified but not present in default tlm dict.
+        """
         super(PacketHandler, self).__init__(input_type, output_type)
         self.packet = kwargs.get('packet', None)
 
@@ -51,5 +76,10 @@ class PacketHandler(Handler):
         self._pkt_defn = tlm_dict[self.packet]
 
     def handle(self, input_data):
-        # this is being published to ZMQ - needs to work
+        """
+        Params:
+            input_data:   message received by stream
+        Returns:
+            tuple of packet UID and message received by stream
+        """
         return (self._pkt_defn.uid, input_data)

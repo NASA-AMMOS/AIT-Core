@@ -10,6 +10,23 @@ class Stream(object):
     """
 
     def __init__(self, name, input_, handlers, zmq_args={}, **kwargs):
+        """
+        Params:
+            name:       string name of stream (should be unique)
+            input_:     if int, port number to receive messages on
+                        if string, stream or plugin name to receive messages from
+            handlers:   list of handlers (empty list if no handlers for stream)
+            zmq_args:   (optional) dict containing the follow keys:
+                            zmq_context
+                            zmq_proxy_xsub_url
+                            zmq_proxy_xpub_url
+                        Defaults to empty dict here. Default values
+                        assigned during instantiation of parent class.
+            **kwargs:   (optional) Depends on requirements of child class
+        Raises:
+            ValueError: if workflow is not found to be valid based on handlers'
+                        provided input and output types
+        """
         self.name = name
         self.input_ = input_
         self.handlers = handlers
@@ -36,6 +53,11 @@ class Stream(object):
         """
         Invokes each handler in sequence.
         Publishes final output data.
+
+        Params:
+            input_data:  message received by stream
+            topic:       name of plugin or stream message received from,
+                         if applicable
         """
         for handler in self.handlers:
             output = handler.handle(input_data)
@@ -47,6 +69,8 @@ class Stream(object):
         """
         Return true if each handler's output type is the same as
         the next handler's input type. Return False if not.
+
+        Returns:    boolean - True if workflow is valid, False if not
         """
         for ix, handler in enumerate(self.handlers[:-1]):
             next_input_type = self.handlers[ix + 1].input_type
