@@ -20,6 +20,18 @@ class Plugin(ZMQInputClient):
     __metaclass__ = ABCMeta
 
     def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
+        """
+        Params:
+            inputs:     names of inbound streams plugin receives data from
+            outputs:    names of outbound streams plugin sends its data to
+            zmq_args:   dict containing the follow keys:
+                            zmq_context
+                            zmq_proxy_xsub_url
+                            zmq_proxy_xpub_url
+                        Defaults to empty dict. Default values
+                        assigned during instantiation of parent class.
+            **kwargs:   (optional) Dependent on requirements of child class.
+        """
         self.name = type(self).__name__
         self.inputs = inputs
         self.outputs = outputs
@@ -34,12 +46,39 @@ class Plugin(ZMQInputClient):
 
     @abstractmethod
     def process(self, input_data, topic=None):
+        """
+        Not implemented by base Plugin class.
+        This process method must be implemented by any custom plugin class
+        that inherits from this base Plugin.
+
+        Params:
+            input_data:  Message received from any of the plugin's input streams.
+            topic:       Name of stream that message was received from.
+        """
         pass
 
 
 class DataArchive(Plugin):
 
     def __init__(self, inputs, outputs, datastore='ait.core.db.InfluxDBBackend', **kwargs):
+        """
+        Attempts to connect to database backend. Plugin will not be created if
+        connection fails.
+
+        Creates base packet dictionary for decoding packets with packet UIDs as
+        keys and packet definitions as values.
+
+        Params:
+            inputs:      list of names of input streams to plugin
+            outputs:     list of names of plugin output streams
+            datastore:   path to database backend to use
+            **kwargs:    any args required for connecting to backend database
+        Raises:
+            ImportError:   raised if provided database backend does not exist or
+                           cannot be imported
+            Exception:     raised if the backened database cannot be connected to
+                           for any reason
+        """
         super(DataArchive, self).__init__(inputs, outputs, **kwargs)
 
         self.datastore = datastore
@@ -61,6 +100,16 @@ class DataArchive(Plugin):
             raise(e)
 
     def process(self, input_data, topic=None, **kwargs):
+        """
+        Splits tuple received from PacketHandler into packet UID and packet message.
+        Decodes packet and inserts into database backend.
+        Logs any exceptions raised.
+
+        Params:
+            input_data:  message received from inbound stream through PacketHandler
+            topic:       name of inbound stream message received from
+            **kwargs:    any args required for connected to the backend
+        """
         try:
             split = input_data[1:-1].split(',', 1)
             uid, pkt = int(split[0]), split[1]

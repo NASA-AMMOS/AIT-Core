@@ -179,6 +179,9 @@ class Server(object):
                                               'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                               'zmq_proxy_xpub_url': self.broker.XPUB_URL})
         else:
+            if stream_output is not None:
+                log.warn("Output of stream {} is not an integer port. "
+                         "Stream outputs can only be ports.".format(name))
             return ZMQStream(name,
                              stream_input,
                              stream_handlers,

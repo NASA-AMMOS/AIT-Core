@@ -110,13 +110,6 @@ default:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
-
-    # gui:
-    #   port: 8080
-    #   telemetry:
-    #     - stream:
-    #         name: telem_stream
-    #         port: 3076
             
     server:
         plugins:

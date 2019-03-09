@@ -56,6 +56,11 @@ class Broker(gevent.Greenlet):
         self.poller.register(self.backend, zmq.POLLIN)
 
     def _subscribe_all(self):
+        """
+        Subscribes all streams to their input.
+        Subscribes all plugins to all their inputs.
+        Subscribes all plugin outputs to the plugin.
+        """
         for stream in (self.inbound_streams + self.outbound_streams):
             if not type(stream.input_) is int and stream.input_ is not None:
                 self._subscribe(stream, stream.input_)
@@ -72,7 +77,6 @@ class Broker(gevent.Greenlet):
                     log.warn('The outbound stream {} does not '
                              'exist so will not receive messages '
                              'from {}'.format(output, plugin))
-
                 else:
                     self._subscribe(subscriber, plugin.name)
 
