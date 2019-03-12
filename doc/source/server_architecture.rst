@@ -49,7 +49,7 @@ Streams
    - Outbound streams also have the option to **output** to an integer port (see :ref:`example config below <Stream_config>`).
 
 - Streams can have any number of **handlers**. A stream passes each received *packet* through its handlers in order and publishes the result.
-- There are several stream types that are instantiated based on the stream's configs. The AIT Server will check if the input or output types of streams are integers, and automatically instantiate the appropriate stream type.
+- There are several stream classes that inherit from the base stream class. These child classes exist for handling the input and output of streams differently based on whether the inputs/output are ports or other streams and plugins. The appropriate stream type will be instantiated based on whether the stream is an inbound or outbound stream and based on the inputs/output specified in the stream's configs. If the input type of an inbound stream is an integer, it will be assumed to be a port. If it is a string, it will be assumed to be another stream name or plugin. A port input should always be listed as the first input to an inbound stream. Only outbound streams can have an output, and the output must be a port, not another stream or plugin.
 
 .. _Stream_config:
 Example configuration:
