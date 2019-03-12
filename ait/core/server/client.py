@@ -137,11 +137,11 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
                  zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
                  **kwargs):
 
-        if 'input' in kwargs and kwargs['input'][0].isdigit():
+        if 'input' in kwargs and type(kwargs['input'][0]) is int:
             super(PortInputClient, self).__init__(zmq_context,
                                                   zmq_proxy_xsub_url,
                                                   zmq_proxy_xpub_url,
-                                                  listener=int(kwargs['inputs'][0]))
+                                                  listener=int(kwargs['input'][0]))
         else:
             raise(ValueError('Input must be port in order to create PortInputClient'))
 
