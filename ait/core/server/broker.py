@@ -62,8 +62,9 @@ class Broker(gevent.Greenlet):
         Subscribes all plugin outputs to the plugin.
         """
         for stream in (self.inbound_streams + self.outbound_streams):
-            if not type(stream.input_) is int and stream.input_ is not None:
-                self._subscribe(stream, stream.input_)
+            for input_ in stream.inputs:
+                if not type(input_) is int and input_ is not None:
+                    self._subscribe(stream, input_)
 
         for plugin in self.plugins:
             for input_ in plugin.inputs:

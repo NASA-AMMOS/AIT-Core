@@ -128,11 +128,13 @@ default:
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 3077
+                input: 
+                    - 3077
 
             - stream:
                 name: telem_stream
-                input: 3076
+                input: 
+                    - 3076
                 handlers:
                     - name: ait.core.server.handler.PacketHandler
                       packet: 1553_HS_Packet
