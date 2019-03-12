@@ -105,7 +105,6 @@ class PortOutputClient(ZMQInputClient):
     """
 
     def __init__(self,
-                 input_,
                  zmq_context,
                  zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
                  zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
@@ -133,15 +132,18 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
     and calls the process method on all messages received.
     """
     def __init__(self,
-                 input_,
                  zmq_context,
                  zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL):
+                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+                 **kwargs):
 
-        super(PortInputClient, self).__init__(zmq_context,
-                                              zmq_proxy_xsub_url,
-                                              zmq_proxy_xpub_url,
-                                              listener=int(input_))
+        if 'input' in kwargs and kwargs['input'][0].isdigit():
+            super(PortInputClient, self).__init__(zmq_context,
+                                                  zmq_proxy_xsub_url,
+                                                  zmq_proxy_xpub_url,
+                                                  listener=int(kwargs['inputs'][0]))
+        else:
+            raise(ValueError('Input must be port in order to create PortInputClient'))
 
         # open sub socket
         self.sub = gevent.socket.socket(gevent.socket.AF_INET, gevent.socket.SOCK_DGRAM)

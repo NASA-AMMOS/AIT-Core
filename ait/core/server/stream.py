@@ -9,12 +9,14 @@ class Stream(object):
     types were specified.
     """
 
-    def __init__(self, name, input_, handlers, zmq_args={}, **kwargs):
+    def __init__(self, name, inputs, handlers, zmq_args={}, **kwargs):
         """
         Params:
             name:       string name of stream (should be unique)
-            input_:     if int, port number to receive messages on
-                        if string, stream or plugin name to receive messages from
+            inputs:     list of inputs to stream.
+                        if input is int, port number to receive messages on
+                        if input is string, stream or plugin name to receive
+                            messages from
             handlers:   list of handlers (empty list if no handlers for stream)
             zmq_args:   (optional) dict containing the follow keys:
                             zmq_context
@@ -28,7 +30,7 @@ class Stream(object):
                         provided input and output types
         """
         self.name = name
-        self.input_ = input_
+        self.inputs = inputs if inputs is not None else [ ]
         self.handlers = handlers
 
         if not self.valid_workflow():
@@ -37,11 +39,11 @@ class Stream(object):
 
         # This calls __init__ on subclass of ZMQClient
         if 'output' in kwargs:
-            super(Stream, self).__init__(input_=self.input_,
+            super(Stream, self).__init__(input=self.inputs,
                                          output=kwargs['output'],
                                          **zmq_args)
         else:
-            super(Stream, self).__init__(input_=self.input_,
+            super(Stream, self).__init__(input=self.inputs,
                                          **zmq_args)
 
     def __repr__(self):
@@ -88,8 +90,8 @@ class PortInputStream(Stream, PortInputClient):
     This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
     """
 
-    def __init__(self, name, input_, handlers, zmq_args={}):
-        super(PortInputStream, self).__init__(name, input_, handlers, zmq_args)
+    def __init__(self, name, inputs, handlers, zmq_args={}):
+        super(PortInputStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
 class ZMQStream(Stream, ZMQInputClient):
@@ -98,8 +100,8 @@ class ZMQStream(Stream, ZMQInputClient):
     to a ZMQ socket.
     """
 
-    def __init__(self, name, input_, handlers, zmq_args={}):
-        super(ZMQStream, self).__init__(name, input_, handlers, zmq_args)
+    def __init__(self, name, inputs, handlers, zmq_args={}):
+        super(ZMQStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
 class PortOutputStream(Stream, PortOutputClient):
@@ -108,5 +110,5 @@ class PortOutputStream(Stream, PortOutputClient):
     publishes to a UDP port.
     """
 
-    def __init__(self, name, input_, output, handlers, zmq_args={}):
-        super(PortOutputStream, self).__init__(name, input_, handlers, zmq_args, output=output)
+    def __init__(self, name, inputs, output, handlers, zmq_args={}):
+        super(PortOutputStream, self).__init__(name, inputs, handlers, zmq_args, output=output)
