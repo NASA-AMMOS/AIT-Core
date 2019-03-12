@@ -1,10 +1,11 @@
 # Change Log
 
-## [1.4.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.4.0) (2018-12-12)
+## [1.4.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.4.0) (2019-03-12)
 [Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.3.0...1.4.0)
 
 **Closed issues:**
 
+- Fix logic for influxDB telemetry archive insert method  [\#137](https://github.com/NASA-AMMOS/AIT-Core/issues/137)
 - Get builds onto PyPi [\#14](https://github.com/NASA-AMMOS/AIT-Core/issues/14)
 - Add support for derived telemetry values [\#7](https://github.com/NASA-AMMOS/AIT-Core/issues/7)
 
