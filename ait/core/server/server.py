@@ -136,7 +136,7 @@ class Server(object):
         if stream_input is None:
             raise(cfg.AitConfigMissing('inbound stream {}\'s input'.format(name)))
 
-        if type(stream_input) is int:
+        if type(stream_input[0]) is int:
             return PortInputStream(name,
                                    stream_input,
                                    stream_handlers,
