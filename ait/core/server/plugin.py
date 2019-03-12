@@ -140,10 +140,15 @@ class TelemetryLimitMonitor(Plugin):
         log.info('Starting telemetry limit monitoring')
 
     def process(self, input_data, topic=None, **kwargs):
-        split = input_data[1:-1].split(',', 1)
-        pkt_id, pkt_data = int(split[0]), split[1]
-        packet = self.packet_dict[pkt_id]
-        decoded = tlm.Packet(packet, data=bytearray(pkt_data))
+        try:
+            split = input_data[1:-1].split(',', 1)
+            pkt_id, pkt_data = int(split[0]), split[1]
+            packet = self.packet_dict[pkt_id]
+            decoded = tlm.Packet(packet, data=bytearray(pkt_data))
+        except Exception as e:
+            log.error('TelemetryLimitMonitor: {}'.format(e))
+            log.error('TelemetryLimitMonitor received input_data that it is unable to process. Skipping input ...')
+            return
 
         if packet.name in self.limit_dict:
             for field, defn in self.limit_dict[packet.name].iteritems():
