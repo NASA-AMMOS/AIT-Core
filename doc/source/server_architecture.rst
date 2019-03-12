@@ -42,12 +42,14 @@ Example configuration:
 
 Streams
 ^^^^^^^
-* Streams must be listed under either **inbound-streams** or **outbound-streams**, and must have a **name**.
-* Inbound streams can have either an integer port or another inbound stream name as their input. Inbound streams must have exactly one **input**.
-* Outbound streams can have plugins or other streams as their input. If a plugin is specifying an outbound stream as its output, than that stream does not need to specify the plugin as its input.
-* Outbound streams also have the option to **output** to an integer port (see :ref:`example config below <Stream_config>`).
-* Streams can have any number of **handlers** that will be executed in sequence.
-* There are several stream types that are instantiated based on the stream's configs. The AIT Server will check if the input or output types of streams are integers, and automatically instantiate the appropriate stream type.
+- Streams must be listed under either **inbound-streams** or **outbound-streams**, and must have a **name**.
+- Inbound streams can have an integer port or inbound streams as their **input**. Inbound streams can have multiple inputs.
+- Outbound streams can have plugins or outbound streams as their **input**. Outbound streams can have multiple inputs.
+
+   - Outbound streams also have the option to **output** to an integer port (see :ref:`example config below <Stream_config>`).
+
+- Streams can have any number of **handlers**. A stream passes each received *packet* through its handlers in order and publishes the result.
+- There are several stream types that are instantiated based on the stream's configs. The AIT Server will check if the input or output types of streams are integers, and automatically instantiate the appropriate stream type.
 
 .. _Stream_config:
 Example configuration:
@@ -60,15 +62,34 @@ Example configuration:
             input: 3077
 
         - stream:
-            name: telem_stream
+            name: telem_port_in_stream
             input: 3076
+            handlers:
+                - my_custom_handlers.TestbedTelemHandler
+
+        - stream:
+            name: telem_testbed_stream
+            input: telem_port_in_stream
             handlers:
                 - name: ait.server.handler.PacketHandler
                   packet: 1553_HS_Packet
 
     outbound-streams:
         - stream:
-            name: command_stream
+            name: command_testbed_stream
+            handlers:
+                - name: my_custom_handlers.TestbedCommandHandler
+
+        - stream:
+            name: command_flightlike_stream
+            handlers:
+                - name: my_custom_handlers.FlightlikeCommandHandler
+
+        - stream:
+            name: command_port_out_stream
+            input:
+                - command_testbed_stream
+                - command_flightlike_stream
             output: 3075
 
 
@@ -76,36 +97,9 @@ Handlers
 ^^^^^^^^
 * A handler **name** is required, and should be formatted like **<package>.<module>.<ClassName>**. The server will use this to import and instantiate the handler.
 * Handlers can have any other arguments you would like. These arguments will be made class attributes when the handler is instantiated.
-* If you would like to create a custom handler, it must inherit from :mod:`ait.core.server.handler.Handler` and implement the `handle` method which is called whenever the stream it is subscribed to receives a message. 
+* If you would like to create a custom handler, it must inherit from :mod:`ait.core.server.Handler` and implement the `handle` method which is called whenever the stream it is subscribed to receives a message. 
 
 See example configuration :ref:`above <Stream_config>`.
-
-Parallel Processing
-^^^^^^^^^^^^^^^^^^^
-In order to accomplish parallel processing paths with handlers, multiple streams that each contain a handler to be executed in parallel should be created and given the same input stream, so that when the original input stream receives a message it will pass it onto all streams subscribed to it, which will each execute their own handlers independently and concurrently.
-
-For example, the following configuration uses **parallel_stream_1** and **parallel_stream_2**, which both have the same input stream, in order to execute **parallel_handler_1** and **parallel_handler_2** in parallel.
-
-.. code-block:: none
-
-    inbound-streams:
-        - stream:
-            name: log_stream
-            input: 3077
-
-        - stream:
-            name: parallel_stream_1
-            input: log_stream
-            handlers:
-                - name: parallel_handler_1
-
-
-        - stream:
-            name: parallel_stream_2
-            input: log_stream
-            handlers:
-                - name: parallel_handler_2
-
 
 Configuring the server
 ----------------------
@@ -122,9 +116,9 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                 name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
                 inputs: 
                     - log_stream
-                    - telem_stream
+                    - telem_testbed_stream
                 outputs:
-                    - command_stream
+                    - command_testbed_stream
 
         inbound-streams:
             - stream:
@@ -132,13 +126,32 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                 input: 3077
 
             - stream:
-                name: telem_stream
+                name: telem_port_in_stream
                 input: 3076
+                handlers:
+                    - my_custom_handlers.TestbedTelemHandler
+
+            - stream:
+                name: telem_testbed_stream
+                input: telem_port_in_stream
                 handlers:
                     - name: ait.server.handler.PacketHandler
                       packet: 1553_HS_Packet
 
         outbound-streams:
             - stream:
-                name: command_stream
+                name: command_testbed_stream
+                handlers:
+                    - name: my_custom_handlers.TestbedCommandHandler
+
+            - stream:
+                name: command_flightlike_stream
+                handlers:
+                    - name: my_custom_handlers.FlightlikeCommandHandler
+
+            - stream:
+                name: command_port_out_stream
+                input:
+                    - command_testbed_stream
+                    - command_flightlike_stream
                 output: 3075
