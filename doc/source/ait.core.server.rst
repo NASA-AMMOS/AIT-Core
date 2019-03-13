@@ -6,7 +6,6 @@ Subpackages
 
 .. toctree::
 
-    ait.core.server.plugins
     ait.core.server.test
 
 Submodules

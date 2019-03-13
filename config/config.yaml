@@ -113,17 +113,6 @@ default:
             
     server:
         plugins:
-            - plugin:
-                name: ait.core.server.plugins.ait_gui_plugin.AITGUIPlugin
-                inputs: 
-                    - log_stream
-                    - telem_stream
-                outputs:
-                    - command_stream
-            - plugin:
-                name: ait.core.server.plugin.DataArchive
-                inputs: 
-                    - telem_stream
 
         inbound-streams:
             - stream:
