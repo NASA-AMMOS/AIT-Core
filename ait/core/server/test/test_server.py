@@ -128,7 +128,7 @@ class TestStreamCreation(object):
         a name that already belongs to another stream or plugin """
         server = Server()
 
-        config = {'input': 'some_stream',
+        config = {'input': ['some_stream'],
                   'name': 'myname',
                   'handlers': [{'name': 'some-handler'}]}
 
@@ -183,21 +183,21 @@ class TestStreamCreation(object):
         server.broker = ait.core.server.broker.Broker()
 
         config = {'name': 'some_stream',
-                  'input': 'some_input',
+                  'input': ['some_input'],
                   'handlers': [{'name': 'some-handler'}]}
         created_stream = server._create_inbound_stream(config)
         assert type(created_stream) == ait.core.server.stream.ZMQStream
         assert created_stream.name == 'some_stream'
-        assert created_stream.input_ == 'some_input'
+        assert created_stream.inputs == ['some_input']
         assert type(created_stream.handlers) == list
 
         # Testing creation of inbound stream with port input
         config = cfg.AitConfig(config={'name': 'some_stream',
-                                       'input': 3333})
+                                       'input': [3333]})
         created_stream = server._create_inbound_stream(config)
         assert type(created_stream) == ait.core.server.stream.PortInputStream
         assert created_stream.name == 'some_stream'
-        assert created_stream.input_ == 3333
+        assert created_stream.inputs == [3333]
         assert created_stream.handlers == [ ]
 
     @mock.patch.object(ait.core.server.server.Server, '_create_handler')

@@ -11,11 +11,11 @@ from ait.core.server.handler import PacketHandler
 class TestStream(object):
     broker = Broker()
     stream = ZMQStream('some_stream',
-                            'input_stream',
-                            [PacketHandler(input_type=int,
-                                           output_type=str,
-                                           packet='CCSDS_HEADER')],
-                            zmq_args={'zmq_context': broker.context})
+                       ['input_stream'],
+                       [PacketHandler(input_type=int,
+                                      output_type=str,
+                                      packet='CCSDS_HEADER')],
+                       zmq_args={'zmq_context': broker.context})
 
     def setUp(self):
         self.stream.handlers = [PacketHandler(input_type=int,
@@ -24,11 +24,10 @@ class TestStream(object):
 
     def test_stream_creation(self):
         assert self.stream.name is 'some_stream'
-        assert self.stream.input_ is 'input_stream'
+        assert self.stream.inputs == ['input_stream']
         assert len(self.stream.handlers) == 1
         assert type(self.stream.handlers[0]) == PacketHandler
         assert self.stream.context == self.broker.context
-        print(type(self.stream.pub))
         assert type(self.stream.pub) == zmq.green.core._Socket
         assert type(self.stream.sub) == zmq.green.core._Socket
 
