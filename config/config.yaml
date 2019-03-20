@@ -110,10 +110,25 @@ default:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
+            
+    server:
+        plugins:
 
-    gui:
-      port: 8080
-      telemetry:
-        - stream:
-            name: 1553_HS_Packet
-            port: 3076
+        inbound-streams:
+            - stream:
+                name: log_stream
+                input: 
+                    - 3077
+
+            - stream:
+                name: telem_stream
+                input: 
+                    - 3076
+                handlers:
+                    - name: ait.core.server.handler.PacketHandler
+                      packet: 1553_HS_Packet
+
+        outbound-streams:
+            - stream:
+                name: command_stream
+                output: 3075
