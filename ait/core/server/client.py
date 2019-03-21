@@ -36,8 +36,7 @@ class ZMQClient(object):
         Publishes input message with client name as topic.
         """
         self.pub.send("{} {}".format(self.name, msg))
-        log.info('Published message from {}'
-                  .format(self))
+        log.debug('Published message from {}'.format(self))
 
     def process(self, input_data, topic=None):
         """ This method must be implemented by all streams and plugins that
@@ -74,7 +73,6 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
                                              zmq_proxy_xpub_url)
 
         self.context = zmq_context
-        # open sub socket
         self.sub = self.context.socket(zmq.SUB)
         self.sub.connect(zmq_proxy_xpub_url.replace('*', 'localhost'))
 
@@ -84,11 +82,8 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
         try:
             while True:
                 gevent.sleep(0)
-                string = self.sub.recv()
-                split_msg = string.split()
-                topic, message = split_msg[0], "".join(split_msg[1:])
-                log.info('{} recieved message from {}'
-                         .format(self, topic))
+                topic, message = self.sub.recv().split(' ', 1)
+                log.debug('{} recieved message from {}'.format(self, topic))
                 self.process(message, topic=topic)
 
         except Exception as e:
@@ -121,8 +116,7 @@ class PortOutputClient(ZMQInputClient):
     def publish(self, msg):
         self.pub.sendto("{} {}".format(self.name, msg),
                         ('localhost', int(self.out_port)))
-        log.info('Published message from {}'
-                  .format(self))
+        log.debug('Published message from {}'.format(self))
 
 
 class PortInputClient(ZMQClient, gs.DatagramServer):
@@ -150,6 +144,5 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
 
     def handle(self, packet, address):
         # This function provided for gs.DatagramServer class
-        log.info('{} recieved message from port {}'
-                 .format(self, address))
+        log.debug('{} recieved message from port {}'.format(self, address))
         self.process(packet)
