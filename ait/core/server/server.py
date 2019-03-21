@@ -251,7 +251,7 @@ class Server(object):
         if config is None:
             raise ValueError('No plugin config to create plugin from.')
 
-        name = config.get('name', None)
+        name = config.pop('name', None)
         if name is None:
             raise(cfg.AitConfigMissing('plugin name'))
 
@@ -268,12 +268,12 @@ class Server(object):
                 format(class_name)
             )
 
-        plugin_inputs = config.get('inputs', None)
+        plugin_inputs = config.pop('inputs', None)
         if plugin_inputs is None:
             log.warn('No plugin inputs specified for {}'.format(name))
             plugin_inputs = [ ]
 
-        subscribers = config.get('outputs', None)
+        subscribers = config.pop('outputs', None)
         if subscribers is None:
             log.warn('No plugin outputs specified for {}'.format(name))
             subscribers = [ ]
@@ -285,6 +285,8 @@ class Server(object):
                                 subscribers,
                                 zmq_args={'zmq_context': self.broker.context,
                                           'zmq_proxy_xsub_url': self.broker.XSUB_URL,
-                                          'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+                                          'zmq_proxy_xpub_url': self.broker.XPUB_URL},
+                                **config
+        )
 
         return instance
