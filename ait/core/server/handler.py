@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import cPickle as pickle
 
 from ait.core import tlm
 
@@ -82,4 +83,4 @@ class PacketHandler(Handler):
         Returns:
             tuple of packet UID and message received by stream
         """
-        return (self._pkt_defn.uid, input_data)
+        return pickle.dumps((self._pkt_defn.uid, input_data), 2)
