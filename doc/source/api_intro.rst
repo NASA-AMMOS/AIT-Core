@@ -99,7 +99,7 @@ Below we'll create an example script to do a simple test of the API to ensure th
     # Here we'll wait until telemetry tells us that it received our
     # command or we'll timeout (and raise an Exception) if we wait
     # 5 seconds and nothing happens.
-    if wait('inst.tlm.AIT_EHS.CmdCmdsRcvd == inst.tlm.AIT_EHS[1].CmdCmdsRcvd + 1', timeout=5):
+    if wait('inst.tlm.AIT_EHS.CmdCmdsRcvd == inst.tlm.AIT_EHS[1].CmdCmdsRcvd + 1', _timeout=5):
 
         log.info('Command received')
     else:
