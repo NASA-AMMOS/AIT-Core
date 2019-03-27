@@ -118,7 +118,7 @@ default:
             - stream:
                 name: log_stream
                 input: 
-                    - 3077
+                    - 2514
 
             - stream:
                 name: telem_stream
