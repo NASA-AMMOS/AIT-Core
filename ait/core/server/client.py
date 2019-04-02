@@ -96,7 +96,7 @@ class PortOutputClient(ZMQInputClient):
     """
     This is the parent class for all outbound streams which publish
     to a port. It opens a UDP port to publish to and publishes
-    outgoing messages to this port.
+    outgoing message data to this port.
     """
 
     def __init__(self,
@@ -114,8 +114,7 @@ class PortOutputClient(ZMQInputClient):
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
-        self.pub.sendto("{} {}".format(self.name, msg),
-                        ('localhost', int(self.out_port)))
+        self.pub.sendto(msg, ('localhost', int(self.out_port)))
         log.debug('Published message from {}'.format(self))
 
 
