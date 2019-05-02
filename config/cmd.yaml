@@ -49,3 +49,21 @@
       enum:
         0: DISABLED
         1: ENABLED
+
+- !Command
+  name:      SEND_FIXED_ARG
+  opcode:    0x0004
+  subsystem: CMD
+  title: Send Fixed Argument
+  desc:      |
+    This command tests sending a fixed argument.
+
+  arguments:
+    - !Fixed
+      name: fixed_arg
+      desc: Fixed Argument
+      units: none
+      type: MSB_U16
+      bytes: [0,1]
+      value: 5
+
