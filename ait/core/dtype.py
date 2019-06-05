@@ -269,8 +269,12 @@ class PrimitiveType(object):
                     msg = prefix + ' ' + tok[0].lower() + " " + " ".join(tok[1:])
                 messages.append(msg)
 
+
         if self.string:
-            valid = type(value) is str
+            if type(value) is str:
+                valid = True
+            else:
+                log("Value '%s' is not a string type." % str(value))
         else:
             if type(value) is str:
                 log("String '%s' cannot be represented as a number." % value)
