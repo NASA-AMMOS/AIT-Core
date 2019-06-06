@@ -68,7 +68,7 @@ All the valid parameters and attributes that you can have in your command dictio
 AIT also provides a command line utility for verifying that your command dictionary configuration is valid given that you have a defined schema file. If you pass the ``--cmd`` or ``-c`` flag to ``ait-yaml-validate`` it will check this for you.
 
 .. code-block:: bash
-    
+
     $ ait-yaml-validate --cmd
     016-07-27T09:36:21.408 | INFO     | Validation: SUCCESS: ...
 
@@ -96,6 +96,17 @@ Given a binary blob, you can also decode into a command.
     <class 'ait.core.cmd.Cmd'>
     >>> decoded_cmd
     NO_OP
+
+Default Command Encoding Structure
+----------------------------------
+
+By default AIT encodes commands into 64 word (128 byte) structure with 11 words (22 bytes) of CCSDS overhead. This results in a 53 words (106 bytes) of usable commanding space. All commands are padded out to 106 bytes.
+
++------------------+--------------------+-----------------------------+-----------+-----+
+| Opcode (2 bytes) | Args Size (1 byte) | Arg 1 Encoded (size varies) | Arg 2 ... | ... |
++------------------+--------------------+-----------------------------+-----------+-----+
+
+If you need a different format of command encoding the `extensions <extensions.html>`_ functionality will allow you to override the default behavior.
 
 
 ----
@@ -211,12 +222,12 @@ Below is an example of what you might have defined for a command. It uses most o
         enum:
           0x0000: PROM_REBOOT
           0x0001: DIAG_RAM_REBOOT
-        
+
       - !Fixed
         type:  LSB_U16
         bytes: [4, 5]
         value: 0x0000
-        
+
       - !Fixed
         type:  LSB_U16
         bytes: [6, 7]
