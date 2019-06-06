@@ -127,8 +127,19 @@ default:
                 handlers:
                     - name: ait.core.server.handler.PacketHandler
                       packet: 1553_HS_Packet
+                    - name: ait.core.server.handler.CCSDSPacketHandler
+                      packet_types:
+                          0b10111111010: CCSDS_HEADER
+                          0b00100001100: Ethernet_HS_Packet
+                      packet_secondary_header_length: 2
 
         outbound-streams:
             - stream:
                 name: command_stream
                 output: 3075
+
+    gui:
+        telemetry:
+            - stream:
+                name: 1553_HS_Packet
+                port: 3076
