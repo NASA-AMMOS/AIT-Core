@@ -1,8 +1,9 @@
 from abc import ABCMeta, abstractmethod
 import cPickle as pickle
+import binascii
+import ait.core.log
 
 from ait.core import tlm
-
 
 class Handler(object):
     """
@@ -84,3 +85,59 @@ class PacketHandler(Handler):
             tuple of packet UID and message received by stream
         """
         return pickle.dumps((self._pkt_defn.uid, input_data), 2)
+
+
+class CCSDSPacketHandler(Handler):
+    """
+    This CCSDS handler provides a way to accept multiple packet types on a
+    single stream and have them be processed. This handler takes a string of
+    packed binary data (packed by struct) containing CCSDS packet data. It then
+    maps the APID of the packet to a packet name from the config. Using this
+    packet name, it returns the UID and user data field.
+    """
+    def __init__(self, input_type=None, output_type=None, **kwargs):
+        """
+        Params:
+            input_type:   (optional) Specifies expected input type, used to
+                                     validate handler workflow. Defaults to None.
+            output_type:  (optional) Specifies expected output type, used to
+                                     validate handler workflow. Defaults to None
+            packet_types: (required) APID value : packet name pairs
+            packet_secondary_header_length: (optional) Length of secondary header in octets.
+                                                       Defaults to 0.
+        Raises:
+            ValueError:   If packet in config is not present in default tlm dict.
+        """
+        super(CCSDSPacketHandler, self).__init__(input_type, output_type)
+        self.packet_types = kwargs['packet_types']
+        self.packet_secondary_header_length = kwargs.get('packet_secondary_header_length', 0)
+        tlm_dict = tlm.getDefaultDict()
+        for packet_name in self.packet_types.values():
+            if packet_name not in tlm_dict.keys():
+                msg = 'CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.'.format(packet_name)
+                msg += ' Available packet types are {}'.format(tlm_dict.keys())
+                raise ValueError(msg)
+
+    def handle(self, input_data):
+        """
+        Params:
+            packet:    CCSDS packet
+        Returns:
+            tuple of packet UID and packet data field
+        """
+        packet = bytearray(input_data)
+        packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
+        if packet_apid not in self.packet_types:
+            msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
+            msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
+            ait.core.log.info(msg)
+            return
+        packet_name = self.packet_types[packet_apid]
+        tlm_dict = tlm.getDefaultDict()
+        packet_uid = tlm_dict[packet_name].uid
+
+        packet_data_length = int(binascii.hexlify(packet[10:12]), 16) + 1
+        udf_length = packet_data_length - self.packet_secondary_header_length
+        udf_start = 12 + self.packet_secondary_header_length
+        user_data_field = packet[udf_start:udf_start + udf_length]
+        return pickle.dumps((packet_uid, user_data_field), 2)
