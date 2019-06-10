@@ -1,0 +1,134 @@
+default:
+    command:
+        history:
+            filename: ../../cmdhist.pcap
+        port: 3075
+
+    sequence:
+        directory: ../../seq/
+
+    script:
+        directory: ../../script
+
+    cmddict:
+        filename:  cmd.yaml
+
+    evrdict:
+        filename:  evr.yaml
+
+    tlmdict:
+        filename:  tlm.yaml
+
+    limits:
+        filename:  limits.yaml
+      
+    table:
+        filename: table.yaml
+
+    bsc:
+        filename: bsc.yaml
+
+    dsn:
+        sle:
+            initiator_id: uname
+            password: pw
+            responder_id: uname
+            peer_password: pw
+            version: 5
+        cfdp:
+            mib:
+                path: ./mib
+            datasink:
+                outgoing:
+                    path: ../ait/dsn/cfdp/datasink/outgoing
+                incoming:
+                    path: ../ait/dsn/cfdp/datasink/incoming
+                tempfiles:
+                    path: ../ait/dsn/cfdp/datasink/tempfiles
+                pdusink:
+                    path: ../ait/dsn/cfdp/datasink/pdusink
+            max_file_name_length: 64
+            max_entity_id_length: 8
+            max_transaction_id_length: 8
+
+    logging:
+        name: ait
+        hostname: yourCustomHostForLogging
+
+    leapseconds:
+        filename: leapseconds.dat
+
+    notifications:
+        email:
+            # Specifies the triggers for which a type of notification
+            # (email, text) will be emitted.
+            triggers:
+                - limit-warn
+                - limit-error
+            recipients:
+                - email@address.com
+        text:
+            triggers:
+                - limit-warn
+                - limit-error
+            # Most wireless carriers provide SMS gateways for sending
+            # texts via email. You can look up the address format for your
+            # given carrier. A list of some popular carriers is below:
+            # AT&Tnumber@txt.att.net
+            # Sprintnumber@messaging.sprintpcs.com
+            # T-Mobilenumber@tmomail.net
+            # Verizonnumber@vtext.com
+            recipients:
+                - phonenumber@service.com
+        # Notifications require connection to an SMTP server for sending
+        # both emails and texts. You should configure this to point to
+        # your SMTP server with your credentials. You can use GMails
+        # servers if you have a GMail account.
+        smtp:
+            server: smtp.gmail.com
+            port: 465
+            username: yourSMTPServerUsername
+            password: yourSMTPServerPassword
+        options:
+            frequency: 25
+            threshold: 1
+
+    phase: 'dev'
+
+    data:
+        '1553':
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
+        bad:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
+        lehx:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
+        planning:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
+        sdos:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
+        uplink:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
+        ats:
+            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
+            
+    server:
+        plugins:
+
+        inbound-streams:
+            - stream:
+                name: log_stream
+                input: 
+                    - 2514
+
+            - stream:
+                name: telem_stream
+                input: 
+                    - 3076
+                handlers:
+                    - name: ait.core.server.handler.PacketHandler
+                      packet: 1553_HS_Packet
+
+        outbound-streams:
+            - stream:
+                name: command_stream
+                output: 3075
