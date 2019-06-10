@@ -70,6 +70,8 @@ class PacketHandler(Handler):
 
         tlm_dict = tlm.getDefaultDict()
         if self.packet not in tlm_dict:
+            msg = 'PacketHandler: Packet name {} not present in telemetry dictionary'.format(self.packet)
+            ait.core.log.info(msg)
             return
 
         self._pkt_defn = tlm_dict[self.packet]
@@ -112,7 +114,6 @@ class CCSDSPacketHandler(Handler):
         for packet_name in self.packet_types.values():
             if packet_name not in tlm_dict.keys():
                 msg = 'CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.'.format(packet_name)
-                msg += ' Available packet types are {}'.format(tlm_dict.keys())
                 raise ValueError(msg)
 
     def handle(self, input_data):
@@ -122,17 +123,25 @@ class CCSDSPacketHandler(Handler):
         Returns:
             tuple of packet UID and packet data field
         """
-        try:
-            packet = bytearray(input_data)
-            packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
-            packet_name = self.packet_types[packet_apid]
-            tlm_dict = tlm.getDefaultDict()
-            packet_uid = tlm_dict[packet_name].uid
 
-            packet_data_length = int(binascii.hexlify(packet[10:12]), 16) + 1
-            udf_length = packet_data_length - self.packet_secondary_header_length
-            udf_start = 12 + self.packet_secondary_header_length
-            user_data_field = packet[udf_start:udf_start + udf_length]
-            return pickle.dumps((packet_uid, user_data_field), 2)
-        except:
+        packet = bytearray(input_data)
+        if (len(packet) < 13):
+            ait.core.log.info('CCSDSPacketHandler: Insufficient packet length.')
             return
+        packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
+        if packet_apid not in self.packet_types:
+            msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
+            ait.core.log.info(msg)
+            return
+        packet_name = self.packet_types[packet_apid]
+        tlm_dict = tlm.getDefaultDict()
+        packet_uid = tlm_dict[packet_name].uid
+
+        packet_data_length = int(binascii.hexlify(packet[10:12]), 16) + 1
+        if (len(packet) < 12 + packet_data_length):
+            ait.core.log.info('CCSDSPacketHandler: Insufficient packet length.')
+            return
+        udf_length = packet_data_length - self.packet_secondary_header_length
+        udf_start = 12 + self.packet_secondary_header_length
+        user_data_field = packet[udf_start:udf_start + udf_length]
+        return pickle.dumps((packet_uid, user_data_field), 2)
