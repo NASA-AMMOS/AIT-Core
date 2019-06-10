@@ -132,6 +132,7 @@ class CCSDSPacketHandler(Handler):
         packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
         if packet_apid not in self.packet_types:
             msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
+            msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
             ait.core.log.info(msg)
             return
         packet_name = self.packet_types[packet_apid]
