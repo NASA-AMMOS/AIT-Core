@@ -1,3 +1,4 @@
+import ait.core.log
 from client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
@@ -68,6 +69,10 @@ class Stream(object):
             if output:
                 input_data = output
             else:
+                if type(handler) is ait.core.server.handler.PacketHandler:
+                    ait.core.log.info('PacketHandler returned no data and caused the handling process to end.')
+                if type(handler) is ait.core.server.handler.CCSDSPacketHandler:
+                    ait.core.log.info('CCSDSPacketHandler returned no data and caused the handling process to end.')
                 return
 
         self.publish(input_data)
