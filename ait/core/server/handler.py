@@ -71,8 +71,8 @@ class PacketHandler(Handler):
         tlm_dict = tlm.getDefaultDict()
         if self.packet not in tlm_dict:
             msg = 'PacketHandler: Packet name {} not present in telemetry dictionary'.format(self.packet)
-            ait.core.log.info(msg)
-            return
+            msg += ' Available packet types are {}'.format(tlm_dict.keys())
+            raise ValueError(msg)
 
         self._pkt_defn = tlm_dict[self.packet]
 
@@ -114,6 +114,7 @@ class CCSDSPacketHandler(Handler):
         for packet_name in self.packet_types.values():
             if packet_name not in tlm_dict.keys():
                 msg = 'CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.'.format(packet_name)
+                msg += ' Available packet types are {}'.format(tlm_dict.keys())
                 raise ValueError(msg)
 
     def handle(self, input_data):
@@ -126,7 +127,7 @@ class CCSDSPacketHandler(Handler):
 
         packet = bytearray(input_data)
         if (len(packet) < 13):
-            ait.core.log.info('CCSDSPacketHandler: Insufficient packet length.')
+            ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
             return
         packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
         if packet_apid not in self.packet_types:
@@ -139,7 +140,7 @@ class CCSDSPacketHandler(Handler):
 
         packet_data_length = int(binascii.hexlify(packet[10:12]), 16) + 1
         if (len(packet) < 12 + packet_data_length):
-            ait.core.log.info('CCSDSPacketHandler: Insufficient packet length.')
+            ait.core.log.info('CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
             return
         udf_length = packet_data_length - self.packet_secondary_header_length
         udf_start = 12 + self.packet_secondary_header_length

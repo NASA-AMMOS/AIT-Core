@@ -55,7 +55,7 @@ class Stream(object):
         """
         Invokes each handler in sequence.
         Publishes final output data.
-        Returns None if a handler cannot process input data
+        Terminates all handler calls and does not publish data if None is received from a single handler.
 
         Params:
             input_data:  message received by stream
