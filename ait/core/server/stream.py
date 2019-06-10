@@ -55,6 +55,7 @@ class Stream(object):
         """
         Invokes each handler in sequence.
         Publishes final output data.
+        Returns None if a handler cannot process input data
 
         Params:
             input_data:  message received by stream
@@ -63,7 +64,11 @@ class Stream(object):
         """
         for handler in self.handlers:
             output = handler.handle(input_data)
-            input_data = output
+
+            if output:
+                input_data = output
+            else:
+                return
 
         self.publish(input_data)
 
