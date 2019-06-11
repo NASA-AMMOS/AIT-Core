@@ -60,6 +60,7 @@ class PacketHandler(Handler):
                 packet:   (required) Name of packet, present in default tlm dict.
         Raises:
             ValueError:    If packet is not present in kwargs.
+                           If packet is specified but not present in default tlm dict.
         """
         super(PacketHandler, self).__init__(input_type, output_type)
         self.packet = kwargs.get('packet', None)
