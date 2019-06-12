@@ -208,6 +208,40 @@ def testget():
     with nose.tools.assert_raises(ValueError):
         dtype.get('U8[-42]')
 
+def testString():
+    dt = dtype.get("S16")
+    assert isinstance(dt, dtype.PrimitiveType)
+    assert dt.string
+    assert not dt.float
+    assert not dt.signed
+    assert dt.name == "S16"
+    assert dt.nbytes == 16
+    assert dt.nbits == (16 * 8)
+
+    dt = dtype.get("S32")
+    assert isinstance(dt, dtype.PrimitiveType)
+    assert dt.string
+    assert not dt.float
+    assert not dt.signed
+    assert dt.name == "S32"
+    assert dt.nbytes == 32
+    assert dt.nbits == (32 * 8)
+
+    ival = 1
+    errmsgs = []
+    assert not dt.validate(ival, errmsgs)
+    assert errmsgs
+
+    fval = 1.1
+    errmsgs = []
+    assert not dt.validate(fval, errmsgs)
+    assert errmsgs
+
+    sval = "1"
+    errmsgs = []
+    assert dt.validate(sval)
+    assert not errmsgs
+
 
 if __name__ == '__main__':
     nose.main()
