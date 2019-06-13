@@ -59,8 +59,8 @@ class PacketHandler(Handler):
             **kwargs:
                 packet:   (required) Name of packet, present in default tlm dict.
         Raises:
-            ValuError:    If packet is not present in kwargs.
-                          If packet is specified but not present in default tlm dict.
+            ValueError:    If packet is not present in kwargs.
+                           If packet is specified but not present in default tlm dict.
         """
         super(PacketHandler, self).__init__(input_type, output_type)
         self.packet = kwargs.get('packet', None)
@@ -125,8 +125,12 @@ class CCSDSPacketHandler(Handler):
         Returns:
             tuple of packet UID and packet data field
         """
+        primary_header_length = 6
         packet = bytearray(input_data)
-        packet_apid = int(binascii.hexlify(packet[6:8]), 16) & 0x07FF
+        if (len(packet) < primary_header_length + 1):
+            ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
+            return
+        packet_apid = int(binascii.hexlify(packet[0:2]), 16) & 0x07FF
         if packet_apid not in self.packet_types:
             msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
             msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
@@ -136,8 +140,11 @@ class CCSDSPacketHandler(Handler):
         tlm_dict = tlm.getDefaultDict()
         packet_uid = tlm_dict[packet_name].uid
 
-        packet_data_length = int(binascii.hexlify(packet[10:12]), 16) + 1
+        packet_data_length = int(binascii.hexlify(packet[4:6]), 16) + 1
+        if (len(packet) < primary_header_length + packet_data_length):
+            ait.core.log.info('CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
+            return
         udf_length = packet_data_length - self.packet_secondary_header_length
-        udf_start = 12 + self.packet_secondary_header_length
-        user_data_field = packet[udf_start:udf_start + udf_length]
+        udf_start = primary_header_length + self.packet_secondary_header_length
+        user_data_field = packet[udf_start:udf_start + udf_length + 1]
         return pickle.dumps((packet_uid, user_data_field), 2)

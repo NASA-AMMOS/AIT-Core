@@ -1,3 +1,4 @@
+import ait.core.log
 from client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
@@ -55,6 +56,7 @@ class Stream(object):
         """
         Invokes each handler in sequence.
         Publishes final output data.
+        Terminates all handler calls and does not publish data if None is received from a single handler.
 
         Params:
             input_data:  message received by stream
@@ -63,7 +65,13 @@ class Stream(object):
         """
         for handler in self.handlers:
             output = handler.handle(input_data)
-            input_data = output
+
+            if output:
+                input_data = output
+            else:
+                msg = type(handler).__name__ + " returned no data and caused the handling process to end."
+                ait.core.log.info(msg)
+                return
 
         self.publish(input_data)
 
