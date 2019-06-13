@@ -131,7 +131,6 @@ class CCSDSPacketHandler(Handler):
             ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
             return
         packet_apid = int(binascii.hexlify(packet[0:2]), 16) & 0x07FF
-        ait.core.log.info(packet_apid)
         if packet_apid not in self.packet_types:
             msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
             msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
@@ -145,8 +144,7 @@ class CCSDSPacketHandler(Handler):
         if (len(packet) < 6 + packet_data_length):
             ait.core.log.info('CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
             return
-        udf_length = packet_data_length - self.packet_secondary_header_length
+        udf_length = packet_data_length - self.packet_secondary_header_length + 1
         udf_start = 6 + self.packet_secondary_header_length
         user_data_field = packet[udf_start:udf_start + udf_length]
-        ait.core.log.info(user_data_field[0])
         return pickle.dumps((packet_uid, user_data_field), 2)
