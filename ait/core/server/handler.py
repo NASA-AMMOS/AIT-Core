@@ -125,9 +125,9 @@ class CCSDSPacketHandler(Handler):
         Returns:
             tuple of packet UID and packet data field
         """
-
+        primary_header_length = 6
         packet = bytearray(input_data)
-        if (len(packet) < 7):
+        if (len(packet) < primary_header_length + 1):
             ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
             return
         packet_apid = int(binascii.hexlify(packet[0:2]), 16) & 0x07FF
@@ -141,10 +141,10 @@ class CCSDSPacketHandler(Handler):
         packet_uid = tlm_dict[packet_name].uid
 
         packet_data_length = int(binascii.hexlify(packet[4:6]), 16) + 1
-        if (len(packet) < 6 + packet_data_length):
+        if (len(packet) < primary_header_length + packet_data_length):
             ait.core.log.info('CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
             return
-        udf_length = packet_data_length - self.packet_secondary_header_length + 1
-        udf_start = 6 + self.packet_secondary_header_length
-        user_data_field = packet[udf_start:udf_start + udf_length]
+        udf_length = packet_data_length - self.packet_secondary_header_length
+        udf_start = primary_header_length + self.packet_secondary_header_length
+        user_data_field = packet[udf_start:udf_start + udf_length + 1]
         return pickle.dumps((packet_uid, user_data_field), 2)
