@@ -145,11 +145,7 @@ class CCSDSPacketHandler(Handler):
         packet_apid = str(bin(int(binascii.hexlify(packet[0:2]), 16) & 0x07FF))[2:].zfill(11)
 
         # Check if packet_apid matches with an APID in the config
-        config_apid = ''
-        for i in self.packet_types:
-            if self.comp_apid(packet_apid, i):
-                config_apid = i
-                break
+        config_apid = self.comp_apid(packet_apid)
         if not config_apid:
             msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
             msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
@@ -171,23 +167,22 @@ class CCSDSPacketHandler(Handler):
         udf_start = primary_header_length + self.packet_secondary_header_length
         user_data_field = packet[udf_start:udf_start + udf_length + 1]
 
-        ait.core.log.info(packet_apid)
-        ait.core.log.info(user_data_field[0])
-        ait.core.log.info(user_data_field[1])
-        ait.core.log.info(user_data_field[2])
-
         return pickle.dumps((packet_uid, user_data_field), 2)
 
-    def comp_apid(self, server_apid, config_apid):
+    def comp_apid(self, server_apid):
         """
         Params:
             server_apid:  APID from server
-            config_apid:  APID from config, X represents bit not used
         Returns:
-            True if server_apid matches config_apid
-            False otherwise
+            Matching config_apid if one is present in config
+            None otherwise
         """
-        for i in range(11):
-            if config_apid[i] != 'X' and config_apid[i] != server_apid[i]:
-                return False
-        return True
+        for config_apid in self.packet_types:
+            for i in range(11):
+                if config_apid[i] != 'X' and config_apid[i] != server_apid[i]:
+                    break
+            return config_apid
+        return None
+
+
+
