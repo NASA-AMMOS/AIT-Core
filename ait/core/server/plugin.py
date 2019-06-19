@@ -9,6 +9,7 @@ import gevent.monkey; gevent.monkey.patch_all()
 import ait.core
 from ait.core import  db, limits, log, notify, tlm
 from client import ZMQInputClient
+import cPickle as pickle
 
 
 class Plugin(ZMQInputClient):
@@ -111,8 +112,8 @@ class DataArchive(Plugin):
             **kwargs:    any args required for connected to the backend
         """
         try:
-            split = input_data[1:-1].split(',', 1)
-            uid, pkt = int(split[0]), split[1]
+            load = pickle.loads(input_data)
+            uid, pkt = int(load[0]), load[1]
             defn = self.packet_dict[uid]
             decoded = tlm.Packet(defn, data=bytearray(pkt))
             self.dbconn.insert(decoded, **kwargs)
@@ -141,8 +142,8 @@ class TelemetryLimitMonitor(Plugin):
 
     def process(self, input_data, topic=None, **kwargs):
         try:
-            split = input_data[1:-1].split(',', 1)
-            pkt_id, pkt_data = int(split[0]), split[1]
+            load = pickle.loads(input_data)
+            pkt_id, pkt_data = int(load[0]), load[1]
             packet = self.packet_dict[pkt_id]
             decoded = tlm.Packet(packet, data=bytearray(pkt_data))
         except Exception as e:
