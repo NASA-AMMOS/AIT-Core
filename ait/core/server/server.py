@@ -251,7 +251,9 @@ class Server(object):
         if config is None:
             raise ValueError('No plugin config to create plugin from.')
 
-        name = config.get('name', None)
+        other_args = copy.deepcopy(config)
+
+        name = other_args.pop('name', None)
         if name is None:
             raise(cfg.AitConfigMissing('plugin name'))
 
@@ -268,20 +270,15 @@ class Server(object):
                 format(class_name)
             )
 
-        plugin_inputs = config.get('inputs', None)
+        plugin_inputs = other_args.pop('inputs', None)
         if plugin_inputs is None:
             log.warn('No plugin inputs specified for {}'.format(name))
             plugin_inputs = [ ]
 
-        subscribers = config.get('outputs', None)
+        subscribers = other_args.pop('outputs', None)
         if subscribers is None:
             log.warn('No plugin outputs specified for {}'.format(name))
             subscribers = [ ]
-
-        other_args = copy.deepcopy(config)
-        other_args.pop('name')
-        other_args.pop('inputs', None)
-        other_args.pop('outputs', None)
 
         # try to create plugin
         module = import_module(module_name)
