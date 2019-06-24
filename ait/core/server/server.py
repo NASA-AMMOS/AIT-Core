@@ -8,7 +8,7 @@ import ait.core.server
 from stream import PortInputStream, ZMQStream, PortOutputStream
 from broker import Broker
 from ait.core import log, cfg
-
+import copy
 
 class Server(object):
     """
@@ -251,7 +251,9 @@ class Server(object):
         if config is None:
             raise ValueError('No plugin config to create plugin from.')
 
-        name = config.pop('name', None)
+        other_args = copy.deepcopy(config)
+
+        name = other_args.pop('name', None)
         if name is None:
             raise(cfg.AitConfigMissing('plugin name'))
 
@@ -268,12 +270,12 @@ class Server(object):
                 format(class_name)
             )
 
-        plugin_inputs = config.pop('inputs', None)
+        plugin_inputs = other_args.pop('inputs', None)
         if plugin_inputs is None:
             log.warn('No plugin inputs specified for {}'.format(name))
             plugin_inputs = [ ]
 
-        subscribers = config.pop('outputs', None)
+        subscribers = other_args.pop('outputs', None)
         if subscribers is None:
             log.warn('No plugin outputs specified for {}'.format(name))
             subscribers = [ ]
@@ -286,7 +288,7 @@ class Server(object):
                                 zmq_args={'zmq_context': self.broker.context,
                                           'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                           'zmq_proxy_xpub_url': self.broker.XPUB_URL},
-                                **config
+                                **other_args
         )
 
         return instance
