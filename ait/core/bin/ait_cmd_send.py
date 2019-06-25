@@ -76,8 +76,12 @@ def main():
     host     = args.host
     port     = args.port
     verbose  = args.verbose
-    cmd = api.CmdAPI(port, verbose=verbose)
-    cmd.send(args.command, *args.arguments)
+
+    cmdApi  = api.CmdAPI(port, verbose=verbose)
+
+    cmdArgs = cmdApi.parseArgs(args.command, *args.arguments)
+
+    cmdApi.send(args.command, *cmdArgs)
 
     log.end()
 
