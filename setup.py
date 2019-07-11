@@ -37,7 +37,7 @@ class DevWithGithooks(develop):
 
 setup(
     name         = 'ait-core',
-    version      = '1.3.0',
+    version      = '1.4.0',
     description  = description,
     long_description = long_description,
     long_description_content_type = 'text/x-rst',
@@ -60,6 +60,7 @@ setup(
         'requests>=2.17.0',
         'gevent==1.1.2',
         'gevent-websocket==0.9.5',
+        'pyzmq==17.1.2'
     ],
 
     extras_require = {

@@ -49,3 +49,37 @@
       enum:
         0: DISABLED
         1: ENABLED
+
+- !Command
+  name:      SEND_FIXED_ARG
+  opcode:    0x0004
+  subsystem: CMD
+  title: Send Fixed Argument
+  desc:      |
+    This command tests sending a fixed argument.
+
+  arguments:
+    - !Fixed
+      name: fixed_arg
+      desc: Fixed Argument
+      units: none
+      type: MSB_U16
+      bytes: [0,1]
+      value: 5
+
+- !Command
+  name:      SEND_STR_ARG
+  opcode:    0x0005
+  subsystem: CMD
+  title: Send string argument value
+  desc:      |
+    This command tests sending a single string argument.
+
+  arguments:
+    - !Argument
+      name: str_arg
+      desc: String Argument
+      units: none
+      type: S16
+      bytes: [0,15]
+
