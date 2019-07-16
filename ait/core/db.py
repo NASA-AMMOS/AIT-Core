@@ -473,7 +473,7 @@ class SQLiteBackend(GenericBackend):
                 should be made.
         '''
         cols = ('%s %s' % (defn.name, self._getTypename(defn)) for defn in packet_defn.fields)
-        sql  = 'CREATE TABLE IF NOT EXISTS %s (%s)' % (packet_defn.name, ', '.join(cols))
+        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, ', '.join(cols))
 
         self._conn.execute(sql)
         self._conn.commit()
@@ -499,10 +499,11 @@ class SQLiteBackend(GenericBackend):
             values.append(val)
 
         qmark = ['?'] * len(values)
-        sql   = 'INSERT INTO %s VALUES (%s)' % (pd.name, ', '.join(qmark))
+        sql   = 'INSERT INTO "%s" VALUES (%s)' % (pd.name, ', '.join(qmark))
 
 
         self._conn.execute(sql, values)
+        self._conn.commit()
 
     def query(self, query, **kwargs):
         ''' Query the database and return results

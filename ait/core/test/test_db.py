@@ -256,7 +256,7 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend._create_table(tlmdict['Packet1'])
         sqlbackend._conn.execute.assert_called_with(
-            'CREATE TABLE IF NOT EXISTS Packet1 (col1 INTEGER, SampleTime REAL)'
+            'CREATE TABLE IF NOT EXISTS "Packet1" (col1 INTEGER, SampleTime REAL)'
         )
 
         os.remove(self.test_yaml_file)
@@ -292,7 +292,7 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.insert(pkt)
         sqlbackend._conn.execute.assert_called_with(
-            'INSERT INTO Packet1 VALUES (?, ?)', [1, 33752069.10112411]
+            'INSERT INTO "Packet1" VALUES (?, ?)', [1, 33752069.10112411]
         )
 
         os.remove(self.test_yaml_file)
