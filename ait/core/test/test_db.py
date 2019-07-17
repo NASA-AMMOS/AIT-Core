@@ -189,12 +189,12 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.connect()
         assert sqlbackend._backend.connect.called
-        sqlbackend._backend.connect.assert_called_with('ait')
+        sqlbackend._backend.connect.assert_called_with('ait.db')
         sqlbackend._backend.reset_mock()
 
-        sqlbackend.connect(database='foo')
+        sqlbackend.connect(database='foo.db')
         assert sqlbackend._backend.connect.called
-        sqlbackend._backend.connect.assert_called_with('foo')
+        sqlbackend._backend.connect.assert_called_with('foo.db')
 
     @mock.patch('importlib.import_module')
     def test_sqlite_create(self, importlib_mock):
@@ -223,7 +223,6 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.create(tlmdict=tlmdict)
         
-        assert sqlbackend.connect.called
         sqlbackend._create_table.assert_called_with(tlmdict['Packet1'])
 
         os.remove(self.test_yaml_file)

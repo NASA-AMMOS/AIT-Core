@@ -433,33 +433,48 @@ class SQLiteBackend(GenericBackend):
 
     def connect(self, **kwargs):
         ''' Connect to a SQLite instance
+        If the database doesn't exist it is created first via :func:`create`.
         
         **Configuration Parameters**
 
-        database
-            The database name or file to "connect" to. Defaults to **ait**.
+        database name
+          The database name of file to "connect" to. Passed as either
+          the config key **database.dbname** or the kwargs argument
+          **database**. Defaults to **ait.db**.
         '''
-        if 'database' not in kwargs:
-            kwargs['database'] = 'ait'
 
-        self._conn = self._backend.connect(kwargs['database'])
+        dbname = ait.config.get('database.dbname', kwargs.get('database', None))
+        if dbname:
+            self._conn = self._backend.connect(dbname)
+        else:
+            self.create()
 
     def create(self, **kwargs):
-        '''  Create a database for the current telemetry dictionary
-
-        Connects to a SQLite instance via :func:`connect` and creates a
-        skeleton database for future data inserts.
+        ''' Create and connect to a SQLite instance
+        Since creation and connection are intertwined in SQLite,
+        a pre-existing connection is not required unlike InfluxDB.
+        A skeleton database is built with the telemetry dictionary
+        since tables must be pre-created in SQLite.
 
         **Configuration Parameters**
+
+        database name
+          The database name to create. Passed as either the config
+          key **database.dbname** or the kwargs argument
+          **database**. Defaults to **ait.db**.
 
         tlmdict
             The :class:`ait.core.tlm.TlmDict` instance to use. Defaults to
             the currently configured telemetry dictionary.
-
         '''
+
         tlmdict = kwargs.get('tlmdict', tlm.getDefaultDict())
-        
-        self.connect(**kwargs)
+
+        dbname = ait.config.get('database.dbname', kwargs.get('database', None))
+        if dbname:
+            self._conn = self._backend.connect(dbname)
+        else:
+            self._conn = self._backend.connect('ait.db')
 
         for name, defn in tlmdict.items():
             self._create_table(defn)
