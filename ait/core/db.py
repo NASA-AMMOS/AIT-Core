@@ -502,6 +502,7 @@ class SQLiteBackend(GenericBackend):
                 the database
 
         '''
+        names = []
         values = [ ]
         pd     = packet._defn
 
@@ -510,12 +511,12 @@ class SQLiteBackend(GenericBackend):
 
             if val is None and defn.name in pd.history:
                 val = getattr(packet.history, defn.name)
-            
+
+            names.append(defn.name)
             values.append(val)
 
         qmark = ['?'] * len(values)
-        sql   = 'INSERT INTO "%s" VALUES (%s)' % (pd.name, ', '.join(qmark))
-
+        sql   = 'INSERT INTO "%s" (%s) VALUES (%s)' % (pd.name, ', '.join(names), ', '.join(qmark))
 
         self._conn.execute(sql, values)
         self._conn.commit()
