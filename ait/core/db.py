@@ -481,14 +481,16 @@ class SQLiteBackend(GenericBackend):
 
     def _create_table(self, packet_defn):
         ''' Creates a database table for the given PacketDefinition
+        Automatically adds a self-filling time column
 
         Arguments
             packet_defn
                 The :class:`ait.core.tlm.PacketDefinition` instance for which a table entry
                 should be made.
         '''
+        time_def = 'time DATETIME DEFAULT(STRFTIME(\'%Y-%m-%dT%H:%M:%fZ\', \'NOW\')), '
         cols = ('%s %s' % (defn.name, self._getTypename(defn)) for defn in packet_defn.fields)
-        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, ', '.join(cols))
+        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, time_def + ', '.join(cols))
 
         self._conn.execute(sql)
         self._conn.commit()
