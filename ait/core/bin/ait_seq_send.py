@@ -90,6 +90,7 @@ def main ():
                     delay    = float(tokens[0])
                     name     = tokens[1]
                     args     = [ util.toNumber(t, t) for t in tokens[2:] ]
+                    args     = cmd.parseArgs(name, *args)
                     time.sleep(delay)
                     log.info(line)
                     cmd.send(name, *args)

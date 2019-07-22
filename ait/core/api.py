@@ -28,6 +28,7 @@ script instrument interactions, e.g.:
 from __future__ import absolute_import
 
 import gevent.monkey; gevent.monkey.patch_all()
+
 import gevent
 import gevent.event
 import gevent.server
@@ -41,7 +42,7 @@ import socket
 import time
 
 import ait.core
-from ait.core import cmd, gds, log, pcap, tlm
+from ait.core import cmd, gds, log, pcap, tlm, util
 
 class APIError (Exception):
     """All AIT API exceptions are derived from this class"""
@@ -174,6 +175,41 @@ class CmdAPI:
             return False, messages
 
         return True, []
+
+
+    def parseArgs(self, command, *args):
+        """Iterates over presumably naively parsed arguments and enforces the
+        associated argument type definitions from the command def when possible.
+
+        If number of arguments exceeds the command definition's argument count,
+        those extra arguments will be included in the result.
+
+        Returns A new argument array where argument type adheres to argument
+        definition
+        """
+        parsed_args = []
+        cmd_defn = self._cmddict.get(command, None)
+        if cmd_defn is None:
+            raise TypeError('Unrecognized command: %s' % command)
+
+        arg_defns = cmd_defn.argdefns
+        for arg_defn, value in zip(arg_defns, args):
+            if value is not None and arg_defn is not None:
+                if arg_defn.type.string:
+                    parsed_args.append(value if type(value) is str else str(value))
+                elif arg_defn.enum:
+                    parsed_args.append(value)
+                else:
+                    parsed_args.append(util.toNumberOrStr(value) if type(value) is str else value)
+
+        # Blindly append remaining args to our parsed list
+        remaining_idx = len(parsed_args)
+        while remaining_idx < len(args):
+            parsed_args.append(args[remaining_idx])
+            remaining_idx += 1
+
+        return parsed_args
+
 
 
 class GeventDeque (object):
