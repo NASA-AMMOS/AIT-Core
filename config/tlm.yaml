@@ -51,7 +51,7 @@
       type:  MSB_U32
       value: 0x01234567
     - !Field
-      name:  time
+      name:  time_created
       type:  TIME64
       desc:  Time when data product created (seconds since GPS/ISS epoch)
     - !Field
