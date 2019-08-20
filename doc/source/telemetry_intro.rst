@@ -220,7 +220,7 @@ derivations (optional):
 ------
 
 name:
-    A **string** denoting the name of this field in the packet.
+    A **string** denoting the name of this field in the packet. Note: Do not use the name "time". "time" is a reserved name used in the backend databases for recording the time of entries. To avoid conflicts of this nature, you should avoid using generic names or prepend names with a subsystem identifier.
 
 type:
     A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``ait.dtype.PrimitiveTypes``. Arrays of types are also supported, e.g. ``MSB_U16[32]``.  You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
