@@ -189,12 +189,12 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.connect()
         assert sqlbackend._backend.connect.called
-        sqlbackend._backend.connect.assert_called_with('ait')
+        sqlbackend._backend.connect.assert_called_with('ait.db')
         sqlbackend._backend.reset_mock()
 
-        sqlbackend.connect(database='foo')
+        sqlbackend.connect(database='foo.db')
         assert sqlbackend._backend.connect.called
-        sqlbackend._backend.connect.assert_called_with('foo')
+        sqlbackend._backend.connect.assert_called_with('foo.db')
 
     @mock.patch('importlib.import_module')
     def test_sqlite_create(self, importlib_mock):
@@ -223,7 +223,6 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.create(tlmdict=tlmdict)
         
-        assert sqlbackend.connect.called
         sqlbackend._create_table.assert_called_with(tlmdict['Packet1'])
 
         os.remove(self.test_yaml_file)
@@ -256,7 +255,7 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend._create_table(tlmdict['Packet1'])
         sqlbackend._conn.execute.assert_called_with(
-            'CREATE TABLE IF NOT EXISTS Packet1 (col1 INTEGER, SampleTime REAL)'
+            'CREATE TABLE IF NOT EXISTS "Packet1" (col1 INTEGER, SampleTime REAL)'
         )
 
         os.remove(self.test_yaml_file)
@@ -292,7 +291,7 @@ class TestSQLiteBackend(unittest.TestCase):
 
         sqlbackend.insert(pkt)
         sqlbackend._conn.execute.assert_called_with(
-            'INSERT INTO Packet1 VALUES (?, ?)', [1, 33752069.10112411]
+            'INSERT INTO "Packet1" VALUES (?, ?)', [1, 33752069.10112411]
         )
 
         os.remove(self.test_yaml_file)
