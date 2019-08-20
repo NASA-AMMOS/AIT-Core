@@ -132,17 +132,14 @@ class CCSDSPacketHandler(Handler):
             tuple of packet UID and packet data field
         """
 
-        # Convert input_data (packed binary data string) into bytearray
-        packet = bytearray(input_data)
-
         # Check if packet length is at least 7 bytes
         primary_header_length = 6
-        if (len(packet) < primary_header_length + 1):
+        if len(input_data) < primary_header_length + 1:
             ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
             return
 
         # Extract APID from packet
-        packet_apid = str(bin(int(binascii.hexlify(packet[0:2]), 16) & 0x07FF))[2:].zfill(11)
+        packet_apid = str(bin(int(binascii.hexlify(input_data[0:2]), 16) & 0x07FF))[2:].zfill(11)
 
         # Check if packet_apid matches with an APID in the config
         config_apid = self.comp_apid(packet_apid)
@@ -158,14 +155,14 @@ class CCSDSPacketHandler(Handler):
         packet_uid = tlm_dict[packet_name].uid
 
         # Extract user data field from packet
-        packet_data_length = int(binascii.hexlify(packet[4:6]), 16) + 1
-        if (len(packet) < primary_header_length + packet_data_length):
+        packet_data_length = int(binascii.hexlify(input_data[4:6]), 16) + 1
+        if len(input_data) < primary_header_length + packet_data_length:
             ait.core.log.info(
                 'CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
             return
         udf_length = packet_data_length - self.packet_secondary_header_length
         udf_start = primary_header_length + self.packet_secondary_header_length
-        user_data_field = packet[udf_start:udf_start + udf_length + 1]
+        user_data_field = input_data[udf_start:udf_start + udf_length + 1]
 
         return pickle.dumps((packet_uid, user_data_field), 2)
 
@@ -178,10 +175,13 @@ class CCSDSPacketHandler(Handler):
             None otherwise
         """
         for config_apid in self.packet_types:
+            match = True
             for i in range(11):
                 if config_apid[i] != 'X' and config_apid[i] != server_apid[i]:
+                    match = False
                     break
-            return config_apid
+            if match:
+                return config_apid
         return None
 
 
