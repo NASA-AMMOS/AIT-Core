@@ -108,6 +108,19 @@ By default AIT encodes commands into 64 word (128 byte) structure with 11 words 
 
 If you need a different format of command encoding the `extensions <extensions.html>`_ functionality will allow you to override the default behavior.
 
+Sequences
+---------
+
+AIT supports relative time sequences that can be executed as ground sequences or encoded for upload. Each row of a sequence specifies a time offset in seconds (or fraction of a second) and a command and its arguments. The command will be executed with its arguments after the defined time delay.
+
+.. code-block:: text
+
+    1.5 NO_OP
+    5 NO_op
+    0.5 NO_OP
+
+The above sequence will send a NO_OP command 1.5 seconds after invocation of the sequence, then wait 5 seconds and send another NO_OP command, and finally wait 0.5 second and send a final NO_OP command.
+
 
 ----
 

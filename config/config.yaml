@@ -5,7 +5,7 @@ default:
         port: 3075
 
     sequence:
-        directory: ../../seq/
+        directory: ../sequences
 
     script:
         directory: ../../script
