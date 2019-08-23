@@ -8,7 +8,7 @@ default:
         directory: ../../seq/
 
     script:
-        directory: ../../script
+        directory: ../scripts
 
     cmddict:
         filename:  cmd.yaml
