@@ -481,14 +481,16 @@ class SQLiteBackend(GenericBackend):
 
     def _create_table(self, packet_defn):
         ''' Creates a database table for the given PacketDefinition
+        Automatically adds a self-filling time column
 
         Arguments
             packet_defn
                 The :class:`ait.core.tlm.PacketDefinition` instance for which a table entry
                 should be made.
         '''
+        time_def = 'time DATETIME DEFAULT(STRFTIME(\'%Y-%m-%dT%H:%M:%fZ\', \'NOW\')), '
         cols = ('%s %s' % (defn.name, self._getTypename(defn)) for defn in packet_defn.fields)
-        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, ', '.join(cols))
+        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, time_def + ', '.join(cols))
 
         self._conn.execute(sql)
         self._conn.commit()
@@ -502,6 +504,7 @@ class SQLiteBackend(GenericBackend):
                 the database
 
         '''
+        names = []
         values = [ ]
         pd     = packet._defn
 
@@ -510,12 +513,12 @@ class SQLiteBackend(GenericBackend):
 
             if val is None and defn.name in pd.history:
                 val = getattr(packet.history, defn.name)
-            
+
+            names.append(defn.name)
             values.append(val)
 
         qmark = ['?'] * len(values)
-        sql   = 'INSERT INTO "%s" VALUES (%s)' % (pd.name, ', '.join(qmark))
-
+        sql   = 'INSERT INTO "%s" (%s) VALUES (%s)' % (pd.name, ', '.join(names), ', '.join(qmark))
 
         self._conn.execute(sql, values)
         self._conn.commit()
