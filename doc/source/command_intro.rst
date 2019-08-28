@@ -121,6 +121,16 @@ AIT supports relative time sequences that can be executed as ground sequences or
 
 The above sequence will send a NO_OP command 1.5 seconds after invocation of the sequence, then wait 5 seconds and send another NO_OP command, and finally wait 0.5 second and send a final NO_OP command.
 
+AIT Sequences can be used as ground sequences to automate common tasks during testing and operations or they can be encoded for upload to your payload. Ground sequences can be run via the Sequences component in the UI or via the CLI.
+
+.. code-block:: text
+
+    # send a sequence
+    ait-seq-send my_sequence.txt
+
+    # encode a sequence
+    ait-seq-encode my_sequence.txt
+
 
 ----
 
