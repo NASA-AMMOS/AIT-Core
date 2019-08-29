@@ -1,0 +1,9 @@
+#
+# AIT sequences are relative time sequences where each row
+# consists of a time offset in seconds and the command to
+# execute.
+#
+# For additional information check out the project documentation
+#
+10.5 NO_OP
+10 NO_OP
