@@ -28,7 +28,6 @@ import datetime
 import math
 import os.path
 import pickle
-import time
 
 import requests
 
@@ -284,7 +283,7 @@ class UTCLeapSeconds(object):
         )
 
         try:
-            with open(ls_file, 'r') as outfile:
+            with open(ls_file, 'rb') as outfile:
                 self._data = pickle.load(outfile)
         except IOError:
             log.info('Unable to locate leapseconds config file')
@@ -347,7 +346,7 @@ class UTCLeapSeconds(object):
             leap += 1
 
         self._data = data
-        with open(ls_file, 'w') as outfile:
+        with open(ls_file, 'wb') as outfile:
             pickle.dump(data, outfile)
 
 if not LeapSeconds: LeapSeconds = UTCLeapSeconds()
