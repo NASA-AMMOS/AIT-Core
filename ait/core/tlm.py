@@ -1029,7 +1029,7 @@ class TlmDict(dict):
         if defn.name not in self:
             self[defn.name] = defn
         else:
-            msg = "Duplicate packet name '%s'" % defn.name
+            msg = f'Duplicate packet name {defn.name}'
             log.error(msg)
             raise util.YAMLError(msg)
 

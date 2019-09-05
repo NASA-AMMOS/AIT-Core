@@ -237,7 +237,7 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
     default  = getattr(module, 'DefaultDict', None)
 
     if filename is None:
-        filename = ait.config.get('%s.filename' % config_key, None)
+        filename = ait.config.get(f'{config_key}.filename', None)
 
     if filename is not None and (default is None or reload is True):
         try:
