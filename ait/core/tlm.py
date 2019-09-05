@@ -26,6 +26,7 @@ import pkg_resources
 import struct
 import yaml
 import csv
+from io import IOBase
 
 import ait
 from ait.core import dtype, json, log, util
@@ -1057,7 +1058,7 @@ class TlmDict(dict):
             for pkt in pkts:
                 self.add(pkt)
 
-            if type(stream) is file:
+            if isinstance(stream, IOBase):
                 stream.close()
 
     def toJSON(self):

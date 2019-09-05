@@ -66,6 +66,7 @@ For example:
 import os
 import pkg_resources
 import yaml
+from io import IOBase
 
 import ait
 from ait.core import json, log, tlm, util
@@ -201,7 +202,7 @@ class LimitsDict(dict):
             for lmt in limits:
                 self.add(lmt)
 
-            if type(stream) is file:
+            if isinstance(stream, IOBase):
                 stream.close()
 
     def toJSON(self):

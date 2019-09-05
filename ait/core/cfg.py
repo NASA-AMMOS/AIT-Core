@@ -25,8 +25,8 @@ import platform
 import sys
 import time
 import re
-
 import yaml
+from io import IOBase
 
 import ait
 from ait.core import log, util
@@ -164,7 +164,7 @@ def loadYAML (filename=None, data=None):
 
         config = yaml.load(data)
 
-        if type(data) is file:
+        if isinstance(data, IOBase):
             data.close()
     except IOError as e:
         msg = 'Could not read AIT configuration file "%s": %s'

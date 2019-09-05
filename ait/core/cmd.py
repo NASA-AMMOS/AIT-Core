@@ -23,6 +23,7 @@ import os
 import pkg_resources
 import struct
 import yaml
+from io import IOBase
 
 import ait
 from ait.core import json, log, util
@@ -478,7 +479,7 @@ class CmdDict(dict):
             for cmd in cmds:
                 self.add(cmd)
 
-            if type(stream) is file:
+            if isinstance(stream, IOBase):
                 stream.close()
 
     def toJSON(self):
