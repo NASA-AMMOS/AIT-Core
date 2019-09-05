@@ -157,7 +157,7 @@ def __init_extensions__(modname, modsyms):
 
     extensions = ait.config.get('extensions', None)
 
-    for clsname, cls in modsyms.items():
+    for clsname, cls in modsyms.copy().items():
         if not isinstance(cls, type):
             continue
 
