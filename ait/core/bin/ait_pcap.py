@@ -109,8 +109,8 @@ def main():
 
         except ValueError:
             ap.print_help()
-            print
-            print
+            print()
+            print()
             raise ValueError("Start and end time must be formatted as YYYY-MM-DDThh:mm:ssZ")
 
         pcap.query(starttime, endtime, output, *pcapfiles)
@@ -121,12 +121,12 @@ def main():
 
         if len(times) == 1:
             for start, stop in times.values()[0]:
-                print '%s - %s' % (start, stop)
+                print('%s - %s' % (start, stop))
         else:
             for filename in sorted(times.keys()):
                 basename = os.path.basename(filename)
                 for start, stop in times[filename]:
-                    print '%s: %s - %s' % (filename, start, stop)
+                    print('%s: %s - %s' % (filename, start, stop))
     else:
         ap.print_help()
 

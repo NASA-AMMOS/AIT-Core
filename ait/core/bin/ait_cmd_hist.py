@@ -25,7 +25,7 @@ def main():
 
     with pcap.open(args.filename) as stream:
         for header, data in stream:
-            print header.timestamp.strftime('%Y-%m-%d %H:%M:%S') + '\t' + data
+            print(header.timestamp.strftime('%Y-%m-%d %H:%M:%S') + '\t' + data)
 
     log.end()
 

@@ -123,7 +123,7 @@ def hexdump (bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
     dump += hexdumpLine(bytes[n:end], stepsize)
 
     if printfunc is None:
-      print dump
+      print(dump)
     else:
       printfunc(dump)
 
@@ -218,7 +218,7 @@ def usage (exit=False):
   """
   stream = open(sys.argv[0])
   for line in stream.readlines():
-    if line.startswith("##"): print line.replace("##", ""),
+    if line.startswith("##"): print(line.replace("##", "")),
   stream.close()
 
   if exit:

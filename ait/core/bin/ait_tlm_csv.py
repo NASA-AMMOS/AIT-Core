@@ -189,7 +189,7 @@ def output(csv_writer, row):
     if csv_writer:
         csv_writer.writerow(row)
     else:
-        print ' '.join(row)
+        print(' '.join(row))
 
 if __name__ == "__main__":
     main()

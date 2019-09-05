@@ -40,7 +40,7 @@ def main():
     args = ap.parse_args()
 
     if not os.path.isfile(config_file):
-        print "Unable to locate config. Starting up handlers with default values ..."
+        print('Unable to locate config. Starting up handlers with default values ...')
         host = 'localhost'
         port = '8080'
         handler_configs = []
