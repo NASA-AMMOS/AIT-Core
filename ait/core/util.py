@@ -28,7 +28,7 @@ import time
 import zlib
 import types
 
-import cPickle
+import pickle
 
 import ait
 from ait.core import log
@@ -79,7 +79,7 @@ class ObjectCache (object):
       msg = 'Saving updates from more recent "%s" to "%s"'
       log.info(msg, self.filename, self.cachename)
       with open(self.cachename, 'wb') as output:
-          cPickle.dump(self._dict, output, -1)
+          pickle.dump(self._dict, output, -1)
 
 
     def load(self):
@@ -94,7 +94,7 @@ class ObjectCache (object):
                 self.cache()
             else:
                 with open(self.cachename, 'rb') as stream:
-                    self._dict = cPickle.load(stream)
+                    self._dict = pickle.load(stream)
 
         return self._dict
 

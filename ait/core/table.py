@@ -18,7 +18,7 @@ AIT Table Converter
 The ait.core.table module provides the dictionary for translating tables.
 """
 
-import cPickle
+import pickle
 import os
 import yaml
 import struct
@@ -604,7 +604,7 @@ class FSWTabDictCache (object):
                 self.update()
             else:
                 with open(self.pcklname, "rb") as stream:
-                    self.fswtabdict = cPickle.load(stream)
+                    self.fswtabdict = pickle.load(stream)
 
         return self.fswtabdict
 
@@ -612,7 +612,7 @@ class FSWTabDictCache (object):
         msg = "Saving updates from more recent '%s' to '%s'"
         log.info(msg, self.filename, self.pcklname)
         with open(self.pcklname, "wb") as output:
-            cPickle.dump(self.fswtabdict, output, -1)
+            pickle.dump(self.fswtabdict, output, -1)
 
 
 _DefaultFSWTabDictCache = FSWTabDictCache()
