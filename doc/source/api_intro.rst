@@ -12,14 +12,14 @@ First we'll instantiate an instance of our Instrument with the default commandin
 
     my_instrument = ait.core.api.Instrument()
 
-We can access telemetry via the ``tlm`` attribute. We'll assume that we have a packet called **AIT_EHS** defined in our **tlm.yaml** file::
+We can access telemetry via the ``tlm`` attribute. We'll assume that we have a packet called **1553_HS_Packet** defined in our **tlm.yaml** file::
 
-    telem = my_instrument.tlm.AIT_EHS
+    telem = my_instrument.tlm.1553_HS_Packet
 
-    # print the number of AIT_EHS packets we've received
+    # print the number of 1553_HS_Packet packets we've received
     len(telem)
 
-Let's suppose we have a telemetry field defined in **AIT_EHS** called **CmdsRcvd** which keeps track of how many commands the instrument has received. We could pull that out of the most recently received telemetry packet with::
+Let's suppose we have a telemetry field defined in **1553_HS_Packet** called **CmdsRcvd** which keeps track of how many commands the instrument has received. We could pull that out of the most recently received telemetry packet with::
 
     telem.CmdsRcvd
 
@@ -45,18 +45,18 @@ Wait until 2 seconds have passed::
 
 Wait until telemetry tells us that two commands have been received::
 
-    wait('my_instrument.tlm.AIT_EHS.CmdsRcvd == 2')
+    wait('my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2')
 
 Expressions can be specified as a string (as above), a lambda, or as a function. All 3 of the following are equivalent::
 
     # Using a string
-    wait('my_instrument.tlm.AIT_EHS.CmdsRcvd == 2')
+    wait('my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2')
     
     # Using a lambda expression
-    wait(lambda: my_instrument.tlm.AIT_EHS.CmdsRcvd == 2)
+    wait(lambda: my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2)
     
     # Using a function
-    def twoCmdsRcvd(): return my_instrument.tlm.AIT_EHS.CmdsRcvd == 2
+    def twoCmdsRcvd(): return my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2
     wait(twoCmdsRcvd)
 
 Putting it all Together
@@ -76,7 +76,7 @@ Below we'll create an example script to do a simple test of the API to ensure th
 
     #
     # Wait (forever) until we have have at least two EHS packets.
-    wait(lambda: len(inst.tlm.AIT_EHS) > 2)
+    wait(lambda: len(inst.tlm.1553_HS_Packet) > 2)
 
 
     #
@@ -89,18 +89,17 @@ Below we'll create an example script to do a simple test of the API to ensure th
     # packet.  The current packet may also be accessed via subscript
     # zero.  For example, the following are equivalent:
     #
-    #   inst.tlm.AIT_EHS.CmdCmdsRcvd == inst.tlm.AIT_EHS[0].CmdCmdsRcvd
+    #   inst.tlm.1553_HS_Packet.CmdCmdsRcvd == inst.tlm.1553_HS_Packet[0].CmdCmdsRcvd
     #
     # Older packets are accessed using increasing subscripts, e.g.
     # the penultimate received packet is accessed via:
     #
-    #   inst.tlm.AIT_EHS[1].CmdCmdsRcvd
+    #   inst.tlm.1553_HS_Packet[1].CmdCmdsRcvd
     #
     # Here we'll wait until telemetry tells us that it received our
     # command or we'll timeout (and raise an Exception) if we wait
     # 5 seconds and nothing happens.
-    if wait('inst.tlm.AIT_EHS.CmdCmdsRcvd == inst.tlm.AIT_EHS[1].CmdCmdsRcvd + 1', _timeout=5):
-
+    if wait('inst.tlm.1553_HS_Packet.CmdCmdsRcvd == inst.tlm.1553_HS_Packet[1].CmdCmdsRcvd + 1', _timeout=5):
         log.info('Command received')
     else:
         log.info('Timeout')
