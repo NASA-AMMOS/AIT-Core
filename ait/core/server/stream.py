@@ -1,5 +1,5 @@
 import ait.core.log
-from client import ZMQInputClient, PortInputClient, PortOutputClient
+from .client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
 class Stream(object):

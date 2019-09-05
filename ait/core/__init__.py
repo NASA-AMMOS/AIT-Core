@@ -14,14 +14,13 @@
 
 import sys
 
-import cfg
-import log
+from .log import warn
 
 
 def deprecated(message):
   def deprecated_decorator(func):
       def deprecated_func(*args, **kwargs):
-          log.warn("{} is a deprecated function. {}".format(func.__name__, message))
+          warn("{} is a deprecated function. {}".format(func.__name__, message))
           return func(*args, **kwargs)
       return deprecated_func
   return deprecated_decorator
