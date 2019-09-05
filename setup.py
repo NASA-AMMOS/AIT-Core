@@ -54,13 +54,13 @@ setup(
     },
 
     install_requires = [
-        'bottle==0.12.9',
-        'jsonschema==2.5.1',
-        'pyyaml==3.11',
-        'requests>=2.17.0',
-        'gevent==1.1.2',
-        'gevent-websocket==0.9.5',
-        'pyzmq==17.1.2'
+        'bottle==0.12.17',
+        'jsonschema==3.0.2',
+        'pyyaml==5.1.2',
+        'requests>=2.22.0',
+        'gevent==1.4.0',
+        'gevent-websocket==0.10.1',
+        'pyzmq==18.1.0'
     ],
 
     extras_require = {
