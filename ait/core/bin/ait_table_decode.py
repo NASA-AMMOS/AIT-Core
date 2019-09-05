@@ -59,7 +59,7 @@ def main():
 
         try:
             filename = dictCache.filename
-        except IOError, e:
+        except IOError as e:
             msg = 'Could not load default table dictionary "%s": %s'
             log.error(msg, filename, str(e))
 

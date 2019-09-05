@@ -243,7 +243,7 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
         try:
             default = ObjectCache(filename, loader).load()
             setattr(module, 'DefaultDict', default)
-        except IOError, e:
+        except IOError as e:
             msg = 'Could not load default %s "%s": %s'
             log.error(msg, config_key, filename, str(e))
 

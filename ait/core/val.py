@@ -114,7 +114,7 @@ class YAMLProcessor (object):
 
             return output
 
-        except IOError, e:
+        except IOError as e:
             msg = "Could not process YAML file '" + ymlfile + "': '" + str(e) + "'"
             raise IOError(msg)
 
@@ -154,7 +154,7 @@ class SchemaProcessor(object):
 
         try:
             self.data = json.load(open(self._schemafile))
-        except (IOError, ValueError), e:
+        except (IOError, ValueError) as e:
             msg = "Could not load schema file '" + self._schemafile + "': '" + str(e) + "'"
             raise jsonschema.SchemaError(msg)
 

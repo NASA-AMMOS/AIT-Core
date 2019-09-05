@@ -656,7 +656,7 @@ def getDefaultFSWTabDict ():
     try:
         filename = _DefaultFSWTabDictCache.filename
         fswtabdict  = _DefaultFSWTabDictCache.load()
-    except IOError, e:
+    except IOError as e:
         msg = "Could not load default command dictionary '%s': %s'"
         log.error(msg, filename, str(e))
 

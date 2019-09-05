@@ -166,7 +166,7 @@ def loadYAML (filename=None, data=None):
 
         if type(data) is file:
             data.close()
-    except IOError, e:
+    except IOError as e:
         msg = 'Could not read AIT configuration file "%s": %s'
         log.error(msg, filename, str(e))
 

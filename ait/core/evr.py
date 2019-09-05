@@ -60,7 +60,7 @@ class EVRDict(dict):
 
         try:
             evrs = yaml.load(stream)
-        except IOError, e:
+        except IOError as e:
             msg = "Could not load EVR YAML '{}': '{}'".format(stream, str(e))
             log.error(msg)
             return

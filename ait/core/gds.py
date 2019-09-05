@@ -70,7 +70,7 @@ def compress (input_filename, output_filename=None, verbose=False):
       log.info("Wrote %s (%d bytes).", output_filename, output_size)
       log.info("Compressed %6.2f percent", percent)
 
-  except (IOError, OSError), e:
+  except (IOError, OSError) as e:
     log.error(str(e) + ".")
 
   return output_size
