@@ -1053,7 +1053,7 @@ class TlmDict(dict):
             else:
                 stream        = content
 
-            pkts = yaml.load(stream)
+            pkts = yaml.load(stream, Loader=yaml.Loader)
             pkts = handle_includes(pkts)
             for pkt in pkts:
                 self.add(pkt)
@@ -1157,7 +1157,7 @@ def YAMLCtor_include(loader, node):
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
     with open(name,'r') as f:
-        data = yaml.load(f)
+        data = yaml.load(f, Loader=yaml.Loader)
     return data
 
 

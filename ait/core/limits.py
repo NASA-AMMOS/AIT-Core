@@ -197,7 +197,7 @@ class LimitsDict(dict):
             else:
                 stream        = content
             
-            limits = yaml.load(stream)
+            limits = yaml.load(stream, Loader=yaml.Loader)
 
             for lmt in limits:
                 self.add(lmt)

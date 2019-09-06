@@ -51,7 +51,7 @@ def main():
 
     else:
         with open(config_file) as log_conf:
-            conf = yaml.load(log_conf)
+            conf = yaml.load(log_conf, Loader=yaml.Loader)
 
         mngr_conf = conf['capture_manager']
         host = mngr_conf['manager_server']['host']

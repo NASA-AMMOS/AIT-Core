@@ -162,7 +162,7 @@ def loadYAML (filename=None, data=None):
         if filename:
             data = open(filename, 'rt')
 
-        config = yaml.load(data)
+        config = yaml.load(data, Loader=yaml.Loader)
 
         if isinstance(data, IOBase):
             data.close()

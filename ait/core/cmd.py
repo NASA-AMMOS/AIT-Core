@@ -474,7 +474,7 @@ class CmdDict(dict):
             else:
                 stream        = content
 
-            cmds = yaml.load(stream)
+            cmds = yaml.load(stream, Loader=yaml.Loader)
             cmds = handle_includes(cmds)
             for cmd in cmds:
                 self.add(cmd)
