@@ -8,7 +8,7 @@
 
 - !Command
   name:      SEQ_START
-  opcode:    0x002
+  opcode:    0x0002
   subsystem: CMD
   title: Start Sequence
   desc:      |
@@ -83,3 +83,5 @@
       type: S16
       bytes: [0,15]
 
+# below is example of including additional command dictionary file
+- !include core_set_op_mode.yaml

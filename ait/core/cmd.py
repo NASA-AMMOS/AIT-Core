@@ -509,6 +509,15 @@ def YAMLCtor_CmdDefn(loader, node):
     fields['argdefns'] = fields.pop('arguments', None)
     return createCmdDefn(**fields)
 
+def YAMLCtor_include(loader, node):
+    # Get the path out of the yaml file
+    name = os.path.join(os.path.dirname(loader.name), node.value)
+    data = None
+    with open(name,'r') as f:
+        data = yaml.load(f)
+    return data
+
+yaml.add_constructor('!include' , YAMLCtor_include)
 yaml.add_constructor('!Command' , YAMLCtor_CmdDefn)
 yaml.add_constructor('!Argument', YAMLCtor_ArgDefn)
 yaml.add_constructor('!Fixed'   , YAMLCtor_ArgDefn)

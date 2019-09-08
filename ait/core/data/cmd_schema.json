@@ -1,12 +1,19 @@
 {
-	"$schema": "http://json-schema.org/draft-04/schema#",
-	"title": "Command Dictionary Schema",
-	"description": "Command Dictionary Schema",
-	"type": "array",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Command Dictionary Schema",
+    "description": "Command Dictionary Schema",
+    "type": "array",
     "items": {
-        "required": ["command", "name", "opcode"],
+        "oneOf" : [{
+            "required": ["command", "name", "opcode"]
+            }, {
+            "required" : ["include"]
+        }],
         "additionalProperties": false,
         "properties": {
+            "include": {
+                "type": "string"
+            },
             "command": {
                 "type": "string"
             },
@@ -32,8 +39,15 @@
                         {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["argument", "name", "type", "bytes"],
+                            "oneOf" : [{
+                            "required": ["argument", "name", "type", "bytes"]
+                                }, {
+                            "required": ["include"]
+                            }],
                             "properties": {
+                                "include": {
+                                    "type": "string"
+                                },
                                 "argument": {
                                     "type": "string"
                                 },
@@ -68,8 +82,15 @@
                         {
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["fixed", "type", "bytes"],
+                            "oneOf" : [{
+                            "required": ["fixed", "type", "bytes"]
+                                }, {
+                            "required": ["include"]
+                            }],
                             "properties": {
+                                "include": {
+                                    "type": "string"
+                                },
                                 "fixed": {
                                     "type": "string"
                                 },
