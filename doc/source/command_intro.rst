@@ -171,7 +171,7 @@ type:
     A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``ait.core.dtype.PrimitiveTypes``.
 
 bytes:
-    Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+    Specifies which byte(s) in the command filled by this argument. This can be specified as a single integer or as a list of integers (in the case of a range of bytes). Byte values must be specified in correct numerical order when a command has multiple Arguments or Fixed attributes.
 
 desc (optional):
     A **string** for providing a description of the argument.
@@ -196,7 +196,7 @@ type:
     A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``ait.core.dtype.PrimitiveTypes``.
 
 bytes:
-    Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes).
+    Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes). Byte values must be specified in correct numerical order when a command has multiple Arguments or Fixed attributes.
 
 name (optional):
     A **string** denoting the name of this constant.
