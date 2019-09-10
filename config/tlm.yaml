@@ -57,7 +57,7 @@
       desc:  Time when data product created (seconds since GPS/ISS epoch)
     - !Field
       name: product_type
-      type: U8
+      type: MSB_U32
       enum:
         0: TABLE_FOO
         1: TABLE_BAR
