@@ -17,14 +17,14 @@ This module, pcap.py, is a library to read/write PCAP-formatted files with
 simple open, read, write, close functions
 """
 
-import __builtin__
+import builtins
 import calendar
 import math
 import struct
-import dmc
 import datetime
-import log
 
+from .dmc import getTimestampUTC
+from .log import info
 
 """
 Check the endian of the host we are currently running on.
@@ -144,7 +144,7 @@ class PCapPacketHeader:
         self._swap   = swap
 
         if stream is None:
-            self.ts_sec, self.ts_usec = dmc.getTimestampUTC()
+            self.ts_sec, self.ts_usec = getTimestampUTC()
             self.incl_len             = min(orig_len, maxlen)
             self.orig_len             = orig_len
             self._data                = str(self)
@@ -328,7 +328,7 @@ class PCapRolloverStream:
                 msg = 'Wrote %d bytes, %d packets, %d seconds to %s.'
                 self._stream.close()
 
-            log.info(msg % values)
+            info(msg % values)
 
             self._filename  = None
             self._startTime = None
@@ -459,7 +459,7 @@ def open (filename, mode='r', **options):
                                     options.get('nseconds', None),
                                     options.get('dryrun'  , False))
     else:
-        stream = PCapStream( __builtin__.open(filename, mode), mode )
+        stream = PCapStream( builtins.open(filename, mode), mode )
 
     return stream
 
@@ -488,7 +488,7 @@ def query(starttime, endtime, output=None, *filenames):
 
     with open(output,'w') as outfile:
         for filename in filenames:
-            log.info("pcap.query: processing %s..." % filename)
+            info("pcap.query: processing %s..." % filename)
             with open(filename, 'r') as stream:
                 for header, packet in stream:
                     if packet is not None:

@@ -19,11 +19,11 @@ gevent.monkey.patch_all()
 
 import datetime
 import logging
-import mock
 import os
 import platform
 import socket
 import time
+from unittest import mock
 
 import gevent
 import nose
@@ -193,7 +193,7 @@ class TestSocketStreamCapturer(object):
         handler['data_read'] = 27
         stats = sl.dump_all_handler_stats()
 
-        print stats
+        print(stats)
         assert len(stats) == 1
         assert stats[0]['name'] == 'name'
         assert stats[0]['reads'] == 2
