@@ -1,13 +1,13 @@
 # An example command for setting the operation
 # mode of an instrument.
---- !Command
-name:      CORE_SET_OP_MODE
-opcode:    0x0006
-subsystem: CORE
-desc:      |
-  This command sets the operational mode.
+- !Command
+  name:      CORE_SET_OP_MODE
+  opcode:    0x0006
+  subsystem: CORE
+  desc:      |
+    This command sets the operational mode.
 
-arguments:
+  arguments:
   - !Argument
     name:  mode
     desc:  Mode
