@@ -190,7 +190,11 @@ def test_datapaths ():
             desc:    ISS PL/MDM Simulator
             path:    bin/ait-orbits
             rtaddr:  15
-
+        data:
+            test1:
+                path: /gds/%Y/%Y-%j/test1
+            test2:
+                path: /gds/%Y/%Y-%j/test2
     """
     # check data paths work from YAML()
     config = cfg.AitConfig(data=YAML())

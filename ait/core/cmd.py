@@ -303,7 +303,7 @@ class CmdDefn(json.SlotSerializer, object):
         """The number of arguments to this command (excludes fixed
         arguments).
         """
-        return len(self.args)
+        return len(list(self.args))
 
     @property
     def nbytes(self):

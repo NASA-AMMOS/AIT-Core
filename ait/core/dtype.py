@@ -69,6 +69,7 @@ tuples, for succinctness:
 import datetime
 import struct
 import sys
+import re
 
 from ait.core import cmd, dmc, log, util
 
@@ -235,9 +236,15 @@ class PrimitiveType(object):
         Encodes the given value to a bytearray according to this
         PrimitiveType definition.
         """
-        return bytearray(struct.pack(self.format, value))
+        print(self.format)
+        print(value)
+        if re.sub(r'\W+', '', self.format).lower() in ('b', 'i', 'l', 'q'):
+            fvalue = int(value)
+        else:
+            fvalue = value
+        return bytearray(struct.pack(self.format, fvalue))
 
-    def decode(self, bytes, raw=False):
+    def decode(self, bytestring, raw=False):
         """decode(bytearray, raw=False) -> value
 
         Decodes the given bytearray according to this PrimitiveType
@@ -247,7 +254,7 @@ class PrimitiveType(object):
         ``decode()`` inteface, but has no effect for PrimitiveType
         definitions.
         """
-        return struct.unpack(self.format, buffer(bytes))[0]
+        return struct.unpack(self.format, memoryview(bytestring))[0]
 
 
     def toJSON(self):
@@ -271,16 +278,16 @@ class PrimitiveType(object):
 
 
         if self.string:
-            if type(value) is str:
+            if isinstance(value, str):
                 valid = True
             else:
                 log("Value '%s' is not a string type." % str(value))
         else:
-            if type(value) is str:
+            if isinstance(value, str):
                 log("String '%s' cannot be represented as a number." % value)
-            elif type(value) not in (int, long, float):
+            elif isinstance(value, (int, float)):
                 log("Value '%s' is not a primitive type." % str(value))
-            elif type(value) is float and not self.float:
+            elif isinstance(value, float) and not self.float:
                 log("Float '%g' cannot be represented as an integer." % value)
             else:
                 if value < self.min or value > self.max:
@@ -307,10 +314,10 @@ class ArrayType(object):
 
     def __init__(self, elemType, nelems):
         """Creates a new ArrayType of nelems, each of type elemType."""
-        if type(elemType) is str:
+        if isinstance(elemType, str):
             elemType = get(elemType)
 
-        if type(nelems) is not int:
+        if not isinstance(nelems, int):
             raise TypeError('ArrayType(..., nelems) must be an integer')
 
         self._type   = elemType
@@ -331,7 +338,7 @@ class ArrayType(object):
         """Raise TypeError or IndexError if index is not an integer or out of
         range for the number of elements in this array, respectively.
         """
-        if type(index) is not int:
+        if not isinstance(index, int):
             raise TypeError('list indices must be integers')
         if index < 0 or index >= self.nelems:
             raise IndexError('list index out of range')
@@ -376,9 +383,9 @@ class ArrayType(object):
         if index is None:
             index = slice(0, self.nelems)
 
-        if type(index) is slice:
+        if isinstance(index, slice):
             step    = 1 if index.step is None else index.step
-            indices = xrange(index.start, index.stop, step)
+            indices = range(index.start, index.stop, step)
             result  = [ self.decodeElem(bytes, n, raw) for n in indices ]
         else:
             result = self.decodeElem(bytes, index, raw)
@@ -391,8 +398,8 @@ class ArrayType(object):
         that contain data for the entire array.
         """
         self._assertIndex(index)
-        start = index * self.type.nbytes
-        stop  = start + self.type.nbytes
+        start = int(index * self.type.nbytes)
+        stop  = int(start + self.type.nbytes)
 
         if stop > len(bytes):
             msg =  'Decoding %s[%d] requires %d bytes, '
@@ -655,7 +662,7 @@ class Time32Type(PrimitiveType):
         Encodes the given value to a bytearray according to this
         ComplexType definition.
         """
-        if type(value) is not datetime.datetime:
+        if not isinstance(value, datetime.datetime):
             raise TypeError('encode() argument must be a Python datetime')
 
         return super(Time32Type, self).encode( dmc.toGPSSeconds(value) )
@@ -701,7 +708,7 @@ class Time40Type(PrimitiveType):
         Encodes the given value to a bytearray according to this
         ComplexType definition.
         """
-        if type(value) is not datetime.datetime:
+        if not isinstance(value, datetime.datetime):
             raise TypeError('encode() argument must be a Python datetime')
 
         coarse = Time32Type().encode(value)
@@ -753,7 +760,7 @@ class Time64Type(PrimitiveType):
         Encodes the given value to a bytearray according to this
         ComplexType definition.
         """
-        if type(value) is not datetime.datetime:
+        if not isinstance(value, datetime.datetime):
             raise TypeError('encode() argument must be a Python datetime')
 
         coarse = Time32Type().encode(value)

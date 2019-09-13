@@ -31,7 +31,7 @@ import types
 import pickle
 
 import ait
-from ait.core import cfg, log
+from ait.core import log
 
 
 class ObjectCache (object):

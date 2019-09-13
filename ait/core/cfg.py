@@ -261,7 +261,7 @@ class AitConfig (object):
     def __getattr__ (self, name):
         """Returns the attribute value AitConfig.name."""
         if name not in self:
-            raise AttributeError('No attribute "%s" in AitConfig.' % name)
+            raise AttributeError(f'No attribute "{name}" in AitConfig.')
         return self._getattr_(name)
 
     def __getitem__ (self, name):

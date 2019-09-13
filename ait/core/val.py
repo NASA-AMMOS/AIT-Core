@@ -68,11 +68,11 @@ class YAMLProcessor (object):
                 self.data = self.process(self.ymlfile)
             else:
                 with open(self.ymlfile, 'rb') as stream:
-                    for data in yaml.load_all(stream):
+                    for data in yaml.load_all(stream, Loader=yaml.Loader):
                         self.data.append(data)
 
             self.loaded = True
-        except ScannerError, e:
+        except ScannerError as e:
             msg = "YAML formattting error - '" + self.ymlfile + ": '" + str(e) + "'"
             raise util.YAMLError(msg)
 
@@ -375,13 +375,13 @@ class Validator(object):
         # Make sure the yml and schema have been loaded
         if self._ymlproc.loaded and self._schemaproc.loaded:
             # Load all of the yaml documents. Could be more than one in the same YAML file.
-            for docnum, data in enumerate(yaml.load_all(self._ymlproc.data)):
+            for docnum, data in enumerate(yaml.load_all(self._ymlproc.data, Loader=yaml.Loader)):
 
                 # Since YAML allows integer keys but JSON does not, we need to first
                 # dump the data as a JSON string to encode all of the potential integers
                 # as strings, and then read it back out into the YAML format. Kind of
                 # a clunky workaround but it works as expected.
-                data = yaml.load(json.dumps(data))
+                data = yaml.load(json.dumps(data), Loader=yaml.Loader)
 
                 # Now we want to get a validator ready
                 v = jsonschema.Draft4Validator(self._schemaproc.data)
@@ -491,7 +491,7 @@ class CmdValidator (Validator):
             # check validity of all command rules and argument validity
             return all(rule.valid is True for rule in rules) and argsvalid
 
-        except util.YAMLValidationError, e:
+        except util.YAMLValidationError as e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
@@ -585,7 +585,7 @@ class TlmValidator (Validator):
             # check validity of all packet rules and field validity
             return all(rule.valid is True for rule in rules) and fldsvalid
 
-        except util.YAMLValidationError, e:
+        except util.YAMLValidationError as e:
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:

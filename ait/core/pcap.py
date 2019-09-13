@@ -82,14 +82,15 @@ class PCapGlobalHeader:
 
     def __str__ (self):
         """Returns this PCapGlobalHeader as a binary string."""
-        return struct.pack( self._format,
+
+        return struct.pack(self._format,
                             self.magic_number ,
                             self.version_major,
                             self.version_minor,
                             self.thiszone     ,
                             self.sigfigs      ,
                             self.snaplen      ,
-                            self.network )
+                            self.network).decode(encoding='ISO-8859-1')
 
 
     def incomplete (self):
@@ -356,7 +357,7 @@ class PCapStream:
             self.header = PCapGlobalHeader(stream)
         elif mode.startswith('w') or (mode.startswith('a') and stream.tell() == 0):
             self.header = PCapGlobalHeader()
-            stream.write( str(self.header) )
+            stream.write(str(self.header).encode(encoding='ISO-8859-1'))
 
         self._stream = stream
 

@@ -370,7 +370,7 @@ class FieldDefinition(json.SlotSerializer, object):
             start = self.bytes[0]
             stop  = self.bytes[1] + 1
 
-        return slice(start + offset, stop + offset)
+        return slice(int(start + offset), int(stop + offset))
 
 
     def validate(self, value, messages=None):

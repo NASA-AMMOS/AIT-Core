@@ -238,7 +238,7 @@ def validate(args):
 
 def dispmsgs(msgs):
     for msg in msgs:
-        print "Validation Test Error: %s \n" % msg
+        print(f'Validation Test Error: {msg} \n')
 
 
 def cmdval(args):
@@ -366,7 +366,7 @@ def testTlmValidator():
     try:
         msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), tlm.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate packet name" in e.message
 
     # test failed tlm validation - duplicate field name

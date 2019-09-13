@@ -101,10 +101,10 @@ def testArrayType():
 
 def testArrayTime8():
     array = dtype.ArrayType('TIME8', 3)
-    bytes = '\x40\x80\xC0'
+    bytestring = b'\x40\x80\xC0'
 
-    assert array.decode(bytes)           == [0.25, 0.50, 0.75]
-    assert array.decode(bytes, raw=True) == [  64,  128,  192]
+    assert array.decode(bytestring)           == [0.25, 0.50, 0.75]
+    assert array.decode(bytestring, raw=True) == [  64,  128,  192]
 
 
 def testCMD16():
