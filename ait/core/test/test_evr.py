@@ -80,7 +80,7 @@ def test_bad_formatter_parsing():
         result = example.format_message(input_data)
         assert False
     except ValueError as e:
-        assert e.message == msg
+        assert str(e) == msg
 
 def test_standard_formatter_handling():
     evr_dicts = evr.getDefaultDict()

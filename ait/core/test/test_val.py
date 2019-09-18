@@ -63,7 +63,7 @@ class TestYAMLProcessor(object):
             'b: goodbye\n'
         )
 
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -81,7 +81,7 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)

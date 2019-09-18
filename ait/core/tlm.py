@@ -128,7 +128,7 @@ class FieldList(collections.Sequence):
         return  (
             isinstance(other, collections.Sequence) and
             len(self) == len(other) and
-            all(self[n] == other[n] for n in xrange(len(self)))
+            all(self[n] == other[n] for n in range(len(self)))
         )
 
     def __getitem__(self, key):
@@ -1086,7 +1086,7 @@ class TlmDictWriter(object):
         for pkt_name in self.tlmdict:
             filename = os.path.join(output_path, pkt_name + '.csv')
 
-            with open(filename, 'wb') as output:
+            with open(filename, 'wt') as output:
                 csvwriter = csv.writer(output, quoting=csv.QUOTE_ALL)
                 csvwriter.writerow(header)
 

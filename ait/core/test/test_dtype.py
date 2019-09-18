@@ -67,8 +67,8 @@ def testMSB_F32():
 
 def testArrayType():
     array  = dtype.ArrayType('MSB_U16', 3)
-    bin123 = '\x00\x01\x00\x02\x00\x03'
-    bin456 = '\x00\x04\x00\x05\x00\x06'
+    bin123 = b'\x00\x01\x00\x02\x00\x03'
+    bin456 = b'\x00\x04\x00\x05\x00\x06'
 
     assert array.name   == 'MSB_U16[3]'
     assert array.nbits  == 3 * 16

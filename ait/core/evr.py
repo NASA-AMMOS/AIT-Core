@@ -189,8 +189,8 @@ class EVRDefn(json.SlotSerializer, object):
                 # and require additional processing to determine the length of
                 # the data and decode data.
                 else:
-                    end_index = str(evr_hist_data).index('\x00', cur_byte_index)
-                    d = str(evr_hist_data[cur_byte_index:end_index])
+                    end_index = evr_hist_data.find(0x00, cur_byte_index)
+                    d = str(evr_hist_data[cur_byte_index:end_index], 'utf-8')
 
                 data_chunks.append(d)
             except:

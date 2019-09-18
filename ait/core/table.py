@@ -278,7 +278,7 @@ class FSWTabDefn (object):
                idx += 1
            return
 
-        for i in range(norows):
+        for i in range(int(norows)):
            condition = None
            #this is how to step into table definitions
            for coldef in enumerate(self.coldefns):
@@ -524,10 +524,10 @@ class FSWTabDefn (object):
         #version = "0"
         if verbose is not None and verbose != 0:
             log.info("CRC: %x" % crc32)
-            print "MAGIC_NUMBER: %x" % self.MagicNumber
-            print "UPLOAD_TYPE: " + str(self.uptype)
-            print "VERSION: " + str(version)
-            print "NUMBER_ENTRIES: " + str(no_lines)
+            print(f'MAGIC_NUMBER: {self.MagicNumber}')
+            print(f'UPLOAD_TYPE: {str(self.uptype)}')
+            print (f'VERSION: {str(version)}')
+            print (f'NUMBER_ENTRIES: {str(no_lines)}')
             # print "SHA-1: "+sha1
 
         #print "fname: "+fname+", crc32: "+str(crc32)
@@ -578,7 +578,7 @@ class FSWTabDict (dict):
             self.filename = filename
 
         stream = open(self.filename, "rb")
-        for doc in yaml.load_all(stream):
+        for doc in yaml.load_all(stream, Loader=yaml.Loader):
             for table in doc:
                 self.add(table)
         stream.close()

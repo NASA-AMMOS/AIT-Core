@@ -236,8 +236,6 @@ class PrimitiveType(object):
         Encodes the given value to a bytearray according to this
         PrimitiveType definition.
         """
-        print(self.format)
-        print(value)
         if re.sub(r'\W+', '', self.format).lower() in ('b', 'i', 'l', 'q'):
             fvalue = int(value)
         else:
@@ -285,7 +283,7 @@ class PrimitiveType(object):
         else:
             if isinstance(value, str):
                 log("String '%s' cannot be represented as a number." % value)
-            elif isinstance(value, (int, float)):
+            elif not isinstance(value, (int, float)):
                 log("Value '%s' is not a primitive type." % str(value))
             elif isinstance(value, float) and not self.float:
                 log("Float '%g' cannot be represented as an integer." % value)

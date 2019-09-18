@@ -24,7 +24,7 @@ import struct
 import datetime
 
 from .dmc import getTimestampUTC
-from .log import info
+import ait.core.log as log
 
 """
 Check the endian of the host we are currently running on.
@@ -70,7 +70,7 @@ class PCapGlobalHeader:
             self.sigfigs       = 0
             self.snaplen       = 65535
             self.network       = 147
-            self._data         = str(self)
+            self._data         = self.pack()
         else:
             self.read(stream)
 
@@ -90,8 +90,17 @@ class PCapGlobalHeader:
                             self.thiszone     ,
                             self.sigfigs      ,
                             self.snaplen      ,
-                            self.network).decode(encoding='ISO-8859-1')
+                            self.network)
 
+    def pack (self):
+        return struct.pack(self._format,
+                            self.magic_number ,
+                            self.version_major,
+                            self.version_minor,
+                            self.thiszone     ,
+                            self.sigfigs      ,
+                            self.snaplen      ,
+                            self.network)        
 
     def incomplete (self):
         """Indicates whether or not this PCapGlobalHeader is incomplete."""
@@ -148,7 +157,7 @@ class PCapPacketHeader:
             self.ts_sec, self.ts_usec = getTimestampUTC()
             self.incl_len             = min(orig_len, maxlen)
             self.orig_len             = orig_len
-            self._data                = str(self)
+            self._data                = self.pack()
         else:
             self.read(stream)
 
@@ -166,6 +175,13 @@ class PCapPacketHeader:
                             self.incl_len,
                             self.orig_len )
 
+    def pack (self):
+        """Returns this PCapPacketHeader as a binary string."""
+        return struct.pack( self._format ,
+                            self.ts_sec  ,
+                            self.ts_usec ,
+                            self.incl_len,
+                            self.orig_len )
 
     @property
     def timestamp (self):
@@ -296,10 +312,10 @@ class PCapRolloverStream:
 
             if self._dryrun:
                 self._stream        = True
-                self._total.nbytes += len(PCapGlobalHeader())
+                self._total.nbytes += len(PCapGlobalHeader().pack())
             else:
                 self._stream        = open(self._filename, 'w')
-                self._total.nbytes += len(self._stream.header)
+                self._total.nbytes += len(self._stream.header.pack())
 
         if not self._dryrun:
             self._stream.write(bytes, header)
@@ -324,12 +340,12 @@ class PCapRolloverStream:
                        self._filename )
 
             if self._dryrun:
-                msg = 'Would write %d bytes, %d packets, %d seconds to %s.'
+                msg = 'Would write {} bytes, {} packets, {} seconds to {}.'
             else:
-                msg = 'Wrote %d bytes, %d packets, %d seconds to %s.'
+                msg = 'Wrote {} bytes, {} packets, {} seconds to {}.'
                 self._stream.close()
 
-            info(msg % values)
+            log.info(msg.format(*values))
 
             self._filename  = None
             self._startTime = None
@@ -357,7 +373,7 @@ class PCapStream:
             self.header = PCapGlobalHeader(stream)
         elif mode.startswith('w') or (mode.startswith('a') and stream.tell() == 0):
             self.header = PCapGlobalHeader()
-            stream.write(str(self.header).encode(encoding='ISO-8859-1'))
+            stream.write(self.header.pack())
 
         self._stream = stream
 
@@ -415,14 +431,14 @@ class PCapStream:
         write() returns the number of bytes actually written to the file.
         """
         if type(bytes) is str:
-            bytes = bytearray(bytes)
+            bytes = bytearray(bytes, 'ISO-8859-1')
 
         if not isinstance(header, PCapPacketHeader):
             header = PCapPacketHeader(orig_len=len(bytes))
 
         packet = bytes[0:header.incl_len]
 
-        self._stream.write( str(header) )
+        self._stream.write( header.pack() )
         self._stream.write( packet      )
         self._stream.flush()
 
@@ -489,7 +505,7 @@ def query(starttime, endtime, output=None, *filenames):
 
     with open(output,'w') as outfile:
         for filename in filenames:
-            info("pcap.query: processing %s..." % filename)
+            log.info("pcap.query: processing %s..." % filename)
             with open(filename, 'r') as stream:
                 for header, packet in stream:
                     if packet is not None:

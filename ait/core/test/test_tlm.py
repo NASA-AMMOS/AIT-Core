@@ -49,7 +49,7 @@ class TestTlmDictWriter(object):
 
         csv_row1 = ['col1', '0', '2', '0x10', 'MSB', 'MSB_U16', 'test column 1', 'a: testa']
 
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_doc)
 
         tlmdict = tlm.TlmDict(self.test_yaml_file)
@@ -60,11 +60,11 @@ class TestTlmDictWriter(object):
         expected_csv = os.path.join(self.test_outpath, 'Packet1.csv')
         assert os.path.isfile(expected_csv)
 
-        with open(expected_csv, 'rb') as csvfile:
+        with open(expected_csv, 'rt') as csvfile:
             reader = csv.reader(csvfile)
             # skip header
-            reader.next()
-            actual_row = reader.next()
+            next(reader)
+            actual_row = next(reader)
             assert actual_row[0] == csv_row1[0]
             assert actual_row[1] == csv_row1[1]
             assert actual_row[4] == csv_row1[4]
@@ -87,7 +87,7 @@ class TestFieldDefinition(object):
     )
 
     def setUp(self):
-        with open(self.test_yaml_test1, 'wb') as out:
+        with open(self.test_yaml_test1, 'wt') as out:
             out.write(self.yaml_docs_test1)
 
     def tearDown(self):
@@ -109,7 +109,7 @@ class TestFieldDefinition(object):
             '      type: MSB_U16\n'
         )
 
-        with open(test_yaml_test2, 'wb') as out:
+        with open(test_yaml_test2, 'wt') as out:
             out.write(yaml_docs_test2)
 
         tlmdict = tlm.TlmDict(test_yaml_test2)
@@ -140,7 +140,7 @@ class TestDerivationDefinition(object):
     )
 
     def setUp(self):
-        with open(self.test_yaml_deriv1, 'wb') as out:
+        with open(self.test_yaml_deriv1, 'wt') as out:
             out.write(self.yaml_docs_deriv1)
 
     def tearDown(self):
@@ -170,7 +170,7 @@ class TestDerivationDefinition(object):
             '      equation: field_1 + field_2\n'
         )
 
-        with open(test_yaml_deriv2, 'wb') as out:
+        with open(test_yaml_deriv2, 'wt') as out:
             out.write(yaml_docs_deriv2)
 
         tlmdict = tlm.TlmDict(test_yaml_deriv2)
@@ -222,10 +222,10 @@ class TestTlmConfig(object):
     )
 
     def setUp(self):
-        with open(self.test_yaml_inc1, 'wb') as out:
+        with open(self.test_yaml_inc1, 'wt') as out:
             out.write(self.yaml_docs_inc1)
 
-        with open(self.test_yaml_inc2, 'wb') as out:
+        with open(self.test_yaml_inc2, 'wt') as out:
             out.write(self.yaml_docs_inc2)
 
     def tearDown(self):
@@ -243,7 +243,7 @@ class TestTlmConfig(object):
             '      type: MSB_U16\n'
         )
 
-        with open(self.test_yaml_main, 'wb') as out:
+        with open(self.test_yaml_main, 'wt') as out:
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
@@ -269,7 +269,7 @@ class TestTlmConfig(object):
             '    - !include /tmp/test_inc2.yaml\n'
         )
 
-        with open(self.test_yaml_main, 'wb') as out:
+        with open(self.test_yaml_main, 'wt') as out:
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
@@ -290,7 +290,7 @@ class TestTlmConfig(object):
             '- !include /tmp/test_inc2.yaml\n'
         )
 
-        with open(test_yaml_inc3, 'wb') as out:
+        with open(test_yaml_inc3, 'wt') as out:
             out.write(yaml_docs_inc3)
 
         yaml_docs_main = (
@@ -303,7 +303,7 @@ class TestTlmConfig(object):
             '    - !include /tmp/test_inc3.yaml\n'
         )
 
-        with open(self.test_yaml_main, 'wb') as out:
+        with open(self.test_yaml_main, 'wt') as out:
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
@@ -325,7 +325,7 @@ class TestTlmConfig(object):
             '- !include /tmp/test_inc2.yaml\n'
         )
 
-        with open(test_yaml_inc3, 'wb') as out:
+        with open(test_yaml_inc3, 'wt') as out:
             out.write(yaml_docs_inc3)
 
         test_yaml_inc4 = '/tmp/test_inc4.yaml'
@@ -336,7 +336,7 @@ class TestTlmConfig(object):
             '      type: MSB_U16\n'
         )
 
-        with open(test_yaml_inc4, 'wb') as out:
+        with open(test_yaml_inc4, 'wt') as out:
             out.write(yaml_docs_inc4)
 
         yaml_docs_main = (
@@ -349,7 +349,7 @@ class TestTlmConfig(object):
             '    - !include /tmp/test_inc4.yaml\n'
         )
 
-        with open(self.test_yaml_main, 'wb') as out:
+        with open(self.test_yaml_main, 'wt') as out:
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)
@@ -374,7 +374,7 @@ class TestTlmConfig(object):
         )
 
         test_yaml_inc3 = '/tmp/test_inc3.yaml'
-        with open(test_yaml_inc3, 'wb') as out:
+        with open(test_yaml_inc3, 'wt') as out:
             out.write(yaml_docs_inc3)
 
         yaml_docs_inc4 = (
@@ -385,7 +385,7 @@ class TestTlmConfig(object):
         )
 
         test_yaml_inc4 = '/tmp/test_inc4.yaml'
-        with open(test_yaml_inc4, 'wb') as out:
+        with open(test_yaml_inc4, 'wt') as out:
             out.write(yaml_docs_inc4)
 
         yaml_docs_main = (
@@ -401,7 +401,7 @@ class TestTlmConfig(object):
             '- !include /tmp/test_inc4.yaml\n'
         )
 
-        with open(self.test_yaml_main, 'wb') as out:
+        with open(self.test_yaml_main, 'wt') as out:
             out.write(yaml_docs_main)
 
         tlmdict = tlm.TlmDict(self.test_yaml_main)

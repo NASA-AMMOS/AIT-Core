@@ -37,7 +37,7 @@ class Crc32FileTest(unittest.TestCase):
         self.assertEqual(crc, TEST_FILE_CRC)
 
     def testCrc32WithTestFileAndSkip(self):
-    	"""Test the CRC-32 with a skip specified"""
+        """Test the CRC-32 with a skip specified"""
         crc = util.crc32File(TEST_FILE_PATH, 1)
         self.assertEqual(crc, TEST_FILE_CRC_SKIP_BYTE)
 

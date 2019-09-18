@@ -320,7 +320,7 @@ class AitConfig (object):
             for k in data:
                 paths[k] = data[k]['path']
         except KeyError as e:
-            raise AitConfigMissing(e.message)
+            raise AitConfigMissing(str(e))
         except Exception as e:
             raise AitConfigError('Error reading data paths: %s' % e)
 
