@@ -23,7 +23,7 @@ from ait.core import util
 
 
 """Specify some test file info"""
-TEST_FILE_PATH = os.path.dirname(__file__) + "/testdata/util/test_util.txt"
+TEST_FILE_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'util', 'test_util.txt')
 TEST_FILE_SIZE = 117
 TEST_FILE_CRC = 3099955026
 TEST_FILE_CRC_SKIP_BYTE = 651256842
