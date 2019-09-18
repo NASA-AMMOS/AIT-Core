@@ -21,7 +21,7 @@ import struct
 import nose
 
 import ait
-from ait.core import limits, tlm
+from ait.core import cfg, limits, tlm
 
 def test_limit_range():
     """

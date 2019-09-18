@@ -18,7 +18,7 @@ import nose
 import nose.tools
 
 import ait
-from ait.core import evr
+from ait.core import cfg, evr
 
 
 def test_evr_load():

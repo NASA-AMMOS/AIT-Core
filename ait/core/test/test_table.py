@@ -20,7 +20,7 @@ import warnings
 
 import nose
 
-from ait.core import table
+from ait.core import cfg, table
 
 TmpFilename = None
 
