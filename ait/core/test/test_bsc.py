@@ -14,6 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
 
@@ -25,7 +26,6 @@ import socket
 import time
 import mock
 
-import gevent
 import nose
 import nose.tools
 

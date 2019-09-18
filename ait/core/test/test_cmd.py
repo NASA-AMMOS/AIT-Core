@@ -15,7 +15,7 @@
 import nose
 import struct
 
-from ait.core import cmd, dtype
+from ait.core import cfg, cmd, dtype
 
 
 CMDDICT_TEST = """
