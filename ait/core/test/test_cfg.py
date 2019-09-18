@@ -22,7 +22,7 @@ import nose
 
 from ait.core import cfg
 
-from . import TestFile
+from ait.core.test import TestFile
 
 
 def YAML ():
