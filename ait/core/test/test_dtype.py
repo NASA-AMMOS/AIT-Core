@@ -22,7 +22,7 @@ import struct
 import nose
 import nose.tools
 
-from ait.core import dtype
+from ait.core import cfg, dtype
 
 
 def fpeq (p, q, eps=1e-6):
