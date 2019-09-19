@@ -18,7 +18,7 @@ import nose
 import nose.tools
 
 import ait.core
-from ait.core import notify
+from ait.core import cfg, notify
 
 
 @mock.patch('ait.core.notify.send_text_alert')
