@@ -1,0 +1,69 @@
+This directory contains files need by your OpenMCT installation that
+will expose AIT realtime and historical telemetry endpoints to the
+OpenMCT framework.
+
+------------------------
+
+Notes:
+
+- It is assumed that the AitOpenMctPlugin has been activated in the AIT
+server configuration file, as this provides the sources for telemetry.
+See the local file 'ait_cfg_section.yaml' for the expected section to 
+be added to your $AIT_CONFIG file.
+
+- For this guide, we also assume that the AIT server is running on 
+host 'localhost' and port 8082, which are two configuration options
+that can be passed to the OpenMct AIT extension during
+session setup.
+
+- The AIT extension requires 'http.js', a library that was
+included in the OpenMCT Tutorial (Apache License, Version 2.0).
+The source location of this file is: 
+https://github.com/nasa/openmct-tutorial/tree/completed/lib/http.js  
+
+------------------------
+
+Setup:
+
+1) Install OpenMCT (https://nasa.github.io/openmct/getting-started/)
+We will assume that OpenMCT is installed in a directory referenced
+by the environment variable ${OPENMCT_DIR}
+
+
+2) Copy the downloaded 'http.js' library file to your OpenMCT installation:
+
+> mkdir ${OPENMCT_DIR}/lib
+> cp http.js ${OPENMCT_DIR}/lib/
+
+
+3) Copy the 'ait_integration.js' file to your OpenMCT installation:
+
+> cp ait_integration.js ${OPENMCT_DIR}
+
+
+4) Edit the existing OpenMCT 'index.html' file to include
+references to the 'http.js' and 'ait_integration.js' (prior
+to the script tag that initializes OpenMCT):
+
+        <script src="lib/http.js"></script> 
+        <script src="ait_integration.js"></script>
+
+ 
+5) Install AIT extensions to the openmct framework (prior
+to the openmct.start() function call):
+
+         openmct.install(AITIntegration({
+                 host: 'localhost',
+                 port : 8082 })); 
+         openmct.install(AITHistoricalTelemetryPlugin());
+         openmct.install(AITRealtimeTelemetryPlugin());
+ 
+ 
+--------------------------
+
+Running:
+
+1) Start the AIT server (configured to run AIT's OpenMct plugin)
+2) Start OpenMCT server.
+3) Open browser to location of the OpenMCT UI endpoint.
+

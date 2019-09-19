@@ -25,6 +25,7 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    Extensions <extensions>
    Command & Data Handling Tables <c_and_dh_intro>
    bsc_intro
+   plugin_openmct
 
 Indices and tables
 ==================
