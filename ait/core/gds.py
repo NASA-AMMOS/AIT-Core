@@ -189,7 +189,7 @@ def parseArgs (argv, defaults):
       if key.startswith("--"):
         key = key[2:]
       options[key] = value
-  except getopt.GetoptError, err:
+  except getopt.GetoptError as err:
     log.error( str(err)  )
     usage( exit=True )
 

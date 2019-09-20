@@ -38,7 +38,7 @@ import socket
 import time
 import argparse
 
-from ait.core import log, tlm
+from ait.core import util, log, tlm
 
 
 def main():
