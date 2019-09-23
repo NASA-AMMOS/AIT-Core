@@ -462,7 +462,9 @@ class CmdDict(dict):
             else:
                 stream        = content
 
-            for cmd in yaml.load(stream):
+            cmds = yaml.load(stream)
+            cmds = handle_includes(cmds)
+            for cmd in cmds:
                 self.add(cmd)
 
             if type(stream) is file:
@@ -496,6 +498,22 @@ def getMaxCmdSize():
     removes 1 word for CCSDS header (-1)
     """
     return (MAX_CMD_WORDS - 1) * 2
+
+
+def handle_includes(defns):
+    '''Recursive handling of includes for any input list of defns.
+    The assumption here is that when an include is handled by the
+    pyyaml reader, it adds them as a list, which is stands apart from the rest
+    of the expected YAML definitions.
+    '''
+    newdefns = []
+    for d in defns:
+        if isinstance(d,list):
+            newdefns.extend(handle_includes(d))
+        else:
+            newdefns.append(d)
+
+    return newdefns
 
 
 def YAMLCtor_ArgDefn(loader, node):
