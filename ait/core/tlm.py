@@ -58,7 +58,7 @@ class wordarray(object):
         length = len(self)
 
         if isinstance(key, slice):
-            return [self[n] for n in xrange(*key.indices(length))]
+            return [self[n] for n in range(*key.indices(length))]
 
         elif isinstance(key, int):
             if key < 0:
@@ -743,7 +743,7 @@ class PacketDefinition(json.SlotSerializer, object):
 
     def simulate(self, fill=None):
         size   = self.nbytes
-        values = xrange(size) if fill is None else ((fill,) * size)
+        values = range(size) if fill is None else ((fill,) * size)
         return Packet(self, bytearray(values))
 
 

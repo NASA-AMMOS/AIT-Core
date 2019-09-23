@@ -114,7 +114,7 @@ def hexdump (bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
   bytes = bytearray(bytes)
   size  = len(bytes)
 
-  for n in xrange(0, size, stepsize):
+  for n in range(0, size, stepsize):
     if addr is not None:
       dump = preamble + "0x%04X: " % (addr + n)
     else:
@@ -142,7 +142,7 @@ def hexdumpLine (bytes, length=None):
   if length is None:
     length = len(bytes)
 
-  for n in xrange(0, length, 2):
+  for n in range(0, length, 2):
     if n < len(bytes) - 1:
       line += "%02x%02x  " % (bytes[n], bytes[n + 1])
     elif n < len(bytes):
@@ -152,9 +152,9 @@ def hexdumpLine (bytes, length=None):
 
   line += "*"
 
-  for n in xrange(length):
+  for n in range(length):
     if n < len(bytes):
-      if bytes[n] in xrange(32, 127):
+      if bytes[n] in range(32, 127):
         line += "%c" % bytes[n]
       else:
         line += "."

@@ -25,7 +25,7 @@ Sends simulated telemetry.
   --packetFill        Byte to fill packet with         (default:None)
 
 If no packetName specified, will choose the first available packetDefn.
-If no packetFill specified, will fill packet using xrange. 
+If no packetFill specified, will fill packet using range. 
 
 Examples:
 
@@ -38,7 +38,7 @@ import socket
 import time
 import argparse
 
-from ait.core import util, log, tlm
+from ait.core import cfg, util, log, tlm
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
         if name:
             defn = tlm.getDefaultDict()[name] 
         else:
-            defn = tlm.getDefaultDict().values()[0]
+            defn = list(tlm.getDefaultDict().values())[0]
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
