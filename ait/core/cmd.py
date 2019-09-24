@@ -397,8 +397,19 @@ class CmdDict(dict):
 
     def add(self, defn):
         """Adds the given Command Definition to this Command Dictionary."""
-        self[defn.name]            = defn
-        self.opcodes[defn._opcode] = defn
+        if defn.name not in self:
+            self[defn.name] = defn
+        else:
+            msg = "Duplicate Command name '%s'" % defn.name
+            log.error(msg)
+            raise util.YAMLError(msg)
+
+        if defn._opcode not in self.opcodes:
+            self.opcodes[defn._opcode] = defn
+        else:
+            msg = "Duplicate Command opcode '%s'" % defn._opcode
+            log.error(msg)
+            raise util.YAMLError(msg)
 
 
     def create(self, name, *args, **kwargs):

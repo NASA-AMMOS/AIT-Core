@@ -1,5 +1,5 @@
 - !Command
-  name:      AIT_DUPLICATE_COMMAND
+  name:      AIT_COMMAND1
   opcode:    0x1001
   subsystem: DCC
   desc:      |
@@ -16,7 +16,7 @@
 
 # Following command has same name as the first
 - !Command
-  name:      AIT_DUPLICATE_COMMAND
+  name:      AIT_COMMAND2
   opcode:    0x1001
   subsystem: CMD
   desc:      |
