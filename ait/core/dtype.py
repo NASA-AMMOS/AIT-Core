@@ -161,7 +161,7 @@ class PrimitiveType(object):
             self._signed = self.name[0] != "U"
             self._nbits  = int(self.name[-1:])
 
-        self._nbytes = self.nbits / 8
+        self._nbytes = int(self._nbits / 8)
 
         if self.float:
             self._max = +sys.float_info.max

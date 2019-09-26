@@ -14,13 +14,13 @@
 
 import sys
 
-from .log import warn
+from ait.core import cfg, log
 
 
 def deprecated(message):
   def deprecated_decorator(func):
       def deprecated_func(*args, **kwargs):
-          warn("{} is a deprecated function. {}".format(func.__name__, message))
+          log.warn("{} is a deprecated function. {}".format(func.__name__, message))
           return func(*args, **kwargs)
       return deprecated_func
   return deprecated_decorator
