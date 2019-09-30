@@ -18,7 +18,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 import nose
 
-from ait.core import cfg, ccsds
+from ait.core import ccsds
 
 
 def testCcsdsDefinition():

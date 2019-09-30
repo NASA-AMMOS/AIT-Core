@@ -24,7 +24,7 @@ import struct
 import nose
 from nose.tools import *
 
-from ait.core import cfg, tlm
+from ait.core import tlm
 
 
 class TestTlmDictWriter(object):

@@ -18,7 +18,7 @@ gevent.monkey.patch_all()
 import nose
 import struct
 
-from ait.core import cfg, cmd, dtype
+from ait.core import cmd, dtype
 
 
 CMDDICT_TEST = """

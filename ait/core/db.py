@@ -24,7 +24,7 @@ import importlib
 import math
 
 import ait
-from ait.core import cfg, cmd, dmc, dtype, evr, tlm, log
+from ait.core import cmd, dmc, dtype, evr, tlm
 
 
 # Backend must implement DB-API 2.0 [PEP 249]

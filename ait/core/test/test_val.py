@@ -26,7 +26,7 @@ import mock
 import nose
 
 import ait
-from ait.core import cfg, cmd, log, tlm, val, util, evr
+from ait.core import cmd, tlm, val, util, evr
 
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')

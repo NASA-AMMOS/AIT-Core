@@ -69,7 +69,7 @@ import yaml
 from io import IOBase
 
 import ait
-from ait.core import json, log, tlm, util
+from ait.core import json, tlm, util
 
 class Thresholds (json.SlotSerializer, object):
     def __init__ (self, **kwargs):

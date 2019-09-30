@@ -71,7 +71,7 @@ import struct
 import sys
 import re
 
-from ait.core import cmd, dmc, log, util
+from ait.core import cmd, dmc, util
 
 
 # PrimitiveTypes

@@ -24,7 +24,7 @@ import struct
 import datetime
 
 from .dmc import getTimestampUTC
-import ait.core.log as log
+from ait.core import log
 
 """
 Check the endian of the host we are currently running on.

@@ -32,7 +32,7 @@ import pickle
 import requests
 
 import ait.core
-from ait.core import cfg, log
+from ait.core import log
 
 GPS_Epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
 TICs      = [ ]

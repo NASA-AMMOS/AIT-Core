@@ -16,7 +16,6 @@ from email.mime.text import MIMEText
 import smtplib
 
 import ait
-from ait.core import log
 
 
 def trigger_notification(trigger, msg):

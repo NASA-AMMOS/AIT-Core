@@ -27,7 +27,7 @@ import array
 import hashlib
 
 import ait
-from ait.core import dtype, log, util, cfg
+from ait.core import dtype, util
 
 
 class FSWColDefn (object):
