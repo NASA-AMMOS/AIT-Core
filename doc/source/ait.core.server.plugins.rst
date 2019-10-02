@@ -6,7 +6,7 @@ Submodules
 
 .. toctree::
 
-   ait.core.server.plugins.ait_gui_plugin
+   ait.core.server.plugins.openmct
 
 Module contents
 ---------------
