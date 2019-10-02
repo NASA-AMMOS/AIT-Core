@@ -462,7 +462,9 @@ class CmdDict(dict):
             else:
                 stream        = content
 
-            for cmd in yaml.load(stream):
+            cmds = yaml.load(stream)
+            cmds = handle_includes(cmds)
+            for cmd in cmds:
                 self.add(cmd)
 
             if type(stream) is file:
@@ -498,6 +500,22 @@ def getMaxCmdSize():
     return (MAX_CMD_WORDS - 1) * 2
 
 
+def handle_includes(defns):
+    '''Recursive handling of includes for any input list of defns.
+    The assumption here is that when an include is handled by the
+    pyyaml reader, it adds them as a list, which is stands apart from the rest
+    of the expected YAML definitions.
+    '''
+    newdefns = []
+    for d in defns:
+        if isinstance(d,list):
+            newdefns.extend(handle_includes(d))
+        else:
+            newdefns.append(d)
+
+    return newdefns
+
+
 def YAMLCtor_ArgDefn(loader, node):
     fields          = loader.construct_mapping(node, deep=True)
     fields["fixed"] = node.tag == "!Fixed"
@@ -509,6 +527,15 @@ def YAMLCtor_CmdDefn(loader, node):
     fields['argdefns'] = fields.pop('arguments', None)
     return createCmdDefn(**fields)
 
+def YAMLCtor_include(loader, node):
+    # Get the path out of the yaml file
+    name = os.path.join(os.path.dirname(loader.name), node.value)
+    data = None
+    with open(name,'r') as f:
+        data = yaml.load(f)
+    return data
+
+yaml.add_constructor('!include' , YAMLCtor_include)
 yaml.add_constructor('!Command' , YAMLCtor_CmdDefn)
 yaml.add_constructor('!Argument', YAMLCtor_ArgDefn)
 yaml.add_constructor('!Fixed'   , YAMLCtor_ArgDefn)
