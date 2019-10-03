@@ -24,7 +24,7 @@ import os
 import platform
 import socket
 import time
-import mock
+from unittest import mock
 
 import nose
 import nose.tools

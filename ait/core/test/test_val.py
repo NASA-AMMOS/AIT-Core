@@ -22,8 +22,8 @@ import pkg_resources
 import jsonschema
 import logging
 
-import mock
 import nose
+from unittest import mock
 
 import ait
 from ait.core import cmd, tlm, val, util, evr

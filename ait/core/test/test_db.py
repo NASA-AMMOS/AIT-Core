@@ -18,7 +18,7 @@ import datetime as dt
 import os
 import unittest
 
-import mock
+from unittest import mock
 
 import ait.core.db as db
 import ait.core.tlm as tlm

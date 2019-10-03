@@ -1,5 +1,5 @@
 from nose.tools import *
-import mock
+from unittest import mock
 
 from ait.core.server.handlers import PacketHandler
 

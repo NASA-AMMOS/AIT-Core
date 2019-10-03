@@ -16,8 +16,8 @@
 
 import os
 import unittest
-import mock
 import shutil
+from unittest import mock
 
 from ait.core import util
 

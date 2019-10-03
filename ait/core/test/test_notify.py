@@ -12,10 +12,9 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-import mock
-
 import nose
 import nose.tools
+from unittest import mock
 
 import ait.core
 from ait.core import notify

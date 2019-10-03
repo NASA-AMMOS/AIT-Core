@@ -3,7 +3,7 @@ import os.path
 
 import nose
 from nose.tools import *
-import mock
+from unittest import mock
 
 import ait.core
 import ait.core.server
