@@ -31,13 +31,15 @@ Example configuration:
 
     plugins:
         - plugin:
-            name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
+            name: ait.gui.AITGUIPlugin
             inputs: 
                 - log_stream
                 - telem_stream
             outputs:
                 - command_stream
             other_parameter: anything_you_need
+
+AIT provides a number of default plugins. Check the plugins API documentation for available plugins.
 
 
 Streams
@@ -113,7 +115,7 @@ Here is an example of how the **server** portion of **config.yaml** should look:
     server:
         plugins:
             - plugin:
-                name: ait.server.plugins.ait_gui_plugin.AITGUIPlugin
+                name: ait.gui.AITGUIPlugin
                 inputs: 
                     - log_stream
                     - telem_testbed_stream
