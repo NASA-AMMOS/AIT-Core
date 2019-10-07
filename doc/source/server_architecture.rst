@@ -39,7 +39,7 @@ Example configuration:
                 - command_stream
             other_parameter: anything_you_need
 
-AIT provides a number of default plugins. Check the plugins API documentation for available plugins.
+AIT provides a number of default plugins. Check the `Plugins API documentation <./ait.core.server.plugins.html>`_ for available plugins.
 
 
 Streams
