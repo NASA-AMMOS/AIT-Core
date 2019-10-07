@@ -1,6 +1,8 @@
 # Distribution / Packaging / Build files
 .coverage
 doc/build/*
+doc/source/ait.core.test*
+doc/source/ait.core.server.test*
 build/lib/*
 *.egg-info/
 *.egg
