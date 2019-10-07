@@ -114,6 +114,7 @@ class PortOutputClient(ZMQInputClient):
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
+        msg = eval(msg)
         self.pub.sendto(msg, ('localhost', int(self.out_port)))
         log.debug('Published message from {}'.format(self))
 
