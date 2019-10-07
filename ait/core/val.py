@@ -32,7 +32,7 @@ import linecache
 import jsonschema
 import collections
 
-from ait.core import dtype, log, tlm, util
+from ait.core import cmd, dtype, log, tlm, util
 
 
 class YAMLProcessor (object):
@@ -427,10 +427,8 @@ class CmdValidator (Validator):
         log.debug("BEGIN: Content-based validation of Command dictionary")
         if ymldata is not None:
             cmddict = ymldata
-        elif ymldata is None and self._ymlproc.loaded:
-            cmddict = self._ymlproc.data
-        elif not self._ymlproc.loaded:
-            raise util.YAMLError("YAML failed to load.")
+        else:
+            cmddict = cmd.CmdDict(self._ymlfile)
 
         try:
             # instantiate the document number. this will increment in order to
@@ -450,10 +448,9 @@ class CmdValidator (Validator):
 
             # set uniqueness rule for opcodes
             rules.append(UniquenessRule('opcode', "Duplicate opcode: %s", messages))
-            #
-            ###
-            for cmdcnt, cmddefn in enumerate(cmddict[0]):
-                # check the command rules
+
+            for key in cmddict.keys():
+                cmddefn = cmddict[key]
                 for rule in rules:
                     rule.check(cmddefn)
 
@@ -630,7 +627,6 @@ class UniquenessRule(ValidationRule):
             self.valid = False
         elif val is not None:
             self.val_list.append(val)
-            log.debug(self.val_list)
 
 
 class TypeRule(ValidationRule):

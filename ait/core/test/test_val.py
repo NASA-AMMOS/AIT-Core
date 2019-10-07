@@ -307,17 +307,17 @@ def testCmdValidator():
     assert v
     assert len(msgs) == 0
 
-    # test failed cmd validation - duplicate name
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
-    assert not v
-    assert len(msgs) == 1
-    assert "Duplicate command name" in msgs[0]
+    try:
+        msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
+        assert False
+    except util.YAMLError, e:
+        assert "Duplicate Command name" in e.message
 
-    # test failed cmd validation - duplicate opcode
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
-    assert not v
-    assert len(msgs) == 2
-    assert "Duplicate opcode" in msgs[1]
+    try:
+        msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
+        assert False
+    except util.YAMLError, e:
+        assert "Duplicate Command opcode" in e.message
 
     # test failed cmd validation - bad argtype
     msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator3.yaml"), cmd.getDefaultSchema()])
