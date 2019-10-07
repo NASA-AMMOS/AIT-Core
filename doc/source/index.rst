@@ -5,7 +5,7 @@ The AMMOS Instrument Toolkit (Formerly the Bespoke Links to Instruments for Surf
 
 Visit the :doc:`Installation and Environment Configuration <installation>` guide for installation information. Visit the :doc:`API Documentation <ait>` page to view in-depth interface documentation.
 
-.. note:: The AMMOS Instrument Toolkit was formerly known as "AIT". You will see references to this, especially in the :doc:`API Documentation <ait>` and code snippets, since the internal software structure still maintains that provenance.
+.. note:: The AMMOS Instrument Toolkit was formerly known as "BLISS". You will see references to this, especially in the :doc:`API Documentation <ait>` and code snippets, since part of the internal software structure still maintains that provenance.
 
 .. toctree::
    :maxdepth: 2
