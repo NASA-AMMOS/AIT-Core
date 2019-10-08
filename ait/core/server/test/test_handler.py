@@ -1,7 +1,7 @@
 from nose.tools import *
 import mock
 
-from ait.core.server.handler import PacketHandler
+from ait.core.server.handlers import PacketHandler
 
 
 class TestHandlerClassWithInputOutputTypes(object):
@@ -11,7 +11,7 @@ class TestHandlerClassWithInputOutputTypes(object):
         assert self.handler.input_type is 'int'
         assert self.handler.output_type is 'str'
 
-    @mock.patch('ait.core.server.handler.PacketHandler.handle', return_value='SpecialReturn')
+    @mock.patch('ait.core.server.handlers.PacketHandler.handle', return_value='SpecialReturn')
     def test_execute_handler_returns_handle_return_on_input(self, handle_mock):
         returned = self.handler.handle('2')
         assert returned == 'SpecialReturn'
@@ -24,7 +24,7 @@ class TestHandlerClassWithoutInputOutputTypes(object):
         assert self.handler.input_type is None
         assert self.handler.output_type is None
 
-    @mock.patch('ait.core.server.handler.PacketHandler.handle', return_value='SpecialReturn')
+    @mock.patch('ait.core.server.handlers.PacketHandler.handle', return_value='SpecialReturn')
     def test_execute_handler_returns_handle_return_on_input(self, handle_mock):
         returned = self.handler.handle('2')
         assert returned == 'SpecialReturn'

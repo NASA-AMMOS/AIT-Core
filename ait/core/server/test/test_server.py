@@ -8,7 +8,7 @@ import mock
 import ait.core
 import ait.core.server
 from ait.core import cfg
-from ait.core.server.handler import *
+from ait.core.server.handlers import *
 from ait.core.server.server import Server
 
 @mock.patch.object(ait.core.log, 'warn')
@@ -247,10 +247,10 @@ class TestHandlerCreation(object):
         """ Tests handler is successfully created when it has no configs """
         server = Server()
 
-        config = {'name': 'ait.core.server.handler.PacketHandler',
+        config = {'name': 'ait.core.server.handlers.PacketHandler',
                   'packet': 'CCSDS_HEADER'}
         handler = server._create_handler(config)
-        assert type(handler) == ait.core.server.handler.PacketHandler
+        assert type(handler) == ait.core.server.handlers.PacketHandler
         assert handler.input_type is None
         assert handler.output_type is None
 
@@ -261,12 +261,12 @@ class TestHandlerCreation(object):
         server = Server()
 
         # config = {'name': 'ait.core.server.handlers.example_handler', 'input_type': 'int', 'output_type': 'int'}
-        config = {'name': 'ait.core.server.handler.PacketHandler',
+        config = {'name': 'ait.core.server.handlers.PacketHandler',
                   'input_type': 'int',
                   'output_type': 'int',
                   'packet': 'CCSDS_HEADER'}
         handler = server._create_handler(config)
-        assert type(handler) == ait.core.server.handler.PacketHandler
+        assert type(handler) == ait.core.server.handlers.PacketHandler
         assert handler.input_type == 'int'
         assert handler.output_type == 'int'
 

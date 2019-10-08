@@ -5,7 +5,7 @@ import zmq.green
 import ait.core
 from ait.core.server.broker import Broker
 from ait.core.server.stream import ZMQStream
-from ait.core.server.handler import PacketHandler
+from ait.core.server.handlers import PacketHandler
 
 
 class TestStream(object):
