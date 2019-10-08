@@ -743,8 +743,8 @@ class PacketDefinition(json.SlotSerializer, object):
 
     def simulate(self, fill=None):
         size   = self.nbytes
-        values = range(size) if fill is None else ((fill,) * size)
-        return Packet(self, bytearray(values))
+        values = bytearray(range(size)) if fill is None else bytearray(str(fill) * size, 'ascii')
+        return Packet(self, values)
 
 
 class PacketExpression(object):
