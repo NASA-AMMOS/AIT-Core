@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pre_api_build=`git ls-files -m | wc -l`
-sphinx-apidoc --separate --force --no-toc -o doc/source ait ait/test &> /dev/null
+sphinx-apidoc --separate --force --no-toc -o doc/source ait ait/core/server/test ait/core/test &> /dev/null
 post_api_build=`git ls-files -m | wc -l`
 
 if [[ $pre_api_build -ne $post_api_build ]]; then

@@ -8,7 +8,6 @@ Subpackages
 
     ait.core.bin
     ait.core.server
-    ait.core.test
 
 Submodules
 ----------

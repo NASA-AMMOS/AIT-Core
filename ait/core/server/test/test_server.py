@@ -351,11 +351,11 @@ class TestPluginCreation(object):
         server = Server()
         server.broker = ait.core.server.broker.Broker()
 
-        config = {'name': 'ait.core.server.plugin.TelemetryLimitMonitor',
+        config = {'name': 'ait.core.server.plugins.TelemetryLimitMonitor',
                   'outputs': 'some_stream'}
         server._create_plugin(config)
 
-        log_warn_mock.assert_called_with('No plugin inputs specified for ait.core.server.plugin.TelemetryLimitMonitor')
+        log_warn_mock.assert_called_with('No plugin inputs specified for ait.core.server.plugins.TelemetryLimitMonitor')
 
     @mock.patch.object(ait.core.log, 'warn')
     def test_plugin_missing_outputs(self,
@@ -367,11 +367,11 @@ class TestPluginCreation(object):
         server = Server()
         server.broker = ait.core.server.broker.Broker()
 
-        config = {'name': 'ait.core.server.plugin.TelemetryLimitMonitor',
+        config = {'name': 'ait.core.server.plugins.TelemetryLimitMonitor',
                   'inputs': 'some_stream'}
         server._create_plugin(config)
 
-        log_warn_mock.assert_called_with('No plugin outputs specified for ait.core.server.plugin.TelemetryLimitMonitor')
+        log_warn_mock.assert_called_with('No plugin outputs specified for ait.core.server.plugins.TelemetryLimitMonitor')
 
     def test_plugin_name_already_in_use(self,
                                         server_init_mock,

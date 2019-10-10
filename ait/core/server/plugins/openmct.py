@@ -17,42 +17,28 @@ AIT Plugin for OpenMCT Telemetry service
 
 The ait.core.servers.plugins.openmct module provides an
 a web service that implements the service API for the OpenMCT
-framework for realtime and, eventually, historial telemetry
+framework for realtime and, eventually, historical telemetry
 from AIT.
 """
 
-import gevent
-import gevent.event
-import gevent.util
-import gevent.lock
-import gevent.monkey
-
-gevent.monkey.patch_all()
-import geventwebsocket
-
-import bdb
-from collections import defaultdict
 import cPickle as pickle
-import importlib
+import datetime
 import json
-import os
+import random
 import struct
 import sys
 import time
 import urllib
 import webbrowser
-import re
 
-
-import datetime
-import random
-import time
+import gevent
+import gevent.monkey; gevent.monkey.patch_all()
+import geventwebsocket
 
 import bottle
-import pkg_resources
 
 import ait.core
-from ait.core import api, cmd, dmc, dtype, evr, limits, log, notify, pcap, tlm, gds, util
+from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
 
 
@@ -62,7 +48,6 @@ class AITOpenMctPlugin(Plugin):
      is passed along to OpenMct in the expected format.
     """
 
-    # Some class variables
     DEFAULT_PORT = 8082
     DEFAULT_DEBUG = False
 
@@ -110,7 +95,6 @@ class AITOpenMctPlugin(Plugin):
         # Check for AIT config overrides
         self._checkConfig()
 
-        # Create and start Greenlet
         gevent.spawn(self.init)
 
     def _checkConfig(self):
@@ -131,44 +115,26 @@ class AITOpenMctPlugin(Plugin):
 
 
     def process(self, input_data, topic=None):
-        # msg is going to be a tuple from the ait_packet_handler
-        # (packet_uid, packet)
-        # need to handle log/telem messages differently based on topic
-        # Look for topic in list of stream log and telem stream names first.
-        # If those lists don't exist or topic not in them, try matching text
-        # in topic name.
+        """Process received input message
 
-        processed = False
+        Received messaged is expected to be a tuple of the form produced
+        by AITPacketHandler.
 
-        if not processed:
-            if "telem_stream" in topic:
-                self.process_telem_msg(input_data)
-                processed = True
+        Supported message topics are "telem_stream"
 
-            elif topic == "log_stream":
-                self.process_log_msg(input_data)
-                processed = True
+        """
+        if "telem_stream" in topic:
+            self._process_telem_msg(input_data)
 
-        if not processed:
-            raise ValueError('Topic of received message not recognized as telem or log stream.')
-
-    def process_telem_msg(self, msg):
+    def _process_telem_msg(self, msg):
         msg = pickle.loads(msg)
 
-        # This will help with debugging
         uid = msg[0]
         packet = msg[1]
 
         #Package as a tuple, then add to queue
         tlm_entry = (uid, packet)
         self._tlmQueue.append(tlm_entry)
-
-    def process_log_msg(self, msg):
-        if False:
-            parsed_msg = log.parseSyslog(msg)
-            self._logQueue.append(parsed_msg)
-        else:
-            pass
 
     # We report our special debug messages on the 'Info' log level
     # so we dont have to turn on DEBUG logging globally
@@ -197,16 +163,11 @@ class AITOpenMctPlugin(Plugin):
         """Initialize the web-server state"""
 
         self._route()
-
-        # if host is None:
-        #     host = 'localhost'
-
         wsgi_server = gevent.pywsgi.WSGIServer(('0.0.0.0', self._servicePort), self._app,
                       handler_class = geventwebsocket.handler.WebSocketHandler)
 
         self._servers.append(wsgi_server)
 
-        # Start the servers
         for s in self._servers:
             s.start()
 
@@ -214,8 +175,6 @@ class AITOpenMctPlugin(Plugin):
         """Clean-up the webservers"""
         for s in self._servers:
             s.stop()
-
-        #gevent.killall(self._Greenlets)
 
     def start_browser(self, url, name=None):
         browser = None
@@ -242,18 +201,12 @@ class AITOpenMctPlugin(Plugin):
 
 
     def wait(self):
-        # if len(self._Greenlets) > 0:
-        #     done = gevent.joinall(self._Greenlets, raise_error=True, count=1)
-        #     for d in done:
-        #         if issubclass(type(d.value), KeyboardInterrupt):
-        #             raise d.value
-        # else:
         gevent.wait()
 
     @staticmethod
     def create_uid_pkt_map(aitDict):
         """Creates a dictionary from packet def UID to package definition"""
-        uid_map = dict()  # type: defaultdict
+        uid_map = dict()
         for k, v in aitDict.iteritems():
             uid_map[v.uid] = v
         return uid_map
@@ -263,11 +216,11 @@ class AITOpenMctPlugin(Plugin):
         """Formats an AIT telemetry packet instance as an
         OpenMCT telemetry packet structure"""
 
-        mct_dict = dict()  # type: defaultdict
+        mct_dict = dict()
         ait_pkt_def = ait_pkt._defn
         ait_pkt_id  = ait_pkt_def.name
 
-        mct_pkt_value_dict = dict()  # type: defaultdict
+        mct_pkt_value_dict = dict()
 
         mct_dict['packet'] = ait_pkt_id
         mct_dict['data'] = mct_pkt_value_dict
@@ -285,10 +238,10 @@ class AITOpenMctPlugin(Plugin):
         """Formats the AIT telemetry dictionary as an
         OpenMCT telemetry dictionary"""
 
-        mct_dict = dict()  # type: defaultdict
+        mct_dict = dict()
         mct_dict['name'] = 'AIT Telemetry'
         mct_dict['key'] = 'ait_telemetry_dictionary'
-        mct_dict['measurements'] = []  #empty list
+        mct_dict['measurements'] = []
 
         for ait_pkt_id in ait_tlm_dict:
             ait_pkt_def = ait_tlm_dict[ait_pkt_id]
@@ -301,10 +254,8 @@ class AITOpenMctPlugin(Plugin):
                 mct_field_dict['name'] = ait_field_def.name
                 mct_field_dict['name'] = ait_pkt_id + ":" + ait_field_def.name
 
-                # Create a new field value list
                 mct_field_value_list = []
 
-                # Convert AIT field def info to MCT field map
                 mct_field_val_range = self.create_mct_fieldmap(ait_field_def)
 
                 mct_field_val_domain = {
@@ -414,7 +365,6 @@ class AITOpenMctPlugin(Plugin):
         return mct_field_map
 
     # ---------------------------------------------------------------------
-
     # Section of methods to which bottle requests will be routed
 
     def _cors_headers_hook(self):
@@ -442,7 +392,7 @@ class AITOpenMctPlugin(Plugin):
         if not websocket:
             bottle.abort(400, 'Expected WebSocket request.')
 
-        empty_map = dict()  # default empty object to JSON and send
+        empty_map = dict()  # default empty object for probing websocket connection
 
         req_env = bottle.request.environ
         client_ip = req_env.get('HTTP_X_FORWARDED_FOR') or req_env.get('REMOTE_ADDR') or "(unknown)"
@@ -474,26 +424,16 @@ class AITOpenMctPlugin(Plugin):
                     # server after timeout seconds, "probe" the client
                     # websocket connection to make sure it's still
                     # active and if so, keep it alive.  This is
-                    # accomplished by sending a packet with an ID of
-                    # zero and no packet data.  Packet ID zero with no
-                    # data is ignored by AIT GUI client-side
-                    # Javascript code.
-
+                    # accomplished by sending an empty JSON object.
                     self.dbg_message("Telemtry queue is empty.")
-
-
-                    #websocket.send("log: No new telem products to report")
-
 
                     if not websocket.closed:
                         websocket.send(json.dumps(empty_map))
-                        #websocket.send(pad + struct.pack('>I', 0))
 
             self.dbg_message('Web-socket session closed with client IP '+client_ip)
 
         except geventwebsocket.WebSocketError, wser:
             log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
-            pass
 
     def get_historical_tlm(self, mct_pkt_id):
         """(Non-)handling of historial queries"""
@@ -548,7 +488,7 @@ class AITOpenMctPlugin(Plugin):
                 dummy_data = hs_packet.pack(randomNum,randomNum,randomNum,randomNum,randomNum)
 
             msg_serial = pickle.dumps((pkt_def_uid, dummy_data), 2)
-            self.process_telem_msg(msg_serial)
+            self._process_telem_msg(msg_serial)
 
             info_msg = "AIT OpenMct Plugin submitted mimicked telemetry for " + ait_pkt_defn.name + " (" + str(datetime.datetime.now()) + ")"
             self.dbg_message(info_msg)
@@ -566,7 +506,6 @@ class AITOpenMctPlugin(Plugin):
 
 
     # ---------------------------------------------------------------------
-
     # Routing rules
 
     def _route(self):
@@ -603,4 +542,3 @@ class AITOpenMctPlugin(Plugin):
         # def __setResponseToJSON():
         #     bottle.response.content_type  = 'application/json'
         #     bottle.response.cache_control = 'no-cache'
-

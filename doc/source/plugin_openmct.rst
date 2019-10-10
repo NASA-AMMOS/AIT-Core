@@ -35,7 +35,6 @@ Example configuration:
         - plugin:
             name: ait.core.server.plugins.openmct.AITOpenMctPlugin
             inputs:
-                - log_stream
                 - telem_stream
             port: 8082
 
