@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    ait.core.server.handlers
     ait.core.server.plugins
 
 Submodules
