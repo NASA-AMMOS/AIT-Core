@@ -112,7 +112,7 @@ default:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
             
     server:
-        plugins:
+        plugins: []
 
         inbound-streams:
             - stream:
@@ -125,7 +125,7 @@ default:
                 input: 
                     - 3076
                 handlers:
-                    - name: ait.core.server.handler.PacketHandler
+                    - name: ait.core.server.handlers.PacketHandler
                       packet: 1553_HS_Packet
 
         outbound-streams:
