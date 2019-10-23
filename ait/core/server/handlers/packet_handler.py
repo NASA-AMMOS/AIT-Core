@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 
 from ait.core.server.handler import Handler
 from ait.core import tlm

@@ -21,7 +21,7 @@ framework for realtime and, eventually, historical telemetry
 from AIT.
 """
 
-import cPickle as pickle
+import pickle
 import datetime
 import json
 import random
@@ -222,7 +222,7 @@ class AITOpenMctPlugin(Plugin):
     def create_uid_pkt_map(aitDict):
         """Creates a dictionary from packet def UID to package definition"""
         uid_map = dict()
-        for k, v in aitDict.iteritems():
+        for k, v in aitDict.items():
             uid_map[v.uid] = v
         return uid_map
 
@@ -447,7 +447,7 @@ class AITOpenMctPlugin(Plugin):
 
             self.dbg_message('Web-socket session closed with client IP '+client_ip)
 
-        except geventwebsocket.WebSocketError, wser:
+        except geventwebsocket.WebSocketError as wser:
             log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
 
     def get_historical_tlm(self, mct_pkt_id):

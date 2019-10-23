@@ -13,7 +13,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 from collections import defaultdict
-import cPickle as pickle
+import pickle
 
 import gevent
 import gevent.monkey; gevent.monkey.patch_all()
@@ -27,12 +27,12 @@ class TelemetryLimitMonitor(Plugin):
         super(TelemetryLimitMonitor, self).__init__(inputs, outputs, **kwargs)
 
         self.limit_dict = defaultdict(dict)
-        for k, v in limits.getDefaultDict().iteritems():
+        for k, v in limits.getDefaultDict().items():
             packet, field = k.split('.')
             self.limit_dict[packet][field] = v
 
         self.packet_dict = defaultdict(dict)
-        for k, v in tlm.getDefaultDict().iteritems():
+        for k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
         self.notif_thrshld = ait.config.get('notifications.options.threshold', 1)
@@ -53,7 +53,7 @@ class TelemetryLimitMonitor(Plugin):
             return
 
         if packet.name in self.limit_dict:
-            for field, defn in self.limit_dict[packet.name].iteritems():
+            for field, defn in self.limit_dict[packet.name].items():
                 v = decoded._getattr(field)
 
                 if packet.name not in self.limit_trip_repeats.keys():

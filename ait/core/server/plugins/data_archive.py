@@ -13,7 +13,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 from collections import defaultdict
-import cPickle as pickle
+import pickle
 import importlib
 
 import gevent
@@ -47,7 +47,7 @@ class DataArchive(Plugin):
 
         self.datastore = datastore
         self.packet_dict = defaultdict(dict)
-        for k, v in tlm.getDefaultDict().iteritems():
+        for k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
         try:
@@ -75,7 +75,7 @@ class DataArchive(Plugin):
             **kwargs:    any args required for connected to the backend
         """
         try:
-            load = pickle.loads(input_data)
+            load = pickle.loads(eval(input_data))
             uid, pkt = int(load[0]), load[1]
             defn = self.packet_dict[uid]
             decoded = tlm.Packet(defn, data=bytearray(pkt))

@@ -390,7 +390,7 @@ class InfluxDBBackend(GenericBackend):
         for r in result_set.get_points():
             new_pkt = tlm.Packet(pkt_defn)
 
-            for f, f_defn in pkt_defn.fieldmap.iteritems():
+            for f, f_defn in pkt_defn.fieldmap.items():
                 field_type_name = f_defn.type.name
                 if field_type_name == 'CMD16':
                     if cmd.getDefaultDict().opcodes.get(r[f], None):
