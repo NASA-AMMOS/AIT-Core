@@ -313,13 +313,13 @@ def testCmdValidator():
     try:
         msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate Command name" in e.message
 
     try:
         msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate Command opcode" in e.message
 
     # test failed cmd validation - bad argtype

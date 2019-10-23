@@ -26,7 +26,7 @@ import yaml
 from io import IOBase
 
 import ait
-from ait.core import json, util
+from ait.core import json, util, log
 
 
 MAX_CMD_WORDS = 54
