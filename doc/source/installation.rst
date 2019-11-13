@@ -1,7 +1,7 @@
 Installation and Environment Configuration
 ==========================================
 
-The following guide will show you how to install and configure AIT Core. For information on how to configure a new project to use AIT, check out the `New Project Setup <project_setup.html>`_ page.
+The following guide will show you how to install and configure AIT Core. For information on how to configure a new project to use AIT, check out the :doc:`New Project Setup <project_setup>` page.
 
 Installation
 ------------
