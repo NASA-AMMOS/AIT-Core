@@ -120,11 +120,26 @@ class AITOpenMctPlugin(Plugin):
         Received messaged is expected to be a tuple of the form produced
         by AITPacketHandler.
 
-        Supported message topics are "telem_stream"
+        Handle telem messages based on topic
+        Look for topic in list of telem stream names first
+        If those lists don't exist or topic is not in them, try matching text
+        in topic name to "telem_stream"
 
         """
-        if "telem_stream" in topic:
-            self._process_telem_msg(input_data)
+        processed = False
+
+        if hasattr(self, 'telem_stream_names'):
+            if topic in self.telem_stream_names:
+                self._process_telem_msg(input_data)
+                processed = True
+
+        if not processed:
+            if 'telem_stream' in topic:
+                self._process_telem_msg(input_data)
+                processed = True
+
+        if not processed:
+            raise ValueError('Topic of received message not recognized as telem stream.')
 
     def _process_telem_msg(self, msg):
         msg = pickle.loads(msg)
