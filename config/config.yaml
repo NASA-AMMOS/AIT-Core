@@ -30,11 +30,44 @@ default:
 
     dsn:
         sle:
-            initiator_id: uname
+            initiator_id: LSE
+            # password only matters if we're doing auth and can stay as 'pw'
             password: pw
-            responder_id: uname
+            responder_id: SSC
+            # peer password only matters if we're doing auth and can stay as 'pw'
             peer_password: pw
-            version: 5
+            downlink_frame_type: TMTransFrame
+            heartbeat: 25
+            deadfactor: 5
+            buffer_size: 256000
+            responder_port: 'default'
+            rcf:
+                inst_id: sagr=LSE-SSC.spack=Test.rsl-fg=1.rcf=onlc2
+                hostnames:
+                    - example.hostname.1
+                    - example.hostname.2
+                port: None
+                version: 4
+                spacecraft_id: 250
+                trans_frame_ver_num: 0
+                auth_level: 'none'
+            raf:
+                inst_id: sagr=LSE-SSC.spack=Test.rsl-fg=1.raf=onlc1
+                hostnames:
+                    - example.hostname.1
+                    - example.hostname.2
+                port: None
+                version: 4
+                auth_level: 'none'
+            fcltu:
+                inst_id: None
+                hostnames:
+                    - example.hostname.1
+                    - example.hostname.2
+                port: None
+                version: 4
+                auth_level: 'none'
+
         cfdp:
             mib:
                 path: ./mib
