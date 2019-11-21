@@ -60,7 +60,7 @@ tuples, for succinctness:
     >>> t.validate(1e6, messages, prefix='error:')
     False
 
-    >>> print "\\n".join(messages)
+    >>> print("\\n".join(messages))
     error: value '65536' out of range [0, 65535].
     error: float '1e+06' cannot be represented as an integer.
 

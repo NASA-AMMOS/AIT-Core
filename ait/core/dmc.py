@@ -284,7 +284,7 @@ class UTCLeapSeconds(object):
 
         try:
             with open(ls_file, 'rb') as outfile:
-                self._data = pickle.load(outfile, encoding='latin1')
+                self._data = pickle.load(outfile)
         except IOError:
             log.info('Unable to locate leapseconds config file')
 
