@@ -35,7 +35,7 @@ class ZMQClient(object):
         """
         Publishes input message with client name as topic.
         """
-        self.pub.send("{} {}".format(self.name, msg))
+        self.pub.send_string('{} {}'.format(self.name, msg))
         log.debug('Published message from {}'.format(self))
 
     def process(self, input_data, topic=None):
@@ -82,7 +82,7 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
         try:
             while True:
                 gevent.sleep(0)
-                topic, message = self.sub.recv().split(' ', 1)
+                topic, message = self.sub.recv_string().split(' ', 1)
                 log.debug('{} recieved message from {}'.format(self, topic))
                 self.process(message, topic=topic)
 
@@ -114,6 +114,7 @@ class PortOutputClient(ZMQInputClient):
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
+        msg = eval(msg)
         self.pub.sendto(msg, ('localhost', int(self.out_port)))
         log.debug('Published message from {}'.format(self))
 

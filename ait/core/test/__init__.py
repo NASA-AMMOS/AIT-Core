@@ -19,6 +19,7 @@ The ait.test module provides functional and unit tests for ait modules.
 """
 
 import os
+import tempfile
 import warnings
 import logging
 
@@ -67,7 +68,8 @@ class TestFile:
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self._filename = os.tmpnam()
+            self._tfile = tempfile.NamedTemporaryFile(mode='wt')
+            self._filename = self._tfile.name
 
         with open(self._filename, 'wt') as output:
             output.write(data)
@@ -80,4 +82,5 @@ class TestFile:
 
     def __exit__ (self, exc_type, exc_value, traceback):
         """Exit the runtime context and delete filename."""
-        os.remove(self._filename)
+        self._tfile.close()
+        self._filename = None

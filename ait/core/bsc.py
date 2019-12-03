@@ -298,7 +298,7 @@ class SocketStreamCapturer(object):
         for h in self.capture_handlers:
             config_data.append({
                 'handler': {
-                    k:v for k, v in h.iteritems()
+                    k:v for k, v in h.items()
                     if k not in ignored_keys
                 },
                 'log_file_path': h['logger']._stream.name,
@@ -520,7 +520,7 @@ class StreamCaptureManager(object):
         if 'pre_write_transforms' in capture_handler_conf:
             for transform in capture_handler_conf['pre_write_transforms']:
                 if isinstance(transform, str):
-                    if globals().has_key(transform):
+                    if transform in globals():
                         transforms.append(globals().get(transform))
                     else:
                         msg = (
@@ -565,7 +565,7 @@ class StreamCaptureManager(object):
                 The name of the handler(s) to remove.
         '''
         empty_capturers_indeces = []
-        for k, sc in self._stream_capturers.iteritems():
+        for k, sc in self._stream_capturers.items():
             stream_capturer = sc[0]
             stream_capturer.remove_handler(name)
 
@@ -607,7 +607,7 @@ class StreamCaptureManager(object):
             name:
                 The name of the handler who's log file should be rotated.
         '''
-        for sc_key, sc in self._stream_capturers.iteritems():
+        for sc_key, sc in self._stream_capturers.items():
             for h in sc[0].capture_handlers:
                 if h['name'] == name:
                     sc[0]._rotate_log(h)
@@ -626,7 +626,7 @@ class StreamCaptureManager(object):
         '''
         return {
             address : stream_capturer[0].dump_handler_config_data()
-            for address, stream_capturer in self._stream_capturers.iteritems()
+            for address, stream_capturer in self._stream_capturers.items()
         }
 
     def get_handler_stats(self):
@@ -643,7 +643,7 @@ class StreamCaptureManager(object):
         '''
         return {
             address : stream_capturer[0].dump_all_handler_stats()
-            for address, stream_capturer in self._stream_capturers.iteritems()
+            for address, stream_capturer in self._stream_capturers.items()
         }
 
     def get_capture_handler_config_by_name(self, name):
@@ -658,7 +658,7 @@ class StreamCaptureManager(object):
             the :func:`SocketStreamCapturer.dump_handler_config_data` method.
         '''
         handler_confs = []
-        for address, stream_capturer in self._stream_capturers.iteritems():
+        for address, stream_capturer in self._stream_capturers.items():
             handler_data = stream_capturer[0].dump_handler_config_data()
             for h in handler_data:
                 if h['handler']['name'] == name:

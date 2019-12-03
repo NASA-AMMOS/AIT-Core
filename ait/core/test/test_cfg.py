@@ -22,7 +22,7 @@ import nose
 
 from ait.core import cfg
 
-from . import TestFile
+from ait.core.test import TestFile
 
 
 def YAML ():
@@ -190,12 +190,11 @@ def test_datapaths ():
             desc:    ISS PL/MDM Simulator
             path:    bin/ait-orbits
             rtaddr:  15
-
     """
     # check data paths work from YAML()
     config = cfg.AitConfig(data=YAML())
     assert len(config._datapaths) > 0
-    
+
     # check if data paths do not exist
     config = cfg.AitConfig(data=test_datapaths.__doc__)
     try:

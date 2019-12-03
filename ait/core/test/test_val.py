@@ -14,16 +14,19 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import os
 import pkg_resources
 import jsonschema
 import logging
 
-import mock
 import nose
+from unittest import mock
 
 import ait
-from ait.core import cmd, log, tlm, val, util, evr
+from ait.core import cmd, tlm, val, util, evr
 
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
@@ -63,7 +66,7 @@ class TestYAMLProcessor(object):
             'b: goodbye\n'
         )
 
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -81,7 +84,7 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -238,7 +241,7 @@ def validate(args):
 
 def dispmsgs(msgs):
     for msg in msgs:
-        print "Validation Test Error: %s \n" % msg
+        print(f'Validation Test Error: {msg} \n')
 
 
 def cmdval(args):
@@ -310,13 +313,13 @@ def testCmdValidator():
     try:
         msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate Command name" in e.message
 
     try:
         msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate Command opcode" in e.message
 
     # test failed cmd validation - bad argtype
@@ -366,7 +369,7 @@ def testTlmValidator():
     try:
         msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), tlm.getDefaultSchema()])
         assert False
-    except util.YAMLError, e:
+    except util.YAMLError as e:
         assert "Duplicate packet name" in e.message
 
     # test failed tlm validation - duplicate field name

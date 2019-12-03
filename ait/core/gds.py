@@ -70,7 +70,7 @@ def compress (input_filename, output_filename=None, verbose=False):
       log.info("Wrote %s (%d bytes).", output_filename, output_size)
       log.info("Compressed %6.2f percent", percent)
 
-  except (IOError, OSError), e:
+  except (IOError, OSError) as e:
     log.error(str(e) + ".")
 
   return output_size
@@ -114,7 +114,7 @@ def hexdump (bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
   bytes = bytearray(bytes)
   size  = len(bytes)
 
-  for n in xrange(0, size, stepsize):
+  for n in range(0, size, stepsize):
     if addr is not None:
       dump = preamble + "0x%04X: " % (addr + n)
     else:
@@ -123,7 +123,7 @@ def hexdump (bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
     dump += hexdumpLine(bytes[n:end], stepsize)
 
     if printfunc is None:
-      print dump
+      print(dump)
     else:
       printfunc(dump)
 
@@ -142,7 +142,7 @@ def hexdumpLine (bytes, length=None):
   if length is None:
     length = len(bytes)
 
-  for n in xrange(0, length, 2):
+  for n in range(0, length, 2):
     if n < len(bytes) - 1:
       line += "%02x%02x  " % (bytes[n], bytes[n + 1])
     elif n < len(bytes):
@@ -152,9 +152,9 @@ def hexdumpLine (bytes, length=None):
 
   line += "*"
 
-  for n in xrange(length):
+  for n in range(length):
     if n < len(bytes):
-      if bytes[n] in xrange(32, 127):
+      if bytes[n] in range(32, 127):
         line += "%c" % bytes[n]
       else:
         line += "."
@@ -189,7 +189,7 @@ def parseArgs (argv, defaults):
       if key.startswith("--"):
         key = key[2:]
       options[key] = value
-  except getopt.GetoptError, err:
+  except getopt.GetoptError as err:
     log.error( str(err)  )
     usage( exit=True )
 
@@ -218,7 +218,7 @@ def usage (exit=False):
   """
   stream = open(sys.argv[0])
   for line in stream.readlines():
-    if line.startswith("##"): print line.replace("##", ""),
+    if line.startswith("##"): print(line.replace("##", "")),
   stream.close()
 
   if exit:

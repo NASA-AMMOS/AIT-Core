@@ -28,7 +28,7 @@ import time
 import zlib
 import types
 
-import cPickle
+import pickle
 
 import ait
 from ait.core import log
@@ -79,7 +79,7 @@ class ObjectCache (object):
       msg = 'Saving updates from more recent "%s" to "%s"'
       log.info(msg, self.filename, self.cachename)
       with open(self.cachename, 'wb') as output:
-          cPickle.dump(self._dict, output, -1)
+          pickle.dump(self._dict, output, -1)
 
 
     def load(self):
@@ -94,7 +94,7 @@ class ObjectCache (object):
                 self.cache()
             else:
                 with open(self.cachename, 'rb') as stream:
-                    self._dict = cPickle.load(stream)
+                    self._dict = pickle.load(stream)
 
         return self._dict
 
@@ -157,7 +157,7 @@ def __init_extensions__(modname, modsyms):
 
     extensions = ait.config.get('extensions', None)
 
-    for clsname, cls in modsyms.items():
+    for clsname, cls in modsyms.copy().items():
         if not isinstance(cls, type):
             continue
 
@@ -237,13 +237,13 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
     default  = getattr(module, 'DefaultDict', None)
 
     if filename is None:
-        filename = ait.config.get('%s.filename' % config_key, None)
+        filename = ait.config.get(f'{config_key}.filename', None)
 
     if filename is not None and (default is None or reload is True):
         try:
             default = ObjectCache(filename, loader).load()
             setattr(module, 'DefaultDict', default)
-        except IOError, e:
+        except IOError as e:
             msg = 'Could not load default %s "%s": %s'
             log.error(msg, config_key, filename, str(e))
 
@@ -467,4 +467,4 @@ if __name__ == "__main__":
     filename                = os.path.basename(__file__)
 
     if num_failed == 0:
-        print "%-20s All %3d tests passed!" % (filename, num_tests)
+        print(f'{filename:20} All {num_tests:3} tests passed!')

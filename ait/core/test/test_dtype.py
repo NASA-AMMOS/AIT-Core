@@ -14,6 +14,9 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import base64
 import binascii
 import datetime
@@ -67,8 +70,8 @@ def testMSB_F32():
 
 def testArrayType():
     array  = dtype.ArrayType('MSB_U16', 3)
-    bin123 = '\x00\x01\x00\x02\x00\x03'
-    bin456 = '\x00\x04\x00\x05\x00\x06'
+    bin123 = b'\x00\x01\x00\x02\x00\x03'
+    bin456 = b'\x00\x04\x00\x05\x00\x06'
 
     assert array.name   == 'MSB_U16[3]'
     assert array.nbits  == 3 * 16
@@ -101,10 +104,10 @@ def testArrayType():
 
 def testArrayTime8():
     array = dtype.ArrayType('TIME8', 3)
-    bytes = '\x40\x80\xC0'
+    bytestring = b'\x40\x80\xC0'
 
-    assert array.decode(bytes)           == [0.25, 0.50, 0.75]
-    assert array.decode(bytes, raw=True) == [  64,  128,  192]
+    assert array.decode(bytestring)           == [0.25, 0.50, 0.75]
+    assert array.decode(bytestring, raw=True) == [  64,  128,  192]
 
 
 def testCMD16():

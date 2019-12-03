@@ -14,6 +14,8 @@
 # countries or providing access to foreign persons.
 
 
+import gevent.monkey
+gevent.monkey.patch_all()
 import nose
 
 from ait.core import ccsds

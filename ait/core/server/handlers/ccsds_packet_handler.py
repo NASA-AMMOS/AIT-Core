@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 import binascii
 import ait.core.log
 

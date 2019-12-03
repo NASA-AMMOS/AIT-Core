@@ -699,7 +699,7 @@ class Polygon (object):
 
   def segments (self):
     """Return the Line segments that comprise this Polygon."""
-    for n in xrange(len(self.vertices) - 1):
+    for n in range(len(self.vertices) - 1):
       yield Line(self.vertices[n], self.vertices[n + 1])
 
     yield Line(self.vertices[-1], self.vertices[0])

@@ -14,8 +14,7 @@
 
 import sys
 
-import cfg
-import log
+from ait.core import cfg, log
 
 
 def deprecated(message):

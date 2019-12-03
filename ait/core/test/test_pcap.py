@@ -14,24 +14,29 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import datetime
 import os
 import struct
 import time
 import warnings
 import time
+import tempfile
 
-import mock
+from unittest import mock
 import nose
 
 from ait.core import dmc, pcap
 
-
+TmpFile = None
 TmpFilename = None
 
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
-    TmpFilename = os.tmpnam()
+    TmpFile = tempfile.NamedTemporaryFile(mode='wb')
+    TmpFilename = TmpFile.name
 
 
 def testPCapGlobalHeader ():
@@ -43,7 +48,7 @@ def testPCapGlobalHeader ():
     assert header.sigfigs       == 0
     assert header.snaplen       == 65535
     assert header.network       == 147
-    assert str(header)          == header._data
+    assert header.pack()        == header._data
     assert len(header)          == 24
     assert header.incomplete()  == False
 
@@ -53,11 +58,11 @@ def testPCapPacketHeader ():
     assert time.time() - header.ts <= 1
     assert header.incl_len == 0
     assert header.orig_len == 0
-    assert str(header)     == header._data
+    assert header.pack()   == header._data
 
 
 def testReadBigEndian ():
-    bytes = 'Hello World!'
+    bytes = b'Hello World!'
     ts    = int( time.time() )
 
     # Write pcap file
@@ -90,7 +95,7 @@ def testReadBigEndian ():
 
 
 def testReadLittleEndian ():
-    bytes = 'Hello World!'
+    bytes = b'Hello World!'
     ts    = int( time.time() )
 
     # Write pcap file
@@ -123,7 +128,7 @@ def testReadLittleEndian ():
 
 
 def testWrite ():
-    bytes = 'Hello World!'
+    bytes = b'Hello World!'
     ts    = time.time()
 
     # Write pcap using API
@@ -147,7 +152,7 @@ def testWrite ():
 
 
 def testWriteRead ():
-    packets = 'When a packet hits a pocket on a socket on a port.'.split()
+    packets = b'When a packet hits a pocket on a socket on a port.'.split()
 
     with pcap.open(TmpFilename, 'w') as stream:
         for p in packets:
@@ -181,7 +186,7 @@ def testPCapPacketHeaderInit ():
     assert header._size == 16
     assert header.incl_len == 0
     assert header.orig_len == 0
-    assert header._data == str(header)
+    assert header._data == header.pack()
     assert header._swap == '@'
 
     ts, usec = dmc.getTimestampUTC()
@@ -220,7 +225,7 @@ def testSegmentPackets(log_info):
         pcap.segment(TmpFilename, 'foo.pcap', npackets=5, dryrun=True)
         expected = 'Would write 109 bytes, 5 packets, 1 seconds to foo.pcap.'
 
-        print log_info.call_args_list
+
         assert len(log_info.call_args_list) == 2
         for call in log_info.call_args_list:
             assert call[0][0] == expected
@@ -306,7 +311,7 @@ def testQuery():
         with pcap.open(TmpRes, 'r') as stream2:
             header1, packet1 = stream1.read()
             header2, packet2 = stream2.read()
-            assert str(header1) == str(header2)
+            assert header1.pack() == header2.pack()
             assert packet1 == packet2
 
     os.remove(TmpRes)

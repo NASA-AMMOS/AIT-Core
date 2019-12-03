@@ -156,7 +156,7 @@ Examples:
 
     if len(sys.argv) < 2:
         argparser.print_usage()
-        print 'Run with --help for detailed help.'
+        print('Run with --help for detailed help.')
         sys.exit(2)
 
     options = argparser.parse_args()

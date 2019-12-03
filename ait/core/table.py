@@ -18,7 +18,7 @@ AIT Table Converter
 The ait.core.table module provides the dictionary for translating tables.
 """
 
-import cPickle
+import pickle
 import os
 import yaml
 import struct
@@ -27,7 +27,7 @@ import array
 import hashlib
 
 import ait
-from ait.core import dtype, log, util, cfg
+from ait.core import dtype, util
 
 
 class FSWColDefn (object):
@@ -206,28 +206,19 @@ class FSWTabDefn (object):
         out = ""
 
         size = os.path.getsize(stream.name)
-        #print "table name: " + self.name
-        #print "stream len: " + str(size)
 
         noentries = 0
         if self.name != "memory":
             for fswheaderdef in enumerate(self.fswheaderdefns):
-                #print "header definition: " + str(fswheaderdef[1])
                 fswcoldefn = fswheaderdef[1]
                 name = fswcoldefn.name
-                #print "name: " + name
                 colfmt = str(fswcoldefn.format)
-                #print "format: " + colfmt
                 colpk = dtype.get(fswcoldefn.type)
-                #print "packing: " + str(colpk)
                 coltype = fswcoldefn.type
-                #print "type: " + coltype
                 if isinstance(fswcoldefn.bytes,list):
                    nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
                 else:
                    nobytes = 1
-                #print "bytes: " + str(fswcoldefn.bytes)
-                #print "nobytes: " + str(nobytes)
 
                 strval = ""
                 if str(colpk) == "PrimitiveType('U8')" and nobytes>1:
@@ -238,20 +229,17 @@ class FSWTabDefn (object):
                         #print(colfmt % value)
                 else:
                     value = colpk.decode(stream.read(nobytes))
-                    #print(colfmt % value)
                 if (str(colpk) != "PrimitiveType('U8')") or (str(colpk) == "PrimitiveType('U8')" and nobytes == 1):
                     strval = str(colfmt % value)
-                    #print "strval: " + strval
                 if name == "NUMBER_ENTRIES":
                     noentries = strval
-                    #print "noentries: " + strval
                 if self.name != "keep_out_zones" and self.name != "line_of_sight":
                     # Append the value to table row
                     out += name+': %s\n'     % strval
 
             if verbose is not None and verbose != 0:
-               print
-               print out
+               print()
+               print(out)
                #fswtab_f.write(out)
 
             size = size - 32
@@ -260,7 +248,6 @@ class FSWTabDefn (object):
 
         if self.name.startswith("log_"):
             norows = self.rows
-            #print "norows: " + str(norows)
         else:
             rowbytes = 0
             items = None
@@ -272,15 +259,11 @@ class FSWTabDefn (object):
                 else:
                    nobytes = 1
                 rowbytes = rowbytes + nobytes
-            #print "Row bytes: " + str(rowbytes)
             if items is not None:
                 rowbytes = rowbytes * items
                 norows = size / rowbytes
             else:
                 norows = int(noentries)
-
-            #print "norows: " + str(norows)
-            #print "items: " + str(items)
 
         if norows == 0:
            idx = 1
@@ -295,33 +278,24 @@ class FSWTabDefn (object):
                idx += 1
            return
 
-        for i in range(norows):
+        for i in range(int(norows)):
            condition = None
            #this is how to step into table definitions
            for coldef in enumerate(self.coldefns):
-               #print "column definition: " + str(coldef[1])
                fswcoldefn = coldef[1]
                name = fswcoldefn.name
-               #print "name: " + name
                colfmt = str(fswcoldefn.format)
-               #print "format: " + colfmt
                colpk = dtype.get(fswcoldefn.type)
-               #print "packing: " + str(colpk)
                coltype = fswcoldefn.type
-               #print "type: " + coltype
                if isinstance(fswcoldefn.bytes,list):
                   nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
                else:
                   nobytes = 1
-               #print "bytes: " + str(fswcoldefn.bytes)
-               #print "nobytes: " + str(nobytes)
                units = fswcoldefn.units
-               #print "units: " + units
                enum = fswcoldefn.enum
 
                items = fswcoldefn.items
                if items is not None:
-                   #print "items: " + str(items)
                    for i in range(items):
                       value = colpk.decode(stream.read(nobytes))
                       strval = str(colfmt % value)
@@ -335,32 +309,25 @@ class FSWTabDefn (object):
                            if name == "RESERVED":
                                continue
                            strval += str(colfmt % value)
-                           #print(colfmt % value)
                    else:
                        value = colpk.decode(stream.read(nobytes))
-                       #print(colfmt % value)
 
                    if enum is not None:
                       if enum is not None:
                           for enumkey in enumerate(enum.keys()):
-                              #print "enumkey: " + str(enumkey[1]) + ", enumval: " + str(enum[enumkey[1]])
                               if enumkey[1] == value:
                                  strval = str(enum[enumkey[1]])
                    else:
                       if units != 'none':
                           strval = str(colfmt % value) + " " + units
-                          #print "units: " + units
                       else:
                           if (str(colpk) != "PrimitiveType('U8')") or (str(colpk) == "PrimitiveType('U8')" and nobytes == 1):
                               strval = str(colfmt % value)
                           if self.name == "response" and "CONSTANT" in name and condition > 6:
                               strval = str('%d' % value)
-                   #print "strval: " + strval
 
                    if self.name == "response" and name == "CONDITION_TYPE":
-                       #print "value: "+str(value)
                        condition = value
-                       #print "condition: "+str(condition)
 
                    # Append the value to table row
                    if name == "RESERVED":
@@ -557,10 +524,10 @@ class FSWTabDefn (object):
         #version = "0"
         if verbose is not None and verbose != 0:
             log.info("CRC: %x" % crc32)
-            print "MAGIC_NUMBER: %x" % self.MagicNumber
-            print "UPLOAD_TYPE: " + str(self.uptype)
-            print "VERSION: " + str(version)
-            print "NUMBER_ENTRIES: " + str(no_lines)
+            print(f'MAGIC_NUMBER: {self.MagicNumber}')
+            print(f'UPLOAD_TYPE: {str(self.uptype)}')
+            print (f'VERSION: {str(version)}')
+            print (f'NUMBER_ENTRIES: {str(no_lines)}')
             # print "SHA-1: "+sha1
 
         #print "fname: "+fname+", crc32: "+str(crc32)
@@ -611,7 +578,7 @@ class FSWTabDict (dict):
             self.filename = filename
 
         stream = open(self.filename, "rb")
-        for doc in yaml.load_all(stream):
+        for doc in yaml.load_all(stream, Loader=yaml.Loader):
             for table in doc:
                 self.add(table)
         stream.close()
@@ -637,7 +604,7 @@ class FSWTabDictCache (object):
                 self.update()
             else:
                 with open(self.pcklname, "rb") as stream:
-                    self.fswtabdict = cPickle.load(stream)
+                    self.fswtabdict = pickle.load(stream)
 
         return self.fswtabdict
 
@@ -645,7 +612,7 @@ class FSWTabDictCache (object):
         msg = "Saving updates from more recent '%s' to '%s'"
         log.info(msg, self.filename, self.pcklname)
         with open(self.pcklname, "wb") as output:
-            cPickle.dump(self.fswtabdict, output, -1)
+            pickle.dump(self.fswtabdict, output, -1)
 
 
 _DefaultFSWTabDictCache = FSWTabDictCache()
@@ -656,7 +623,7 @@ def getDefaultFSWTabDict ():
     try:
         filename = _DefaultFSWTabDictCache.filename
         fswtabdict  = _DefaultFSWTabDictCache.load()
-    except IOError, e:
+    except IOError as e:
         msg = "Could not load default command dictionary '%s': %s'"
         log.error(msg, filename, str(e))
 

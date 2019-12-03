@@ -150,7 +150,6 @@ def createDirStruct(paths, verbose=True):
                 if verbose:
                     log.info('Creating directory: ' + p)
         except OSError, e:
-            #print path
             if e.errno == errno.EEXIST and os.path.isdir(p):
                 pass
             else:
@@ -225,7 +224,7 @@ def main():
         retcode = createDirStruct(ait.config._datapaths)
 
     except Exception as e:
-        print e
+        print(e)
         log.error('AIT Create Directories error: %s' % traceback.format_exc())
 
     log.end()

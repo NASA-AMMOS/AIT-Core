@@ -3,7 +3,7 @@ import os.path
 
 import nose
 from nose.tools import *
-import mock
+from unittest import mock
 
 import ait.core
 import ait.core.server
@@ -277,7 +277,7 @@ class TestHandlerCreation(object):
         server = Server()
 
         config = {'name': 'some_nonexistant_handler'}
-        with assert_raises_regexp(ImportError, 'No module named %s' % config['name']):
+        with assert_raises_regexp(ImportError, "No module named '{}'".format(config['name'])):
             server._create_handler(config)
 
 
@@ -393,12 +393,12 @@ class TestPluginCreation(object):
 
         config = {'name': 'some_nonexistant_plugin', 'inputs': 'some_inputs'}
         with assert_raises_regexp(ImportError,
-                                  'No module named some_nonexistant_plugin'):
+                                  "No module named 'some_nonexistant_plugin'"):
             server._create_plugin(config)
 
 
 def rewrite_and_reload_config(filename, yaml):
-    with open(filename, 'wb') as out:
+    with open(filename, 'wt') as out:
         out.write(yaml)
 
     ait.config.reload(filename=filename)

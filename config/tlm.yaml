@@ -41,6 +41,7 @@
       desc: Difference between Voltage_A and Voltage_B
       equation: Difference(Voltage_A, Voltage_B)
       units: Volts
+      type: MSB_U16
 
 - !Packet
   name: Ethernet_HS_Packet

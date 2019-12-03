@@ -75,7 +75,7 @@ def toJSON (obj):
     """
     if hasattr(obj, 'toJSON') and callable(obj.toJSON):
         result = obj.toJSON()
-    elif isinstance(obj, (int, long, float, str, unicode)) or obj is None:
+    elif isinstance(obj, (int, float, str)) or obj is None:
         result = obj
     elif isinstance(obj, collections.Mapping):
         result = { toJSON(key): toJSON(obj[key]) for key in obj }

@@ -23,9 +23,10 @@ import os
 import pkg_resources
 import struct
 import yaml
+from io import IOBase
 
 import ait
-from ait.core import json, log, util
+from ait.core import json, util, log
 
 
 MAX_CMD_WORDS = 54
@@ -302,7 +303,7 @@ class CmdDefn(json.SlotSerializer, object):
         """The number of arguments to this command (excludes fixed
         arguments).
         """
-        return len(self.args)
+        return len(list(self.args))
 
     @property
     def nbytes(self):
@@ -473,12 +474,12 @@ class CmdDict(dict):
             else:
                 stream        = content
 
-            cmds = yaml.load(stream)
+            cmds = yaml.load(stream, Loader=yaml.Loader)
             cmds = handle_includes(cmds)
             for cmd in cmds:
                 self.add(cmd)
 
-            if type(stream) is file:
+            if isinstance(stream, IOBase):
                 stream.close()
 
     def toJSON(self):

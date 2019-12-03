@@ -25,8 +25,8 @@ import platform
 import sys
 import time
 import re
-
 import yaml
+from io import IOBase
 
 import ait
 from ait.core import log, util
@@ -162,11 +162,11 @@ def loadYAML (filename=None, data=None):
         if filename:
             data = open(filename, 'rt')
 
-        config = yaml.load(data)
+        config = yaml.load(data, Loader=yaml.Loader)
 
-        if type(data) is file:
+        if isinstance(data, IOBase):
             data.close()
-    except IOError, e:
+    except IOError as e:
         msg = 'Could not read AIT configuration file "%s": %s'
         log.error(msg, filename, str(e))
 
@@ -261,7 +261,7 @@ class AitConfig (object):
     def __getattr__ (self, name):
         """Returns the attribute value AitConfig.name."""
         if name not in self:
-            raise AttributeError('No attribute "%s" in AitConfig.' % name)
+            raise AttributeError(f'No attribute "{name}" in AitConfig.')
         return self._getattr_(name)
 
     def __getitem__ (self, name):
@@ -320,7 +320,7 @@ class AitConfig (object):
             for k in data:
                 paths[k] = data[k]['path']
         except KeyError as e:
-            raise AitConfigMissing(e.message)
+            raise AitConfigMissing(str(e))
         except Exception as e:
             raise AitConfigError('Error reading data paths: %s' % e)
 

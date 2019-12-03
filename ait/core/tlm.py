@@ -26,6 +26,7 @@ import pkg_resources
 import struct
 import yaml
 import csv
+from io import IOBase
 
 import ait
 from ait.core import dtype, json, log, util
@@ -57,7 +58,7 @@ class wordarray(object):
         length = len(self)
 
         if isinstance(key, slice):
-            return [self[n] for n in xrange(*key.indices(length))]
+            return [self[n] for n in range(*key.indices(length))]
 
         elif isinstance(key, int):
             if key < 0:
@@ -127,7 +128,7 @@ class FieldList(collections.Sequence):
         return  (
             isinstance(other, collections.Sequence) and
             len(self) == len(other) and
-            all(self[n] == other[n] for n in xrange(len(self)))
+            all(self[n] == other[n] for n in range(len(self)))
         )
 
     def __getitem__(self, key):
@@ -742,8 +743,8 @@ class PacketDefinition(json.SlotSerializer, object):
 
     def simulate(self, fill=None):
         size   = self.nbytes
-        values = xrange(size) if fill is None else ((fill,) * size)
-        return Packet(self, bytearray(values))
+        values = bytearray(range(size)) if fill is None else bytearray(str(fill) * size, 'utf-8')
+        return Packet(self, values)
 
 
 class PacketExpression(object):
@@ -1028,7 +1029,7 @@ class TlmDict(dict):
         if defn.name not in self:
             self[defn.name] = defn
         else:
-            msg = "Duplicate packet name '%s'" % defn.name
+            msg = f'Duplicate packet name {defn.name}'
             log.error(msg)
             raise util.YAMLError(msg)
 
@@ -1052,12 +1053,12 @@ class TlmDict(dict):
             else:
                 stream        = content
 
-            pkts = yaml.load(stream)
+            pkts = yaml.load(stream, Loader=yaml.Loader)
             pkts = handle_includes(pkts)
             for pkt in pkts:
                 self.add(pkt)
 
-            if type(stream) is file:
+            if isinstance(stream, IOBase):
                 stream.close()
 
     def toJSON(self):
@@ -1085,7 +1086,7 @@ class TlmDictWriter(object):
         for pkt_name in self.tlmdict:
             filename = os.path.join(output_path, pkt_name + '.csv')
 
-            with open(filename, 'wb') as output:
+            with open(filename, 'wt') as output:
                 csvwriter = csv.writer(output, quoting=csv.QUOTE_ALL)
                 csvwriter.writerow(header)
 
@@ -1156,7 +1157,7 @@ def YAMLCtor_include(loader, node):
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
     with open(name,'r') as f:
-        data = yaml.load(f)
+        data = yaml.load(f, Loader=yaml.Loader)
     return data
 
 

@@ -16,14 +16,14 @@
 
 import os
 import unittest
-import mock
 import shutil
+from unittest import mock
 
 from ait.core import util
 
 
 """Specify some test file info"""
-TEST_FILE_PATH = os.path.dirname(__file__) + "/testdata/util/test_util.txt"
+TEST_FILE_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'util', 'test_util.txt')
 TEST_FILE_SIZE = 117
 TEST_FILE_CRC = 3099955026
 TEST_FILE_CRC_SKIP_BYTE = 651256842
@@ -37,7 +37,7 @@ class Crc32FileTest(unittest.TestCase):
         self.assertEqual(crc, TEST_FILE_CRC)
 
     def testCrc32WithTestFileAndSkip(self):
-    	"""Test the CRC-32 with a skip specified"""
+        """Test the CRC-32 with a skip specified"""
         crc = util.crc32File(TEST_FILE_PATH, 1)
         self.assertEqual(crc, TEST_FILE_CRC_SKIP_BYTE)
 

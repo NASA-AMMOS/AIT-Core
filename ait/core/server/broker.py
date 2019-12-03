@@ -83,4 +83,4 @@ class Broker(gevent.Greenlet):
 
     def _subscribe(self, subscriber, publisher):
         log.info('Subscribing {} to topic {}'.format(subscriber, publisher))
-        subscriber.sub.setsockopt(zmq.SUBSCRIBE, str(publisher))
+        subscriber.sub.setsockopt_string(zmq.SUBSCRIBE, str(publisher))

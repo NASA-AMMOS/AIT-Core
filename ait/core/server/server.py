@@ -5,8 +5,8 @@ import sys
 
 # import ait
 import ait.core.server
-from stream import PortInputStream, ZMQStream, PortOutputStream
-from broker import Broker
+from .stream import PortInputStream, ZMQStream, PortOutputStream
+from .broker import Broker
 from ait.core import log, cfg
 import copy
 

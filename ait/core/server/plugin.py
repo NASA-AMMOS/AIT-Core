@@ -4,7 +4,7 @@ import gevent
 import gevent.monkey; gevent.monkey.patch_all()
 
 import ait.core
-from client import ZMQInputClient
+from .client import ZMQInputClient
 
 class Plugin(ZMQInputClient):
     """

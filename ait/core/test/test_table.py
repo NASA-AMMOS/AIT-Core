@@ -14,6 +14,9 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import os
 import struct
 import warnings
@@ -90,7 +93,7 @@ class TestTableWriter(object):
             "        2: AUTUMN"
             "        3: WINTER"
             )
-        with open(TmpFilename, 'wb') as file:
+        with open(TmpFilename, 'wt') as file:
             file.write(yaml_table_test)
 
     def tearDown(self):
@@ -176,8 +179,8 @@ def testTabDefnAndWrite():
     assert tabledefn.coldefns[1] is coldefn2
 
     # Write table to text file
-    stream = open(TmpFilename, 'rw')
-    outstream = open('tempfile', 'wr')
+    stream = open(TmpFilename, 'w')
+    outstream = open('tempfile', 'w')
 
     # Test that the text file was created and did not exit with error code
     assert tabledefn.toText(stream, outstream, 1, 0.0) is None
@@ -187,8 +190,8 @@ def testTabDefnAndWrite():
     outstream.close()
 
     # Write table to binary file
-    stream = open(TmpFilename, 'rw')
-    outstream = open('tempfileb', 'wr')
+    stream = open(TmpFilename, 'w')
+    outstream = open('tempfileb', 'w')
 
     # Version in toBinary does not appear to be handled properly
     #assert tabledefn.toBinary('tempfile', stream, outstream, 1, 0.0) is None

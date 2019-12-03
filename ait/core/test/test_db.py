@@ -18,7 +18,7 @@ import datetime as dt
 import os
 import unittest
 
-import mock
+from unittest import mock
 
 import ait.core.db as db
 import ait.core.tlm as tlm
@@ -102,7 +102,7 @@ class TestInfluxDBBackend(unittest.TestCase):
               name: SampleCmd16
               type: CMD16
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_doc)
 
         tlmdict = tlm.TlmDict(self.test_yaml_file)
@@ -111,7 +111,7 @@ class TestInfluxDBBackend(unittest.TestCase):
         sqlbackend._conn = mock.MagicMock()
 
         pkt_defn = tlmdict['Packet1']
-        pkt = tlm.Packet(pkt_defn, bytearray(xrange(pkt_defn.nbytes)))
+        pkt = tlm.Packet(pkt_defn, bytearray(range(pkt_defn.nbytes)))
 
         now = dt.datetime.utcnow()
         sqlbackend.insert(pkt, time=now)
@@ -212,7 +212,7 @@ class TestSQLiteBackend(unittest.TestCase):
               name: SampleTime64
               type: TIME64
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_doc)
 
         tlmdict = tlm.TlmDict(self.test_yaml_file)
@@ -245,7 +245,7 @@ class TestSQLiteBackend(unittest.TestCase):
               name: SampleTime
               type: TIME64
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_doc)
 
         tlmdict = tlm.TlmDict(self.test_yaml_file)
@@ -278,7 +278,7 @@ class TestSQLiteBackend(unittest.TestCase):
               name: SampleTime
               type: TIME64
         """
-        with open(self.test_yaml_file, 'wb') as out:
+        with open(self.test_yaml_file, 'wt') as out:
             out.write(yaml_doc)
 
         tlmdict = tlm.TlmDict(self.test_yaml_file)
@@ -287,7 +287,7 @@ class TestSQLiteBackend(unittest.TestCase):
         sqlbackend._conn = mock.MagicMock()
 
         pkt_defn = tlmdict['Packet1']
-        pkt = tlm.Packet(pkt_defn, bytearray(xrange(pkt_defn.nbytes)))
+        pkt = tlm.Packet(pkt_defn, bytearray(range(pkt_defn.nbytes)))
 
         sqlbackend.insert(pkt)
         sqlbackend._conn.execute.assert_called_with(
