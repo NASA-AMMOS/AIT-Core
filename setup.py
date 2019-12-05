@@ -37,7 +37,7 @@ class DevWithGithooks(develop):
 
 setup(
     name         = 'ait-core',
-    version      = '1.4.0',
+    version      = '2.0rc1.dev0',
     description  = description,
     long_description = long_description,
     long_description_content_type = 'text/x-rst',
@@ -65,7 +65,7 @@ setup(
 
     extras_require = {
         'docs':  [
-            'Sphinx==1.7.2',
+            'Sphinx==2.2.2',
             'sphinx_rtd_theme',
             'sphinxcontrib-httpdomain'
         ],

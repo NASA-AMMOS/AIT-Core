@@ -1,36 +1,170 @@
 # Change Log
 
-## [1.4.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.4.0) (2019-03-12)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.3.0...1.4.0)
+## [2.0rc1.dev0](https://github.com/NASA-AMMOS/AIT-Core/tree/2.0rc1.dev0) (2019-12-03)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.4.0...2.0rc1.dev0)
+
+**Implemented enhancements:**
+
+- ait\_cmd\_send should support numeric values for string arguments [\#168](https://github.com/NASA-AMMOS/AIT-Core/issues/168)
+- Command submission default host/port should be configurable [\#72](https://github.com/NASA-AMMOS/AIT-Core/issues/72)
+- Command arguments specified "out of order" in cmd.tlm has unexpected results [\#69](https://github.com/NASA-AMMOS/AIT-Core/issues/69)
+- Update API Wait documentation to reference packet names from example tlm.yaml [\#67](https://github.com/NASA-AMMOS/AIT-Core/issues/67)
 
 **Closed issues:**
 
-- Fix logic for influxDB telemetry archive insert method  [\#137](https://github.com/NASA-AMMOS/AIT-Core/issues/137)
-- Get builds onto PyPi [\#14](https://github.com/NASA-AMMOS/AIT-Core/issues/14)
-- Add support for derived telemetry values [\#7](https://github.com/NASA-AMMOS/AIT-Core/issues/7)
+- Merge config files between AIT-Core and AIT-DSN [\#224](https://github.com/NASA-AMMOS/AIT-Core/issues/224)
+- Example handler in config doesn't exist [\#217](https://github.com/NASA-AMMOS/AIT-Core/issues/217)
+- Set server.plugins value to valid value [\#216](https://github.com/NASA-AMMOS/AIT-Core/issues/216)
+- Update handler package structuring [\#213](https://github.com/NASA-AMMOS/AIT-Core/issues/213)
+- Typo in BLISS notification on docs index [\#211](https://github.com/NASA-AMMOS/AIT-Core/issues/211)
+- Remove test files from generated API docs [\#210](https://github.com/NASA-AMMOS/AIT-Core/issues/210)
+- Plugin structure cleanup [\#208](https://github.com/NASA-AMMOS/AIT-Core/issues/208)
+- CmdDict should fail loudly when encountering duplicate opcode / command name [\#206](https://github.com/NASA-AMMOS/AIT-Core/issues/206)
+- Create standalone OpenMCT plugin [\#204](https://github.com/NASA-AMMOS/AIT-Core/issues/204)
+- MPS Seq to AIT Seq conversion tool [\#202](https://github.com/NASA-AMMOS/AIT-Core/issues/202)
+- CLTU integration and conversion to AIT cmds [\#176](https://github.com/NASA-AMMOS/AIT-Core/issues/176)
+- Update wiki with project documentation [\#57](https://github.com/NASA-AMMOS/AIT-Core/issues/57)
 
 **Merged pull requests:**
 
-- AIT-GUI Issue \#92 - Update monitoring with notification throttling  [\#133](https://github.com/NASA-AMMOS/AIT-Core/pull/133) ([aywaldron](https://github.com/aywaldron))
-- Issue \#7 - Add support for derived telemetry values [\#126](https://github.com/NASA-AMMOS/AIT-Core/pull/126) ([aywaldron](https://github.com/aywaldron))
+- Issue \#224 - Merge config files between AIT-Core and AIT-DSN  [\#225](https://github.com/NASA-AMMOS/AIT-Core/pull/225) ([Futabay](https://github.com/Futabay))
+- Issue \#215 - Update OpenMCT plugin to support configurable telemetry stream names [\#223](https://github.com/NASA-AMMOS/AIT-Core/pull/223) ([bruceplai](https://github.com/bruceplai))
+- Issue \#197 - Fixed project setup link in docs [\#222](https://github.com/NASA-AMMOS/AIT-Core/pull/222) ([bruceplai](https://github.com/bruceplai))
+- Issue \#219 - Implement python 3 support [\#220](https://github.com/NASA-AMMOS/AIT-Core/pull/220) ([bruceplai](https://github.com/bruceplai))
+- Issue \#216 and \#217 - Fix default plugins and handler package [\#218](https://github.com/NASA-AMMOS/AIT-Core/pull/218) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#213 - Update handler package structure [\#214](https://github.com/NASA-AMMOS/AIT-Core/pull/214) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#211 - Fix typo in doc index page [\#212](https://github.com/NASA-AMMOS/AIT-Core/pull/212) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#208 - Plugin restructure and cleanup [\#209](https://github.com/NASA-AMMOS/AIT-Core/pull/209) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#206 - Fix command duplicate opcode / name validation [\#207](https://github.com/NASA-AMMOS/AIT-Core/pull/207) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#204 - Create a standalone OpenMCT plugin [\#205](https://github.com/NASA-AMMOS/AIT-Core/pull/205) ([nttoole](https://github.com/nttoole))
+- Issue \#202 - Add MPS Seq to AIT Seq conversion script [\#203](https://github.com/NASA-AMMOS/AIT-Core/pull/203) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#167 - Add !include capability to cmd.yaml [\#200](https://github.com/NASA-AMMOS/AIT-Core/pull/200) ([Futabay](https://github.com/Futabay))
+- Issue \#69 - Update command config docs with byte ordering details [\#199](https://github.com/NASA-AMMOS/AIT-Core/pull/199) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#67 - Correct packet names in API docs [\#198](https://github.com/NASA-AMMOS/AIT-Core/pull/198) ([MJJoyce](https://github.com/MJJoyce))
 
-## [1.3.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.3.0) (2018-11-08)
+## [1.4.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.4.0) (2019-09-04)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.3.0...1.4.0)
+
+## [1.3.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.3.0) (2019-09-04)
 [Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.2.0...1.3.0)
 
+## [1.2.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.2.0) (2019-09-04)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.1.0...1.2.0)
+
+## [1.1.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.1.0) (2019-09-04)
+[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.0.0...1.1.0)
+
+## [1.0.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.0.0) (2019-09-04)
 **Closed issues:**
 
+- Add example script in default script directory [\#190](https://github.com/NASA-AMMOS/AIT-Core/issues/190)
+- CCSDS Packet Handler does not always find correct APID from config [\#185](https://github.com/NASA-AMMOS/AIT-Core/issues/185)
+- Cannot insert packets with a field named "time" into InfluxDB backend [\#184](https://github.com/NASA-AMMOS/AIT-Core/issues/184)
+- Add timestamps to SQLite database tables [\#180](https://github.com/NASA-AMMOS/AIT-Core/issues/180)
+- SQLiteBackend in ait.core.db has bugs [\#178](https://github.com/NASA-AMMOS/AIT-Core/issues/178)
+- Plugins do not take into account the pickle.dumps it receives from handlers [\#171](https://github.com/NASA-AMMOS/AIT-Core/issues/171)
+- Server.py is removing data from config when creating plugin [\#169](https://github.com/NASA-AMMOS/AIT-Core/issues/169)
+- Create an improved data querying plugin [\#164](https://github.com/NASA-AMMOS/AIT-Core/issues/164)
+- Add more robust handling of APID masking in CCSDSHandler [\#162](https://github.com/NASA-AMMOS/AIT-Core/issues/162)
+- Stream handler calls should handle None return from handlers [\#159](https://github.com/NASA-AMMOS/AIT-Core/issues/159)
+- Add CCSDSHandler class [\#157](https://github.com/NASA-AMMOS/AIT-Core/issues/157)
+- PortOutputClient should output raw message data [\#150](https://github.com/NASA-AMMOS/AIT-Core/issues/150)
+- Update default log\_stream port [\#149](https://github.com/NASA-AMMOS/AIT-Core/issues/149)
+- handler.PacketHandler should serialize output [\#144](https://github.com/NASA-AMMOS/AIT-Core/issues/144)
+- server.client logs are too noisy [\#142](https://github.com/NASA-AMMOS/AIT-Core/issues/142)
+- Additional Plugin config attributes aren't passed to Plugin \_\_init\_\_ [\#141](https://github.com/NASA-AMMOS/AIT-Core/issues/141)
+- Update python requests version number requirement [\#138](https://github.com/NASA-AMMOS/AIT-Core/issues/138)
+- Fix logic for influxDB telemetry archive insert method  [\#137](https://github.com/NASA-AMMOS/AIT-Core/issues/137)
+- Add documentation on new derived telemetry support [\#132](https://github.com/NASA-AMMOS/AIT-Core/issues/132)
 - Update EVRType to better handle unknown EVRs [\#129](https://github.com/NASA-AMMOS/AIT-Core/issues/129)
 - Config file reload on test initialization uses relative path [\#124](https://github.com/NASA-AMMOS/AIT-Core/issues/124)
 - Expand the telemetry when and dntoeu documentation [\#121](https://github.com/NASA-AMMOS/AIT-Core/issues/121)
 - Update documentation on telemetry dictionary  [\#119](https://github.com/NASA-AMMOS/AIT-Core/issues/119)
 - Config file referenced with relative path in FSWTabDictCache class [\#115](https://github.com/NASA-AMMOS/AIT-Core/issues/115)
+- Expand EVR Format Message [\#112](https://github.com/NASA-AMMOS/AIT-Core/issues/112)
+- Allow Notifications over unsecured SMTP servers [\#104](https://github.com/NASA-AMMOS/AIT-Core/issues/104)
+- Update seq-encode to allow for comments [\#102](https://github.com/NASA-AMMOS/AIT-Core/issues/102)
+- ait-tlm-csv warning when field not detected results in a lot of spam [\#101](https://github.com/NASA-AMMOS/AIT-Core/issues/101)
+- Update out-of-limit message to include time [\#100](https://github.com/NASA-AMMOS/AIT-Core/issues/100)
+- Command encoding is ISS specific [\#99](https://github.com/NASA-AMMOS/AIT-Core/issues/99)
+- Allow configurable Subject and From for ait.notify notifications [\#97](https://github.com/NASA-AMMOS/AIT-Core/issues/97)
+- Typo in AIT index header [\#94](https://github.com/NASA-AMMOS/AIT-Core/issues/94)
+- Add documentation explaining "extensions" [\#92](https://github.com/NASA-AMMOS/AIT-Core/issues/92)
+- Drop changelog gen script and pypi setup scripts [\#89](https://github.com/NASA-AMMOS/AIT-Core/issues/89)
+- Expand core.db backend support [\#85](https://github.com/NASA-AMMOS/AIT-Core/issues/85)
 - Baseline example configs across repos [\#83](https://github.com/NASA-AMMOS/AIT-Core/issues/83)
+- TIME40 dtype doesn't take up the proper number of bytes [\#81](https://github.com/NASA-AMMOS/AIT-Core/issues/81)
+- UTCLeapSeconds. get\_GPS\_offset\_for\_date missing default value for timestamp argument [\#80](https://github.com/NASA-AMMOS/AIT-Core/issues/80)
+- ait-pcap help message cleanup [\#79](https://github.com/NASA-AMMOS/AIT-Core/issues/79)
+- Ensure ait-pcap.py outputs a PCAP Global Header [\#78](https://github.com/NASA-AMMOS/AIT-Core/issues/78)
 - Create script for generating dummy telemetry data for tests [\#75](https://github.com/NASA-AMMOS/AIT-Core/issues/75)
+- Add \(better\) documentation for sequence functionality [\#68](https://github.com/NASA-AMMOS/AIT-Core/issues/68)
+- Command silent failure when providing a number when string is expected [\#66](https://github.com/NASA-AMMOS/AIT-Core/issues/66)
+- Install errors when using a non-cloned version of the code [\#65](https://github.com/NASA-AMMOS/AIT-Core/issues/65)
+- Typos in install documentation [\#63](https://github.com/NASA-AMMOS/AIT-Core/issues/63)
+- Update README to match wiki [\#59](https://github.com/NASA-AMMOS/AIT-Core/issues/59)
+- Remove Contributing Guide from Sphinx docs [\#58](https://github.com/NASA-AMMOS/AIT-Core/issues/58)
+- Update CHANGELOG [\#55](https://github.com/NASA-AMMOS/AIT-Core/issues/55)
+- Convert README from md to rst for PyPi compatibility [\#52](https://github.com/NASA-AMMOS/AIT-Core/issues/52)
+- Update deprecated method call in dmc.py [\#51](https://github.com/NASA-AMMOS/AIT-Core/issues/51)
+- Table tests aren't cleaning up files [\#47](https://github.com/NASA-AMMOS/AIT-Core/issues/47)
+- Add docs build tag to README [\#46](https://github.com/NASA-AMMOS/AIT-Core/issues/46)
+- Audit installation instructions for inconsistencies with new PyPi builds [\#44](https://github.com/NASA-AMMOS/AIT-Core/issues/44)
+- Drop documentation upgrade scripts now that ReadTheDocs builds are up [\#43](https://github.com/NASA-AMMOS/AIT-Core/issues/43)
+- Drop deprecated functions [\#42](https://github.com/NASA-AMMOS/AIT-Core/issues/42)
+- Add CODEOWNERS file [\#39](https://github.com/NASA-AMMOS/AIT-Core/issues/39)
+- Add TravisCI Build [\#36](https://github.com/NASA-AMMOS/AIT-Core/issues/36)
+- Update release procedures [\#35](https://github.com/NASA-AMMOS/AIT-Core/issues/35)
+- BLISS to AIT Name Change [\#34](https://github.com/NASA-AMMOS/AIT-Core/issues/34)
+- Switch AIT-Core BLISS naming over to AIT [\#33](https://github.com/NASA-AMMOS/AIT-Core/issues/33)
+- Add text and email notification support [\#31](https://github.com/NASA-AMMOS/AIT-Core/issues/31)
+- Remove Developer Documentation from docs [\#29](https://github.com/NASA-AMMOS/AIT-Core/issues/29)
+- Search doesn't work on docs hosted on ReadTheDocs [\#27](https://github.com/NASA-AMMOS/AIT-Core/issues/27)
+- LimitDefinition doesn't guard against missing limit levels [\#26](https://github.com/NASA-AMMOS/AIT-Core/issues/26)
 - bliss\_cmd\_send hardcoded to 127.0.0.1 [\#25](https://github.com/NASA-AMMOS/AIT-Core/issues/25)
+- Update tlm to csv script to allow for queries against ground receipt time [\#23](https://github.com/NASA-AMMOS/AIT-Core/issues/23)
+- Update README [\#21](https://github.com/NASA-AMMOS/AIT-Core/issues/21)
+- Push DSN build to PyPi [\#19](https://github.com/NASA-AMMOS/AIT-Core/issues/19)
+- Push GUI build to PyPi [\#18](https://github.com/NASA-AMMOS/AIT-Core/issues/18)
+- Push Core build to PyPi [\#17](https://github.com/NASA-AMMOS/AIT-Core/issues/17)
+- Get Core docs built and publicly viewable [\#16](https://github.com/NASA-AMMOS/AIT-Core/issues/16)
+- Get docs built and publicly viewable [\#15](https://github.com/NASA-AMMOS/AIT-Core/issues/15)
+- Get builds onto PyPi [\#14](https://github.com/NASA-AMMOS/AIT-Core/issues/14)
+- Default leapseconds file in DMC is not consistent [\#8](https://github.com/NASA-AMMOS/AIT-Core/issues/8)
+- Add support for derived telemetry values [\#7](https://github.com/NASA-AMMOS/AIT-Core/issues/7)
+- Add example script directory config to config.yaml [\#5](https://github.com/NASA-AMMOS/AIT-Core/issues/5)
+- Default GUI telemetry stream config points to invalid packet name [\#4](https://github.com/NASA-AMMOS/AIT-Core/issues/4)
+- Improve dmc.py leap second handling [\#2](https://github.com/NASA-AMMOS/AIT-Core/issues/2)
+- Add decorator for marking functions as deprecated [\#1](https://github.com/NASA-AMMOS/AIT-Core/issues/1)
 
 **Merged pull requests:**
 
+- Issue \#190 - Add example script and update config script directory [\#192](https://github.com/NASA-AMMOS/AIT-Core/pull/192) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#68 - Add sequence documentation and example [\#191](https://github.com/NASA-AMMOS/AIT-Core/pull/191) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#184 - Changed Ethernet packet definition field name and updated docs [\#187](https://github.com/NASA-AMMOS/AIT-Core/pull/187) ([seanlu99](https://github.com/seanlu99))
+- Issue \#185 - Fixed CCSDS Packet Handler APID comparison [\#186](https://github.com/NASA-AMMOS/AIT-Core/pull/186) ([seanlu99](https://github.com/seanlu99))
+- Issue \#180 - Add timestamps to SQLite database tables [\#181](https://github.com/NASA-AMMOS/AIT-Core/pull/181) ([seanlu99](https://github.com/seanlu99))
+- Issue \#178 - Added commit statement and quotation marks to SQLiteBackend [\#179](https://github.com/NASA-AMMOS/AIT-Core/pull/179) ([seanlu99](https://github.com/seanlu99))
+- Issue \#168 - CmdApi has new method for parsing arguments via cmd-arg … [\#174](https://github.com/NASA-AMMOS/AIT-Core/pull/174) ([nttoole](https://github.com/nttoole))
+- Issue \#171 - Changed plugins to accept pickle.dumps as input [\#172](https://github.com/NASA-AMMOS/AIT-Core/pull/172) ([seanlu99](https://github.com/seanlu99))
+- Issue \#169 - Changed pop to get in server plugin creation [\#170](https://github.com/NASA-AMMOS/AIT-Core/pull/170) ([seanlu99](https://github.com/seanlu99))
+- Issue \#162 - Added more robust handling of APID masking in CCSDSHandler [\#163](https://github.com/NASA-AMMOS/AIT-Core/pull/163) ([seanlu99](https://github.com/seanlu99))
+- Issue \#159 - Stream handles None return from handlers [\#161](https://github.com/NASA-AMMOS/AIT-Core/pull/161) ([seanlu99](https://github.com/seanlu99))
+- Issue \#157- Add CCSDSHandler class [\#158](https://github.com/NASA-AMMOS/AIT-Core/pull/158) ([seanlu99](https://github.com/seanlu99))
+- Issue \#66 - Strarg validation includes err mesg when arg is numeric [\#156](https://github.com/NASA-AMMOS/AIT-Core/pull/156) ([nttoole](https://github.com/nttoole))
+- Add new command with fixed argument to cmd.yaml for testing [\#154](https://github.com/NASA-AMMOS/AIT-Core/pull/154) ([aywaldron](https://github.com/aywaldron))
+- Issue \#150 - PortOutputClient to dump raw message data [\#152](https://github.com/NASA-AMMOS/AIT-Core/pull/152) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#149 - Update default log\_stream port [\#151](https://github.com/NASA-AMMOS/AIT-Core/pull/151) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#144 - Serialize PacketHandler output [\#147](https://github.com/NASA-AMMOS/AIT-Core/pull/147) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#141 - Fix issue with optional Plugin attrs not being passed [\#146](https://github.com/NASA-AMMOS/AIT-Core/pull/146) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#142 - Reduce server.client log message noise [\#145](https://github.com/NASA-AMMOS/AIT-Core/pull/145) ([MJJoyce](https://github.com/MJJoyce))
+- GUI Issue \#75 - Backend Reimagining [\#140](https://github.com/NASA-AMMOS/AIT-Core/pull/140) ([aywaldron](https://github.com/aywaldron))
+- Issue \#138 - Updated python requests version number [\#139](https://github.com/NASA-AMMOS/AIT-Core/pull/139) ([robschneider16](https://github.com/robschneider16))
+- Issue \#99 - Add documentation about default command encoding format [\#136](https://github.com/NASA-AMMOS/AIT-Core/pull/136) ([MJJoyce](https://github.com/MJJoyce))
+- Issue \#132 - Add derived telemetry documentation [\#135](https://github.com/NASA-AMMOS/AIT-Core/pull/135) ([MJJoyce](https://github.com/MJJoyce))
+- AIT-GUI Issue \#92 - Update monitoring with notification throttling  [\#133](https://github.com/NASA-AMMOS/AIT-Core/pull/133) ([aywaldron](https://github.com/aywaldron))
 - Issue \#129: Update EVRType to better handle unknown EVRs [\#130](https://github.com/NASA-AMMOS/AIT-Core/pull/130) ([jordanpadams](https://github.com/jordanpadams))
+- Issue \#7 - Add support for derived telemetry values [\#126](https://github.com/NASA-AMMOS/AIT-Core/pull/126) ([aywaldron](https://github.com/aywaldron))
 - Issue \#124 - Config file reload on test initialization uses relative path [\#125](https://github.com/NASA-AMMOS/AIT-Core/pull/125) ([aywaldron](https://github.com/aywaldron))
 - Issue \#115 - Config file referenced with relative path [\#123](https://github.com/NASA-AMMOS/AIT-Core/pull/123) ([aywaldron](https://github.com/aywaldron))
 - Issue \#121 - Expand telemetry when and dntoeu documentation [\#122](https://github.com/NASA-AMMOS/AIT-Core/pull/122) ([MJJoyce](https://github.com/MJJoyce))
@@ -38,24 +172,6 @@
 - Issue \#25 - bliss\_cmd\_send hardcoded to 127.0.0.1 [\#117](https://github.com/NASA-AMMOS/AIT-Core/pull/117) ([aywaldron](https://github.com/aywaldron))
 - Issue \#75 - Create script for generating dummy telemetry data for tests [\#116](https://github.com/NASA-AMMOS/AIT-Core/pull/116) ([aywaldron](https://github.com/aywaldron))
 - Issue \#83 - Baseline example configs across repos [\#114](https://github.com/NASA-AMMOS/AIT-Core/pull/114) ([aywaldron](https://github.com/aywaldron))
-
-## [1.2.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.2.0) (2018-09-11)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.1.0...1.2.0)
-
-**Closed issues:**
-
-- Expand EVR Format Message [\#112](https://github.com/NASA-AMMOS/AIT-Core/issues/112)
-- Allow Notifications over unsecured SMTP servers [\#104](https://github.com/NASA-AMMOS/AIT-Core/issues/104)
-- Update seq-encode to allow for comments [\#102](https://github.com/NASA-AMMOS/AIT-Core/issues/102)
-- ait-tlm-csv warning when field not detected results in a lot of spam [\#101](https://github.com/NASA-AMMOS/AIT-Core/issues/101)
-- Update out-of-limit message to include time [\#100](https://github.com/NASA-AMMOS/AIT-Core/issues/100)
-- ait-pcap help message cleanup [\#79](https://github.com/NASA-AMMOS/AIT-Core/issues/79)
-- Ensure ait-pcap.py outputs a PCAP Global Header [\#78](https://github.com/NASA-AMMOS/AIT-Core/issues/78)
-- Typos in install documentation [\#63](https://github.com/NASA-AMMOS/AIT-Core/issues/63)
-- BLISS to AIT Name Change [\#34](https://github.com/NASA-AMMOS/AIT-Core/issues/34)
-
-**Merged pull requests:**
-
 - Issue \#112 - Expand EVR Format Message Handling [\#113](https://github.com/NASA-AMMOS/AIT-Core/pull/113) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#63 - Typos in install documentation [\#111](https://github.com/NASA-AMMOS/AIT-Core/pull/111) ([aywaldron](https://github.com/aywaldron))
 - Issue \#109 - Add latest build release to travisci config [\#110](https://github.com/NASA-AMMOS/AIT-Core/pull/110) ([MJJoyce](https://github.com/MJJoyce))
@@ -63,28 +179,6 @@
 - Issue \#79: ait-pcap help message cleanup [\#107](https://github.com/NASA-AMMOS/AIT-Core/pull/107) ([aywaldron](https://github.com/aywaldron))
 - Issue \#104: add unsecured SMTP server access [\#105](https://github.com/NASA-AMMOS/AIT-Core/pull/105) ([jordanpadams](https://github.com/jordanpadams))
 - Issue \#102: Allow comments inline with commands [\#103](https://github.com/NASA-AMMOS/AIT-Core/pull/103) ([jordanpadams](https://github.com/jordanpadams))
-
-## [1.1.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.1.0) (2018-07-03)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/1.0.0...1.1.0)
-
-**Closed issues:**
-
-- Allow configurable Subject and From for ait.notify notifications [\#97](https://github.com/NASA-AMMOS/AIT-Core/issues/97)
-- Typo in AIT index header [\#94](https://github.com/NASA-AMMOS/AIT-Core/issues/94)
-- Add documentation explaining "extensions" [\#92](https://github.com/NASA-AMMOS/AIT-Core/issues/92)
-- Drop changelog gen script and pypi setup scripts [\#89](https://github.com/NASA-AMMOS/AIT-Core/issues/89)
-- Expand core.db backend support [\#85](https://github.com/NASA-AMMOS/AIT-Core/issues/85)
-- TIME40 dtype doesn't take up the proper number of bytes [\#81](https://github.com/NASA-AMMOS/AIT-Core/issues/81)
-- UTCLeapSeconds. get\_GPS\_offset\_for\_date missing default value for timestamp argument [\#80](https://github.com/NASA-AMMOS/AIT-Core/issues/80)
-- Install errors when using a non-cloned version of the code [\#65](https://github.com/NASA-AMMOS/AIT-Core/issues/65)
-- Update README to match wiki [\#59](https://github.com/NASA-AMMOS/AIT-Core/issues/59)
-- Remove Contributing Guide from Sphinx docs [\#58](https://github.com/NASA-AMMOS/AIT-Core/issues/58)
-- Update CHANGELOG [\#55](https://github.com/NASA-AMMOS/AIT-Core/issues/55)
-- Update deprecated method call in dmc.py [\#51](https://github.com/NASA-AMMOS/AIT-Core/issues/51)
-- Search doesn't work on docs hosted on ReadTheDocs [\#27](https://github.com/NASA-AMMOS/AIT-Core/issues/27)
-
-**Merged pull requests:**
-
 - Issue \#97: add configurable subject and from address [\#98](https://github.com/NASA-AMMOS/AIT-Core/pull/98) ([jordanpadams](https://github.com/jordanpadams))
 - Issue \#94 - Fix typo in docs index [\#95](https://github.com/NASA-AMMOS/AIT-Core/pull/95) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#92 - Add extensions documentation [\#93](https://github.com/NASA-AMMOS/AIT-Core/pull/93) ([MJJoyce](https://github.com/MJJoyce))
@@ -96,29 +190,6 @@
 - Issue \#59 - Update README to match wiki landing page [\#61](https://github.com/NASA-AMMOS/AIT-Core/pull/61) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#58 - Remove contributing guide from Sphinx docs [\#60](https://github.com/NASA-AMMOS/AIT-Core/pull/60) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#55 - Fix missing CHANGELOG releases [\#56](https://github.com/NASA-AMMOS/AIT-Core/pull/56) ([MJJoyce](https://github.com/MJJoyce))
-
-## [1.0.0](https://github.com/NASA-AMMOS/AIT-Core/tree/1.0.0) (2018-05-08)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/0.37.0...1.0.0)
-
-**Closed issues:**
-
-- Convert README from md to rst for PyPi compatibility [\#52](https://github.com/NASA-AMMOS/AIT-Core/issues/52)
-- Table tests aren't cleaning up files [\#47](https://github.com/NASA-AMMOS/AIT-Core/issues/47)
-- Add docs build tag to README [\#46](https://github.com/NASA-AMMOS/AIT-Core/issues/46)
-- Audit installation instructions for inconsistencies with new PyPi builds [\#44](https://github.com/NASA-AMMOS/AIT-Core/issues/44)
-- Drop documentation upgrade scripts now that ReadTheDocs builds are up [\#43](https://github.com/NASA-AMMOS/AIT-Core/issues/43)
-- Drop deprecated functions [\#42](https://github.com/NASA-AMMOS/AIT-Core/issues/42)
-- Add CODEOWNERS file [\#39](https://github.com/NASA-AMMOS/AIT-Core/issues/39)
-- Add TravisCI Build [\#36](https://github.com/NASA-AMMOS/AIT-Core/issues/36)
-- Update release procedures [\#35](https://github.com/NASA-AMMOS/AIT-Core/issues/35)
-- Switch AIT-Core BLISS naming over to AIT [\#33](https://github.com/NASA-AMMOS/AIT-Core/issues/33)
-- Remove Developer Documentation from docs [\#29](https://github.com/NASA-AMMOS/AIT-Core/issues/29)
-- Push DSN build to PyPi [\#19](https://github.com/NASA-AMMOS/AIT-Core/issues/19)
-- Push GUI build to PyPi [\#18](https://github.com/NASA-AMMOS/AIT-Core/issues/18)
-- Get docs built and publicly viewable [\#15](https://github.com/NASA-AMMOS/AIT-Core/issues/15)
-
-**Merged pull requests:**
-
 - Issue \#42 - Removed deprecated functions [\#54](https://github.com/NASA-AMMOS/AIT-Core/pull/54) ([lorsposto](https://github.com/lorsposto))
 - Issue \#52 - Convert README.md to README.rst for PyPi [\#53](https://github.com/NASA-AMMOS/AIT-Core/pull/53) ([lorsposto](https://github.com/lorsposto))
 - Issue \#43 - Remove doc upgrade script [\#50](https://github.com/NASA-AMMOS/AIT-Core/pull/50) ([lorsposto](https://github.com/lorsposto))
@@ -127,50 +198,12 @@
 - Issue \#33 - Switch BLISS naming to AIT [\#45](https://github.com/NASA-AMMOS/AIT-Core/pull/45) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#39 - Add CODEOWNERS [\#40](https://github.com/NASA-AMMOS/AIT-Core/pull/40) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#36 - Add Travis CI Build [\#38](https://github.com/NASA-AMMOS/AIT-Core/pull/38) ([MJJoyce](https://github.com/MJJoyce))
-
-## [0.37.0](https://github.com/NASA-AMMOS/AIT-Core/tree/0.37.0) (2018-04-25)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/0.36.0...0.37.0)
-
-**Closed issues:**
-
-- Add text and email notification support [\#31](https://github.com/NASA-AMMOS/AIT-Core/issues/31)
-- LimitDefinition doesn't guard against missing limit levels [\#26](https://github.com/NASA-AMMOS/AIT-Core/issues/26)
-
-**Merged pull requests:**
-
 - Issue \#31 - Add text and email notification support [\#32](https://github.com/NASA-AMMOS/AIT-Core/pull/32) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#26 - Guard against missing limit values in LimitDefinition [\#30](https://github.com/NASA-AMMOS/AIT-Core/pull/30) ([MJJoyce](https://github.com/MJJoyce))
-
-## [0.36.0](https://github.com/NASA-AMMOS/AIT-Core/tree/0.36.0) (2018-04-19)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/0.35.0...0.36.0)
-
-**Closed issues:**
-
-- Update tlm to csv script to allow for queries against ground receipt time [\#23](https://github.com/NASA-AMMOS/AIT-Core/issues/23)
-- Update README [\#21](https://github.com/NASA-AMMOS/AIT-Core/issues/21)
-- Push Core build to PyPi [\#17](https://github.com/NASA-AMMOS/AIT-Core/issues/17)
-- Get Core docs built and publicly viewable [\#16](https://github.com/NASA-AMMOS/AIT-Core/issues/16)
-
-**Merged pull requests:**
-
 - Issue \#21 - Update README [\#28](https://github.com/NASA-AMMOS/AIT-Core/pull/28) ([lorsposto](https://github.com/lorsposto))
 - Issue \#23 - Update Tlm to CSV script to support ground receipt time [\#24](https://github.com/NASA-AMMOS/AIT-Core/pull/24) ([MJJoyce](https://github.com/MJJoyce))
 - Issue \#16 - Make AIT-Core docs public on ReadTheDocs [\#22](https://github.com/NASA-AMMOS/AIT-Core/pull/22) ([lorsposto](https://github.com/lorsposto))
 - Issue \#17 - Prepare to publish AIT-Core to Pypi [\#20](https://github.com/NASA-AMMOS/AIT-Core/pull/20) ([lorsposto](https://github.com/lorsposto))
-
-## [0.35.0](https://github.com/NASA-AMMOS/AIT-Core/tree/0.35.0) (2018-04-11)
-[Full Changelog](https://github.com/NASA-AMMOS/AIT-Core/compare/0.34.0...0.35.0)
-
-**Closed issues:**
-
-- Default leapseconds file in DMC is not consistent [\#8](https://github.com/NASA-AMMOS/AIT-Core/issues/8)
-- Add example script directory config to config.yaml [\#5](https://github.com/NASA-AMMOS/AIT-Core/issues/5)
-- Default GUI telemetry stream config points to invalid packet name [\#4](https://github.com/NASA-AMMOS/AIT-Core/issues/4)
-- Improve dmc.py leap second handling [\#2](https://github.com/NASA-AMMOS/AIT-Core/issues/2)
-- Add decorator for marking functions as deprecated [\#1](https://github.com/NASA-AMMOS/AIT-Core/issues/1)
-
-**Merged pull requests:**
-
 - Issue \#8 - Fix inconsistent default leap second file name [\#9](https://github.com/NASA-AMMOS/AIT-Core/pull/9) ([MJJoyce](https://github.com/MJJoyce))
 - DMC Leap second handling improvements [\#6](https://github.com/NASA-AMMOS/AIT-Core/pull/6) ([MJJoyce](https://github.com/MJJoyce))
 
