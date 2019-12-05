@@ -88,7 +88,7 @@ def main():
                 sequence.writeBinary()
 
             exit = 0
-    except Exception, e:
+    except Exception as e:
         log.error(e)
         exit = 1
 

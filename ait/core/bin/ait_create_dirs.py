@@ -149,7 +149,7 @@ def createDirStruct(paths, verbose=True):
                 os.makedirs(p)
                 if verbose:
                     log.info('Creating directory: ' + p)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.EEXIST and os.path.isdir(p):
                 pass
             else:
