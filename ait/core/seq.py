@@ -144,7 +144,7 @@ class Seq (object):
 
   def append (self, cmd, delay=0.000, attrs=None):
     """Adds a new command with a relative time delay to this sequence."""
-    self.lines.append( SeqCmd(cmd, delay, attrs) )
+    self.lines.append( createSeqCmd(cmd, delay, attrs) )
 
 
   def printText (self, stream=None):
@@ -157,7 +157,7 @@ class Seq (object):
     stream.write('# seqid   : %u\n'     % self.seqid         )
     stream.write('# version : %u\n'     % self.version       )
     stream.write('# crc32   : 0x%04x\n' % self.crc32         )
-    stream.write('# ncmds   : %u\n'     % len(self.commands) )
+    stream.write('# ncmds   : %u\n'     % len(list(self.commands)))
     stream.write('# duration: %.3fs\n'  % self.duration      )
     stream.write('\n')
 
@@ -274,7 +274,7 @@ class Seq (object):
       # Version
       output.write( struct.pack('B', self.version        )  )
       # Number of Commands
-      output.write( struct.pack('>H', len(self.commands) )  )
+      output.write( struct.pack('>H', len(list(self.commands)) )  )
       # Sequence ID
       output.write( struct.pack('>H', self.seqid         )  )
       # CRC Placeholder
@@ -742,3 +742,5 @@ class SeqMsgLog (object):
   def warning (self, msg, pos=None):
     """Logs a warning message pertaining to the given SeqAtom."""
     self.log(msg, 'warning: ' + self.location(pos))
+
+util.__init_extensions__(__name__, globals())
