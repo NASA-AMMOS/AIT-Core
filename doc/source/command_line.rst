@@ -41,6 +41,12 @@ ait-seq-print
    :start-after: '''
    :end-before: '''
 
+ait-mps-seq-convert
+^^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../ait/core/bin/ait_mps_seq_convert.py
+   :start-after: '''
+   :end-before: '''
+
 ____
 
 Telemetry Utilities

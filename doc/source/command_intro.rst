@@ -131,6 +131,10 @@ AIT Sequences can be used as ground sequences to automate common tasks during te
     # encode a sequence
     ait-seq-encode my_sequence.txt
 
+AMMOS Sequence Generator (SeqGen)
+---------------------------------
+
+AIT provides utilities for converting sequences to the default AIT format if you use AMMOS Sequence Generator (SeqGen) to generate sequences.The **ait_mps_seq_convert.py** script provides a command line interface for doing this. Check out the :doc:`Command Line Script Documentation <command_line>` for additional information.
 
 ----
 
