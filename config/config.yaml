@@ -145,7 +145,7 @@ default:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
     server:
-        plugins: []
+        plugins: 
             - plugin:
                 name: ait.gui.AITGUIPlugin
                 inputs:
