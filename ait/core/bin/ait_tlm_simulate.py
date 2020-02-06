@@ -69,7 +69,7 @@ def main():
             defn = list(tlm.getDefaultDict().values())[0]
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+#        print(type(defn))
         packet = defn.simulate(fill=fill)
 
         while True:
