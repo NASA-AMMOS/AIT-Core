@@ -33,6 +33,9 @@ from ait.core import db, log, tlm, pcap
 def main():
     tlmdict = tlm.getDefaultDict()
     pnames  = tlmdict.keys()
+    #print('test:', len(pnames))     #kkallas
+    #print('test2:', pnames)         #kkallas
+    #print('test3:', list(pnames.keys()))         #kkallas
     ap      = argparse.ArgumentParser(
         description     = __doc__,
         formatter_class = argparse.ArgumentDefaultsHelpFormatter
@@ -42,7 +45,8 @@ def main():
         '--packet': {
             'type'    : str,
             'choices' : pnames,
-            'default' : pnames[0] if len(pnames) > 0 else None,
+            'default' : '1553_HS_Packet' if len(pnames) > 0 else None,
+            #'default' : pnames[0] if len(pnames) > 0 else None,
             'help'    : 'Type of packets (!Packet name in tlm.yaml) in file',
             'required': len(pnames) > 1,
         },

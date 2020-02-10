@@ -144,6 +144,9 @@ default:
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
+    database:
+        dbname: /Users/kkallas/Documents/github/AIT/ait.db
+
     server:
         plugins: 
             - plugin:
@@ -153,6 +156,13 @@ default:
                     - telem_stream
                 outputs:
                     - command_stream
+
+            - plugin:
+                name: ait.core.server.plugins.data_archive.DataArchive
+                inputs:
+                    - telem_stream
+#                    - port number
+                datastore: ait.core.db.SQLiteBackend
 
         inbound-streams:
             - stream:
@@ -164,12 +174,12 @@ default:
                 name: telem_stream
                 input: 
                     - 3076
-#                handlers:
-#                    - name: ait.core.server.handlers.PacketHandler
-#                     packet: CCSDS_HEADER
                 handlers:
-                    - name: ait.core.server.handlers.CCSDSPacketHandler
-                      packet_types:   {'01011100111' : 'CCSDS_HEADER'}
+                    - name: ait.core.server.handlers.PacketHandler
+                      packet: CCSDS_HEADER
+#                handlers:
+#                    - name: ait.core.server.handlers.CCSDSPacketHandler
+#                      packet_types:   {'01011100111' : 'CCSDS_HEADER'}
 
         outbound-streams:
             - stream:
