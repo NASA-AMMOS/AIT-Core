@@ -14,6 +14,6 @@ Module contents
 ---------------
 
 .. automodule:: ait.core.server.plugins
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

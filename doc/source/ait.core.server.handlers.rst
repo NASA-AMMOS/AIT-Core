@@ -13,6 +13,6 @@ Module contents
 ---------------
 
 .. automodule:: ait.core.server.handlers
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

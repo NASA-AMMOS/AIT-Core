@@ -2,6 +2,6 @@ ait.core.dmc module
 ===================
 
 .. automodule:: ait.core.dmc
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

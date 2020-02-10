@@ -154,26 +154,22 @@ default:
                 outputs:
                     - command_stream
 
-#            - plugin:
-#                name: ait.servder.plugins.db_archive
-#                inputs:
-#                    - telem_stream
-#                    - port number
-
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 2514
+                input: 
+                    - 2514
 
             - stream:
                 name: telem_stream
-                input: 3076
+                input: 
+                    - 3076
 #                handlers:
 #                    - name: ait.core.server.handlers.PacketHandler
-#                      packet: CCSDS_HEADER
+#                     packet: CCSDS_HEADER
                 handlers:
                     - name: ait.core.server.handlers.CCSDSPacketHandler
-                      packet_types:   {'XXXXX1011XXX' : 'CCSDS_HEADER'}
+                      packet_types:   {'01011100111' : 'CCSDS_HEADER'}
 
         outbound-streams:
             - stream:

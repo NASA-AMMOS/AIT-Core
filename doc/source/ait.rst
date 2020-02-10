@@ -6,12 +6,12 @@ Subpackages
 
 .. toctree::
 
-    ait.core
+   ait.core
 
 Module contents
 ---------------
 
 .. automodule:: ait
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

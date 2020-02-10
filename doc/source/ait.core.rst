@@ -6,8 +6,8 @@ Subpackages
 
 .. toctree::
 
-    ait.core.bin
-    ait.core.server
+   ait.core.bin
+   ait.core.server
 
 Submodules
 ----------
@@ -41,6 +41,6 @@ Module contents
 ---------------
 
 .. automodule:: ait.core
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
