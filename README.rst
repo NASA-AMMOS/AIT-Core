@@ -5,8 +5,8 @@ The AMMOS Instrument Toolkit (Formerly the Bespoke Links to Instruments
 for Surface and Space (BLISS)) is a Python-based software suite
 developed to handle Ground Data System (GDS), Electronic Ground Support
 Equipment (EGSE), commanding, telemetry uplink/downlink, and sequencing
-for JPL International Space Station and CubeSat Missions. It is a
-generalization and expansion of tools developed for a number of JPL ISS
+for instrument and CubeSat Missions. It is a generalization and expansion 
+of tools developed for a number of ISS
 missions.
 
 Getting Started
