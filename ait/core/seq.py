@@ -103,7 +103,8 @@ class Seq (object):
   @property
   def commands (self):
     """The ordered list of SeqCmds in this sequence."""
-    return filter(lambda line: type(line) is SeqCmd, self.lines)
+    return list(filter(lambda line: type(line) is SeqCmd, self.lines))
+
 
 
   @property
@@ -192,15 +193,16 @@ class Seq (object):
 
     stream       = open(filename, 'rb')
     magic        = struct.unpack('>H', stream.read(2))[0]
-    self.crc32   = struct.unpack('>I', stream.read(4))[0]
+    uploadtype     = stream.read(1)
+    self.version   = struct.unpack('B', stream.read(1))[0]
+    ncmds   = struct.unpack('>H', stream.read(2))[0]
     self.seqid   = struct.unpack('>H', stream.read(2))[0]
-    self.version = struct.unpack('>H', stream.read(2))[0]
-    ncmds        = struct.unpack('>H', stream.read(2))[0]
     reserved     = stream.read(20)
+    self.crc32 = struct.unpack('>I', stream.read(4))[0]
 
     for n in range(ncmds):
       bytes = stream.read(110)
-      self.lines.append( SeqCmd.decode(bytes, self.cmddict) )
+      self.lines.append(SeqCmd.decode(bytes, self.cmddict))
 
 
   def readText (self, filename=None):

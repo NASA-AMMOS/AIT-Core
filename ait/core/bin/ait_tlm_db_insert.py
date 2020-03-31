@@ -32,10 +32,7 @@ from ait.core import db, log, tlm, pcap
 
 def main():
     tlmdict = tlm.getDefaultDict()
-    pnames  = tlmdict.keys()
-    #print('test:', len(pnames))     #kkallas
-    #print('test2:', pnames)         #kkallas
-    #print('test3:', list(pnames.keys()))         #kkallas
+    pnames  = list(tlmdict.keys())
     ap      = argparse.ArgumentParser(
         description     = __doc__,
         formatter_class = argparse.ArgumentDefaultsHelpFormatter
@@ -45,17 +42,16 @@ def main():
         '--packet': {
             'type'    : str,
             'choices' : pnames,
-            'default' : '1553_HS_Packet' if len(pnames) > 0 else None,
-            #'default' : pnames[0] if len(pnames) > 0 else None,
+            'default' : pnames[0] if len(pnames) > 0 else None,
             'help'    : 'Type of packets (!Packet name in tlm.yaml) in file',
             'required': len(pnames) > 1,
         },
 
         '--database': {
-            'default' : ait.config.get('database.name'),
+            'default' : ait.config.get('database.dbname'),
             'help'    : ('Name of database in which to insert packets (may '
                          'also be specified in config.yaml database.name)'),
-            'required': ait.config.get('database.name') is None
+            'required': ait.config.get('database.dbname') is None
         },
 
         '--backend': {
@@ -106,6 +102,7 @@ def main():
             log.info('Processing %s' % filename)
             with pcap.open(filename) as stream:
                 for header, pkt_data in stream:
+
                     try:
                         packet = tlm.Packet(defn, pkt_data)
 

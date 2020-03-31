@@ -144,8 +144,13 @@ default:
         ats:
             path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
-    database:
-        dbname: /Users/kkallas/Documents/github/AIT/ait.db
+### SQLite3
+    # database:
+    #     dbname: </location/to/ait.db>
+
+### InfluxDB
+    # database:
+    #     dbname: ait
 
     server:
         plugins: 
@@ -157,12 +162,20 @@ default:
                 outputs:
                     - command_stream
 
-            - plugin:
-                name: ait.core.server.plugins.data_archive.DataArchive
-                inputs:
-                    - telem_stream
-#                    - port number
-                datastore: ait.core.db.SQLiteBackend
+### SQLite3
+            # - plugin:
+            #     name: ait.core.server.plugins.data_archive.DataArchive
+            #     inputs:
+            #         - telem_stream
+            #     datastore: ait.core.db.SQLiteBackend
+
+### InfluxDB
+            # - plugin:
+            #     name: ait.core.server.plugins.data_archive.DataArchive
+            #     inputs:
+            #         - telem_stream
+            #         - <port number e.g. 8086>
+            #     datastore: ait.core.db.InfluxDBBackend
 
         inbound-streams:
             - stream:
@@ -174,12 +187,15 @@ default:
                 name: telem_stream
                 input: 
                     - 3076
+### PacketHandler
                 handlers:
                     - name: ait.core.server.handlers.PacketHandler
-                      packet: CCSDS_HEADER
-#                handlers:
-#                    - name: ait.core.server.handlers.CCSDSPacketHandler
-#                      packet_types:   {'01011100111' : 'CCSDS_HEADER'}
+                      packet: 1553_HS_Packet
+
+### CCSDSPacketHandler
+                # handlers:
+                #     - name: ait.core.server.handlers.CCSDSPacketHandler
+                #       packet_types:   {'01011100111' : 'CCSDS_HEADER'}        #e.g.
 
         outbound-streams:
             - stream:

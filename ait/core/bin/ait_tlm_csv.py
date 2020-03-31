@@ -118,7 +118,7 @@ def main():
     csv_writer = None
     npackets = 0
     if args.csv:
-        csv_file = open(args.csv, 'wb')
+        csv_file = open(args.csv, 'w')
         csv_writer = csv.writer(csv_file)
 
     output(csv_writer, fields)
