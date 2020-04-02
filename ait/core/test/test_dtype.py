@@ -64,6 +64,9 @@ def testMSB_F32():
     bytes   = struct.pack('>f', val)
     MSB_F32 = dtype.get('MSB_F32')
 
+    enc_ba = MSB_F32.encode(val)
+    assert enc_ba
+
     assert fpeq(MSB_F32.decode(bytes), val)
     assert fpeq(MSB_F32.decode(bytes, raw=True), val)
 
@@ -244,6 +247,9 @@ def testString():
     errmsgs = []
     assert dt.validate(sval)
     assert not errmsgs
+
+    enc_ba = dt.encode("on-your-left")
+    assert enc_ba
 
 
 if __name__ == '__main__':

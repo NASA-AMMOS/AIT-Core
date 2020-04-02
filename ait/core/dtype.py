@@ -71,7 +71,7 @@ import struct
 import sys
 import re
 
-from ait.core import cmd, dmc, util
+from ait.core import cmd, dmc, log, util
 
 
 # PrimitiveTypes
@@ -238,9 +238,13 @@ class PrimitiveType(object):
         """
         if re.sub(r'\W+', '', self.format).lower() in ('b', 'i', 'l', 'q'):
             fvalue = int(value)
+        elif self._string:
+            fvalue = value.encode()
         else:
             fvalue = value
-        return bytearray(struct.pack(self.format, fvalue))
+
+        as_str = struct.pack(self.format, fvalue)
+        return bytearray(as_str)
 
     def decode(self, bytestring, raw=False):
         """decode(bytearray, raw=False) -> value
