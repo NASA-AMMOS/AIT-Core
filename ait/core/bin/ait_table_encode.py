@@ -51,20 +51,20 @@ def main():
     tabletype     = args.tabletype
     verbose       = args.verbose
 
-    # Grab default command dictionary
+    # If arguments include fswtabledict, try to load it
     if dictpath is not None:
         dictCache = table.FSWTabDictCache(filename=dictpath)
 
         try:
             filename = dictCache.filename
+            fswtabdict = table.FSWTabDict(filename)
         except IOError as e:
-            msg = 'Could not load default table dictionary "%s": %s'
+            msg = 'Could not load table dictionary "%s": %s'
             log.error(msg, filename, str(e))
-        fswtabdict  = table.FSWTabDict(filename)
-    else:
+    else: # Grab default table dictionary
         fswtabdict  = table.getDefaultFSWTabDict()
 
-    # Check if cmddict exists
+    # Check if fswtabddict exists, if so continue processing
     if fswtabdict is not None:
         # Write out the table file using the command dictionary
         table.writeToBinary(fswtabdict, tabletype, tabfile, verbose, outbin=args.binfile)
