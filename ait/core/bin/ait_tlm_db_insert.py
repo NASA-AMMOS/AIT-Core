@@ -32,7 +32,7 @@ from ait.core import db, log, tlm, pcap
 
 def main():
     tlmdict = tlm.getDefaultDict()
-    pnames  = tlmdict.keys()
+    pnames  = list(tlmdict.keys())
     ap      = argparse.ArgumentParser(
         description     = __doc__,
         formatter_class = argparse.ArgumentDefaultsHelpFormatter
@@ -48,10 +48,10 @@ def main():
         },
 
         '--database': {
-            'default' : ait.config.get('database.name'),
+            'default' : ait.config.get('database.dbname'),
             'help'    : ('Name of database in which to insert packets (may '
                          'also be specified in config.yaml database.name)'),
-            'required': ait.config.get('database.name') is None
+            'required': ait.config.get('database.dbname') is None
         },
 
         '--backend': {
@@ -102,6 +102,7 @@ def main():
             log.info('Processing %s' % filename)
             with pcap.open(filename) as stream:
                 for header, pkt_data in stream:
+
                     try:
                         packet = tlm.Packet(defn, pkt_data)
 

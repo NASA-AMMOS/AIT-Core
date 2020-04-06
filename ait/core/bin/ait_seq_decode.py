@@ -40,18 +40,36 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Add required command line arguments
-    parser.add_argument('filename', default=None)
+    parser.add_argument('filename',
+        nargs='+',
+        metavar='</path/to/seq>',
+        help='encoded sequence file(s)')
 
     # Get command line arguments
-    args = vars(parser.parse_args())
+    args = parser.parse_args()
+    for fname in args.filename:
+        filename  = os.path.abspath(fname)
+        if not os.path.isfile(filename):
+            raise Exception('File not found: %s ' % filename)
 
-    filename  = os.path.abspath(args['filename'])
-    extension = os.path.splitext(filename)[1]
+        extension = os.path.splitext(filename)[1]
 
-    if extension.lower() != '.bin':
-        log.warn("Filename '%s' does not have a '.bin' extension", filename)
+        if extension.lower() != '.bin':
+            log.warn("Filename '%s' does not have a '.bin' extension", filename)
 
-    sequence = seq.Seq(filename)
+        # Parse the filename for the applicable information
+        parts = os.path.basename(filename).split('_')
+        l = len(parts)
+        desc = os.path.splitext(parts[l-1])[0]
+        seqid = parts[l-2]
+        subsys = parts[l-3]
+
+        try:
+            int(seqid)
+        except ValueError:
+            raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
+
+    sequence = seq.Seq(filename, id=seqid)
 
     if not sequence.validate():
         for msg in sequence.messages:

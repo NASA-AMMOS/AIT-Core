@@ -2,6 +2,6 @@ ait.core.json module
 ====================
 
 .. automodule:: ait.core.json
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

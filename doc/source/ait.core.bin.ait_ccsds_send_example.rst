@@ -1,7 +1,7 @@
-ait.core.bin.ait\_bsc\_create\_handler module
+ait.core.bin.ait\_ccsds\_send\_example module
 =============================================
 
-.. automodule:: ait.core.bin.ait_bsc_create_handler
+.. automodule:: ait.core.bin.ait_ccsds_send_example
    :members:
    :undoc-members:
    :show-inheritance:

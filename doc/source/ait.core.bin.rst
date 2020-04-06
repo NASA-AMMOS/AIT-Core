@@ -9,6 +9,7 @@ Submodules
    ait.core.bin.ait_bsc
    ait.core.bin.ait_bsc_create_handler
    ait.core.bin.ait_bsc_stop_handler
+   ait.core.bin.ait_ccsds_send_example
    ait.core.bin.ait_cmd_hist
    ait.core.bin.ait_cmd_send
    ait.core.bin.ait_create_dirs
@@ -33,6 +34,6 @@ Module contents
 ---------------
 
 .. automodule:: ait.core.bin
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
