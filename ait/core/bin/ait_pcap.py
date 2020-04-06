@@ -46,14 +46,14 @@ def main():
         },
 
         '--stime': {
-            'default' : dmc.GPS_Epoch,
+            'default' : dmc.GPS_Epoch.strftime(dmc.ISO_8601_Format),
             'help'    : ('Starting time for desired telemetry range in '
                          'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
                          '1980-01-06T00:00:00Z)')
         },
 
         '--etime': {
-            'default' : datetime.datetime.now(),
+            'default' : datetime.datetime.now().strftime(dmc.ISO_8601_Format),
             'help'    : ('Ending time for desired telemetry range in '
                          'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
                          'the current time; example: 2018-05-23T18:54:31Z)')
@@ -100,6 +100,8 @@ def main():
         etime = args.etime
         output = args.output
 
+
+
         try:
             # Convert start time to datetime object
             starttime = datetime.datetime.strptime(stime, dmc.ISO_8601_Format)
@@ -120,7 +122,7 @@ def main():
         times = pcap.times(pcapfiles, args.tol)
 
         if len(times) == 1:
-            for start, stop in times.values()[0]:
+            for start, stop in list(times.values())[0]:
                 print('%s - %s' % (start, stop))
         else:
             for filename in sorted(times.keys()):

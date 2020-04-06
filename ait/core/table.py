@@ -27,7 +27,7 @@ import array
 import hashlib
 
 import ait
-from ait.core import dtype, util
+from ait.core import dtype, util, log
 
 
 class FSWColDefn (object):
@@ -654,7 +654,9 @@ def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath=None,
     #get the table definition
     if tabletype != "log":
         fswtabdefn = fswtabdict.get(tabletype)
-        #print "TABLE definition: "+str(fswtabdefn)
+        #print("TABLE type: " + str(fswtabdefn))
+        #print("TABLE version: " + str(version))
+        #print("TABLE definition: "+str(fswtabdefn))
 
         # Get the files ready for writing
         fswtab_f = open(outpath + '/' + tabletype + '_table' + verStr + '.txt', 'w')
