@@ -1,5 +1,6 @@
 AMMOS Instrument Toolkit (AIT)
 ==============================
+build test
 
 The AMMOS Instrument Toolkit (Formerly the Bespoke Links to Instruments
 for Surface and Space (BLISS)) is a Python-based software suite
