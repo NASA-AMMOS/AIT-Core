@@ -26,8 +26,8 @@ zoe                             1
 packet_type                     0001
 <spare>                         0
 element_id                      0001
-data_packet                     1               
-version_id                      0001 
+data_packet                     1
+version_id                      0001
 format_id                       000001
 <unknown>                       00000000
 frame_id                        00000001
@@ -38,8 +38,14 @@ buf = hs_packet.pack(*data)
 host = 'localhost'
 port = 3076
 
-while True:
-    s.sendto(buf, (host, port))
-    log.info('Sent telemetry (%d bytes) to %s:%d' 
-                % (hs_packet.size, host, port))
-    time.sleep(1)
+
+def main():
+    while True:
+        s.sendto(buf, (host, port))
+        log.info('Sent telemetry (%d bytes) to %s:%d'
+                    % (hs_packet.size, host, port))
+        time.sleep(1)
+
+
+if __name__ == '__main__':
+    main()
