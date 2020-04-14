@@ -44,13 +44,27 @@ Integrating with OpenMCT Framework
 ----------------------------------
 
 **Note:**
+At this time, the AIT-Integration is capatible with OpenMCT  v0.14.0.  Setup step 1 will address this.
+
+**Note:**
 The AIT extension requires 'http.js', a library that was included in the OpenMCT Tutorial (Apache License, Version 2.0).
 The source location of this file is: https://github.com/nasa/openmct-tutorial/tree/completed/lib/http.js
+
 
 Setup
 ^^^^^
 
 1. Install OpenMCT (https://nasa.github.io/openmct/getting-started/)
+
+To ensure you get the capatible version of the software, after performing the git-clone step, you will need to checkout the v0.14.0 version.
+
+.. code-block:: none
+
+    git clone https://github.com/nasa/openmct.git   #Download OpenMCT
+    git checkout v0.14.0                            #Checkout required version
+    npm install                                     #Install dependencies
+
+
 We will assume that OpenMCT is installed in a directory referenced
 by the environment variable ${OPENMCT_DIR}
 
@@ -96,6 +110,6 @@ Running AIT / OpenMCT
 ---------------------
 
 1) Start the AIT server (configured to run AIT's OpenMct plugin)
-2) Start OpenMCT server.
+2) Start OpenMCT server  (npm start)
 3) Open browser to location of the OpenMCT UI endpoint.
 
