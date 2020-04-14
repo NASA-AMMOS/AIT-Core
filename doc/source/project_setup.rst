@@ -3,6 +3,8 @@ Setting up a New Project with AIT
 
 The following documentation will teach you how to setup a new project to build off of the AMMOS Instrument Toolkit. This guide assumes that the project you'll be developing is a Python-based project.
 
+.. note::  AIT is tested against *Python 3.7*.  Running AIT with other versions of *Python 3* may have issues.
+
 Add AIT Core as a Dependency
 ------------------------------
 
