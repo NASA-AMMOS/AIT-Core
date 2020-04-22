@@ -26,4 +26,16 @@ def deprecated(message):
   return deprecated_decorator
 
 sys.modules['ait'].deprecated = deprecated
-sys.modules['ait'].DEFAULT_CMD_PORT = 3075
+sys.modules['ait'].DEFAULT_CMD_PORT  = 3075
+sys.modules['ait'].DEFAULT_CMD_HOST  = '127.0.0.1'
+
+## Name of the ZMQ topic used to accept commands from external sources
+sys.modules['ait'].DEFAULT_CMD_TOPIC = '__commands__'
+
+## Number of seconds to sleep after ZmqSocket.connect() call, affects clients
+sys.modules['ait'].DEFAULT_CMD_ZMQ_SLEEP = 1
+
+
+
+sys.modules['ait'].SERVER_DEFAULT_XSUB_URL = "tcp://*:5559"
+sys.modules['ait'].SERVER_DEFAULT_XPUB_URL = "tcp://*:5560"

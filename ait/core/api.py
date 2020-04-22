@@ -34,6 +34,8 @@ import gevent.event
 import gevent.server
 import requests
 
+import zmq.green as zmq
+
 import collections
 import inspect
 import json
@@ -41,6 +43,7 @@ import os
 import socket
 import time
 
+import ait
 import ait.core
 from ait.core import cmd, gds, log, pcap, tlm, util
 
@@ -95,20 +98,66 @@ class CmdAPI:
     """CmdAPI
 
     Provides an API to send commands to your Instrument via User
-    Datagram Protocol (UDP) packets.
+    Datagram Protocol (UDP) packets if udp_dest argument is set,
+    else, command is sent via ZMQ topic.
     """
-    def __init__ (self, destination, cmddict=None, verbose=False):
-        if type(destination) is int:
-            destination = ('127.0.0.1', destination)
+    def __init__ (self, udp_dest, cmddict=None, verbose=False, cmdtopic=None):
 
         if cmddict is None:
             cmddict = cmd.getDefaultCmdDict()
 
-        self._host    = destination[0]
-        self._port    = destination[1]
         self._cmddict = cmddict
         self._verbose = verbose
-        self._socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        ## Setup the destination of our commands and arguents based on destination
+        ## information.
+        if udp_dest:
+
+            ## Convert partial info to full tuple
+            if type(udp_dest) is int:
+                udp_dest = (ait.DEFAULT_CMD_HOST, udp_dest)
+            elif type(udp_dest) is str:
+                udp_dest = (udp_dest, ait.DEFAULT_CMD_PORT)
+
+            ## Sanify check that we have a tuple
+            if type(udp_dest) is not tuple:
+                errmsg = "Illegal type of 'udp_dest' argument: "+type(udp_dest)
+                errmsg += ".  Legal types: {int,str,tuple}"
+                raise TypeError(errmsg)
+
+        ## Our UDP socket
+        self._udp_socket = None
+
+        ## Our ZMQ publisher socket
+        self._pub_socket = None
+
+        if udp_dest:
+            self._host = udp_dest[0]
+            self._port = udp_dest[1]
+            self._udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        else:
+            self._cntxt = zmq.Context()
+            self._pub_url = ait.config.get('server.xsub',
+                                           ait.SERVER_DEFAULT_XSUB_URL)
+            self._pub_url = self._pub_url.replace('*', 'localhost')
+
+            self._pub_socket = self._cntxt.socket(zmq.PUB)
+            self._pub_socket.connect(self._pub_url)
+
+            ## Allow for the ZMQ connection to complete by sleeping
+            self._pub_conn_sleep = int(ait.config.get('command.zmq_conn_sleep',
+                                                 ait.DEFAULT_CMD_ZMQ_SLEEP))
+            sleep_msg = (
+                'Sleeping {} seconds to allow ZeroQM connection to complete '
+            ).format(str(self._pub_conn_sleep))
+            ait.core.log.debug(sleep_msg)
+            time.sleep(self._pub_conn_sleep)
+
+            ## Retrieve the command topic to be used
+            self._pub_topic = ait.config.get('command.topic',
+                                 ait.DEFAULT_CMD_TOPIC) \
+                                 if cmdtopic is None else cmdtopic
+
 
         _def_cmd_hist = os.path.join(ait.config._ROOT_DIR, 'ait-cmdhist.pcap')
         self.CMD_HIST_FILE = ait.config.get('command.history.filename', _def_cmd_hist)
@@ -146,13 +195,24 @@ class CmdAPI:
                 gds.hexdump(encoded, preamble=cmdobj.name + ':' + pad)
 
             try:
-                values = (self._host, self._port, str(cmdobj))
-                log.command('Sending to %s:%d: %s' % values)
-                self._socket.sendto(encoded, (self._host, self._port))
-                status = True
+                ## Send to either UDP socket or ZMQ publish socket
 
-                with pcap.open(self.CMD_HIST_FILE, 'a') as output:
-                    output.write(str(cmdobj))
+                if self._udp_socket:
+                    values = (self._host, self._port, str(cmdobj))
+                    log.command('Sending to %s:%d: %s' % values)
+                    self._udp_socket.sendto(encoded, (self._host, self._port))
+                    status = True
+                elif self._pub_socket:
+                    values = (self._pub_topic, str(cmdobj))
+                    log.command('Sending via publisher: %s %s' % values)
+                    self._pub_socket.send_string('{} {}'.format(self._pub_topic, encoded))
+                    status = True
+
+                ## Only add to history file is success status is True
+                if status:
+                    with pcap.open(self.CMD_HIST_FILE, 'a') as output:
+                        output.write(str(cmdobj))
+
             except socket.error as e:
                 log.error(e.message)
             except IOError as e:

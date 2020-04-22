@@ -17,10 +17,14 @@
 '''
 usage: ait-seq-send [options] filename.rts
 
-Sends the given relative timed sequence via UDP.
+Sends the given relative timed sequence via the AIT server,
+or if the 'udp' flag is set then directly via UDP.
 
---port=number    Port on which to send data  (default: 3075)
---verbose=0|1    Hexdump data                (default:    0)
+--verbose          Hexdump data                  (default: False)
+--topic=topicname  Sets the name of ZMQ topic    (default: '__commands__')
+--udp              Send data via UDP             (default: False)
+--host=url         URL of the host to send data  (default: '127.0.0.1')
+--port=number      Port on which to send data    (default: 3075)
 
 Examples:
 
@@ -28,9 +32,9 @@ Examples:
 '''
 
 import os
-import sys
 import time
 import argparse
+from collections import OrderedDict
 
 import ait.core
 from ait.core import api, gds, log, seq, util
@@ -44,31 +48,77 @@ def system (command):
 def main ():
     log.begin()
 
+    descr = "Sends the given relative timed sequence via the AIT server, or if the 'udp' " \
+            "flag is set then directly via UDP."
+
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=descr,
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    # Add required command line argument
-    parser.add_argument('filename', default=None)
 
-    # Add optional command line arguments
-    parser.add_argument(
-        '--port',
-        default=ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
-        type=int
-    )
-    parser.add_argument('--verbose', default=0, type=int)
 
-    # Get command line arguments
-    args = vars(parser.parse_args())
+    ## The optional argument(s)
+    arg_defns = OrderedDict({
+        '--topic': {
+            'type': str,
+            'default': ait.config.get('command.topic', ait.DEFAULT_CMD_TOPIC),
+            'help': 'Name of topic from which to publish data'
+        },
+        '--verbose': {
+            'action': 'store_true',
+            'default': False,
+            'help': 'Hexdump of the raw command being sent.'
+        },
+        '--udp': {
+            'action': 'store_true',
+            'default': False,
+            'help': 'Send data to UDP socket.'
+        },
+        '--host': {
+            'type': str,
+            'default': ait.DEFAULT_CMD_HOST,
+            'help': 'Host to which to send data'
+        },
+        '--port': {
+            'type'    : int,
+            'default' : ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
+            'help'    : 'Port on which to send data'
+        }
+    })
 
-    host     = '127.0.0.1'
-    port     = args['port']
-    data     = ' '.join(args)
-    verbose  = args['verbose']
+    ## Required argument(s)
+    arg_defns['filename'] = {
+        'type' : str,
+        'help' : 'Name of the sequence file.',
+        'default' : None
+    }
 
-    cmd = api.CmdAPI(port, verbose=verbose)
-    filename = args['filename']
+    ## Push argument defs to the parser
+    for name, params in arg_defns.items():
+        parser.add_argument(name, **params)
+
+    ## Get arg results of the parser
+    args = parser.parse_args()
+
+    ## Extract args to local fields
+    host     = args.host
+    port     = args.port
+    verbose  = args.verbose
+    udp      = args.udp
+    topic    = args.topic
+    filename = args.filename
+
+    dest     = None
+
+    ## If UDP enabled, collect host/port info
+    if udp:
+        if host is not None:
+            dest = (host, port)
+        else:
+            dest = port
+
+    cmdApi = api.CmdAPI(dest, verbose=verbose, cmdtopic=topic)
+
 
     try:
         with open(filename, 'r') as stream:
@@ -88,12 +138,12 @@ def main ():
                 else:
                     tokens   = line.split()
                     delay    = float(tokens[0])
-                    name     = tokens[1]
-                    args     = [ util.toNumber(t, t) for t in tokens[2:] ]
-                    args     = cmd.parseArgs(name, *args)
+                    cmdName  = tokens[1]
+                    cmdArgs  = [ util.toNumberOrStr(t, t) for t in tokens[2:] ]
+                    cmdArgs  = cmdApi.parseArgs(cmdName, *cmdArgs)
                     time.sleep(delay)
                     log.info(line)
-                    cmd.send(name, *args)
+                    cmdApi.send(cmdName, *cmdArgs)
     except IOError:
         log.error("Could not open '%s' for reading." % filename)
 

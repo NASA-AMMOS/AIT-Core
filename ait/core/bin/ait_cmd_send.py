@@ -14,14 +14,33 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+##'''
+##
+##    Sends the given command and its arguments to the ISS simulator via
+##    the AIT server, or if the 'udp' flag is set then directly via UDP.
+##
+##        Examples:
+##            $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
+##
+##'''
+
 '''
-ait-cmd-send
+usage: ait-cmd-send [options] command [arguments]
+
+Sends the given command and its arguments to the ISS simulator via 
+the AIT server, or if the 'udp' flag is set then directly via UDP.
+
+--verbose          Hexdump data                  (default: False)
+--topic=topicname  Sets the name of ZMQ topic    (default: '__commands__')
+--udp              Send data via UDP             (default: False)
+--host=url         URL of the host to send data  (default: '127.0.0.1')
+--port=number      Port on which to send data    (default: 3075)
+
+Examples:
+
+  $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
 '''
 
-
-import sys
-import socket
-import time
 import argparse
 from collections import OrderedDict
 
@@ -32,52 +51,81 @@ from ait.core import api, gds, log, util
 def main():
     log.begin()
 
-    description     = """
+    descr = "Sends the given command and its arguments to the ISS simulator via  " \
+            "the AIT server, or if the 'udp' flag is set then directly via UDP."
 
-    Sends the given command and its arguments to the ISS simulator via UDP.
+    parser = argparse.ArgumentParser(
 
-        Examples:
-            $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
+        description=descr,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
 
-          """
 
-    arguments = OrderedDict({
+    arg_defns = OrderedDict({
+        '--topic': {
+            'type': str,
+            'default': ait.config.get('command.topic', ait.DEFAULT_CMD_TOPIC),
+            'help': 'Name of topic from which to publish data'
+        },
+        '--verbose': {
+            'action': 'store_true',
+            'default': False,
+            'help': 'Hexdump of the raw command being sent.'
+        },
+        '--udp': {
+            'action': 'store_true',
+            'default': False,
+            'help': 'Send data to UDP socket.'
+        },
+        '--host': {
+            'type': str,
+            'default': ait.DEFAULT_CMD_HOST,
+            'help': 'Host to which to send data'
+        },
         '--port': {
             'type'    : int,
             'default' : ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
             'help'    : 'Port on which to send data'
-        },
-        '--host': {
-            'type'    : str,
-            'default' : "127.0.0.1",
-            'help'    : 'Host to which to send data'
-        },
-        '--verbose': {
-            'action'  : 'store_true',
-            'default' : False,
-            'help'    : 'Hexdump of the raw command being sent.'
         }
     })
 
-    arguments['command'] = {
+    arg_defns['command'] = {
         'type' : str,
         'help' : 'Name of the command to send.'
     }
 
-    arguments['arguments'] = {
+    arg_defns['arguments'] = {
         'type'      : util.toNumberOrStr,
-        'metavar'   : 'argument',
+        'metavar'   : 'arguments',
         'nargs'     : '*',
         'help'      : 'Command arguments.'
     }
 
-    args = gds.arg_parse(arguments, description)
+    ## Push argument defs to the parser
+    for name, params in arg_defns.items():
+        parser.add_argument(name, **params)
 
+    ## Get arg results of the parser
+    args = parser.parse_args()
+
+    ## Extract args to local fields
     host     = args.host
     port     = args.port
     verbose  = args.verbose
+    udp      = args.udp
+    topic    = args.topic
 
-    cmdApi  = api.CmdAPI(port, verbose=verbose)
+    # dest will contain UDP info or None for 0MQ
+    dest     = None
+
+    ## If UDP enabled, collect host/port info
+    if udp:
+        if host is not None:
+            dest = (host, port)
+        else:
+            dest = port
+
+    cmdApi  = api.CmdAPI(dest, verbose=verbose, cmdtopic=topic)
 
     cmdArgs = cmdApi.parseArgs(args.command, *args.arguments)
 

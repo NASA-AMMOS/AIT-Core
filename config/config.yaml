@@ -150,12 +150,12 @@ default:
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 
+                input:
                     - 2514
 
             - stream:
                 name: telem_stream
-                input: 
+                input:
                     - 3076
                 handlers:
                     - name: ait.core.server.handlers.PacketHandler
@@ -165,3 +165,4 @@ default:
             - stream:
                 name: command_stream
                 output: 3075
+                command_subscriber: True
