@@ -48,7 +48,6 @@ Examples:
 import argparse
 import os
 import sys
-import textwrap
 
 import ait
 from ait.core import cmd, evr, log, tlm, val, limits

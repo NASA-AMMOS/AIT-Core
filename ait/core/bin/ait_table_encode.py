@@ -24,11 +24,9 @@ Examples:
   $ ait-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/ait-workspace/output/targets_table.txt
 '''
 
-import os
-import sys
 import argparse
 
-from ait.core import gds, log, table
+from ait.core import log, table
 
 def main():
     log.begin()

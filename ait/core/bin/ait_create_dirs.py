@@ -118,7 +118,6 @@ Description:
 import os
 import errno
 import traceback
-import yaml
 import argparse
 import time
 

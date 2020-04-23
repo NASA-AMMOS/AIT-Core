@@ -29,19 +29,17 @@ Examples:
 '''
 
 
-import sys
 import socket
 import time
 import argparse
 
-from ait.core import gds, log, pcap
+from ait.core import log, pcap
 
 
 def main():
     try:
 
         log.begin()
-
 
         parser = argparse.ArgumentParser(
             description=__doc__,

@@ -24,11 +24,9 @@ Examples:
   $ ait-table-decode --fswtabdict config/table.yaml --tabletype targets --binfile /Users/ays/targets.bin
 '''
 
-import os
-import sys
 import argparse
 
-from ait.core import gds, log, table
+from ait.core import log, table
 
 
 def main():
