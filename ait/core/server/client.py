@@ -83,7 +83,7 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
             while True:
                 gevent.sleep(0)
                 topic, message = self.sub.recv_string().split(' ', 1)
-                log.debug('{} recieved message from {}'.format(self, topic))
+                log.debug('{} received message from {}'.format(self, topic))
                 self.process(message, topic=topic)
 
         except Exception as e:
@@ -119,6 +119,7 @@ class PortOutputClient(ZMQInputClient):
         log.debug('Published message from {}'.format(self))
 
 
+
 class PortInputClient(ZMQClient, gs.DatagramServer):
     """
     This is the parent class for all inbound streams which receive messages
@@ -144,5 +145,5 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
 
     def handle(self, packet, address):
         # This function provided for gs.DatagramServer class
-        log.debug('{} recieved message from port {}'.format(self, address))
+        log.debug('{} received message from port {}'.format(self, address))
         self.process(packet)

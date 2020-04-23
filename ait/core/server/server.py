@@ -170,8 +170,14 @@ class Server(object):
         stream_input = config.get('input', None)
         stream_output = config.get('output', None)
 
+        stream_cmd_sub = config.get('command-subscriber', None)
+        if stream_cmd_sub:
+            stream_cmd_sub = str(stream_cmd_sub).lower() in ['true', 'enabled', '1']
+
+        ostream = None
+
         if type(stream_output) is int:
-            return PortOutputStream(name,
+            ostream = PortOutputStream(name,
                                     stream_input,
                                     stream_output,
                                     stream_handlers,
@@ -182,12 +188,17 @@ class Server(object):
             if stream_output is not None:
                 log.warn("Output of stream {} is not an integer port. "
                          "Stream outputs can only be ports.".format(name))
-            return ZMQStream(name,
+            ostream = ZMQStream(name,
                              stream_input,
                              stream_handlers,
                              zmq_args={'zmq_context': self.broker.context,
                                        'zmq_proxy_xsub_url': self.broker.XSUB_URL,
                                        'zmq_proxy_xpub_url': self.broker.XPUB_URL})
+
+        #Set the cmd subscriber field for the stream
+        ostream.cmd_subscriber = stream_cmd_sub is True
+
+        return ostream
 
     def _create_handler(self, config):
         """

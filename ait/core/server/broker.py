@@ -25,6 +25,10 @@ class Broker(gevent.Greenlet):
         self.XPUB_URL = ait.config.get('server.xpub',
                                         ait.SERVER_DEFAULT_XPUB_URL)
 
+        ## Name of the topic associated with external commands
+        self.command_topic = ait.config.get('command.topic',
+                                        ait.DEFAULT_CMD_TOPIC)
+
         gevent.Greenlet.__init__(self)
 
     def _run(self):
@@ -80,6 +84,54 @@ class Broker(gevent.Greenlet):
                              'from {}'.format(output, plugin))
                 else:
                     self._subscribe(subscriber, plugin.name)
+
+        ## Lastly setup the outputstream to receive commands
+        self._subscribe_cmdr()
+
+    def _subscribe_cmdr(self):
+        """
+        Setup for the appropriate outbound stream that is configured to
+        accept command messages.  If no stream is specified, it looks
+        for the first outbound stream.
+        """
+
+        ## If command topic was not supplied, report error and return
+        ## Technically "shouldn't happen" but better to be safe.
+        if not self.command_topic:
+            log.error('Cannot create entry point for command subscriber, '
+                      'required topic name is missing.')
+            return
+
+        cmd_sub_flag_field = 'cmd_subscriber'
+        cmd_stream = None
+
+        ##Lookup for outbound stream with subscribe flag set
+        cmd_streams = list((x for x in self.outbound_streams
+                       if hasattr(x, cmd_sub_flag_field) and
+                       getattr(x, cmd_sub_flag_field)))
+
+        cmd_stream = next(iter(cmd_streams), None)
+
+        ## Warn about multiple matches
+        if cmd_stream and len(cmd_streams) > 1:
+            log.warn('Multiple output streams found with {} field enabled, '
+                     '{} was selected as the default.'.format(
+                     cmd_sub_flag_field, cmd_stream.name))
+
+
+        ## No stream yet, so just grab the first output stream
+        if not cmd_stream:
+            cmd_stream = next((x for x in self.outbound_streams), None)
+            if cmd_stream:
+                log.warn('No output stream was designated as the command subscriber, '
+                         '{} was selected as the default.'.format(cmd_stream.name) )
+
+        if cmd_stream:
+            self._subscribe(cmd_stream, self.command_topic)
+        else:
+            log.warn('No output stream was designated as the command subscriber. '
+                     'Commands from other processes will not be dispatched by the server.')
+
 
     def _subscribe(self, subscriber, publisher):
         log.info('Subscribing {} to topic {}'.format(subscriber, publisher))
