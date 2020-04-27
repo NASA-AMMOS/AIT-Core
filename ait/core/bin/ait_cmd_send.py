@@ -45,7 +45,7 @@ import argparse
 from collections import OrderedDict
 
 import ait
-from ait.core import api, gds, log, util
+from ait.core import api, log, util
 
 
 def main():

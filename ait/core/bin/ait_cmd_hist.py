@@ -1,27 +1,30 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
 import sys
 
-from ait.core import gds,log, pcap
+from ait.core import log, pcap
+
+
+"""Query all commands from a Command History PCAP"""
+
 
 def main():
     log.begin()
 
-    description     = """
-
-    Query all commands from a Command History PCAP
-
-          """
-
-    arguments = {}
-    arguments['filename'] = {
-        'type'    : str,
-        'metavar' : '</path/to/cmdhist.pcap>',
-        'help'    : 'command history pcap'
+    arguments = {
+        'filename': {
+            'metavar': '</path/to/cmdhist.pcap>',
+            'help': 'command history pcap'
+        }
     }
 
-    args = gds.arg_parse(arguments, description)
+    ap = argparse.ArgumentParser(description=__doc__)
+    for name, params in arguments.items():
+        ap.add_argument(name, **params)
+
+    args = ap.parse_args()
 
     with pcap.open(args.filename) as stream:
         for header, data in stream:

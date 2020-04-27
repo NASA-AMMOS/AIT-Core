@@ -40,8 +40,6 @@ timestamp that exceeds 2017-11-23 19:59:59.
 
 
 import argparse
-import datetime
-import os
 
 from ait.core import log, pcap
 

@@ -3,7 +3,7 @@
 import socket
 import struct
 import time
-from ait.core import log, tlm
+from ait.core import log
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 hs_packet = struct.Struct('>BBBBBBBBBBBBBBBB')

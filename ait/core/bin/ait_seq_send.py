@@ -37,7 +37,7 @@ import argparse
 from collections import OrderedDict
 
 import ait.core
-from ait.core import api, gds, log, seq, util
+from ait.core import api, log, util
 
 
 def system (command):

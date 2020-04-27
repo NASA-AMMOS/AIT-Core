@@ -32,7 +32,7 @@ import os
 import sys
 import argparse
 
-from ait.core import gds, log, seq
+from ait.core import log, seq
 
 
 def main():

@@ -1,64 +1,63 @@
 #!/usr/bin/env python
 
+import argparse
 import csv
 import sys
 import os
 from datetime import datetime
 
-from ait.core import log, tlm, pcap, gds, dmc
+from ait.core import log, tlm, pcap, dmc
+
+
+"""Parses 1553 telemetry into CSV file."""
+
 
 def main():
     log.begin()
 
-    description     = """Parses 1553 telemetry into CSV file."""
+    parser = argparse.ArgumentParser(description=__doc__)
 
-    arguments = {
-        '--all': {
-            'action'  : 'store_true',
-            'help'    : 'output all fields/values',
-        },
+    parser.add_argument('--all',
+        action='store_true',
+        help='output all fields/values'
+    )
 
-        '--csv': {
-            'type'    : str,
-            'default' : 'output.csv',
-            'metavar': '</path/to/output/csv>',
-            'help'    : 'Output as CSV with filename'
-        },
+    parser.add_argument('--csv',
+        default='output.csv',
+        metavar='</path/to/output/csv>',
+        help='Output as CSV with filename'
+    )
 
-        '--fields': {
-            'type'    : str,
-            'metavar' : '</path/to/fields/file>',
-            'help'    : 'file containing all fields to query, separated by newline.'
-        },
+    parser.add_argument('--fields',
+        metavar='</path/to/fields/file>',
+        help='file containing all fields to query, separated by newline.'
+    )
 
-        '--packet': {
-            'type'    : str,
-            'required': True,
-            'help'    : 'field names to query, separated by space'
-        },
+    parser.add_argument('--packet',
+        required=True,
+        help='field names to query, separated by space'
+    )
 
-        '--time_field': {
-            'type'      : str,
-            'help'      : 'Time field to use for time range comparisons. Ground receipt time will be used if nothing is specified.'
-        },
+    parser.add_argument('--time_field', help=(
+        'Time field to use for time range comparisons. Ground receipt time '
+        'will be used if nothing is specified.'
+    ))
 
-        '--stime': {
-            'type'      : str,
-            'help'      : 'Datetime in file to start collecting the data values. Defaults to beginning of pcap. Expected format: YYYY-MM-DDThh:mm:ssZ'
-        },
+    parser.add_argument('--stime', help=(
+        'Datetime in file to start collecting the data values. Defaults to '
+        'beginning of pcap. Expected format: YYYY-MM-DDThh:mm:ssZ'
+    ))
 
-        '--etime': {
-            'type'      : str,
-            'help'      : 'Datetime in file to end collecting the data values. Defaults to end of pcap. Expected format: YYYY-MM-DDThh:mm:ssZ'
-        }
-    }
+    parser.add_argument('--etime', help=(
+        'Datetime in file to end collecting the data values. Defaults to end '
+        'of pcap. Expected format: YYYY-MM-DDThh:mm:ssZ'
+    ))
 
-    arguments['pcap'] = {
-        'nargs': '*',
-        'help' : 'PCAP file(s) containing telemetry packets'
-    }
+    parser.add_argument('pcap', nargs='*', help=(
+        'PCAP file(s) containing telemetry packets'
+    ))
 
-    args = gds.arg_parse(arguments, description)
+    args = parser.parse_args()
 
     args.ground_time = True
     if args.time_field is not None:
@@ -72,11 +71,13 @@ def main():
             defn = tlmdict[ args.packet ]
     except KeyError:
         log.error('Packet "%s" not defined in telemetry dictionary.' % args.packet)
-        gds.exit(2)
+        log.end()
+        sys.exit(2)
 
     if not args.all and args.fields is None:
         log.error('Must provide fields file with --fields or specify that all fields should be queried with --all')
-        gds.exit(2)
+        log.end()
+        sys.exit(2)
 
     if args.all:
         fields = [flddefn.name for flddefn in defn.fields]
@@ -96,7 +97,8 @@ def main():
             log.error('No telemetry point named "%s"' % fldname)
 
     if not_found:
-        gds.exit(2)
+        log.end()
+        sys.exit(2)
 
     if args.stime:
         start = datetime.strptime(args.stime, dmc.ISO_8601_Format)
