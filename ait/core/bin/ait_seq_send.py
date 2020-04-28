@@ -108,7 +108,6 @@ def main ():
     topic    = args.topic
     filename = args.filename
 
-    dest     = None
 
     ## If UDP enabled, collect host/port info
     if udp:
@@ -117,7 +116,10 @@ def main ():
         else:
             dest = port
 
-    cmdApi = api.CmdAPI(dest, verbose=verbose, cmdtopic=topic)
+        cmdApi = api.CmdAPI(udp_dest=dest, verbose=verbose)
+    # Default CmdAPI connect hooks up to C&DH server 0MQ port
+    else:
+        cmdApi = api.CmdAPI(verbose=verbose, cmdtopic=topic)
 
 
     try:
