@@ -115,9 +115,6 @@ def main():
     udp      = args.udp
     topic    = args.topic
 
-    # dest will contain UDP info or None for 0MQ
-    dest     = None
-
     ## If UDP enabled, collect host/port info
     if udp:
         if host is not None:
@@ -125,7 +122,10 @@ def main():
         else:
             dest = port
 
-    cmdApi  = api.CmdAPI(dest, verbose=verbose, cmdtopic=topic)
+        cmdApi = api.CmdAPI(udp_dest=dest, verbose=verbose)
+    # Default CmdAPI connect hooks up to C&DH server 0MQ port
+    else:
+        cmdApi = api.CmdAPI(verbose=verbose, cmdtopic=topic)
 
     cmdArgs = cmdApi.parseArgs(args.command, *args.arguments)
 

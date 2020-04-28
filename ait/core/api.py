@@ -101,7 +101,7 @@ class CmdAPI:
     Datagram Protocol (UDP) packets if udp_dest argument is set,
     else, command is sent via ZMQ topic.
     """
-    def __init__ (self, udp_dest, cmddict=None, verbose=False, cmdtopic=None):
+    def __init__ (self, udp_dest=None, cmddict=None, verbose=False, cmdtopic=None):
 
         if cmddict is None:
             cmddict = cmd.getDefaultCmdDict()
@@ -109,10 +109,9 @@ class CmdAPI:
         self._cmddict = cmddict
         self._verbose = verbose
 
-        ## Setup the destination of our commands and arguents based on destination
+        ## Setup the destination of our commands and arguments based on destination
         ## information.
         if udp_dest:
-
             ## Convert partial info to full tuple
             if type(udp_dest) is int:
                 udp_dest = (ait.DEFAULT_CMD_HOST, udp_dest)
