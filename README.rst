@@ -31,7 +31,7 @@ Contributing
 ------------
 
 For information on how to contribute please see the `AIT Contributing
-Guide <https://github.com/NASA-AMMOS/AIT-Core/wiki/Contributing>`__
+Guide <https://github.com/NASA-AMMOS/AIT-Core/wiki/Contributing>`__.
 
 --------------
 
