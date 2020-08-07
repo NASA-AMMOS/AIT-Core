@@ -306,8 +306,8 @@ class UTCLeapSeconds(object):
                     raise ValueError('Could not load leap second data')
         else:
             t = self._data['valid']
-            t.strftime('%m/%d/%Y')
-            log.info('Leapseconds data valid until %s', t)
+            log_t = t.strftime('%m/%d/%Y')
+            log.info('Leapseconds data valid until %s', log_t)
 
     def _update_leap_second_data(self):
         """ Updates the systems leap second information
