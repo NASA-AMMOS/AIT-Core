@@ -283,8 +283,10 @@ class UTCLeapSeconds(object):
         )
 
         try:
+            log.info('Attempting to load leapseconds.dat')
             with open(ls_file, 'rb') as outfile:
                 self._data = pickle.load(outfile)
+            log.info('Loaded leapseconds config file successfully')
         except IOError:
             log.info('Unable to locate leapseconds config file')
 
@@ -302,6 +304,10 @@ class UTCLeapSeconds(object):
                     log.warn('Continuing with out of date leap second data')
                 else:
                     raise ValueError('Could not load leap second data')
+        else:
+            t = self._data['valid']
+            log_t = t.strftime('%m/%d/%Y')
+            log.info('Leapseconds data valid until %s', log_t)
 
     def _update_leap_second_data(self):
         """ Updates the systems leap second information
@@ -345,8 +351,12 @@ class UTCLeapSeconds(object):
             data['leapseconds'].append((t, leap))
             leap += 1
 
+        log.info('Leapsecond data processed')
+        
         self._data = data
         with open(ls_file, 'wb') as outfile:
             pickle.dump(data, outfile)
+
+        log.info('Successfully generated leapseconds config file')
 
 if not LeapSeconds: LeapSeconds = UTCLeapSeconds()
