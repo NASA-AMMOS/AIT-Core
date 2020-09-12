@@ -64,11 +64,13 @@ Example configuration:
     inbound-streams:
         - stream:
             name: log_stream
-            input: 3077
+            input: 
+                - 3077
 
         - stream:
             name: telem_port_in_stream
-            input: 3076
+            input: 
+                - 3076
             handlers:
                 - my_custom_handlers.TestbedTelemHandler
 
@@ -97,7 +99,8 @@ Example configuration:
             input:
                 - command_testbed_stream
                 - command_flightlike_stream
-            output: 3075
+            output: 
+                - 3075
 
 
 Handlers
@@ -130,11 +133,13 @@ Here is an example of how the **server** portion of **config.yaml** should look:
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 3077
+                input: 
+                    - 3077
 
             - stream:
                 name: telem_port_in_stream
-                input: 3076
+                input: 
+                    - 3076
                 handlers:
                     - my_custom_handlers.TestbedTelemHandler
 
@@ -161,4 +166,5 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                 input:
                     - command_testbed_stream
                     - command_flightlike_stream
-                output: 3075
+                output: 
+                    - 3075
