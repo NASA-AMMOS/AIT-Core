@@ -41,7 +41,8 @@ class TestStreamConfigParsing(object):
                         outbound-streams:
                             - stream:
                                 name: sle_data_stream_parallel
-                                input: sle_data_stream_ccsds
+                                input: 
+                                    - sle_data_stream_ccsds
                                 handlers:
                                     - a_handler
                """
@@ -71,7 +72,8 @@ class TestStreamConfigParsing(object):
                         inbound-streams:
                             - stream:
                                 name: sle_data_stream_parallel
-                                input: sle_data_stream_ccsds
+                                input: 
+                                    - sle_data_stream_ccsds
                                 handlers:
                                     - a_handler
 
