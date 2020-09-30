@@ -76,7 +76,7 @@ Example configuration:
             name: telem_testbed_stream
             input: telem_port_in_stream
             handlers:
-                - name: ait.server.handler.PacketHandler
+                - name: ait.server.handlers.PacketHandler
                   packet: 1553_HS_Packet
 
     outbound-streams:
@@ -142,7 +142,7 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                 name: telem_testbed_stream
                 input: telem_port_in_stream
                 handlers:
-                    - name: ait.server.handler.PacketHandler
+                    - name: ait.server.handlers.PacketHandler
                       packet: 1553_HS_Packet
 
         outbound-streams:
