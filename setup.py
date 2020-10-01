@@ -58,9 +58,10 @@ setup(
         'jsonschema==3.0.2',
         'pyyaml==5.1.2',
         'requests>=2.22.0',
+        'greenlet==0.4.16',
         'gevent==1.4.0',
         'gevent-websocket==0.10.1',
-        'pyzmq==18.1.0'
+        'pyzmq==18.1.0',
     ],
 
     extras_require = {
