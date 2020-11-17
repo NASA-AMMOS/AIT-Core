@@ -513,20 +513,39 @@ class AITOpenMctPlugin(Plugin):
             log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
 
     def get_historical_tlm(self, mct_pkt_id_part):
-        """Handling of historial queries"""
+        """
+        Handling of historical queries.  Time range is retrieved from bottle request query.
+        :param mct_pkt_id_part: OpenMCT id part (single entry or comma-separated list)
+        :return JSON string representing list of result dicts
+        """
         start_time_ms = bottle.request.query.start
         end_time_ms   = bottle.request.query.end
+
+        self.dbg_message("Received request for historical tlm: Ids={} Start={} End{}".format(
+                             mct_pkt_id_part, str(start_time_ms), str(end_time_ms)))
 
         ## The tutorial indicated that this could be a comma-separated list of ids...
         ## If its a single, then this will create a list with one entry
         mct_pkt_id_list = mct_pkt_id_part.split(",")
 
-        return self.get_historical_tlm(mct_pkt_id_list, start_time_ms, end_time_ms)
+        results = self.get_historical_tlm_for_range(mct_pkt_id_list, start_time_ms, end_time_ms)
+
+        json_result = json.dumps(results)
+
+        self.dbg_message("Result for historical tlm: {}".format(json_result))
+
+        return json_result
 
 
-    def get_historical_tlm(self, mct_pkt_ids, start_epoch_ms, end_epoch_ms):
-        start_datetime = datetime.datetime.fromtimestamp(start_epoch_ms / 1000.0)
-        end_datetime   = datetime.datetime.fromtimestamp(end_epoch_ms   / 1000.0)
+    def get_historical_tlm_for_range(self, mct_pkt_ids, start_epoch_ms, end_epoch_ms):
+        """
+        Perform a historical query of a list of OpenMCT telemetry ids between
+        the start and end time (as milliseconds since Epoch)
+        :param mct_pkt_ids: List or openMct telemetry ids
+        :param start_epoch_ms: Start time
+        :param end_epoch_ms: End time
+        :return: List of result dicts, where each entry contains {timestamp, id, value}.
+        """
 
         ## List of dicts, where each dict entry is {timestamp: time, id: mct_field_id, value: field_value}
         result_list = []
@@ -535,8 +554,11 @@ class AITOpenMctPlugin(Plugin):
         if not self._database:
             return result_list
 
+        ## Convert epoch timestamps to datetime objects
+        start_datetime = datetime.datetime.fromtimestamp(start_epoch_ms / 1000.0)
+        end_datetime   = datetime.datetime.fromtimestamp(end_epoch_ms   / 1000.0)
 
-        ## Collect fields that share the same AIT packet (more efficient)
+        ## Collect fields that share the same AIT packet (for more efficient queries)
         ait_pkt_fields_dict = {}  ##Dict of pkt_id to list of field ids
         for mct_pkt_id_entry in mct_pkt_ids:
             ait_pkt_id,ait_field_name =  self.parse_mct_pkt_id(mct_pkt_id_entry)
@@ -551,15 +573,18 @@ class AITOpenMctPlugin(Plugin):
         ## For each requested AIT packet definition, perform a query
         for ait_pkt_id in ait_pkt_fields_dict:
             ait_pkt_field_names = ait_pkt_fields_dict[ait_pkt_id]
-            ait_pkt_result_list = self.get_historical_tlm_for_packet_fields(
+            cur_result_list = self.get_historical_tlm_for_packet_fields(
                                         ait_pkt_id, ait_pkt_field_names,
                                         start_datetime, end_datetime)
 
             ## Add result if non-null and non-empty
-            if ait_pkt_result_list:
-                result_list.extend(ait_pkt_result_list)
+            if cur_result_list:
+                result_list.extend(cur_result_list)
 
-        return json.dumps(result_list)
+        ##Sort all results based on timestamp
+        result_list.sort(key=lambda x: x['timestamp'])
+
+        return result_list
 
 
 
@@ -613,7 +638,7 @@ class AITOpenMctPlugin(Plugin):
             return None
 
         # Debug result size
-        self.dbg_message("Number of results for query: "+str(len(points)))
+        self.dbg_message('Number of results for query {} : {}'.format(point_query, str(len(points))))
 
         for i in range(len(points)):
             cur_point = points[i]
