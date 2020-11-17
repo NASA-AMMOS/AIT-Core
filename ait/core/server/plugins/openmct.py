@@ -36,10 +36,14 @@ import gevent.monkey; gevent.monkey.patch_all()
 import geventwebsocket
 
 import bottle
+import copy
+import importlib
+import datetime
 
 import ait.core
 from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
+
 
 
 class AITOpenMctPlugin(Plugin):
@@ -50,6 +54,8 @@ class AITOpenMctPlugin(Plugin):
 
     DEFAULT_PORT = 8082
     DEFAULT_DEBUG = False
+
+    DATA_ARCHIVE_PLUGIN_PATH = 'ait.core.server.plugins.data_archive.DataArchive'
 
     def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
         """
@@ -92,6 +98,10 @@ class AITOpenMctPlugin(Plugin):
         # Create lookup from packet-uid to packet def
         self._uidToPktDefMap = self.create_uid_pkt_map(self._aitTlmDict)
 
+        # Attempt to initialize database (if settings provided)
+        self._database = self.create_database()
+
+
         # Check for AIT config overrides
         self._checkConfig()
 
@@ -110,8 +120,54 @@ class AITOpenMctPlugin(Plugin):
             try:
                 self._servicePort = int(self.port)
             except ValueError:
-                self._servicePort = DEFAULT_PORT
+                self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
             self.dbg_message("Port = " + str(self._servicePort))
+
+
+    def create_database(self):
+        """
+
+        :return: Database instance or None
+        """
+        """Connect to database"""
+
+        # Initialize return value to None
+        dbconn = None
+
+        # Get datastore from AIT config
+        cfg_plugins = ait.config.get('server.plugins', [])
+        datastore = None
+        other_args = {}
+        for i in range(len(cfg_plugins)):
+            if cfg_plugins[i]['plugin']['name'] == AITOpenMctPlugin.DATA_ARCHIVE_PLUGIN_PATH:
+                datastore = cfg_plugins[i]['plugin']['datastore']
+                other_args = copy.deepcopy(cfg_plugins[i]['plugin'])
+                other_args.pop('name')
+                other_args.pop('inputs', None)
+                other_args.pop('outputs', None)
+                other_args.pop('datastore', None)
+                break
+
+        if datastore:
+            try:
+                db_mod, db_cls = datastore.rsplit('.', 1)
+
+                # Connect to database
+                dbconn = getattr(importlib.import_module(db_mod), db_cls)()
+                dbconn.connect(**other_args)
+            except Exception as e:
+                log.error('Error connecting to datastore {}: {}'.format(datastore, e))
+                log.warn('Disabling historical queries.')
+        else:
+            msg = (
+                '[OpenMCT Database Configuration]'
+                'Unable to locate DataArchive plugin configuration for '
+                'historical data queries. Historical telemetry queries '
+                'will be disabled from this server endpoints.'
+            )
+            log.warn(msg)
+
+        return dbconn
 
 
     def process(self, input_data, topic=None):
@@ -141,10 +197,12 @@ class AITOpenMctPlugin(Plugin):
         if not processed:
             raise ValueError('Topic of received message not recognized as telem stream.')
 
-    def _process_telem_msg(self, msg):
-        msg = pickle.loads(msg)
+    def _process_telem_msg(self, input_data):
 
-        uid = msg[0]
+        #Use pickle and eval to recover message
+        msg = pickle.loads(eval(input_data))
+
+        uid = int(msg[0])
         packet = msg[1]
 
         #Package as a tuple, then add to queue
@@ -213,7 +271,11 @@ class AITOpenMctPlugin(Plugin):
             log.info('Starting browser: %s' % self.getBrowserName(browser))
             browser.open_new(url)
 
+    def create_mct_pkt_id(self, ait_pkt_id, ait_field_id):
+        return ait_pkt_id + ":" + ait_field_id
 
+    def parse_mct_pkt_id(self, mct_pkt_id):
+        return mct_pkt_id.split(":")
 
     def wait(self):
         gevent.wait()
@@ -267,7 +329,7 @@ class AITOpenMctPlugin(Plugin):
                 mct_field_dict = dict()
                 mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
                 mct_field_dict['name'] = ait_field_def.name
-                mct_field_dict['name'] = ait_pkt_id + ":" + ait_field_def.name
+                mct_field_dict['name'] = self.create_mct_pkt_id(ait_pkt_id, ait_field_def.name)
 
                 mct_field_value_list = []
 
@@ -450,14 +512,128 @@ class AITOpenMctPlugin(Plugin):
         except geventwebsocket.WebSocketError as wser:
             log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
 
-    def get_historical_tlm(self, mct_pkt_id):
-        """(Non-)handling of historial queries"""
-        startParam = bottle.request.query.start
-        endParam   = bottle.request.query.end
-        # At some point we may support this query, but not for now...
-        empty_dict = dict()
-        return json.dumps(empty_dict)
+    def get_historical_tlm(self, mct_pkt_id_part):
+        """Handling of historial queries"""
+        start_time_ms = bottle.request.query.start
+        end_time_ms   = bottle.request.query.end
 
+        ## The tutorial indicated that this could be a comma-separated list of ids...
+        ## If its a single, then this will create a list with one entry
+        mct_pkt_id_list = mct_pkt_id_part.split(",")
+
+        return self.get_historical_tlm(mct_pkt_id_list, start_time_ms, end_time_ms)
+
+
+    def get_historical_tlm(self, mct_pkt_ids, start_epoch_ms, end_epoch_ms):
+        start_datetime = datetime.datetime.fromtimestamp(start_epoch_ms / 1000.0)
+        end_datetime   = datetime.datetime.fromtimestamp(end_epoch_ms   / 1000.0)
+
+        ## List of dicts, where each dict entry is {timestamp: time, id: mct_field_id, value: field_value}
+        result_list = []
+
+        ## If no database, then return empty result
+        if not self._database:
+            return result_list
+
+
+        ## Collect fields that share the same AIT packet (more efficient)
+        ait_pkt_fields_dict = {}  ##Dict of pkt_id to list of field ids
+        for mct_pkt_id_entry in mct_pkt_ids:
+            ait_pkt_id,ait_field_name =  self.parse_mct_pkt_id(mct_pkt_id_entry)
+
+            ## Add new list if this is the first time we see AIT pkt id
+            if ait_pkt_id not in ait_pkt_fields_dict:
+                ait_pkt_fields_dict[ait_pkt_id] = []
+
+            field_list = ait_pkt_fields_dict[ait_pkt_id]
+            field_list.append(ait_field_name)
+
+        ## For each requested AIT packet definition, perform a query
+        for ait_pkt_id in ait_pkt_fields_dict:
+            ait_pkt_field_names = ait_pkt_fields_dict[ait_pkt_id]
+            ait_pkt_result_list = self.get_historical_tlm_for_packet_fields(
+                                        ait_pkt_id, ait_pkt_field_names,
+                                        start_datetime, end_datetime)
+
+            ## Add result if non-null and non-empty
+            if ait_pkt_result_list:
+                result_list.extend(ait_pkt_result_list)
+
+        return json.dumps(result_list)
+
+
+
+    def get_historical_tlm_for_packet_fields(self, ait_pkt_id, ait_field_names, start_datetime, end_datetime):
+        """
+        Perform a historical query for a particular AIT packet type
+        :param ait_pkt_id: AIT Packet definition Id
+        :param ait_field_names: List of field names to include, use None to include all fields
+        :param start_datetime: Start datetime
+        :param end_datetime: End datetime
+        :return: List of OpenMct measurements that satisfy query
+        """
+
+        if not self._database:
+            return None
+
+        result_list = []
+
+        ait_pkt_def = self._aitTlmDict[ait_pkt_id]
+        ait_field_defs = ait_pkt_def.fields
+
+        # Build field names list from tlm dictionary for sorting data query
+        field_names = []
+        # Build field types list from tlm dictionary for packing data
+        field_formats = []
+
+        ## Collect the field type information (prolly dont need dtype)
+        for i in range(len(ait_field_defs)):
+            field_def = ait_field_defs[i]
+            # if no request-list or current field is in request list
+            if (not ait_field_names) or (field_def.name in ait_field_names):
+                field_names.append(field_def.name)
+                field_type = str(field_def.type).split("'")[1]
+                field_formats.append(dtype.get(field_type).format)
+
+
+        ## Query across all fields, then filter based on our requested list
+        ## (Note: Looks like we are assuming InfluxDB implementation.
+        ## Future work on DB layer will likely return AIT packets for a query)
+        influxTimeFormat = "%Y-%m-%dT%H:%M:%S"
+        db_start = start_datetime.strftime(influxTimeFormat)
+        db_end   = end_datetime.strftime(influxTimeFormat)
+        point_query = 'SELECT * FROM "{}" WHERE time >= \'{}\' AND time <= \'{}\''.format(
+                                                       ait_pkt_id, db_start, db_end)
+
+        # Query packet and time range from database
+        try:
+            points = list(self._database.query(point_query).get_points())
+        except:
+            log.error('[OpenMCT] Database query failed: '+point_query)
+            return None
+
+        # Debug result size
+        self.dbg_message("Number of results for query: "+str(len(points)))
+
+        for i in range(len(points)):
+            cur_point = points[i]
+
+            # Convert InfluxDb timestamp string to epoch milliseconds
+            cur_db_timestamp = cur_point['time']
+            cur_datetime = datetime.datetime.strptime(cur_db_timestamp, influxTimeFormat)
+            cur_timestamp_s = datetime.datetime.timestamp(cur_datetime)
+            cur_timestamp_ms = int(cur_timestamp_s * 1000)
+
+            ## Add a record for each requested field for this timestamp
+            for j in range(len(field_names)):
+                cur_field_name = field_names[j]
+                record = {}
+                record['timestamp'] = cur_timestamp_ms
+                record['id'] = self.create_mct_pkt_id(ait_pkt_id, cur_field_name)
+                record['value'] = cur_point[cur_field_name]
+                result_list.append(record)
+
+        return result_list
 
     def mimic_tlm(self, ait_tlm_pkt_name, ait_tlm_pkt_fill=None):
         """Used for debugging, creates an instance of a packet based on
@@ -503,7 +679,8 @@ class AITOpenMctPlugin(Plugin):
                 dummy_data = hs_packet.pack(randomNum,randomNum,randomNum,randomNum,randomNum)
 
             msg_serial = pickle.dumps((pkt_def_uid, dummy_data), 2)
-            self._process_telem_msg(msg_serial)
+            msg_str_fmt = '{}'.format(msg_serial)  #Lesson learned: AIT ZMQClient formats to string before emitting message
+            self._process_telem_msg(msg_str_fmt)
 
             info_msg = "AIT OpenMct Plugin submitted mimicked telemetry for " + ait_pkt_defn.name + " (" + str(datetime.datetime.now()) + ")"
             self.dbg_message(info_msg)
