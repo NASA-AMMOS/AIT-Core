@@ -244,7 +244,7 @@ class TestInfluxDBBackend(unittest.TestCase):
         packets = ', '.join(packets)
         start = start.strftime(dmc.RFC3339_Format)
         end = end.strftime(dmc.RFC3339_Format)
-        query = f"SELECT * FROM {packets} WHERE time >= '{start}' AND time <= '{end}'"
+        query = f"SELECT * FROM \"{packets}\" WHERE time >= '{start}' AND time <= '{end}'"
 
         assert sqlbackend._conn.query.call_args[0][0] == query
 
@@ -263,7 +263,7 @@ class TestInfluxDBBackend(unittest.TestCase):
         packets = ', '.join([f'"{i}"' for i in tlm.getDefaultDict().keys()])
         start = start.strftime(dmc.RFC3339_Format)
         end = end.strftime(dmc.RFC3339_Format)
-        query = f"SELECT * FROM {packets} WHERE time >= '{start}' AND time <= '{end}'"
+        query = f"SELECT * FROM \"{packets}\" WHERE time >= '{start}' AND time <= '{end}'"
 
         assert sqlbackend._conn.query.call_args[0][0] == query
         sqlbackend._conn.reset_mock()
@@ -277,7 +277,7 @@ class TestInfluxDBBackend(unittest.TestCase):
         packets = ', '.join([f'"{i}"' for i in tlm.getDefaultDict().keys()])
         start = dmc.GPS_Epoch.strftime(dmc.RFC3339_Format)
         end = end.strftime(dmc.RFC3339_Format)
-        query = f"SELECT * FROM {packets} WHERE time >= '{start}' AND time <= '{end}'"
+        query = f"SELECT * FROM \"{packets}\" WHERE time >= '{start}' AND time <= '{end}'"
 
         assert sqlbackend._conn.query.call_args[0][0] == query
         sqlbackend._conn.reset_mock()
@@ -419,7 +419,8 @@ class TestInfluxDBBackend(unittest.TestCase):
         assert isinstance(res_pkts[0], tuple)
 
         for i, test_data in enumerate(ret_data[0][1]):
-            assert dt.datetime.strptime(test_data['time'], dmc.RFC3339_Format) == res_pkts[i][0]
+
+            assert dmc.rfc3339StrToDatetime(test_data['time']) == res_pkts[i][0]
             assert res_pkts[i][1].Voltage_A == i
 
     @mock.patch('importlib.import_module')
@@ -798,6 +799,6 @@ class TestSQLiteBackend(unittest.TestCase):
         assert isinstance(res_pkts[0], tuple)
 
         for i, test_data in enumerate(ret_data):
-            assert dt.datetime.strptime(ret_data[i][0], dmc.RFC3339_Format) == res_pkts[i][0]
+            assert dmc.rfc3339StrToDatetime(ret_data[i][0]) == res_pkts[i][0]
             assert res_pkts[i][1].Voltage_A == i
 

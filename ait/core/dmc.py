@@ -241,6 +241,16 @@ def totalSeconds(td):
 
     return ts
 
+def rfc3339StrToDatetime(datestr):
+    """rfc3339StrToDatetime(str) -> datetime
+
+    Returns a datetime object build from the RFC3339-formatted string.
+    Care is taken to ensure that the UTC timezone is preserved.
+    """
+    if datestr is None:
+        return None
+    return datetime.datetime.strptime(datestr, RFC3339_Format).replace(tzinfo=datetime.timezone.utc)
+
 
 class UTCLeapSeconds(object):
     def __init__(self):

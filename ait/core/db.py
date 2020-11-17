@@ -549,7 +549,9 @@ class InfluxDBBackend(GenericBackend):
         else:
             etime = dt.datetime.utcnow().strftime(dmc.RFC3339_Format)
 
-        query_string = f"SELECT * FROM {pkt_names} WHERE time >= '{stime}' AND time <= '{etime}'"
+        yield_packet_time = kwargs.pop('yield_packet_time', False)
+
+        query_string = f"SELECT * FROM \"{pkt_names}\" WHERE time >= '{stime}' AND time <= '{etime}'"
 
         try:
             db_res = self._query(query_string, **kwargs)
@@ -567,7 +569,8 @@ class InfluxDBBackend(GenericBackend):
             for packets in itertools.zip_longest(*pkt_gens, fillvalue=None):
                 pkt_conv = [
                     (
-                        dt.datetime.strptime(d['time'], dmc.RFC3339_Format),
+                        # strptime throws away timezone, so re-enforce UTC
+                        dmc.rfc3339StrToDatetime(d['time']),
                         InfluxDBBackend.create_packet_from_result(pkt_names[i], d)
                     )
                     for i, d in enumerate(packets)
@@ -577,7 +580,7 @@ class InfluxDBBackend(GenericBackend):
                 pkt_conv.sort(key=lambda x: x[0])
 
                 for t, pkt in pkt_conv:
-                    if kwargs.get('yield_packet_time', False):
+                    if yield_packet_time:
                         yield (t, pkt)
                     else:
                         yield pkt
@@ -883,6 +886,8 @@ class SQLiteBackend(GenericBackend):
         else:
             etime = dt.datetime.utcnow().strftime(dmc.RFC3339_Format)
 
+        yield_packet_time = kwargs.pop('yield_packet_time', False)
+
         results = []
         errs = []
         query = []
@@ -903,7 +908,8 @@ class SQLiteBackend(GenericBackend):
             for packets in itertools.zip_longest(*[r[1] for r in results], fillvalue=None):
                 pkt_conv = [
                     (
-                        dt.datetime.strptime(d[0], dmc.RFC3339_Format),
+                        # strptime throws away timezone, so re-enforce UTC
+                        dmc.rfc3339StrToDatetime(d[0]),
                         SQLiteBackend.create_packet_from_result(results[i][0], d[1])
                     )
                     for i, d in enumerate(packets)
@@ -913,7 +919,7 @@ class SQLiteBackend(GenericBackend):
                 pkt_conv.sort(key=lambda x: x[0])
 
                 for t, pkt in pkt_conv:
-                    if kwargs.get('yield_packet_time', False):
+                    if yield_packet_time:
                         yield (t, pkt)
                     else:
                         yield pkt

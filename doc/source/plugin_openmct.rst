@@ -20,14 +20,14 @@ Activating the OpenMCT Plugin
 Update your AIT configuration file :ref:`config.yaml <Config_Intro>` to add the AITOpenMctPlugin in the 'server:plugins:' section.
 
 .. _Ait_openmct_port:
-The plugin's 'port' value defaults to 8082, but can be overridden in the configuration.  If something other than the default is used, you will also need to include this in
+The plugin's 'service_port' value defaults to 8082, but can be overridden in the configuration.  If something other than the default is used, you will also need to include this in
 the OpenMCT frameworks's setup configuration.
 
 Currently, the server is assumed to run on 'localhost'.
 
 .. _Plugin_config:
 
-Example configuration:
+Example configuration with realtime telemetry only:
 
 .. code-block:: none
 
@@ -36,7 +36,37 @@ Example configuration:
             name: ait.core.server.plugins.openmct.AITOpenMctPlugin
             inputs:
                 - telem_stream
-            port: 8082
+            service_port: 8082
+            debug_enabled: False
+            database_enabled: False
+
+
+
+Example configuration with realtime and historical support:
+
+.. code-block:: none
+
+    plugins:
+        - plugin:
+            name: ait.core.server.plugins.openmct.AITOpenMctPlugin
+            inputs:
+                - telem_stream
+            service_port: 8082
+            debug_enabled: False
+            database_enabled: True
+            datastore: ait.core.db.InfluxDBBackend
+
+**Note:**
+When database is enabled, your AIT configuration file will also need to include a *database* section:
+
+.. code-block:: none
+
+    database:
+         host: localhost
+         port: 8086
+         dbname: ait
+         un: <username>
+         pw: <password>
 
 
 
