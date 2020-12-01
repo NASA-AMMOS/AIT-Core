@@ -41,7 +41,7 @@ import importlib
 import datetime
 
 import ait.core
-from ait.core import api, dtype, log, tlm
+from ait.core import api, dtype, log, tlm, db
 from ait.core.server.plugin import Plugin
 
 
@@ -54,8 +54,8 @@ class AITOpenMctPlugin(Plugin):
 
     DEFAULT_PORT = 8082
     DEFAULT_DEBUG = False
+    DEFAULT_DATABASE_ENABLED = False
 
-    DATA_ARCHIVE_PLUGIN_PATH = 'ait.core.server.plugins.data_archive.DataArchive'
 
     def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
         """
@@ -81,7 +81,11 @@ class AITOpenMctPlugin(Plugin):
         self._debugMimicRepeat = False
         # Port value for the server
         self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
+        # Flag indicating if we should create a database connection for historical queries
+        self._databaseEnabled = AITOpenMctPlugin.DEFAULT_DATABASE_ENABLED
 
+        # Check for AIT config overrides
+        self._checkConfig()
 
         # Setup server state
         self._app = bottle.Bottle()
@@ -98,12 +102,8 @@ class AITOpenMctPlugin(Plugin):
         # Create lookup from packet-uid to packet def
         self._uidToPktDefMap = self.create_uid_pkt_map(self._aitTlmDict)
 
-        # Attempt to initialize database (if settings provided)
-        self._database = self.create_database()
-
-
-        # Check for AIT config overrides
-        self._checkConfig()
+        # Attempt to initialize database, None if no DB
+        self._database = self.load_database(**kwargs)
 
         gevent.spawn(self.init)
 
@@ -111,8 +111,11 @@ class AITOpenMctPlugin(Plugin):
         """Check AIT configuration for override values"""
 
         # Check if debug flag was included
-        if hasattr(self, "debug"):
-            self._debugEnabled = self.debug in ['true', '1', 'TRUE', 'enabled', 'ENABLED']
+        if hasattr(self, "debug_enabled"):
+            if isinstance(self.debug_enabled, bool):
+                self._debugEnabled = self.debug_enabled
+            elif isinstance(self.debug_enabled, str):
+                self._debugEnabled = self.debug_enabled in ['true', '1', 'TRUE', 'enabled', 'ENABLED']
             self.dbg_message("Debug flag = " + str(self._debugEnabled))
 
         # Check if port is assigned
@@ -123,9 +126,21 @@ class AITOpenMctPlugin(Plugin):
                 self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
             self.dbg_message("Port = " + str(self._servicePort))
 
+        # Check if database flag was included
+        if hasattr(self, "database_enabled"):
+            if isinstance(self.database_enabled, bool):
+                self._databaseEnabled = self.database_enabled
+            elif isinstance(self.database_enabled, str):
+                self._databaseEnabled = self.database_enabled in ['true', '1', 'TRUE', 'enabled', 'ENABLED']
+            self.dbg_message("Database flag = " + str(self._databaseEnabled))
 
-    def create_database(self):
+
+    def load_database(self, **kwargs):
         """
+        If necessary database configuration is available, this method
+        will create, connect and return a database connection.  If
+        configuration is not available, then None is returned.
+        Note: The current implementation assumes InfluxDB type.
 
         :return: Database instance or None
         """
@@ -134,36 +149,26 @@ class AITOpenMctPlugin(Plugin):
         # Initialize return value to None
         dbconn = None
 
-        # Get datastore from AIT config
-        cfg_plugins = ait.config.get('server.plugins', [])
-        datastore = None
-        other_args = {}
-        for i in range(len(cfg_plugins)):
-            if cfg_plugins[i]['plugin']['name'] == AITOpenMctPlugin.DATA_ARCHIVE_PLUGIN_PATH:
-                datastore = cfg_plugins[i]['plugin']['datastore']
-                other_args = copy.deepcopy(cfg_plugins[i]['plugin'])
-                other_args.pop('name')
-                other_args.pop('inputs', None)
-                other_args.pop('outputs', None)
-                other_args.pop('datastore', None)
-                break
+        if self._databaseEnabled:
 
-        if datastore:
-            try:
-                db_mod, db_cls = datastore.rsplit('.', 1)
-
-                # Connect to database
-                dbconn = getattr(importlib.import_module(db_mod), db_cls)()
-                dbconn.connect(**other_args)
-            except Exception as e:
-                log.error('Error connecting to datastore {}: {}'.format(datastore, e))
+            # Perform sanity check that database config exists somewhere
+            db_cfg = ait.config.get('database', kwargs.get('database', None))
+            if not db_cfg:
+                log.error('[OpenMCT] Plugin configured to use database but no database configuration was found')
                 log.warn('Disabling historical queries.')
+            else:
+                try:
+                    dbconn = db.InfluxDBBackend()
+                    dbconn.connect(**kwargs)
+                except Exception as ex:
+                    log.error('Error connecting to database: {}'.format(ex))
+                    log.warn('Disabling historical queries.')
         else:
             msg = (
                 '[OpenMCT Database Configuration]'
-                'Unable to locate DataArchive plugin configuration for '
-                'historical data queries. Historical telemetry queries '
-                'will be disabled from this server endpoints.'
+                'This plugin is not configured with a database enabled. '
+                'Historical telemetry queries '
+                'will be disabled from this server endpoint.'
             )
             log.warn(msg)
 
@@ -199,8 +204,9 @@ class AITOpenMctPlugin(Plugin):
 
     def _process_telem_msg(self, input_data):
 
-        #Use pickle and eval to recover message
-        msg = pickle.loads(eval(input_data))
+        #Use eval then pickle to recover message
+        msg_pkl_str = eval(input_data)
+        msg = pickle.loads(msg_pkl_str)
 
         uid = int(msg[0])
         packet = msg[1]
@@ -272,10 +278,10 @@ class AITOpenMctPlugin(Plugin):
             browser.open_new(url)
 
     def create_mct_pkt_id(self, ait_pkt_id, ait_field_id):
-        return ait_pkt_id + ":" + ait_field_id
+        return ait_pkt_id + "." + ait_field_id
 
     def parse_mct_pkt_id(self, mct_pkt_id):
-        return mct_pkt_id.split(":")
+        return mct_pkt_id.split(".")
 
     def wait(self):
         gevent.wait()
@@ -327,9 +333,11 @@ class AITOpenMctPlugin(Plugin):
                 ait_field_def = ait_pkt_fieldmap[ait_field_id]
 
                 mct_field_dict = dict()
-                mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
+                #mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
+                mct_field_dict['key'] = self.create_mct_pkt_id(ait_pkt_id, ait_field_id)
+
                 mct_field_dict['name'] = ait_field_def.name
-                mct_field_dict['name'] = self.create_mct_pkt_id(ait_pkt_id, ait_field_def.name)
+                mct_field_dict['name'] = ait_pkt_id + ":" + ait_field_def.name
 
                 mct_field_value_list = []
 
@@ -512,27 +520,28 @@ class AITOpenMctPlugin(Plugin):
         except geventwebsocket.WebSocketError as wser:
             log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
 
-    def get_historical_tlm(self, mct_pkt_id_part):
+    def get_historical_tlm(self, mct_pkt_id):
         """
         Handling of historical queries.  Time range is retrieved from bottle request query.
         :param mct_pkt_id_part: OpenMCT id part (single entry or comma-separated list)
-        :return JSON string representing list of result dicts
+        :return: JSON string representing list of result dicts
         """
-        start_time_ms = bottle.request.query.start
-        end_time_ms   = bottle.request.query.end
+        start_time_ms = float(bottle.request.query.start)
+        end_time_ms   = float(bottle.request.query.end)
 
-        self.dbg_message("Received request for historical tlm: Ids={} Start={} End{}".format(
-                             mct_pkt_id_part, str(start_time_ms), str(end_time_ms)))
+
+        self.dbg_message("Received request for historical tlm: Ids={} Start={} End={}".format(
+                                            mct_pkt_id, str(start_time_ms), str(end_time_ms)))
 
         ## The tutorial indicated that this could be a comma-separated list of ids...
         ## If its a single, then this will create a list with one entry
-        mct_pkt_id_list = mct_pkt_id_part.split(",")
+        mct_pkt_id_list = mct_pkt_id.split(",")
 
         results = self.get_historical_tlm_for_range(mct_pkt_id_list, start_time_ms, end_time_ms)
 
         json_result = json.dumps(results)
 
-        self.dbg_message("Result for historical tlm: {}".format(json_result))
+        self.dbg_message("Result for historical tlm: {} of type {}".format(json_result, str(type(json_result))))
 
         return json_result
 
@@ -551,7 +560,7 @@ class AITOpenMctPlugin(Plugin):
         result_list = []
 
         ## If no database, then return empty result
-        if not self._database:
+        if not self._database and False:
             return result_list
 
         ## Convert epoch timestamps to datetime objects
@@ -598,7 +607,7 @@ class AITOpenMctPlugin(Plugin):
         :return: List of OpenMct measurements that satisfy query
         """
 
-        if not self._database:
+        if not self._database and False:
             return None
 
         result_list = []
@@ -632,13 +641,20 @@ class AITOpenMctPlugin(Plugin):
 
         # Query packet and time range from database
         try:
-            points = list(self._database.query(point_query).get_points())
-        except:
-            log.error('[OpenMCT] Database query failed: '+point_query)
-            return None
+            if self._database:
+                db_points = self._database.query(point_query).get_points()
+                points = list(db_points)
 
-        # Debug result size
-        self.dbg_message('Number of results for query {} : {}'.format(point_query, str(len(points))))
+                # Debug result size
+                self.dbg_message('Number of results for query {} : {}'.format(point_query, str(len(points))))
+
+            else:
+                self.dbg_message("No database, but this is the query I would have submitted: {}".format(point_query))
+                points = list()
+
+        except Exception as e:
+            log.error('[OpenMCT] Database query failed: '+point_query+'.  Error: '+str(e))
+            return None
 
         for i in range(len(points)):
             cur_point = points[i]
@@ -756,6 +772,6 @@ class AITOpenMctPlugin(Plugin):
         #     bottle.response.content_type  = 'text/event-stream'
         #     bottle.response.cache_control = 'no-cache'
         #
-        # def __setResponseToJSON():
-        #     bottle.response.content_type  = 'application/json'
-        #     bottle.response.cache_control = 'no-cache'
+        #def __setResponseToJSON():
+        #    bottle.response.content_type  = 'application/json'
+        #    bottle.response.cache_control = 'no-cache'
