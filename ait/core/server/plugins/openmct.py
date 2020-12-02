@@ -541,7 +541,7 @@ class AITOpenMctPlugin(Plugin):
 
         json_result = json.dumps(results)
 
-        self.dbg_message("Result for historical tlm: {} of type {}".format(json_result, str(type(json_result))))
+        self.dbg_message("Result for historical tlm: {}".format(json_result))
 
         return json_result
 
@@ -649,7 +649,7 @@ class AITOpenMctPlugin(Plugin):
                 self.dbg_message('Number of results for query {} : {}'.format(point_query, str(len(points))))
 
             else:
-                self.dbg_message("No database, but this is the query I would have submitted: {}".format(point_query))
+                self.dbg_message("No database setup, but this is the query I would have submitted: {}".format(point_query))
                 points = list()
 
         except Exception as e:
