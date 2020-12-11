@@ -40,6 +40,7 @@ TwoPi     = 2 * math.pi
 
 DOY_Format = '%Y-%jT%H:%M:%SZ'
 ISO_8601_Format = '%Y-%m-%dT%H:%M:%SZ'
+RFC3339_Format = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 _DEFAULT_FILE_NAME = 'leapseconds.dat'
 LeapSeconds = None
