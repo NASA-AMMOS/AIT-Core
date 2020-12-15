@@ -63,9 +63,15 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
 
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
 
-        elif type(value) is dict:
+        elif isinstance(value, dict):
             param_key = name if parameter_key == '' else parameter_key + '.' + name
             expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
+
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    param_key = name if parameter_key == '' else parameter_key + '.' + name
+                    expandConfigPaths(item, prefix, datetime, pathvars, param_key, *keys)
 
 
 def replaceVariables(path, datetime=None, pathvars=None):
