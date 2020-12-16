@@ -75,7 +75,17 @@ def test_expandConfigPaths ():
             'desc'    : 'Test expansion of nested dictionaries too',
             'file'    : os.path.join('bin', 'ait-cmd-send'),
             'filename': os.path.join('bin', 'ait-cmd-send'),
-        }
+        },
+        'a list': [
+            {
+                'file'    : os.path.join('bin', 'ait-orbits-in-a-list'),
+                'filename': os.path.join('bin', 'ait-orbits-in-a-list'),
+            },
+            {
+                'file'    : os.path.join('bin', 'ait-cmd-send-in-a-list'),
+                'filename': os.path.join('bin', 'ait-cmd-send-in-a-list'),
+            }
+        ]
     }
     expected = {
         'desc'    : 'Test cfg.expandConfigPaths()',
@@ -85,7 +95,17 @@ def test_expandConfigPaths ():
             'desc'    : 'Test expansion of nested dictionaries too',
             'file'    : os.path.join(prefix, 'bin', 'ait-cmd-send'),
             'filename': os.path.join(prefix, 'bin', 'ait-cmd-send'),
-        }
+        },
+        'a list': [
+            {
+                'file'    : os.path.join(prefix, 'bin', 'ait-orbits-in-a-list'),
+                'filename': os.path.join(prefix, 'bin', 'ait-orbits-in-a-list'),
+            },
+            {
+                'file'    : os.path.join(prefix, 'bin', 'ait-cmd-send-in-a-list'),
+                'filename': os.path.join(prefix, 'bin', 'ait-cmd-send-in-a-list'),
+            }
+        ]
     }
 
     cfg.expandConfigPaths(actual, prefix, None, None, '', 'file', 'filename')
