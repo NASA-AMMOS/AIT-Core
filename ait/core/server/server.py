@@ -16,16 +16,16 @@ class Server(object):
     specified. It starts all greenlets that run these components and calls on the broker
     to manage the ZeroMQ connections.
     """
-    inbound_streams = [ ]
-    outbound_streams = [ ]
-    servers = [ ]
-    plugins = [ ]
 
     def __init__(self):
         self.broker = Broker()
 
-        self._load_streams()
-        self._load_plugins()
+        self.inbound_streams = []
+        self.outbound_streams = []
+        self.servers = []
+        self.plugins = []
+
+        self._load_streams_and_plugins()
 
         self.broker.inbound_streams = self.inbound_streams
         self.broker.outbound_streams = self.outbound_streams
@@ -48,6 +48,12 @@ class Server(object):
             greenlet.start()
 
         gevent.joinall(self.greenlets)
+
+    def _load_streams_and_plugins(eslf):
+        """"""
+        self._load_streams()
+        self._create_api_telem_stream()
+        self._load_plugins()
 
     def _load_streams(self):
         """
@@ -88,6 +94,73 @@ class Server(object):
 
         if not self.outbound_streams:
             log.warn(err_msgs['outbound'])
+
+    def _create_api_telem_stream(self):
+        """"""
+        stream_map = {'__valid_api_streams': []}
+        COMPATIBLE_HANDLERS = ['PacketHandler', 'CCSDSPacketHandler']
+
+        streams = ait.config.get('server.inbound-streams', None)
+        if streams is None:
+            log.warn("Unable to setup API telemetry stream. No streams are configured")
+            return
+
+        for stream in streams:
+            stream = stream['stream']
+            stream_map[stream['name']] = stream
+
+            # If the last handler that runs in a stream is one of our
+            # COMPATIBLE_HANDLERS we count it as a valid API telemetry stream.
+            # Users should use the config options for an explicit and less
+            # restrictive list.
+            if 'handlers' in stream and stream['handlers'][-1]['name'].split('.')[-1] in COMPATIBLE_HANDLERS:
+                stream_map['__valid_api_streams'].append(stream['name'])
+                continue
+
+        # Pull API stream config and process as necessary. If no config is set
+        # we need to default to our list of valid API streams (if possible).
+        config_streams = ait.config.get('server.api-streams', [])
+
+        if not isinstance(config_streams, list):
+            log.error(
+                "server.api-streams configuration is unexpected type "
+                f"{type(config_streams)} instead of list of stream names. "
+            )
+            config_streams = []
+
+        if len(config_streams) == 0:
+            log.warn(
+                "No configuration found for API Streams. Attempting to determine "
+                "valid streams to use as default.")
+
+            if len(stream_map['__valid_api_streams']) == 0:
+                log.warn("Unable to find valid streams to use as API defaults.")
+            else:
+                log.info(
+                    "Located potentially valid streams. "
+                    f"{stream_map['__valid_api_streams']} uses a compatible handler "
+                    f"({COMPATIBLE_HANDLERS}).")
+                config_streams = stream_map['__valid_api_streams']
+
+        streams = []
+        for stream in config_streams:
+            if stream not in stream_map:
+                log.warn(f"Invalid stream name {stream}. Skipping ...")
+            else:
+                streams.append(stream)
+
+        if len(streams) > 0:
+            tlm_api_topic = ait.config.get('telemetry.topic', ait.DEFAULT_TLM_TOPIC)
+            self.inbound_streams.append(
+                self._create_inbound_stream({
+                    'name': tlm_api_topic,
+                    'input': streams
+                })
+            )
+        else:
+            log.error(
+                "No streams available for telemetry API. Ground scripts API "
+                "functionality will not work.")
 
     def _get_stream_name(self, config):
         name = config.get('name', None)
