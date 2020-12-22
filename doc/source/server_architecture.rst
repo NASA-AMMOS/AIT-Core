@@ -45,8 +45,11 @@ AIT provides a number of default plugins. Check the `Plugins API documentation <
 Streams
 ^^^^^^^
 - Streams must be listed under either **inbound-streams** or **outbound-streams**, and must have a **name**.
-- Inbound streams can have an integer port or inbound streams as their **input**. Inbound streams can have multiple inputs. A port input should always be listed as the first input to an inbound stream.
-- Outbound streams can have plugins or outbound streams as their **input**. Outbound streams can have multiple inputs.
+- **Inbound streams** can have an integer port or inbound streams as their **input**. Inbound streams can have multiple inputs. A port input should always be listed as the first input to an inbound stream.
+
+    - The server sets up an input stream that emits properly formed telemetry packet messages over a globally configured topic. This is used internally by the ground script API for telemetry monitoring. The input streams that pass data to this stream must output data in the Packet UID annotated format that the core packet handlers use. The input streams used can be configured via the **server.api-streams** field. If no configuration is provided the server will default to all valid input streams if possible. See :ref:`the Ground Script API documentation <api_telem_setup>` for additional information.
+
+- **Outbound streams** can have plugins or outbound streams as their **input**. Outbound streams can have multiple inputs.
 
    - Outbound streams also have the option to **output** to an integer port (see :ref:`example config below <Stream_config>`).
 
@@ -129,6 +132,9 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                     - telem_testbed_stream
                 outputs:
                     - command_testbed_stream
+
+        api-streams:
+            - telem_testbed_stream
 
         inbound-streams:
             - stream:

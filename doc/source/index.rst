@@ -12,13 +12,13 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
 
    installation
    project_setup
-   API Documentation <ait>
+   Core Library APIs <ait>
    command_line
    configuration_intro
    server_architecture
    Command Dictionary Introduction <command_intro>
    Telemetry Dictionary Introduction <telemetry_intro>
-   API Module Introduction <api_intro>
+   Ground Script API Introduction <api_intro>
    EVR Introduction <evr_intro>
    limits_intro
    Database API <databases>
