@@ -111,12 +111,12 @@ Getting Telemetry to Monitor
 
 The API's Instrument interface provides users with an access point for monitoring telemetry in ground scripts. To facilitate this, the C&DH server sets up a special telemetry stream that emits data on a global message topic to which the API subscribes.
 
-The input streams that send messages to this topic can be configured via the **server.api-streams** field. This field should be a list of input stream names which output their messages in the Packet-UID-annotated format that the built-in :class:`PacketHandler` / :class:`CCSDSPacketHandler` handlers use.
+The input streams that send messages to this topic can be configured via the **server.api-telemetry-streams** field. This field should be a list of input stream names which output their messages in the Packet-UID-annotated format that the built-in :class:`PacketHandler` / :class:`CCSDSPacketHandler` handlers use.
 
 .. code-block::
 
     server:
-        api-streams:
+        api-telemetry-streams:
             - telem_testbed_stream
 
         inbound-streams:
@@ -128,6 +128,6 @@ The input streams that send messages to this topic can be configured via the **s
                       packet: 1553_HS_Packet
 
             
-You should ensure that any custom handlers you write output their messages in the same format if you wish to use them with the API. Similarly, you must ensure that any streams specified in the **server.api-streams** field output their data in the correct format. The server does not attempt to validate this when configuration is provided and message format issues will (very likely) cause problems when the API attempts to process them.
+You should ensure that any custom handlers you write output their messages in the same format if you wish to use them with the API. Similarly, you must ensure that any streams specified in the **server.api-telemetry-streams** field output their data in the correct format. The server does not attempt to validate this when configuration is provided and message format issues will (very likely) cause problems when the API attempts to process them.
 
-The server will do its best to detect all available input streams and use them as inputs to this topic if no configuration is provided via the **server.api-streams** field. An input stream is considered valid in this case if its last handler is one of the handlers that outputs in the Packet-UID-annotated format.
+The server will do its best to detect all available input streams and use them as inputs to this topic if no configuration is provided via the **server.api-telemetry-streams** field. An input stream is considered valid in this case if its last handler is one of the handlers that outputs in the Packet-UID-annotated format.

@@ -119,11 +119,11 @@ class Server(object):
 
         # Pull API stream config and process as necessary. If no config is set
         # we need to default to our list of valid API streams (if possible).
-        config_streams = ait.config.get('server.api-streams', [])
+        config_streams = ait.config.get('server.api-telemetry-streams', [])
 
         if not isinstance(config_streams, list):
             log.error(
-                "server.api-streams configuration is unexpected type "
+                "server.api-telemetry-streams configuration is unexpected type "
                 f"{type(config_streams)} instead of list of stream names. "
             )
             config_streams = []

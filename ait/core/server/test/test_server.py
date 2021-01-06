@@ -189,7 +189,7 @@ class TestAPITelemStreamCreation(TestCase):
         yaml = """
                 default:
                     server:
-                        api-streams:
+                        api-telemetry-streams:
                             - not_a_valid_stream_name
 
                         inbound-streams:
