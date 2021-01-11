@@ -3,7 +3,7 @@ import os.path
 
 import nose
 from nose.tools import *
-from unittest import mock
+from unittest import mock, TestCase
 
 import ait.core
 import ait.core.server
@@ -11,12 +11,13 @@ from ait.core import cfg
 from ait.core.server.handlers import *
 from ait.core.server.server import Server
 
+
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch('ait.core.server.broker.Broker')
-@mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
 @mock.patch.object(ait.core.server.server.Server, '_create_outbound_stream')
 @mock.patch.object(ait.core.server.server.Server, '_create_inbound_stream')
-class TestStreamConfigParsing(object):
+class TestStreamConfigParsing(TestCase):
     test_yaml_file = '/tmp/test.yaml'
 
     def tearDown(self):
@@ -28,7 +29,7 @@ class TestStreamConfigParsing(object):
     def test_no_inbound_streams(self,
                                 create_inbound_stream_mock,
                                 create_outbound_stream_mock,
-                                server_init_mock,
+                                server_stream_plugin_mock,
                                 broker_class_mock,
                                 log_warn_mock):
         """ Tests that broker started with no inbound streams specified
@@ -41,27 +42,25 @@ class TestStreamConfigParsing(object):
                         outbound-streams:
                             - stream:
                                 name: sle_data_stream_parallel
-                                input: 
+                                input:
                                     - sle_data_stream_ccsds
                                 handlers:
                                     - a_handler
                """
         rewrite_and_reload_config(self.test_yaml_file, yaml)
-
         server = Server()
         server._load_streams()
 
-        # assert warning is logged
         log_warn_mock.assert_called_with(
             'No valid inbound stream configurations found. '
             'No data will be received (or displayed).')
-        # assert outbound stream is added successfully
+
         assert len(server.outbound_streams) == 1
 
     def test_no_outbound_streams(self,
                                  create_inbound_stream_mock,
                                  create_outbound_stream_mock,
-                                 server_init_mock,
+                                 server_stream_plugin_mock,
                                  broker_class_mock,
                                  log_warn_mock):
         """ Tests that broker started with no outbound streams specified
@@ -72,7 +71,7 @@ class TestStreamConfigParsing(object):
                         inbound-streams:
                             - stream:
                                 name: sle_data_stream_parallel
-                                input: 
+                                input:
                                     - sle_data_stream_ccsds
                                 handlers:
                                     - a_handler
@@ -80,25 +79,153 @@ class TestStreamConfigParsing(object):
                         outbound-streams:
                """
         rewrite_and_reload_config(self.test_yaml_file, yaml)
-
         server = Server()
         server._load_streams()
 
-        # assert warning is logged
         log_warn_mock.assert_called_with(
             'No valid outbound stream configurations found. '
             'No data will be published.')
-        # assert inbound stream is added successfully
+
         assert len(server.inbound_streams) == 1
 
+@mock.patch('ait.core.server.broker.Broker')
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
+@mock.patch.object(ait.core.server.server.Server, '_create_inbound_stream')
+class TestAPITelemStreamCreation(TestCase):
+    test_yaml_file = '/tmp/test.yaml'
+
+    def tearDown(self):
+        ait.config = cfg.AitConfig()
+
+        if os.path.exists(self.test_yaml_file):
+            os.remove(self.test_yaml_file)
+
+    @mock.patch.object(ait.core.log, 'warn')
+    @mock.patch.object(ait.core.log, 'info')
+    def test_no_api_stream_config(self,
+                                log_info_mock,
+                                log_warn_mock,
+                                create_inbound_stream_mock,
+                                server_stream_plugin_mock,
+                                broker_class_mock):
+        """Check handling of API stream setup without configuration provided"""
+        yaml = """
+                default:
+                    server:
+                        inbound-streams:
+                            - stream:
+                                name: log_stream
+                                input:
+                                    - 2514
+
+                            - stream:
+                                name: telem_stream
+                                input:
+                                    - 3076
+                                handlers:
+                                    - name: ait.core.server.handlers.PacketHandler
+                                      packet: HS_Packet
+
+                            - stream:
+                                name: other_telem_stream
+                                input:
+                                    - 3077
+                                handlers:
+                                    - name: ait.core.server.handlers.PacketHandler
+                                      packet: Other_HS_Packet
+        """
+        rewrite_and_reload_config(self.test_yaml_file, yaml)
+        server = Server()
+        server._create_api_telem_stream()
+
+        # Ensure server warns that we need to infer valid streams
+        log_warn_mock.assert_called_with(
+            "No configuration found for API Streams. Attempting to "
+            "determine valid streams to use as default."
+        )
+
+        # Server should let us know that 2 streams are valid
+        log_info_mock.assert_called_with(
+            "Located potentially valid streams. ['telem_stream', 'other_telem_stream'] "
+            "uses a compatible handler (['PacketHandler', 'CCSDSPacketHandler'])."
+        )
+
+        assert create_inbound_stream_mock.called
+
+    @mock.patch.object(ait.core.log, 'error')
+    @mock.patch.object(ait.core.log, 'warn')
+    def test_no_valid_defaults(self,
+                            log_warn_mock,
+                            log_error_mock,
+                            create_inbound_stream_mock,
+                            server_stream_plugin_mock,
+                            broker_class_mock):
+        """Check no valid streams for API defaults case"""
+        yaml = """
+                default:
+                    server:
+                        inbound-streams:
+                            - stream:
+                                name: log_stream
+                                input:
+                                    - 2514
+        """
+        rewrite_and_reload_config(self.test_yaml_file, yaml)
+        server = Server()
+        server._create_api_telem_stream()
+        log_warn_mock.assert_called_with("Unable to find valid streams to use as API defaults.")
+        log_error_mock.assert_called_with(
+            "No streams available for telemetry API. Ground scripts API "
+            "functionality will not work."
+        )
+
+    @mock.patch.object(ait.core.log, 'warn')
+    def test_invalid_straem_names(self,
+                            log_warn_mock,
+                            create_inbound_stream_mock,
+                            server_stream_plugin_mock,
+                            broker_class_mock):
+        """Check handling of invalid stream names during API telem setup"""
+        yaml = """
+                default:
+                    server:
+                        api-telemetry-streams:
+                            - not_a_valid_stream_name
+
+                        inbound-streams:
+                            - stream:
+                                name: log_stream
+                                input:
+                                    - 2514
+        """
+        rewrite_and_reload_config(self.test_yaml_file, yaml)
+        server = Server()
+        server._create_api_telem_stream()
+        log_warn_mock.assert_called_with(
+            "Invalid stream name not_a_valid_stream_name. Skipping ..."
+        )
+
+    @mock.patch.object(ait.core.log, 'warn')
+    def test_no_inbound_stream(self,
+                            log_warn_mock,
+                            create_inbound_stream_mock,
+                            server_stream_plugin_mock,
+                            broker_class_mock):
+        """Ensure proper handling of a no-bound-stream config file"""
+        yaml = """"""
+        rewrite_and_reload_config(self.test_yaml_file, yaml)
+        server = Server()
+        server._create_api_telem_stream()
+
+        log_warn_mock.assert_called_with("Unable to setup API telemetry stream. No streams are configured")
 
 @mock.patch('ait.core.server.broker.Broker')
-@mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
 class TestStreamCreation(object):
 
     def test_no_stream_config(self,
-                                      server_init_mock,
-                                      broker_class_mock):
+                            server_stream_plugin_mock_mock,
+                            broker_class_mock):
         """ Tests that a ValueError is raised when creating streams
         with a config of None """
         server = Server()
@@ -111,7 +238,7 @@ class TestStreamCreation(object):
             server._create_outbound_stream(None)
 
     def test_no_stream_name(self,
-                            server_init_mock,
+                            server_stream_plugin_mock_mock,
                             broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream
         with no name specified in the config """
@@ -124,7 +251,7 @@ class TestStreamCreation(object):
             server._get_stream_name(config)
 
     def test_duplicate_stream_name(self,
-                                   server_init_mock,
+                                   server_stream_plugin_mock_mock,
                                    broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         a name that already belongs to another stream or plugin """
@@ -160,7 +287,7 @@ class TestStreamCreation(object):
     @mock.patch.object(ait.core.server.server.Server, '_create_handler')
     def test_no_inbound_stream_input(self,
                                      create_handler_mock,
-                                     server_init_mock,
+                                     server_stream_plugin_mock_mock,
                                      broker_class_mock):
         """ Tests that a ValueError is raised when creating a stream with
         no input specified in the config """
@@ -177,7 +304,7 @@ class TestStreamCreation(object):
     @mock.patch.object(ait.core.server.server.Server, '_create_handler')
     def test_successful_inbound_stream_creation(self,
                                                 create_handler_mock,
-                                                server_init_mock,
+                                                server_stream_plugin_mock_mock,
                                                 broker_class_mock):
         """ Tests that all types of inbound streams are successfully created """
         # Testing creation of inbound stream with ZMQ input/output
@@ -205,7 +332,7 @@ class TestStreamCreation(object):
     @mock.patch.object(ait.core.server.server.Server, '_create_handler')
     def test_successful_outbound_stream_creation(self,
                                                  create_handler_mock,
-                                                 server_init_mock,
+                                                 server_stream_plugin_mock_mock,
                                                  broker_class_mock):
         """ Tests that all types of outbound streams are successfully created """
         # Testing creation of outbound stream with ZMQ input/output
@@ -230,11 +357,11 @@ class TestStreamCreation(object):
 
 
 @mock.patch('ait.core.server.broker.Broker')
-@mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
 class TestHandlerCreation(object):
 
     def test_no_handler_config(self,
-                               server_init_mock,
+                               server_stream_plugin_mock_mock,
                                broker_mock):
         """ Tests that a ValueError is raised when creating a handler with
         a config of None """
@@ -244,7 +371,7 @@ class TestHandlerCreation(object):
             server._create_handler(None)
 
     def test_handler_creation_with_no_configs(self,
-                                              server_init_mock,
+                                              server_stream_plugin_mock_mock,
                                               broker_mock):
         """ Tests handler is successfully created when it has no configs """
         server = Server()
@@ -257,7 +384,7 @@ class TestHandlerCreation(object):
         assert handler.output_type is None
 
     def test_handler_creation_with_configs(self,
-                                           server_init_mock,
+                                           server_stream_plugin_mock_mock,
                                            broker_mock):
         """ Tests handler is successfully created when it has configs """
         server = Server()
@@ -273,7 +400,7 @@ class TestHandlerCreation(object):
         assert handler.output_type == 'int'
 
     def test_handler_that_doesnt_exist(self,
-                                       server_init_mock,
+                                       server_stream_plugin_mock_mock,
                                        broker_mock):
         """ Tests that exception thrown if handler doesn't exist """
         server = Server()
@@ -286,7 +413,7 @@ class TestHandlerCreation(object):
 @mock.patch.object(ait.core.log, 'warn')
 @mock.patch.object(ait.core.log, 'error')
 @mock.patch('ait.core.server.broker.Broker')
-@mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
 class TestPluginConfigParsing(object):
     test_yaml_file = '/tmp/test.yaml'
 
@@ -297,7 +424,7 @@ class TestPluginConfigParsing(object):
             os.remove(self.test_yaml_file)
 
     def test_no_plugins_listed(self,
-                               server_init_mock,
+                               server_stream_plugin_mock_mock,
                                broker_mock,
                                log_error_mock,
                                log_warn_mock):
@@ -318,11 +445,11 @@ class TestPluginConfigParsing(object):
 
 
 @mock.patch('ait.core.server.broker.Broker')
-@mock.patch.object(ait.core.server.server.Server, '__init__', return_value=None)
+@mock.patch.object(ait.core.server.server.Server, '_load_streams_and_plugins')
 class TestPluginCreation(object):
 
     def test_plugin_with_no_config(self,
-                                   server_init_mock,
+                                   server_stream_plugin_mock_mock,
                                    broker_mock):
         """ Tests that error raised if plugin not configured """
         server = Server()
@@ -333,7 +460,7 @@ class TestPluginCreation(object):
             server._create_plugin(config)
 
     def test_plugin_missing_name(self,
-                                 server_init_mock,
+                                 server_stream_plugin_mock_mock,
                                  broker_mock):
         """ Tests that error raised if plugin has no name """
         server = Server()
@@ -346,7 +473,7 @@ class TestPluginCreation(object):
     @mock.patch.object(ait.core.log, 'warn')
     def test_plugin_missing_inputs(self,
                                    log_warn_mock,
-                                   server_init_mock,
+                                   server_stream_plugin_mock_mock,
                                    broker_mock):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
@@ -362,7 +489,7 @@ class TestPluginCreation(object):
     @mock.patch.object(ait.core.log, 'warn')
     def test_plugin_missing_outputs(self,
                                     log_warn_mock,
-                                    server_init_mock,
+                                    server_stream_plugin_mock_mock,
                                     broker_mock):
         """ Tests that warning logged if plugin has no inputs and
         plugin created anyways """
@@ -376,7 +503,7 @@ class TestPluginCreation(object):
         log_warn_mock.assert_called_with('No plugin outputs specified for ait.core.server.plugins.TelemetryLimitMonitor')
 
     def test_plugin_name_already_in_use(self,
-                                        server_init_mock,
+                                        server_stream_plugin_mock_mock,
                                         broker_mock):
         """ Tests that error raised if name already in use """
         server = Server()
@@ -388,7 +515,7 @@ class TestPluginCreation(object):
             server._create_plugin(config)
 
     def test_plugin_doesnt_exist(self,
-                                 server_init_mock,
+                                 server_stream_plugin_mock_mock,
                                  broker_mock):
         """ Tests that error raised if plugin doesn't exist """
         server = Server()

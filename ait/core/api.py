@@ -40,6 +40,7 @@ import collections
 import inspect
 import json
 import os
+import pickle
 import socket
 import time
 
@@ -554,28 +555,86 @@ class UdpTelemetryServer (gevent.server.DatagramServer):
         super(UdpTelemetryServer, self).start()
 
 
+class TlmMonitor(gevent.Greenlet):
+    def __init__(self, pktbufs, defns):
+        gevent.Greenlet.__init__(self)
+        self._pktbufs = pktbufs
+        self._defns = defns
 
-class Instrument (object):
-    def __init__(self,
-                 cmdport=ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
-                 tlmport=3076, defn=None):
-        if defn is None:
-            tlmdict = tlm.getDefaultDict()
-            names   = sorted( tlmdict.keys() )
+        self._cntxt = zmq.Context()
+        sub_url = ait.SERVER_DEFAULT_XPUB_URL.replace('*', 'localhost')
 
-            if len(names) == 0:
-                msg = 'No packets defined in default TLM dictionary.'
-                raise TypeError(msg)
+        self._sub = self._cntxt.socket(zmq.SUB)
+        self._sub.connect(sub_url)
+        self._sub.setsockopt_string(zmq.SUBSCRIBE, ait.DEFAULT_TLM_TOPIC)
 
-            defn = tlmdict[ names[0] ]
+    def _run(self):
+        try:
+            while True:
+                gevent.sleep(0)
+                topic, message = self._sub.recv_string().split(' ', 1)
+                message = pickle.loads(eval(message))
 
-        self._packets = PacketBuffers()
-        self._cmd     = CmdAPI(cmdport)
+                if not isinstance(message, tuple):
+                    log.error(
+                        "TlmMonitor received message that it is unable to process "
+                        "Messages must be tagged packet data tuples (uid, data)."
+                    )
+                    continue
 
-        self._packets.create(defn.name)
-        pktbuf        = self._packets[defn.name]
-        self._tlm     = UdpTelemetryServer(tlmport, pktbuf, defn)
-        self._tlm.start()
+                if message[0] not in self._defns:
+                    log.error(f"Skipping packet with id {message[0]}")
+                    continue
+
+                pkt = tlm.Packet(defn=self._defns[message[0]], data=message[1])
+
+                pkt_name = pkt._defn.name
+                if pkt_name in self._pktbufs:
+                    self._pktbufs[pkt_name].appendleft(pkt)
+
+        except Exception as e:
+            log.error("Exception raised in TlmMonitor while receiving messages")
+            log.error(f"API telemetry is no longer being received from server. {e}")
+            raise e
+
+
+class Instrument(object):
+    def __init__(self, cmdport=None, packets=None):
+        """"""
+        tlmdict = tlm.getDefaultDict()
+        if packets is None:
+            packets = list(tlmdict.keys())
+        else:
+            if not isinstance(packets, collections.Iterable):
+                packets = [packets]
+
+            cln_pkts = []
+            for pkt in packets:
+                if pkt not in tlmdict:
+                    log.error(f"Instrument passed invalid packet name {pkt}. Skipping ...")
+                else:
+                    cln_pkts.append(pkt)
+            packets = cln_pkts
+
+        defns = {tlmdict[k].uid: tlmdict[k] for k in packets}
+
+        if len(defns.keys()) == 0:
+            msg = (
+                'No packets available to Instrument. Ensure your dictionary '
+                'is valid and contains Packets. If you passed packet names to '
+                'Instrument ensure at least one is valid.'
+            )
+            raise TypeError(msg)
+
+
+        self._pkt_buffs = PacketBuffers()
+        for _, pkt_defn in defns.items():
+            self._pkt_buffs.create(pkt_defn.name)
+
+        self._cmd = CmdAPI(cmdport)
+        self._monitor = TlmMonitor(self._pkt_buffs, defns)
+        self._monitor.start()
+        gevent.sleep(0)
 
     @property
     def cmd (self):
@@ -583,7 +642,7 @@ class Instrument (object):
 
     @property
     def tlm (self):
-        return TlmWrapperAttr(self._packets)
+        return TlmWrapperAttr(self._pkt_buffs)
 
 
 def wait (cond, msg=None, _timeout=10, _raiseException=True):

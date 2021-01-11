@@ -32,6 +32,9 @@ sys.modules['ait'].DEFAULT_CMD_HOST  = '127.0.0.1'
 ## Name of the ZMQ topic used to accept commands from external sources
 sys.modules['ait'].DEFAULT_CMD_TOPIC = '__commands__'
 
+## Name of the ZMQ topic / stream used for making telemetry packets available to the script API
+sys.modules['ait'].DEFAULT_TLM_TOPIC = '__tlmpkts__'
+
 ## Number of seconds to sleep after ZmqSocket.connect() call, affects clients
 sys.modules['ait'].DEFAULT_CMD_ZMQ_SLEEP = 1
 
