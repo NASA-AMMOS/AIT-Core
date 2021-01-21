@@ -3,7 +3,6 @@ import gevent.monkey; gevent.monkey.patch_all()
 from importlib import import_module
 import sys
 
-# import ait
 import ait.core.server
 from .stream import PortInputStream, ZMQStream, PortOutputStream
 from .broker import Broker
@@ -49,7 +48,7 @@ class Server(object):
 
         gevent.joinall(self.greenlets)
 
-    def _load_streams_and_plugins(eslf):
+    def _load_streams_and_plugins(self):
         """"""
         self._load_streams()
         self._create_api_telem_stream()
