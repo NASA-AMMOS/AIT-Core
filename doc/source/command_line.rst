@@ -120,6 +120,12 @@ ait-create-dirs
    :start-after: '''
    :end-before: '''
 
+ait-limits-find-dn
+^^^^^^^^^^^^^^^^^^
+.. literalinclude:: ../../ait/core/bin/ait_limits_find_dn.py
+   :start-after: '''
+   :end-before: '''
+
 ait-yaml-validate
 ^^^^^^^^^^^^^^^^^^^
 .. literalinclude:: ../../ait/core/bin/ait_yaml_validate.py
