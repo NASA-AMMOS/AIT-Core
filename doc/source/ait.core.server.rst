@@ -20,6 +20,7 @@ Submodules
    ait.core.server.plugin
    ait.core.server.server
    ait.core.server.stream
+   ait.core.server.utils
 
 Module contents
 ---------------

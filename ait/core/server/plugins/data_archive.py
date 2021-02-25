@@ -75,7 +75,7 @@ class DataArchive(Plugin):
             **kwargs:    any args required for connected to the backend
         """
         try:
-            load = pickle.loads(eval(input_data))
+            load = pickle.loads(input_data)
             uid, pkt = int(load[0]), load[1]
             defn = self.packet_dict[uid]
             decoded = tlm.Packet(defn, data=bytearray(pkt))

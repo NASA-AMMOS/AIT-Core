@@ -8,6 +8,7 @@ import socket
 
 import ait.core
 from ait.core import log
+import ait.core.server.utils as utils
 
 
 class ZMQClient(object):
@@ -35,7 +36,12 @@ class ZMQClient(object):
         """
         Publishes input message with client name as topic.
         """
-        self.pub.send_string('{} {}'.format(self.name, msg))
+        msg = utils.encode_message(self.name, msg)
+        if msg is None:
+            log.error(f"{self} unable to encode msg {msg} for send.")
+            return
+
+        self.pub.send_multipart(msg)
         log.debug('Published message from {}'.format(self))
 
     def process(self, input_data, topic=None):
@@ -82,7 +88,12 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
         try:
             while True:
                 gevent.sleep(0)
-                topic, message = self.sub.recv_string().split(' ', 1)
+                msg = self.sub.recv_multipart()
+                topic, message = utils.decode_message(msg)
+                if topic is None or message is None:
+                    log.error(f"{self} received invalid topic or message. Skipping")
+                    continue
+
                 log.debug('{} received message from {}'.format(self, topic))
                 self.process(message, topic=topic)
 
@@ -114,7 +125,6 @@ class PortOutputClient(ZMQInputClient):
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
-        msg = eval(msg)
         self.pub.sendto(msg, ('localhost', int(self.out_port)))
         log.debug('Published message from {}'.format(self))
 
