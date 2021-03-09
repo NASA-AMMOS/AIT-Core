@@ -388,7 +388,7 @@ class Validator(object):
 
                 # Loop through the errors (if any) and set valid = False if any are found
                 # Display the error message
-                for error in sorted(v.iter_errors(data)):
+                for error in v.iter_errors(data):
                     msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
                     self.ehandler.process(docnum, self._ymlproc.doclines, error, messages)
                     valid = False
