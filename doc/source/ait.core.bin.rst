@@ -14,6 +14,7 @@ Submodules
    ait.core.bin.ait_cmd_send
    ait.core.bin.ait_create_dirs
    ait.core.bin.ait_dict_writer
+   ait.core.bin.ait_limits_find_dn
    ait.core.bin.ait_mps_seq_convert
    ait.core.bin.ait_pcap
    ait.core.bin.ait_pcap_segment
