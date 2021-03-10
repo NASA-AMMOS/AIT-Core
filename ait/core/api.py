@@ -47,6 +47,7 @@ import time
 import ait
 import ait.core
 from ait.core import cmd, gds, log, pcap, tlm, util
+import ait.core.server.utils as serv_utils
 
 class APIError (Exception):
     """All AIT API exceptions are derived from this class"""
@@ -205,8 +206,17 @@ class CmdAPI:
                 elif self._pub_socket:
                     values = (self._pub_topic, str(cmdobj))
                     log.command('Sending via publisher: %s %s' % values)
-                    self._pub_socket.send_string('{} {}'.format(self._pub_topic, encoded))
-                    status = True
+                    msg = server_utils.encode_message(self._pub_topic, encoded)
+
+                    if msg is None:
+                        log.error(
+                            "CmdAPI unable to encode cmd message "
+                            f"({self._pub_topic}, {encoded}) for send"
+                        )
+                        status = False
+                    else:
+                        self._pub_socket.send_multipart(msg)
+                        status = True
 
                 ## Only add to history file is success status is True
                 if status:
@@ -572,8 +582,11 @@ class TlmMonitor(gevent.Greenlet):
         try:
             while True:
                 gevent.sleep(0)
-                topic, message = self._sub.recv_string().split(' ', 1)
-                message = pickle.loads(eval(message))
+                msg = self.sub.recv_multipart()
+                topic, message = serv_utils.decode_message(msg)
+                if topic is None or message is None:
+                    log.error(f"{self} received invalid topic or message. Skipping")
+                    continue
 
                 if not isinstance(message, tuple):
                     log.error(
