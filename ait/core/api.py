@@ -206,7 +206,7 @@ class CmdAPI:
                 elif self._pub_socket:
                     values = (self._pub_topic, str(cmdobj))
                     log.command('Sending via publisher: %s %s' % values)
-                    msg = server_utils.encode_message(self._pub_topic, encoded)
+                    msg = serv_utils.encode_message(self._pub_topic, encoded)
 
                     if msg is None:
                         log.error(
@@ -218,7 +218,7 @@ class CmdAPI:
                         self._pub_socket.send_multipart(msg)
                         status = True
 
-                ## Only add to history file is success status is True
+                # Only add to history file if success status is True
                 if status:
                     with pcap.open(self.CMD_HIST_FILE, 'a') as output:
                         output.write(str(cmdobj))
@@ -582,8 +582,10 @@ class TlmMonitor(gevent.Greenlet):
         try:
             while True:
                 gevent.sleep(0)
-                msg = self.sub.recv_multipart()
+                msg = self._sub.recv_multipart()
                 topic, message = serv_utils.decode_message(msg)
+                message = pickle.loads(message)
+
                 if topic is None or message is None:
                     log.error(f"{self} received invalid topic or message. Skipping")
                     continue
