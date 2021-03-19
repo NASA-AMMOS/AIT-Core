@@ -54,7 +54,7 @@ class Seq (object):
     self.pathname  = pathname
     self.cmddict   = cmddict or cmd.getDefaultCmdDict()
     self.crc32     = None
-    self.seqid     = int(id)
+    self.seqid     = id
     self.lines     = [ ]
     self.header    = { }
     self.version   = version
