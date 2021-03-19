@@ -26,7 +26,7 @@ import struct
 import sys
 import time
 
-from ait.core import cmd, util
+from ait.core import cmd, log, util
 
 
 def setBit (value, bit, bitval):
@@ -744,3 +744,5 @@ class SeqMsgLog (object):
   def warning (self, msg, pos=None):
     """Logs a warning message pertaining to the given SeqAtom."""
     self.log(msg, 'warning: ' + self.location(pos))
+
+util.__init_extensions__(__name__, globals())

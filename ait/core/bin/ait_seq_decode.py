@@ -16,13 +16,13 @@
 
 '''
 
-usage: ait-seq-decode oco3_seq_SSS_NNN_desc.bin
+usage: ait-seq-decode ait_seq_SSS_NNN_desc.bin
 
 Decodes the given relative time command sequence to text.
 
 Examples:
 
-  $ ait-seq-decode seq/oco3_seq_gps_001_reset.bin
+  $ ait-seq-decode seq/ait_seq_gps_001_reset.bin
 '''
 
 import os
@@ -67,7 +67,7 @@ def main():
         except ValueError:
             raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
 
-    sequence = seq.Seq(filename, id=seqid)
+    sequence = seq.createSeq(filename, id=seqid)
 
     if not sequence.validate():
         for msg in sequence.messages:

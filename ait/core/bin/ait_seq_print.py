@@ -15,14 +15,14 @@
 # information to foreign countries or providing access to foreign persons.
 
 '''
-usage: ait-seq-print oco3_seq_SSS_NNN_desc.bin
+usage: ait-seq-print ait_seq_SSS_NNN_desc.bin
 
 Prints the given binary relative time command sequence to standard
 output as text.
 
 Examples:
 
-  $ ait-seq-print seq/oco3_seq_gps_001_reset.bin
+  $ ait-seq-print seq/ait_seq_gps_001_reset.bin
 '''
 
 import os
@@ -67,7 +67,7 @@ def main():
         except ValueError:
             raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
 
-    sequence = seq.Seq(filename, id=seqid)
+    sequence = seq.createSeq(filename, id=seqid)
 
     if not sequence.validate():
         for msg in sequence.messages:

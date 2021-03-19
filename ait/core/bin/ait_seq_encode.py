@@ -25,7 +25,7 @@ Encodes the given relative time command sequence to binary.
 
 Examples:
 
-  $ ait-seq-encode seq/oco3_seq_gps_reset_001.txt
+  $ ait-seq-encode seq/ait_seq_gps_reset_001.txt
 '''
 
 import os
@@ -74,7 +74,7 @@ def main():
             except ValueError:
                 raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
 
-            sequence = seq.Seq(filename, id=seqid)
+            sequence = seq.createSeq(filename, id=seqid)
 
             if not sequence.validate():
                 for msg in sequence.log.messages:
