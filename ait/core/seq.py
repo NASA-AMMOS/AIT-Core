@@ -42,10 +42,8 @@ class Seq (object):
   """Seq - Sequence
 
   """
-  Magic = 0x0C03
 
-
-  def __init__ (self, pathname=None, cmddict=None, id=None, version=0):
+  def __init__ (self, pathname=None, cmddict=None, id=None, version=0, **kwargs):
     """Creates a new AIT Command Sequence
 
     Creates an empty sequence which will be encoded and decoded based
@@ -62,9 +60,11 @@ class Seq (object):
     self.version   = version
     self.log       = SeqMsgLog()
 
+    self.magic = kwargs.get('magic', 0x0C03)
+    self.cmd_size = kwargs.get('cmd_size', 106)
+
     if self.pathname is not None:
       self.read()
-
 
   def _parseHeader (self, line, lineno, log):
     """Parses a sequence header line containing 'name: value' pairs."""
@@ -178,7 +178,7 @@ class Seq (object):
     magic  = struct.unpack('>H', stream.read(2))[0]
     stream.close()
 
-    if magic == Seq.Magic:
+    if magic == self.magic:
       self.readBinary(filename)
     else:
       self.readText(filename)
@@ -201,7 +201,8 @@ class Seq (object):
     self.crc32 = struct.unpack('>I', stream.read(4))[0]
 
     for n in range(ncmds):
-      bytes = stream.read(110)
+      # Each encoded command is 4 bytes for the time offset + the command size
+      bytes = stream.read(4 + self.cmd_size)
       self.lines.append(SeqCmd.decode(bytes, self.cmddict))
 
 
@@ -270,7 +271,7 @@ class Seq (object):
 
     with open(filename, 'wb') as output:
       # Magic Number
-      output.write( struct.pack('>H', Seq.Magic          )  )
+      output.write( struct.pack('>H', self.magic          )  )
       # Upload Type
       output.write( struct.pack('B', 9                   )  )
       # Version
