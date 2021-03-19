@@ -16,13 +16,13 @@
 
 '''
 
-usage: ait-seq-decode ait_seq_SSS_NNN_desc.bin
+usage: ait-seq-decode ait_seq_SSS_desc_NNN.bin
 
 Decodes the given relative time command sequence to text.
 
 Examples:
 
-  $ ait-seq-decode seq/ait_seq_gps_001_reset.bin
+  $ ait-seq-decode seq/ait_seq_gps_reset_001.bin
 '''
 
 import os
@@ -58,9 +58,9 @@ def main():
 
         # Parse the filename for the applicable information
         parts = os.path.basename(filename).split('_')
-        desc = os.path.splitext(parts[-1])[0]
-        seqid = parts[-2]
         subsys = parts[-3]
+        desc = parts[-2]
+        seqid = os.path.splitext(parts[-1])[0]
 
         try:
             int(seqid)
