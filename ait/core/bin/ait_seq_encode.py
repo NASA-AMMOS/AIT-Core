@@ -56,12 +56,12 @@ def main():
         for fname in args.filename:
             filename  = os.path.abspath(fname)
             if not os.path.isfile(filename):
-                raise Exception('File not found: %s ' % filename)
+                raise Exception(f'File not found: {filename}')
 
             extension = os.path.splitext(filename)[1]
 
             if extension.lower() != '.txt':
-                log.warn("Filename '%s' does not have a '.txt' extension", filename)
+                log.warn(f"Filename '{filename}' does not have a '.txt' extension")
 
             # Parse the filename for the applicable information
             parts = os.path.basename(filename).split('_')
@@ -70,9 +70,9 @@ def main():
             subsys = parts[-3]
 
             try:
-                int(seqid)
+                seqid = int(seqid)
             except ValueError:
-                raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
+                raise Exception('Invalid filename "{os.path.basename(filename)}": . {__doc__}')
 
             sequence = seq.createSeq(filename, id=seqid)
 
@@ -83,7 +83,7 @@ def main():
                 binpath = sequence.binpath
                 seqid   = sequence.seqid
 
-                log.info("Writing %s (seqid=0x%04x).", binpath, seqid)
+                log.info(f"Writing {binpath} (seqid=0x{seqid:04X}).")
                 sequence.writeBinary()
 
             exit = 0
