@@ -89,6 +89,11 @@ With the :class:`ait.core.tlm.Packet` object we can check each of those values a
 
 ----
 
+.. warning::
+
+   Packet and Field names should conform with Python's variable name constraints. This is not enforced by the dictionary handling or validation but failing to do so will result in potentially unexpected behavior or errors when attempting to reference attributes depending on use cases. When in doubt, open the Python REPL and try to use your Packet / Field name as a variable name. If Python complains then you should change that value.
+
+
 !Packet
 -------
 
