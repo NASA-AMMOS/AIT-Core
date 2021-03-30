@@ -204,9 +204,8 @@ class AITOpenMctPlugin(Plugin):
 
     def _process_telem_msg(self, input_data):
 
-        #Use eval then pickle to recover message
-        msg_pkl_str = eval(input_data)
-        msg = pickle.loads(msg_pkl_str)
+        #Use pickle to recover message
+        msg = pickle.loads(input_data)
 
         uid = int(msg[0])
         packet = msg[1]
