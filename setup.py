@@ -54,7 +54,7 @@ setup(
     },
 
     install_requires = [
-        'bottle==0.12.17',
+        'bottle==0.12.19',
         'jsonschema==3.0.2',
         'pyyaml==5.1.2',
         'requests>=2.22.0',
