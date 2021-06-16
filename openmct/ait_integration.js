@@ -22,11 +22,6 @@
  * https://github.com/nasa/openmct-tutorial
  *
  * Important Notes and Setup:
- *  - The current AIT backend implementation does not support the OpenMCT
- *    historical data query implementation. To work around this, ensure
- *    that the historical data endpoint in OpenMCT returns an empty
- *    dataset for any queried point. The AITHistoricalTelemetryPlugin
- *    function calls the default OpenMCT Tutorial historical endpoint.
  *  - Include the below code into OpenMCT by including this file in the
  *    example index.html file and installing the various components.
  *
@@ -220,8 +215,6 @@ function AITIntegration(config) {
 
 //Historical telemetry
 function AITHistoricalTelemetryPlugin() {
-
-    const historicalQueryEnabled = false;
 
     return function install (openmct) {
         let provider = {
