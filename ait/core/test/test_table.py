@@ -1,226 +1,370 @@
-#!/usr/bin/env python2.7
-
-# Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
-# Bespoke Link to Instruments and Small Satellites (BLISS)
-#
-# Copyright 2017, by the California Institute of Technology. ALL RIGHTS
-# RESERVED. United States Government Sponsorship acknowledged. Any
-# commercial use must be negotiated with the Office of Technology Transfer
-# at the California Institute of Technology.
-#
-# This software may be subject to U.S. export control laws. By accepting
-# this software, the user agrees to comply with all applicable U.S. export
-# laws and regulations. User has the responsibility to obtain export licenses,
-# or other export authority as may be required before exporting such
-# information to foreign countries or providing access to foreign persons.
-
-import gevent.monkey
-gevent.monkey.patch_all()
-
-import os
-import struct
-import warnings
-
-import nose
+import os.path
+import tempfile
+import unittest
 
 from ait.core import table
 
-TmpFilename = None
+test_table = """
+- !FSWTable
+  name: test_type
+  delimiter: ","
+  header:
+    - !FSWColumn
+      name: MAGIC_NUM
+      desc: The first column in our header
+      format: "%x"
+      units: none
+      type:  U8
+      bytes: 0
 
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    TmpFilename = 'tmpfile'# os.tmpnam();
+    - !FSWColumn
+      name: UPTYPE
+      desc: The second column in our header
+      format: "%u"
+      units: none
+      type:  U8
+      bytes: 1
 
+    - !FSWColumn
+      name: VERSION
+      desc: The third column in our header
+      format: "%u"
+      units: none
+      type:  U8
+      bytes: 2
 
-class Season:
-    SPRING=1
-    SUMMER=2
-    AUTUMN=3
-    WINTER=4
+  columns:
+    - !FSWColumn
+      name: COLUMN_ONE
+      desc: First FSW Table Column
+      format: "%u"
+      units: none
+      type:  MSB_U16
+      bytes: [0,1]
 
+    - !FSWColumn
+      name: COLUMN_TWO
+      desc: Second FSW Table Column
+      format: "%u"
+      units: none
+      type:  MSB_U16
+      bytes: [2,3]
 
-class Color:
-    RED=1
-    GREEN=2
-    BLUE=3
-    YELLOW=4
-
-
-# Util to create and destroy a file for testing
-class TestTableWriter(object):
-
-    # Creates a table file to be used in the tests
-    def writeTempFile(self):
-        yaml_table_test = (
-            "- !FSWTable"
-            "  name: test"
-            "  delimiter: '-'"
-            "  uptype: 1"
-            "  size: 5120"
-            "  header:"
-            "    - !FSWColumn:"
-            "      name: HEADER_COLUMN_ONE"
-            "      desc: First header column"
-            "      format: '%u'"
-            "      units: none"
-            "      type: U8"
-            "      bytes: 1"
-            "    - !FSWColumn:"
-            "      name: HEADER_COLUMN_TWO"
-            "      desc: Second header column"
-            "      format: '%u'"
-            "      units: cm"
-            "      type: U16"
-            "      bytes: 4"
-            "  columns:"
-            "    - !FSWColumn"
-            "      name: COL_ONE"
-            "      desc: First table column"
-            "      format: '%u'"
-            "      units: none"
-            "      type: U8"
-            "      bytes: 1"
-            "    - !FSWColumn"
-            "      name: COL_TWO"
-            "      desc: Second table column"
-            "      format: '%u'"
-            "      units: cm"
-            "      type: U16"
-            "      bytes: 4"
-            "      enum:"
-            "        0: SPRING"
-            "        1: SUMMER"
-            "        2: AUTUMN"
-            "        3: WINTER"
-            )
-        with open(TmpFilename, 'wt') as file:
-            file.write(yaml_table_test)
-
-    def tearDown(self):
-        os.unlink(TmpFilename)
+    - !FSWColumn
+      name: COLUMN_THREE
+      desc: Third FSW Table Column
+      format: "%u"
+      units: none
+      type:  U8
+      bytes: 4
+      enum:
+        0: TEST_ENUM_0
+        1: TEST_ENUM_1
+        2: TEST_ENUM_2
+        3: TEST_ENUM_3
+"""
 
 
-def testTestTest():
-    '''Tests the test'''
-    assert 1
+class TestTableEncode(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.table_defn_path = os.path.join(tempfile.gettempdir(), "test_table.yaml")
+
+        with open(cls.table_defn_path, "w") as infile:
+            infile.write(test_table)
+
+        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+
+    def test_enum_encode(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
+
+        encoded = defn.encode(text_in=table_data)
+        assert len(encoded) == 13
+
+        # Check header
+        assert encoded[0] == 13
+        assert encoded[1] == 12
+        assert encoded[2] == 11
+
+        # Check first row
+        assert encoded[3] == 0
+        assert encoded[4] == 1
+        assert encoded[5] == 0
+        assert encoded[6] == 2
+        assert encoded[7] == 3
+
+        # Check second row
+        assert encoded[8] == 0
+        assert encoded[9] == 4
+        assert encoded[10] == 0
+        assert encoded[11] == 5
+        assert encoded[12] == 0
+
+    def test_encode_text_no_hdr(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["13,12,11", "1,2,3", "4,5,6"]
+
+        encoded = defn.encode(text_in=table_data)
+        assert len(encoded) == 13
+
+        # Check header
+        assert encoded[0] == 13
+        assert encoded[1] == 12
+        assert encoded[2] == 11
+
+        # Check first row
+        assert encoded[3] == 0
+        assert encoded[4] == 1
+        assert encoded[5] == 0
+        assert encoded[6] == 2
+        assert encoded[7] == 3
+
+        # Check second row
+        assert encoded[8] == 0
+        assert encoded[9] == 4
+        assert encoded[10] == 0
+        assert encoded[11] == 5
+        assert encoded[12] == 6
+
+    def test_encode_text_with_hdr(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["1,2,3", "4,5,6"]
+
+        hdr_vals = [13, 12, 11]
+
+        encoded = defn.encode(text_in=table_data, hdr_vals=hdr_vals)
+
+        assert len(encoded) == 13
+
+        # Check header
+        assert encoded[0] == 13
+        assert encoded[1] == 12
+        assert encoded[2] == 11
+
+        # Check first row
+        assert encoded[3] == 0
+        assert encoded[4] == 1
+        assert encoded[5] == 0
+        assert encoded[6] == 2
+        assert encoded[7] == 3
+
+        # Check second row
+        assert encoded[8] == 0
+        assert encoded[9] == 4
+        assert encoded[10] == 0
+        assert encoded[11] == 5
+        assert encoded[12] == 6
+
+    def test_encode_file_no_hdr(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = """
+        13,12,11
+        1,2,3
+        4,5,6
+        """
+
+        tmp_table_input = os.path.join(tempfile.gettempdir(), "test_table.txt")
+        with open(tmp_table_input, "w") as in_file:
+            in_file.write(table_data)
+
+        with open(tmp_table_input, "r") as in_file:
+            encoded = defn.encode(file_in=in_file)
+
+        assert len(encoded) == 13
+
+        # Check header
+        assert encoded[0] == 13
+        assert encoded[1] == 12
+        assert encoded[2] == 11
+
+        # Check first row
+        assert encoded[3] == 0
+        assert encoded[4] == 1
+        assert encoded[5] == 0
+        assert encoded[6] == 2
+        assert encoded[7] == 3
+
+        # Check second row
+        assert encoded[8] == 0
+        assert encoded[9] == 4
+        assert encoded[10] == 0
+        assert encoded[11] == 5
+        assert encoded[12] == 6
+
+        os.remove(tmp_table_input)
+
+    def test_encode_file_with_hdr(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = """
+        1,2,3
+        4,5,6
+        """
+
+        hdr_vals = [13, 12, 11]
+
+        tmp_table_input = os.path.join(tempfile.gettempdir(), "test_table.txt")
+        with open(tmp_table_input, "w") as in_file:
+            in_file.write(table_data)
+
+        with open(tmp_table_input, "r") as in_file:
+            encoded = defn.encode(file_in=in_file, hdr_vals=hdr_vals)
+
+        assert len(encoded) == 13
+
+        # Check header
+        assert encoded[0] == 13
+        assert encoded[1] == 12
+        assert encoded[2] == 11
+
+        # Check first row
+        assert encoded[3] == 0
+        assert encoded[4] == 1
+        assert encoded[5] == 0
+        assert encoded[6] == 2
+        assert encoded[7] == 3
+
+        # Check second row
+        assert encoded[8] == 0
+        assert encoded[9] == 4
+        assert encoded[10] == 0
+        assert encoded[11] == 5
+        assert encoded[12] == 6
+
+        os.remove(tmp_table_input)
 
 
-def testColDefn():
-    '''Test single column definition'''
-    column = table.FSWColDefn(
-        name='test_col',
-        type='U8',
-        bytes=4,
-        format='%u',
-        units='none',
-        items=4,
-        enum=Season,
-    )
-    assert column.name is 'test_col'
-    assert column.type is 'U8'
-    column.type = 'U16'
-    assert column.type is 'U16'
-    assert column.bytes is 4
-    column.bytes = 3
-    assert column.bytes is 3
-    assert column.format is '%u'
-    column.format = '%i'
-    assert column.format is '%i'
-    assert column.units is 'none'
-    column.units = 'cm'
-    assert column.units is 'cm'
-    assert column.items is 4
-    column.items = 2
-    assert column.items is 2
-    assert column.enum is Season
-    column.enum = Color
-    assert column.enum is Color
+class TestTableDecode(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.table_defn_path = os.path.join(tempfile.gettempdir(), "test_table.yaml")
+
+        with open(cls.table_defn_path, "w") as infile:
+            infile.write(test_table)
+
+        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+
+    def test_decode_binary(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["13,12,11", "1,2,8", "4,5,6"]
+
+        encoded = defn.encode(text_in=table_data)
+
+        decoded = defn.decode(bin_in=encoded)
+
+        # Check header
+        assert decoded[0][0] == 13
+        assert decoded[0][1] == 12
+        assert decoded[0][2] == 11
+
+        # Check first row
+        assert decoded[1][0] == 1
+        assert decoded[1][1] == 2
+        assert decoded[1][2] == 8
+
+        # Check first row
+        assert decoded[2][0] == 4
+        assert decoded[2][1] == 5
+        assert decoded[2][2] == 6
+
+    def test_enum_decode(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
+        encoded = defn.encode(text_in=table_data)
+
+        bin_file = os.path.join(tempfile.gettempdir(), "test_table_in.bin")
+        with open(bin_file, "wb") as out_file:
+            out_file.write(encoded)
+
+        with open(bin_file, "rb") as out_file:
+            decoded = defn.decode(file_in=out_file)
+
+        # Check header
+        assert decoded[0][0] == 13
+        assert decoded[0][1] == 12
+        assert decoded[0][2] == 11
+
+        # Check first row
+        assert decoded[1][0] == 1
+        assert decoded[1][1] == 2
+        assert decoded[1][2] == "TEST_ENUM_3"
+
+        # Check first row
+        assert decoded[2][0] == 4
+        assert decoded[2][1] == 5
+        assert decoded[2][2] == "TEST_ENUM_0"
+
+    def test_enum_decode_raw_values(self):
+        defn = self.tabdict["test_type"]
+
+        table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
+        encoded = defn.encode(text_in=table_data)
+
+        bin_file = os.path.join(tempfile.gettempdir(), "test_table_in.bin")
+        with open(bin_file, "wb") as out_file:
+            out_file.write(encoded)
+
+        with open(bin_file, "rb") as out_file:
+            decoded = defn.decode(file_in=out_file, raw=True)
+
+        # Check header
+        assert decoded[0][0] == 13
+        assert decoded[0][1] == 12
+        assert decoded[0][2] == 11
+
+        # Check first row
+        assert decoded[1][0] == 1
+        assert decoded[1][1] == 2
+        assert decoded[1][2] == 3
+
+        # Check first row
+        assert decoded[2][0] == 4
+        assert decoded[2][1] == 5
+        assert decoded[2][2] == 0
 
 
-def testTabDefnAndWrite():
-    '''Test table definition'''
-    coldefn = table.FSWColDefn(
-        me='test_col',
-        type='U8',
-        bytes=4,
-        format='%u',
-        units='none',
-        items=4,
-        enum=Season,
-    )
-    coldefn2 = table.FSWColDefn(
-        name='test_col2',
-        type='U8',
-        bytes=1,
-        format='%u',
-        units='none',
-        items=4,
-        enum=Color,
-    )
-    tabledefn = table.FSWTabDefn(
-        name='test_table',
-        delimiter='-',
-        uptype=1,
-        size=8000,
-        rows=10,
-        fswheaderdefns=None,
-        coldefns=[coldefn, coldefn2],
-    )
-    fileholder = TestTableWriter()
-    fileholder.writeTempFile()
+class TestBadEnumHandling(unittest.TestCase):
+    def test_table_duplicate_enum_load(self):
+        test_table = """
+        - !FSWTable
+          name: test_type
+          delimiter: ","
+          header:
+            - !FSWColumn
+              name: MAGIC_NUM
+              desc: The first column in our header
+              format: "%x"
+              units: none
+              type:  U8
+              bytes: 0
 
-    # Test that the table was created properly
-    assert tabledefn.name is 'test_table'
-    assert tabledefn.delimiter is '-'
-    assert tabledefn.uptype is 1
-    assert tabledefn.size is 8000
-    assert tabledefn.rows is 10
-    assert tabledefn.coldefns[0] is coldefn
-    assert tabledefn.coldefns[1] is coldefn2
+          columns:
+            - !FSWColumn
+              name: COLUMN_THREE
+              desc: Third FSW Table Column
+              format: "%u"
+              units: none
+              type:  U8
+              bytes: 4
+              enum:
+                0: TEST_ENUM_0
+                1: TEST_ENUM_1
+                2: TEST_ENUM_2
+                3: TEST_ENUM_3
+                4: TEST_ENUM_0
+        """
+        table_defn_path = os.path.join(tempfile.gettempdir(), "test_table_dupe_enum.yaml")
 
-    # Write table to text file
-    stream = open(TmpFilename, 'w')
-    outstream = open('tempfile', 'w')
+        with open(table_defn_path, "w") as infile:
+            infile.write(test_table)
 
-    # Test that the text file was created and did not exit with error code
-    assert tabledefn.toText(stream, outstream, 1, 0.0) is None
-
-    # Close the write to text
-    stream.close()
-    outstream.close()
-
-    # Write table to binary file
-    stream = open(TmpFilename, 'w')
-    outstream = open('tempfileb', 'w')
-
-    # Version in toBinary does not appear to be handled properly
-    #assert tabledefn.toBinary('tempfile', stream, outstream, 1, 0.0) is None
-
-    # Create a new table dictionary
-    tabdict = table.FSWTabDict()
-    tabdict.add(tabledefn)
-    tabdict.create('test',{'colnames':tabledefn.coldefns})
-
-    # Load a table definition to the dictionary
-    tabdict.load(os.path.join(os.path.dirname(__file__), 
-                              "testdata", 
-                              "val", 
-                              "testCmdValidator6.yaml"))
-
-    # Assert writing to text does not exit with an error code
-    assert table.writeToText(tabdict,'test_table','tempfileb',0,0.0) is None
-
-    #having trouble with getting version from TmpFilename
-    #assert table.writeToBinary(tabdict,'test_table',TmpFilename,0) is None
-
-    stream.close()
-    outstream.close()
-
-    os.unlink('tempfile')
-    os.unlink('tempfileb')
-    os.unlink('test_table_table00.txt')
-    fileholder.tearDown()
-
-
-if __name__ == '__main__':
-    nose.main()
+        with self.assertLogs('ait', level="ERROR") as cm:
+            tabdict = table.FSWTabDict(table_defn_path)
+            assert len(cm.output) == 1
