@@ -4,7 +4,7 @@
 # datatype, units, and the maximum length for that column.
 
 - !FSWTable
-  name: response
+  name: TestTable
   delimiter: ","
   uptype: 1
   size: 18
