@@ -11,6 +11,7 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
+import datetime
 import hashlib
 import io
 import os
@@ -18,6 +19,7 @@ import pickle
 
 import ait
 import yaml
+from ait.core import dmc
 from ait.core import dtype
 from ait.core import log
 from ait.core import util
@@ -77,7 +79,14 @@ class FSWColDefn(object):
             if len(data) != dt.nbytes:
                 raise EOFError
 
-            val = dt.decode(data, raw=True)
+            if (
+                isinstance(dt, dtype.Time64Type)
+                or isinstance(dt, dtype.Time40Type)
+                or isinstance(dt, dtype.Time32Type)
+            ):
+                val = dt.decode(data).strftime(dmc.RFC3339_Format)
+            else:
+                val = dt.decode(data, raw=True)
 
         if self.enum and not raw:
             val = self.enum.get(val, val)
@@ -134,6 +143,12 @@ class FSWColDefn(object):
             # E.g., for a type of U8[2] the following is valid:
             #     value = '\x01\x02'
             return bytearray(value.encode("ascii"))
+        elif (
+            isinstance(col_defn, dtype.Time64Type)
+            or isinstance(col_defn, dtype.Time40Type)
+            or isinstance(col_defn, dtype.Time32Type)
+        ):
+            return datetime.datetime.strptime(value, dmc.RFC3339_Format)
         else:
             if col_defn.float:
                 return float(value)
