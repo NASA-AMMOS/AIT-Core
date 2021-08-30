@@ -1,7 +1,7 @@
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
-# Copyright 2014, by the California Institute of Technology. ALL RIGHTS
+# Copyright 2021, by the California Institute of Technology. ALL RIGHTS
 # RESERVED. United States Government Sponsorship acknowledged. Any
 # commercial use must be negotiated with the Office of Technology Transfer
 # at the California Institute of Technology.
@@ -11,170 +11,179 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-"""
-AIT Table Converter
-
-The ait.core.table module provides the dictionary for translating tables.
-"""
-
-import pickle
-import os
-import yaml
-import struct
-import binascii
-import array
 import hashlib
+import io
+import os
+import pickle
 
 import ait
-from ait.core import dtype, util, log
+import yaml
+from ait.core import dtype
+from ait.core import log
+from ait.core import util
 
 
-class FSWColDefn (object):
+class FSWColDefn(object):
     """FSWColDefn - Argument Definition
 
     Argument Definitions encapsulate all information required to define
-    a single column.  This includes the column name, its
-    description, units, type, byte position within a command, name-value
-    enumerations, and allowed value ranges.  Name, type, and byte
-    position are required.  All others are optional.
+    a single column.  
     """
-    __slots__ = [
-        "name", "_format", "_type", "_units", "_items", "_enum", "_bytes"
-    ]
 
-    def __init__ (self, *args, **kwargs):
-        """Creates a new Column Definition.
-        """
-        for slot in self.__slots__:
-            name = slot[1:] if slot.startswith("_") else slot
-            setattr(self, name, kwargs.get(name, None))
+    def __init__(self, *args, **kwargs):
+        """Creates a new Column Definition."""
+        self.name = kwargs.get("name", None)
+        self.type = kwargs.get("type", None)
+        self.units = kwargs.get("units", None)
+        self.enum = kwargs.get("enum", None)
 
+        self._enum_rev = None
+        if self.enum is not None:
+            self._enum_rev = dict((v, k) for k, v in self.enum.items())
 
-    def __repr__ (self):
+            if len(self.enum) != len(self._enum_rev):
+                msg = (
+                    f"Table enumeration mappings are not one-to-one for '{self.name}'. "
+                    "This may result in expected or incorrect results when encoding or "
+                    "decoding. Remove enumerations from this column or proceed with caution"
+                )
+                log.error(msg)
+
+    def __repr__(self):
         return util.toRepr(self)
 
-    @property
-    def enum(self):
-        """The argument enumeration."""
-        return self._enum
+    def decode(self, in_stream, raw=False):
+        """Decode a column's value according to its data type
 
-    @enum.setter
-    def enum(self, value):
-        self._enum = None
-        if value is not None:
-            self._enum = value
+        Read bytes equal to this column's data type from the input stream
+        and decode it into a value per that data type's definition.
 
-    @property
-    def values (self):
-        """The argument values."""
-        return self._values
+        Arguments:
+            in_stream: A file-like object from which to read data.
 
-    @values.setter
-    def values (self, value):
-        self._values = value if value is not None else { }
+            raw: Flag denoting whether raw values or enumerate values
+                (if present for this column) should be returned.
 
-    @property
-    def format (self):
-        """The argument format."""
-        return self._format
-
-    @format.setter
-    def format (self, value):
-        self._format = value if value is not None else ''
-
-    @property
-    def type (self):
-        """The argument type."""
-        return self._type
-
-    @type.setter
-    def type (self, value):
-        self._type = value if value is not None else ''
-
-    @property
-    def items (self):
-        """The argument items."""
-        return self._items
-
-    @items.setter
-    def items (self, value):
-        self._items = None
-        if value is not None:
-            self._items = value
-
-    @property
-    def units (self):
-        """The argument units.
+        Raises:
+            EOFError: If the number of bytes read from the input stream
+                is less than the length of the data type.
         """
-        return self._units
+        val = None
+        dt = dtype.get(self.type)
 
-    @units.setter
-    def units (self, value):
-        self._units = value if value is not None else ''
+        if dt is not None:
+            data = in_stream.read(dt.nbytes)
 
-    @property
-    def bytes (self):
-        """The argument bytes."""
-        return self._bytes
+            if len(data) != dt.nbytes:
+                raise EOFError
 
-    @bytes.setter
-    def bytes (self, value):
-        self._bytes = None
-        if value is not None:
-            self._bytes = value
+            val = dt.decode(data, raw=True)
 
+        if self.enum and not raw:
+            val = self.enum.get(val, val)
 
+        return val
 
-class FSWTab (object):
-    """Table object that contains column definitions
+    def encode(self, value):
+        """Encode a columns value according to its data type
 
-    Commands reference their Command Definition and may contain arguments.
-    """
-    def __init__ (self, defn, *args):
-        """Creates a new Command based on the given command definition
-        and command arguments.
+        Arguments:
+            value: The value to encode provided as either a string or
+                the appropriate type for the column's data type.
         """
+        dt = dtype.get(self.type)
+
+        if self._enum_rev is not None:
+            value = self._enum_rev.get(value, value)
+
+        value = self._parse_column_value_from_string(value)
+
+        # For some reason ArrayType.encode expects to receive the values
+        # for encoding in *args instead of, you know, an iterable ...
+        if isinstance(dt, dtype.ArrayType):
+            # `value` needs to be an unpackable iterable or this is going
+            # to explode. More than likely this'll be a bytearray.
+            return dt.encode(*value)
+        else:
+            return dt.encode(value)
+
+    def _parse_column_value_from_string(self, value):
+        """Parse strings into an appropriate type for a given table column
+
+        Attempt to cast a string value into the appropriate data type for a
+        column to use during encoding. If the column's type is a "Primitive"
+        type as defined in ait.core.dtype then we simple cast to float or int
+        depending on the definition. ArrayType values must be passed as a
+        string which can be encoded into a binary string. All other AIT
+        data types are not supported in the table module.
+
+        Arguments:
+            value: The string from which to extract an appropriate data type
+                value for future processing. If this is not a string it is
+                returned without modification.
+        """
+        if not isinstance(value, str):
+            return value
+
+        col_defn = dtype.get(self.type)
+
+        if isinstance(col_defn, dtype.ArrayType):
+            # Value is expected to be a string which can be encoded to a
+            # binary string for use by a bytes-like object.
+            #
+            # E.g., for a type of U8[2] the following is valid:
+            #     value = '\x01\x02'
+            return bytearray(value.encode("ascii"))
+        else:
+            if col_defn.float:
+                return float(value)
+            else:
+                return int(value, base=0)
+
+
+class FSWTab(object):
+    """Table object that contains column definitions"""
+
+    def __init__(self, defn, *args):
+        """Creates a new FSWTab based on the given definition arguments."""
         self.defn = defn
         self.args = args
 
-
-    def __repr__ (self):
+    def __repr__(self):
         return self.defn.name + " " + " ".join([str(a) for a in self.args])
 
     @property
-    def coldefns (self):
+    def coldefns(self):
         """The table column definitions."""
         return self.defn.coldefns
 
     @property
-    def fswheaderdefns (self):
+    def fswheaderdefns(self):
         """The table fsw header definitions."""
         return self.defn.fswheaderdefns
 
 
 def hash_file(filename):
-   """"This function returns the SHA-1 hash
-   of the file passed into it"""
+    """Calculate SHA-1 hash of the passed file"""
 
-   # make a hash object
-   h = hashlib.sha1()
+    # make a hash object
+    h = hashlib.sha1()
 
-   # open file for reading in binary mode
-   with open(filename,'rb') as file:
+    # open file for reading in binary mode
+    with open(filename, "rb") as file:
 
-       # loop till the end of the file
-       chunk = 0
-       while chunk != b'':
-           # read only 1024 bytes at a time
-           chunk = file.read(1024)
-           h.update(chunk)
+        # loop till the end of the file
+        chunk = 0
+        while chunk != b"":
+            # read only 1024 bytes at a time
+            chunk = file.read(1024)
+            h.update(chunk)
 
-   # return the hex representation of digest
-   return h.hexdigest()
+    # return the hex representation of digest
+    return h.hexdigest()
 
 
-class FSWTabDefn (object):
+class FSWTabDefn(object):
     """Table Definition
 
     FSW Table Definitions encapsulate all information required to define a
@@ -182,374 +191,210 @@ class FSWTabDefn (object):
     subsystem, description and a list of argument definitions.  Name and
     opcode are required.  All others are optional.
     """
-    __slots__ = ["name", "delimiter", "uptype", "size", "rows", "fswheaderdefns", "coldefns"]
 
-    MagicNumber = 0x0c03
-
-    def __init__ (self, *args, **kwargs):
-        """Creates a new Command Definition."""
-        for slot in self.__slots__:
-            name = slot[1:] if slot.startswith("_") else slot
-            setattr(self, slot, kwargs.get(name, None))
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.get("name", None)
+        self.delimiter = kwargs.get("delimiter", None)
+        self.size = kwargs.get("size", None)
+        self.uptype = kwargs.get("uptype", None)
+        self.fswheaderdefns = kwargs.get("fswheaderdefns", None)
+        self.coldefns = kwargs.get("coldefns", None)
 
         if self.fswheaderdefns is None:
-            self.fswheaderdefns = [ ]
+            self.fswheaderdefns = []
 
         if self.coldefns is None:
-            self.coldefns = [ ]
+            self.coldefns = []
 
-
-    def __repr__ (self):
+    def __repr__(self):
         return util.toRepr(self)
 
-    def toText(self, stream, fswtab_f, verbose, version):
-        out = ""
+    def decode(self, **kwargs):
+        """Decode table data according to the current table definition
 
-        size = os.path.getsize(stream.name)
+        Decode table data (provided via either an input file or binary blob)
+        given the current FSWTabDefn format. The decoded table data will be
+        returned as a list of lists, each containing an individual row's
+        field data. The first row of the returned data is the header's
+        values if applicable for this table definition.
 
-        noentries = 0
-        if self.name != "memory":
-            for fswheaderdef in enumerate(self.fswheaderdefns):
-                fswcoldefn = fswheaderdef[1]
-                name = fswcoldefn.name
-                colfmt = str(fswcoldefn.format)
-                colpk = dtype.get(fswcoldefn.type)
-                coltype = fswcoldefn.type
-                if isinstance(fswcoldefn.bytes,list):
-                   nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
+        Keyword Arguments:
+            file_in (open file stream): A file stream from which to read
+                the table data for decoding.
+
+            bin_in (bytes-like object): An encoded binary table data.
+
+            raw (boolean): Flag indicating whether columns with enumerations
+                should return a raw value (True) or an enumerated value
+                (False) when the option exists. (default: False)
+        """
+        # Setup the "iterator" from which to read input data. Input data is
+        # passed as either an open file stream or a binary blob.
+        in_stream = None
+        if "file_in" in kwargs:
+            in_stream = kwargs["file_in"]
+        elif "bin_in" in kwargs:
+            in_stream = io.BytesIO(kwargs["bin_in"])
+
+        if in_stream is None:
+            msg = "No valid input source provided to table.decode."
+            log.error(msg)
+            raise TypeError(msg)
+
+        raw = kwargs.get('raw', False)
+
+        table = []
+
+        # Extract header column names and values if applicable.
+        if len(self.fswheaderdefns) > 0:
+            table.append([col.decode(in_stream, raw=raw) for col in self.fswheaderdefns])
+
+        # Decode rows from the remaining data
+        while True:
+            row = self._decode_table_row(in_stream, raw=raw)
+
+            if row is None:
+                break
+
+            table.append(row)
+
+        return table
+
+    def encode(self, **kwargs):
+        """Encode table data according to the current table definition
+
+        Encode table data (provided via either an input file or list of table rows)
+        given the current FSWTabDefn format. Header data to be encoded can be
+        included as the first non-comment row in the input stream or as a separate
+        list of column values under the `hdr_vals` kwarg. Lines starting with a '#'
+        are considered comments and discarded.
+
+        Rows of table data (header or otherwise) should use the given table
+        definitions delimiter to separate entries. Extra whitespace around entries
+        is stripped whenever possible.
+
+        Keyword Arguments:
+            file_in (open file stream): A file stream from which to read
+                the table data for encoding.
+
+            text_in (list): A list of row strings to use when encoding
+                the table data.
+
+            hdr_vals (list): An optional list of values to use when encoding
+                the header row. If values are passed here then no header values
+                should be present in the input data source. Overlap here will
+                result in unexpected behavior.
+
+        """
+        # Setup the iterator from which to read input data. Input data is
+        # passed as either an open file stream or a list of table "lines".
+        in_iter = None
+        if "file_in" in kwargs:
+            in_iter = kwargs["file_in"]
+        elif "text_in" in kwargs:
+            in_iter = kwargs["text_in"]
+
+        if in_iter is None:
+            msg = "No valid input source provided to table.encode."
+            log.error(msg)
+            raise TypeError(msg)
+
+        in_iter = iter(in_iter)
+        encoded = bytearray()
+
+        # Skip header-encoding for tables without a header definition
+        if len(self.fswheaderdefns) > 0:
+            # Read / locate header values either from kwargs or by reading the input file.
+            # hdr_vals = [i.strip() for i in kwargs['hdr_vals']] if 'hdr_vals' in kwargs else None
+            hdr_vals = kwargs.get("hdr_vals", None)
+
+            # If no header values are provided we read them from the input stream
+            while hdr_vals is None:
+                r = next(in_iter).strip()
+                if r.startswith("#") or r == "":
+                    continue
+
+                hdr_vals = r.split(self.delimiter)
+
+            # Sanity check that we at least got the correct number of header values
+            if len(hdr_vals) != len(self.fswheaderdefns):
+                msg = (
+                    "Incorrect number of header fields provided. Received "
+                    f"{len(hdr_vals)} instead of expected {len(self.fswheaderdefns)}"
+                )
+                log.error(msg)
+                raise ValueError(msg)
+
+            # Encode the header values
+            for defn, val in zip(self.fswheaderdefns, hdr_vals):
+                encoded += defn.encode(val)
+
+        # Encode each row of the table
+        for row in in_iter:
+            row = row.strip()
+            if row.startswith("#") or row == "":
+                continue
+
+            elems = [i.strip() for i in row.split(self.delimiter)]
+            for defn, val in zip(self.coldefns, elems):
+                encoded += defn.encode(val)
+
+        return encoded
+
+    def _decode_table_row(self, in_stream, raw=False):
+        """Decode a table row from an input stream
+
+        Attempt to read and decode a row of data from an input stream. If this
+        runs out of a data on a "seemingly invalid column" (e.g., not the first)
+        then raise an exception. Similarly, if any column decodes into None, this
+        will raise an exception.
+
+        Arguments:
+            in_stream: A file-like object from which to read data.
+
+            raw: Boolean indicating whether raw or enumerated values should be returned.
+                (default: False which returns enumerated values if possible)
+
+        Raises:
+            ValueError: When an EOFError is encountered while decoding any column
+                but the first or if any column decode returns None.
+        """
+
+        row = []
+        for i, col in enumerate(self.coldefns):
+            try:
+                row.append(col.decode(in_stream, raw=raw))
+            except EOFError:
+                if i == 0:
+                    log.debug("Table processing stopped when EOF reached")
+                    return None
                 else:
-                   nobytes = 1
+                    msg = (
+                        "Malformed table data provided for decoding. End of file "
+                        f"reached when processing table column {i} {col.name}"
+                    )
+                    log.info(msg)
+                    raise ValueError(msg)
 
-                strval = ""
-                if str(colpk) == "PrimitiveType('U8')" and nobytes>1:
-                    strval = ""
-                    for i in range(nobytes):
-                        value = colpk.decode(stream.read(1))
-                        strval += str(colfmt % value)
-                        #print(colfmt % value)
-                else:
-                    value = colpk.decode(stream.read(nobytes))
-                if (str(colpk) != "PrimitiveType('U8')") or (str(colpk) == "PrimitiveType('U8')" and nobytes == 1):
-                    strval = str(colfmt % value)
-                if name == "NUMBER_ENTRIES":
-                    noentries = strval
-                if self.name != "keep_out_zones" and self.name != "line_of_sight":
-                    # Append the value to table row
-                    out += name+': %s\n'     % strval
+            if row[-1] is None:
+                msg = f"Failed to decode table column {col.name}"
+                log.error(msg)
+                raise ValueError(msg)
 
-            if verbose is not None and verbose != 0:
-               print()
-               print(out)
-               #fswtab_f.write(out)
-
-            size = size - 32
-
-        out = ""
-
-        if self.name.startswith("log_"):
-            norows = self.rows
-        else:
-            rowbytes = 0
-            items = None
-            for coldef in enumerate(self.coldefns):
-                fswcoldefn = coldef[1]
-                items = fswcoldefn.items
-                if isinstance(fswcoldefn.bytes,list):
-                   nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
-                else:
-                   nobytes = 1
-                rowbytes = rowbytes + nobytes
-            if items is not None:
-                rowbytes = rowbytes * items
-                norows = size / rowbytes
-            else:
-                norows = int(noentries)
-
-        if norows == 0:
-           idx = 1
-           for i in range(size):
-               byte = stream.read(1)
-               value = binascii.hexlify(byte)
-               fswtab_f.write(value)
-               if (idx%2) == 0:
-                   fswtab_f.write(" ")
-               if (idx%16) == 0:
-                   fswtab_f.write("\n")
-               idx += 1
-           return
-
-        for i in range(int(norows)):
-           condition = None
-           #this is how to step into table definitions
-           for coldef in enumerate(self.coldefns):
-               fswcoldefn = coldef[1]
-               name = fswcoldefn.name
-               colfmt = str(fswcoldefn.format)
-               colpk = dtype.get(fswcoldefn.type)
-               coltype = fswcoldefn.type
-               if isinstance(fswcoldefn.bytes,list):
-                  nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
-               else:
-                  nobytes = 1
-               units = fswcoldefn.units
-               enum = fswcoldefn.enum
-
-               items = fswcoldefn.items
-               if items is not None:
-                   for i in range(items):
-                      value = colpk.decode(stream.read(nobytes))
-                      strval = str(colfmt % value)
-                      out += strval + self.delimiter
-               else:
-                   strval = ""
-                   if str(colpk) == "PrimitiveType('U8')" and nobytes>1:
-                       strval = ""
-                       for i in range(nobytes):
-                           value = colpk.decode(stream.read(1))
-                           if name == "RESERVED":
-                               continue
-                           strval += str(colfmt % value)
-                   else:
-                       value = colpk.decode(stream.read(nobytes))
-
-                   if enum is not None:
-                      if enum is not None:
-                          for enumkey in enumerate(enum.keys()):
-                              if enumkey[1] == value:
-                                 strval = str(enum[enumkey[1]])
-                   else:
-                      if units != 'none':
-                          strval = str(colfmt % value) + " " + units
-                      else:
-                          if (str(colpk) != "PrimitiveType('U8')") or (str(colpk) == "PrimitiveType('U8')" and nobytes == 1):
-                              strval = str(colfmt % value)
-                          if self.name == "response" and "CONSTANT" in name and condition > 6:
-                              strval = str('%d' % value)
-
-                   if self.name == "response" and name == "CONDITION_TYPE":
-                       condition = value
-
-                   # Append the value to table row
-                   if name == "RESERVED":
-                       continue
-                   out += strval + self.delimiter
-
-           out = out[:-1] + "\n"
-        #print
-        #print out
-        fswtab_f.write(out)
-
-        # Once we are done appending all the columns to the row
-        # strip off last comma and append a \r
-        # Note: Since it is Access, \n alone does not work
-        return
-
-    def convertValue(self, strval):
-        try:
-            return int(strval)
-        except ValueError:
-            return float(strval)
-
-    def toBinary(self, tabfile, stream, fswbin_f, verbose, version):
-        #print "self.name: "+self.name
-        #print "stream name: "+stream.name
-
-        size = os.path.getsize(stream.name)
-        #print "stream len: " + str(size)
-
-        #print "self.size: " + str(self.size)
-
-        no_lines = 0
-        for line in stream:
-            no_lines += 1
-        stream.seek(0)
-
-        fsw_header = bytearray(32)
-        # sha1 = hash_file(tabfile)
-        sha1 = 0
-
-        # Write magic number
-        fswbin_f.write( struct.pack('>H', self.MagicNumber             )  )
-
-        # Write upload type
-        fswbin_f.write( struct.pack('B', self.uptype         )  )
-
-        # Write version
-        fswbin_f.write( struct.pack('B', int(version,16)&255 )  )
-
-        # Write number of lines
-        if self.name == "memory":
-            fswbin_f.write( struct.pack('>H', 0           )  )
-        else:
-            fswbin_f.write( struct.pack('>H', no_lines           )  )
-
-        # Write ID (0)
-        fswbin_f.write( struct.pack('>H', 0) )
-
-        # # Write CRC placeholder
-        fswbin_f.write( struct.pack('>I', 0) )
-
-        # SHA as 0
-        pad = struct.pack('B', 0)
-        for n in range(20):
-          fswbin_f.write(pad)
-
-        # data = bytearray(20)
-        # i = 0
-        # tmpbytes = list(sha1)
-        # for x in range(0, len(sha1)/2):
-        #     tmp = ((int(tmpbytes[x],16)&255)<<4) + (int(tmpbytes[x+1],16)&255)
-        #     #print "tmp: "+ str(tmp)
-        #     data[i] = tmp&0xFF
-        #     i += 1
-
-        # fswbin_f.write(data)
-
-        for line in stream:
-            #print "line: "+line
-            idx = 0
-            line = line.replace("\n","")
-            allcols = line.split(self.delimiter)
-            if self.name == "memory":
-                for val in allcols:
-                    if val != "":
-                        #print "val: "+val
-                        data = bytearray(2)
-                        tmpbytes = list(val)
-                        data[0] = ((int(tmpbytes[0],16)&0xF)<<4) + (int(tmpbytes[1],16)&0xF)
-                        data[1] = ((int(tmpbytes[2],16)&0xF)<<4) + (int(tmpbytes[3],16)&0xF)
-                        #print "tmp byte1: "+ str(int(tmpbytes[0],16)&0xF)
-                        #print "tmp byte2: "+ str(int(tmpbytes[1],16)&0xF)
-                        #print "tmp byte3: "+ str(int(tmpbytes[2],16)&0xF)
-                        #print "tmp byte4: "+ str(int(tmpbytes[3],16)&0xF)
-                        fswbin_f.write(data)
-            else:
-                idx = 0
-                #this is how to step into table definitions
-                for coldef in enumerate(self.coldefns):
-                    # print "column definition: " + str(coldef[1])
-                    fswcoldefn = coldef[1]
-                    name = fswcoldefn.name
-                    #print "name: " + name
-                    colpk = dtype.get(fswcoldefn.type)
-                    #print "packing: " + str(colpk)
-                    units = fswcoldefn.units
-                    #print "units: " + units
-                    enum = fswcoldefn.enum
-
-                    if isinstance(fswcoldefn.bytes,list):
-                       nobytes = fswcoldefn.bytes[1] - fswcoldefn.bytes[0] + 1
-                    else:
-                       nobytes = 1
-                    # print "bytes: " + str(fswcoldefn.bytes)
-                    # print "nobytes: " + str(nobytes)
-                    if name == 'RESERVED':
-                        #add reserved bytes
-                        fswbin_f.write(colpk.encode(0))
-
-                        if coldef[0] != len(self.coldefns)-1:
-                          continue
-                        else:
-                          break
-
-                    items = fswcoldefn.items
-                    if items is not None:
-                        #print "items: " + str(items)
-                        for i in range(items):
-                           val = allcols[i]
-                           #print "item col val: "+str(val)
-                           if units != 'none':
-                               val = val.strip()
-                               val = val.split(" ")[0]
-                           else:
-                               val = val.replace(" ","")
-                           #print "item col val: "+str(val)
-                           fswbin_f.write(colpk.encode(self.convertValue(val)))
-                    else:
-                        val = allcols[idx]
-                        val = val.replace("\n","")
-                        #print "else col val 1: "+str(val)
-                        if enum is not None:
-                           if enum is not None:
-                               for enumkey in enumerate(enum.keys()):
-                                   enumval = enum[enumkey[1]]
-                                   #print "enumkey: " + str(enumkey[1]) + ", enumval: " + str(enum[enumkey[1]])
-                                   if enumval == val:
-                                      val = str(enumkey[1])
-                               #print "XXXX colpk.type: "+colpk.format
-                               fswbin_f.write(colpk.encode(self.convertValue(val)))
-                        else:
-                           #print "XXXX colpk.type: "+colpk.format
-                           #print "fswcoldefn.bytes: "+str(fswcoldefn.bytes)
-                           #print "xxxx val: "+str(val)
-                           #print "units: "+str(units)
-                           if units != 'none':
-                               val = val.strip()
-                               val = val.split(" ")[0]
-                               #print "else col val 2a: "+str(val)
-                               fswbin_f.write(colpk.encode(self.convertValue(val)))
-                               #fswbin_f.write(colpk.encode(float(val)))
-                           elif str(colpk) == "PrimitiveType('U8')" and nobytes>1:
-                               strval = ""
-                               for c in list(val):
-                                   #print "xxx c: "+str(c)
-                                   tmp = (int(c,16))&255
-                                   #print "tmp: "+str(tmp)
-                                   fswbin_f.write(colpk.encode(tmp))
-                           else:
-                               val = val.replace(" ","")
-                               #print "else col val 2b: "+str(val)
-                               fswbin_f.write(colpk.encode(self.convertValue(val)))
-                               #fswbin_f.write(colpk.encode(float(val)))
-                    idx += 1
-
-        written = fswbin_f.tell()
-        #print "written: "+str(written)
-
-        # print str(self.size) + ", " + str(written)
-        if self.size > written:
-            padding = bytearray(self.size - (written))
-            fswbin_f.write(padding)
-
-        #Now calculate and update CRC field in the FSW header
-        fswbin_f.close()
-        fname = fswbin_f.name
-        crc32 = util.crc32File(fname, 0)
-        fswbin_f = open(fname, 'r+b')
-        fswbin_f.seek(28)
-        crcbuf = bytearray(4)
-        crcbuf[0:4]  = struct.pack('>L',crc32)
-        fswbin_f.write(crcbuf)
-
-        #version = "0"
-        if verbose is not None and verbose != 0:
-            log.info("CRC: %x" % crc32)
-            print(f'MAGIC_NUMBER: {self.MagicNumber}')
-            print(f'UPLOAD_TYPE: {str(self.uptype)}')
-            print (f'VERSION: {str(version)}')
-            print (f'NUMBER_ENTRIES: {str(no_lines)}')
-            # print "SHA-1: "+sha1
-
-        #print "fname: "+fname+", crc32: "+str(crc32)
-
-        # Once we are done appending all the columns to the row
-        # strip off last comma and append a \r
-        # Note: Since it is Access, \n alone does not work
-        return
+        return row
 
 
-class FSWTabDict (dict):
+class FSWTabDict(dict):
     """Table dictionary object
 
     Table Dictionaries provide a Python dictionary (i.e. hashtable)
     interface mapping Tables names to Column Definitions.
     """
-    def __init__ (self, *args, **kwargs):
-        """Creates a new Command Dictionary from the given command dictionary
-        filename.
-        """
+
+    def __init__(self, *args, **kwargs):
+        """Creates a new Table Dictionary from the given dictionary filename."""
         self.filename = None
-        self.colnames  = { }
+        self.colnames = {}
 
         if len(args) == 1 and len(kwargs) == 0 and type(args[0]) == str:
             dict.__init__(self)
@@ -557,22 +402,22 @@ class FSWTabDict (dict):
         else:
             dict.__init__(self, *args, **kwargs)
 
-    def add (self, defn):
-        """Adds the given Command Definition to this Command Dictionary."""
-        self[defn.name]          = defn
+    def add(self, defn):
+        """Adds the given Table Definition to this Table Dictionary."""
+        self[defn.name] = defn
         self.colnames[defn.name] = defn
 
-    def create (self, name, *args):
-        """Creates a new command with the given arguments."""
-        tab  = None
+    def create(self, name, *args):
+        """Creates a new table with the given arguments."""
+        tab = None
         defn = self.get(name, None)
         if defn:
             tab = FSWTab(defn, *args)
         return tab
 
-    def load (self, filename):
-        """Loads Command Definitions from the given YAML file into this
-        Command Dictionary.
+    def load(self, filename):
+        """Loads Table Definitions from the given YAML file into this
+        Table Dictionary.
         """
         if self.filename is None:
             self.filename = filename
@@ -584,20 +429,21 @@ class FSWTabDict (dict):
         stream.close()
 
 
-class FSWTabDictCache (object):
-    def __init__ (self, filename=None):
+class FSWTabDictCache(object):
+    def __init__(self, filename=None):
         if filename is None:
-            filename = ait.config.get('table.filename')
+            filename = ait.config.get("table.filename")
 
         self.filename = filename
-        self.pcklname = os.path.splitext(filename)[0] + '.pkl'
-        self.fswtabdict  = None
+        self.pcklname = os.path.splitext(filename)[0] + ".pkl"
+        self.fswtabdict = None
 
-    def dirty (self):
-        return (not os.path.exists(self.pcklname) or
-            os.path.getmtime(self.filename) > os.path.getmtime(self.pcklname))
+    def dirty(self):
+        return not os.path.exists(self.pcklname) or os.path.getmtime(
+            self.filename
+        ) > os.path.getmtime(self.pcklname)
 
-    def load (self):
+    def load(self):
         if self.fswtabdict is None:
             if self.dirty():
                 self.fswtabdict = FSWTabDict(self.filename)
@@ -608,7 +454,7 @@ class FSWTabDictCache (object):
 
         return self.fswtabdict
 
-    def update (self):
+    def update(self):
         msg = "Saving updates from more recent '%s' to '%s'"
         log.info(msg, self.filename, self.pcklname)
         with open(self.pcklname, "wb") as output:
@@ -618,108 +464,66 @@ class FSWTabDictCache (object):
 _DefaultFSWTabDictCache = FSWTabDictCache()
 
 
-def getDefaultFSWTabDict ():
+def getDefaultFSWTabDict():  # noqa: N802
     fswtabdict = None
     try:
         filename = _DefaultFSWTabDictCache.filename
-        fswtabdict  = _DefaultFSWTabDictCache.load()
+        fswtabdict = _DefaultFSWTabDictCache.load()
     except IOError as e:
-        msg = "Could not load default command dictionary '%s': %s'"
+        msg = "Could not load default table dictionary '%s': %s'"
         log.error(msg, filename, str(e))
 
     return fswtabdict
 
 
-def YAMLCtor_FSWColDefn (loader, node):
-    fields          = loader.construct_mapping(node, deep=True)
+def getDefaultDict():  # noqa: N802
+    return getDefaultFSWTabDict()
+
+
+def YAMLCtor_FSWColDefn(loader, node):  # noqa: N802
+    fields = loader.construct_mapping(node, deep=True)
     return FSWColDefn(**fields)
 
 
-def YAMLCtor_FSWTabDefn (loader, node):
+def YAMLCtor_FSWTabDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     fields['fswheaderdefns'] = fields.pop('header', None)
     fields['coldefns'] = fields.pop('columns', None)
     return FSWTabDefn(**fields)
 
 
-def writeToText (fswtabdict, tabletype, binfile, verbose, version, outpath=None, messages=None):
+def encode_to_file(tbl_type, in_path, out_path):
+    tbldict = getDefaultDict()
+    try:
+        defn = tbldict[tbl_type]
+    except KeyError:
+        msg = f"Table type {tbl_type} not found in table dictionary."
+        log.error(f"table.encode_to_file failed: {msg}")
+        raise ValueError(msg)
 
-    verStr = '%02d' % version
+    with open(in_path, "r") as in_file:
+        encoded = defn.encode(file_in=in_file)
 
-    if not outpath:
-      outpath = os.path.dirname(os.path.abspath(binfile))
-    elif not os.path.isdir(outpath):
-      os.makedirs(outpath)
-
-    #get the table definition
-    if tabletype != "log":
-        fswtabdefn = fswtabdict.get(tabletype)
-        #print("TABLE type: " + str(fswtabdefn))
-        #print("TABLE version: " + str(version))
-        #print("TABLE definition: "+str(fswtabdefn))
-
-        # Get the files ready for writing
-        fswtab_f = open(outpath + '/' + tabletype + '_table' + verStr + '.txt', 'w')
-        stream = open(binfile, 'rb')
-
-        #pass in stream, fswtab_f
-        #print "version: "+str(version)
-        fswtabdefn.toText(stream,fswtab_f,verbose,version)
-        fswtab_f.close()
-    else:
-        fswtabdefn = fswtabdict.get("log_main")
-        #print "TABLE definition: "+str(fswtabdefn)
-
-        fswtab_f = open(outpath + '/log_main_table' + verStr + '.txt', 'w')
-        stream = open(binfile, 'rb')
-        fswtabdefn.toText(stream,fswtab_f,verbose)
-        fswtab_f.close()
-
-        fswtabdefn = fswtabdict.get("log_isr")
-        #print "TABLE definition: "+str(fswtabdefn)
-        fswtab_f = open(outpath + '/log_isr_table' + verStr + '.txt', 'w')
-        fswtabdefn.toText(stream,fswtab_f,verbose)
-        fswtab_f.close()
-
-        fswtabdefn = fswtabdict.get("log_evr")
-        #print "TABLE definition: "+str(fswtabdefn)
-        fswtab_f = open(outpath + '/log_evr_table' + verStr + '.txt', 'w')
-        fswtabdefn.toText(stream,fswtab_f,verbose)
-        fswtab_f.close()
-
-        fswtabdefn = fswtabdict.get("log_assert")
-        #print "TABLE definition: "+str(fswtabdefn)
-        fswtab_f = open(outpath + '/log_assert_table' + verStr + '.txt', 'w')
-        fswtabdefn.toText(stream,fswtab_f,verbose,version)
-        fswtab_f.close()
+    with open(out_path, "wb") as out_file:
+        out_file.write(encoded)
 
 
-    #close input file
-    stream.close()
+def decode_to_file(tbl_type, in_path, out_path):
+    tbldict = getDefaultDict()
+    try:
+        defn = tbldict[tbl_type]
+    except KeyError:
+        msg = f"Table type {tbl_type} not found in table dictionary."
+        log.error(f"table.encode_to_file failed: {msg}")
+        raise ValueError(msg)
+
+    with open(in_path, "rb") as in_file:
+        decoded = defn.decode(file_in=in_file)
+
+    with open(out_path, "w") as out_file:
+        for line in decoded:
+            print(defn.delimiter.join(map(str, line)), file=out_file)
 
 
-def writeToBinary (fswtabdict, tabletype, tabfile, verbose, outbin=None, version=0, binfilemessages=None):
-
-    #get the table definition
-    fswtabdefn = fswtabdict.get(tabletype)
-    #print "TABLE definition: "+str(fswtabdefn)
-
-    if not outbin:
-      # Get the files ready for writing
-      outbin = os.path.join(tabletype + '_table' + str(version) + '.bin')
-
-    log.info("Generating binary: %s" % outbin)
-
-    fswbin_f = open(outbin, 'wb')
-    #print "output bin file: "+outpath + '/' + tabletype + '_table' + str(version) + '.bin'
-    stream = open(tabfile, 'r')
-
-    #pass in stream, fswtab_f
-    fswtabdefn.toBinary(tabfile, stream, fswbin_f, verbose, str(version))
-
-    #close input and output files
-    stream.close()
-    fswbin_f.close()
-
-yaml.add_constructor('!FSWTable' , YAMLCtor_FSWTabDefn)
-yaml.add_constructor('!FSWColumn', YAMLCtor_FSWColDefn)
+yaml.add_constructor("!FSWTable", YAMLCtor_FSWTabDefn)
+yaml.add_constructor("!FSWColumn", YAMLCtor_FSWColDefn)

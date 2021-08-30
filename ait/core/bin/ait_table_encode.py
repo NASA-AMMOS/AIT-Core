@@ -1,9 +1,6 @@
 #!/usr/bin/env python
-
-# Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
-# Bespoke Link to Instruments and Small Satellites (BLISS)
 #
-# Copyright 2016, by the California Institute of Technology. ALL RIGHTS
+# Copyright 2021, by the California Institute of Technology. ALL RIGHTS
 # RESERVED. United States Government Sponsorship acknowledged. Any
 # commercial use must be negotiated with the Office of Technology Transfer
 # at the California Institute of Technology.
@@ -13,62 +10,68 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-'''
-usage: ait-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/ait-workspace/output/targets_table.txt
-
-Encodes the given FSW text table to binary.
-
-Examples:
-
-  $ ait-table-encode --fswtabdict config/table.yaml --tabletype targets --tabfile /Users/ays/Documents/workspace/ait-workspace/output/targets_table.txt
-'''
-
+"""Encode AIT FSW tables for upload """
 import argparse
+import os.path
+import sys
+import zlib
 
-from ait.core import log, table
+from ait.core import dtype
+from ait.core import log
+from ait.core import table
+
 
 def main():
     log.begin()
 
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    # Add optional command line arguments
-    parser.add_argument('--fswtabdict', default=None, required=True)
-    parser.add_argument('--tabfile', default=None, required=True)
-    parser.add_argument('--binfile', default=None, required=True)
-    parser.add_argument('--tabletype', default=None, required=True)
-    parser.add_argument('--verbose', action='store_true', default=False)
+    parser.add_argument(
+        "table_type",
+        choices=list(table.getDefaultDict().keys()),
+        help=(
+            f"The type of table being encoded. One of {list(table.getDefaultDict().keys())}"
+        ),
+    )
 
-    # Get command line arguments
+    parser.add_argument("in_file", help="Input file path")
+    parser.add_argument("--out_file", help="Output file path")
+
     args = parser.parse_args()
-    dictpath      = args.fswtabdict
-    tabfile       = args.tabfile
-    tabletype     = args.tabletype
-    verbose       = args.verbose
 
-    # If arguments include fswtabledict, try to load it
-    if dictpath is not None:
-        dictCache = table.FSWTabDictCache(filename=dictpath)
+    fswtabdict = table.getDefaultFSWTabDict()
+    tbldefn = fswtabdict[args.table_type]
 
-        try:
-            filename = dictCache.filename
-            fswtabdict = table.FSWTabDict(filename)
-        except IOError as e:
-            msg = 'Could not load table dictionary "%s": %s'
-            log.error(msg, filename, str(e))
-    else: # Grab default table dictionary
-        fswtabdict  = table.getDefaultFSWTabDict()
+    out_path = (
+        args.out_file
+        if args.out_file is not None
+        else f"{os.path.splitext(args.in_file)[0]}.bin"
+    )
 
-    # Check if fswtabddict exists, if so continue processing
-    if fswtabdict is not None:
-        # Write out the table file using the command dictionary
-        table.writeToBinary(fswtabdict, tabletype, tabfile, verbose, outbin=args.binfile)
+    with open(args.in_file, "r") as in_file:
+        encoded = tbldefn.encode(file_in=in_file)
+
+    # Verify that the encoded table is the proper size. If it's too small we need
+    # to pad it out. If it's too big then the user needs to remove some of the
+    # entires.
+    enc_len = len(encoded)
+    if enc_len < tbldefn.size:
+        encoded += bytearray(tbldefn.size - enc_len)
+    elif enc_len > tbldefn.size:
+        log.error(
+            f"Encoded {tbldefn.name} table with {num_entries} entires is too large. "
+            f"Expected size: {tbldefn.size} bytes. Encoded size: {enc_len} bytes."
+            "Please remove some entires from the table."
+        )
+        sys.exit(1)
+
+    with open(out_path, "wb") as out_file:
+        out_file.write(encoded)
 
     log.end()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

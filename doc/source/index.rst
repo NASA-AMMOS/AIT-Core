@@ -23,7 +23,7 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    limits_intro
    Database API <databases>
    Extensions <extensions>
-   Command & Data Handling Tables <c_and_dh_intro>
+   Onboard Tables <c_and_dh_intro>
    bsc_intro
    plugin_openmct
 

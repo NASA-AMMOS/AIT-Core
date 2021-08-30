@@ -27,7 +27,7 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["fswcolumn", "name", "format", "type"],
+                    "required": ["fswcolumn", "name", "type"],
                     "properties": {
                         "fswcolumn": {
                             "type": "string"
@@ -38,32 +38,12 @@
                         "desc": {
                             "type": "string"
                         },
-                        "format": {
-                            "type": "string"
-                        },
-                        "units": {
-                            "type": "string"
-                        },
                         "type": {
                             "type": "string"
                         },
-                        "bytes": {
-                            "anyOf": [
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "string",
-                                    "enum": ["@prev"]
-
-                                },
-                                {
-                                    "type": "array",
-                                    "maxItems": 2,
-                                    "items": { "type": "integer" }
-                                }
-                              ],
-                            "description": "TODO: Need to update the min/max when NOT a list"
+                        "enum": {
+                            "type": "object",
+                            "description": "TODO: Does not check valid enumeration"
                         }
                     }
                 }
@@ -73,7 +53,7 @@
                 "items": {
                     "type": "object",
                     "additionalProperties": false,
-                    "required": ["fswcolumn", "name", "format", "type"],
+                    "required": ["fswcolumn", "name", "type"],
                     "properties": {
                         "fswcolumn": {
                             "type": "string"
@@ -84,32 +64,8 @@
                         "desc": {
                             "type": "string"
                         },
-                        "format": {
-                            "type": "string"
-                        },
-                        "units": {
-                            "type": "string"
-                        },
                         "type": {
                             "type": "string"
-                        },
-                        "bytes": {
-                            "anyOf": [
-                                {
-                                    "type": "integer"
-                                },
-                                {
-                                    "type": "string",
-                                    "enum": ["@prev"]
-
-                                },
-                                {
-                                    "type": "array",
-                                    "maxItems": 2,
-                                    "items": { "type": "integer" }
-                                }
-                              ],
-                            "description": "TODO: Need to update the min/max when NOT a list"
                         },
                         "enum": {
                             "type": "object",

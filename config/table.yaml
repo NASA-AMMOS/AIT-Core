@@ -4,59 +4,41 @@
 # datatype, units, and the maximum length for that column.
 
 - !FSWTable
-  name: response
+  name: TestTable
   delimiter: ","
   uptype: 1
-  size: 8224
+  size: 18
   header:
     - !FSWColumn
-      name: HEADER_COLUMN_ONE
-      desc: The first column in our header
-      format: "%x"
-      units: none
-      type:  MSB_U16
-      bytes: [0,1]
+      name: uptype
+      desc: This table's `uptype` field for use when decoding
+      type: U8
 
     - !FSWColumn
       name: HEADER_COLUMN_TWO
       desc: The second column in our header
-      format: "%u"
-      units: none
       type:  U8
-      bytes: 2
 
     - !FSWColumn
       name: HEADER_COLUMN_THREE
       desc: The third column in our header
-      format: "%u"
-      units: none
       type:  U8
-      bytes: 3
 
   columns:
     - !FSWColumn
       name: COLUMN_ONE
       desc: First FSW Table Column
-      format: "%u"
-      units: none
       type:  MSB_U16
-      bytes: [0,1]
 
     - !FSWColumn
       name: COLUMN_TWO
       desc: Second FSW Table Column
-      format: "%u"
-      units: none
       type:  MSB_U16
-      bytes: [2,3]
 
     - !FSWColumn
       name: COLUMN_THREE
       desc: Third FSW Table Column
-      format: "%u"
-      units: none
       type:  U8
-      bytes: 4
       enum:
         0: TEST_ENUM_0
         1: TEST_ENUM_1
