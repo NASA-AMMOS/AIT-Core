@@ -1,7 +1,11 @@
+import datetime as dt
+import inspect
 import os.path
 import tempfile
 import unittest
 
+import ait.core.dmc as dmc
+import ait.core.dtype as dtype
 from ait.core import table
 
 test_table = """
@@ -368,3 +372,91 @@ class TestBadEnumHandling(unittest.TestCase):
         with self.assertLogs('ait', level="ERROR") as cm:
             tabdict = table.FSWTabDict(table_defn_path)
             assert len(cm.output) == 1
+
+class TestTableTimeHandling(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.table_defn_path = os.path.join(
+            tempfile.gettempdir(), "test_time_table.yaml"
+        )
+
+        with open(cls.table_defn_path, "w") as infile:
+            infile.write(
+                inspect.cleandoc(
+                    """
+                - !FSWTable
+                  name: test_type
+                  delimiter: ","
+                  header:
+                    - !FSWColumn
+                      name: MAGIC_NUM
+                      desc: The first column in our header
+                      type:  U8
+                      bytes: 0
+                    - !FSWColumn
+                      name: UPTYPE
+                      desc: The second column in our header
+                      type:  U8
+                      bytes: 1
+                    - !FSWColumn
+                      name: VERSION
+                      desc: The third column in our header
+                      type:  U8
+                      bytes: 2
+                  columns:
+                    - !FSWColumn
+                      name: COLUMN_ONE
+                      desc: First FSW Table Column
+                      type:  TIME64
+                      bytes: [0,7]
+                    - !FSWColumn
+                      name: COLUMN_TWO
+                      desc: Second FSW Table Column
+                      type:  TIME40
+                      bytes: [8,12]
+                    - !FSWColumn
+                      name: COLUMN_THREE
+                      desc: Third FSW Table Column
+                      type:  TIME32
+                      bytes: [13,16]
+                """
+                )
+            )
+
+        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+
+    def test_end_to_end_time_handling(self):
+        defn = self.tabdict["test_type"]
+
+        seq_time = dt.datetime.utcnow() + dt.timedelta(days=1)
+        seq_time_str = seq_time.strftime(dmc.RFC3339_Format)
+
+        table_data = ["1,2,3", f"{seq_time_str}, {seq_time_str}, {seq_time_str}"]
+
+        encoded = defn.encode(text_in=table_data)
+        decoded = defn.decode(bin_in=encoded)
+
+        # We expect to see some loss of precision with Time40 and Time32.
+        # Verify that the table handling is doing what we expect here.
+        assert decoded[1][0] == seq_time_str
+        t40 = dtype.Time40Type()
+        assert decoded[1][1] == t40.decode(t40.encode(seq_time)).strftime(
+            dmc.RFC3339_Format
+        )
+        t32 = dtype.Time32Type()
+        assert decoded[1][2] == t32.decode(t32.encode(seq_time)).strftime(
+            dmc.RFC3339_Format
+        )
+
+        # Now format the datetime with the removal of subseconds. All the time types
+        # should handle this without loss of precision.
+        seq_time = (dt.datetime.utcnow() + dt.timedelta(days=1)).replace(microsecond=0)
+        seq_time_str = seq_time.strftime(dmc.RFC3339_Format)
+        table_data = ["1,2,3", f"{seq_time_str}, {seq_time_str}, {seq_time_str}"]
+
+        encoded = defn.encode(text_in=table_data)
+        decoded = defn.decode(bin_in=encoded)
+
+        assert decoded[1][0] == seq_time_str
+        assert decoded[1][1] == seq_time_str
+        assert decoded[1][2] == seq_time_str

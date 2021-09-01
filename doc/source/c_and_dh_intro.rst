@@ -61,6 +61,7 @@ The default table handling assumes a few things discussed below. It's likely thi
 - An encoded table is always a fixed size. This size (in bytes) is called out in the **size** attribute of a **!FSWTable**. When encoding a table, if the resulting binary blob is less than the **size** specified it is zero padded. If it's larger, it fails. 
 - Text versions of a table are "delimiter separated files" where the **delimiter** attribute of a **!FSWTable** specifies that is.
 - Tables always have a header and a table-type-specific-identifier is always encoded as the first byte. This value is expected to match the **uptype** specified on one of the **!FSWTable** definitions.
+- Supported **types** are any of the :data:`ait.core.dtype.PrimitiveTypes` and the various "Time Types" such as :class:`ait.core.dtype.Time64Type`.
 
 Encoding a row in a table (including the header) is done by encoding a column's value according to the **type** specified for that **!FSWColumn**. Decoding is the inverse, decoding a slice of that table's data according to the **type** specified for that **!FSWColumn**.
 
@@ -74,7 +75,7 @@ Project-specific adaptation focuses around four main elements:
 - :class:`ait.core.table.FSWColDefn` handles encoding / decoding of columns. 
 - The CLI utilities **ait-table-encode** and **ait-table-decode**.
 
-:class:`ait.core.table.FSWColDefn` encoding and decoding are largely wrappers around the Core :mod:`ait.core.dtype` functionality for doing the same. Unless you want to completely change how data types are dealt with in your tables you probably won't need to customize **FSWColDefn**. The CLI utilities **ait-table-[encode|decode]** are both minimal wrappers around calls to :class:`ait.core.table.FSWTabDefn` encode and decode functions. They're mostly boilerplate for handling arguments, checking file paths, etc., and can be easily rewritten to serve your projects use cases.
+:class:`ait.core.table.FSWColDefn` encoding and decoding are largely wrappers around the Core :mod:`ait.core.dtype` functionality for doing the same. Unless you want to completely change how data types are dealt with in your tables you probably won't need to customize **FSWColDefn**. However, if you wish to use CMD16 and EVR16 types in your tables you will need to extend **FSWColDefn**. The CLI utilities **ait-table-[encode|decode]** are both minimal wrappers around calls to :class:`ait.core.table.FSWTabDefn` encode and decode functions. They're mostly boilerplate for handling arguments, checking file paths, etc., and can be easily rewritten to serve your projects use cases.
 
 :class:`ait.core.table.FSWTabDefn` handles the heavy lifting via :func:`ait.core.table.FSWTabDefn.encode` and :func:`ait.core.table.FSWTabDefn.decode`. The interfaces for these functions are generic (taking only **\*\*kwargs**) so users can define the interface in nearly whatever form they'd like. Creating an extension of **FSWTabDefn** and overwriting the encode and decode functions is likely the minimum that your project will need.
 
