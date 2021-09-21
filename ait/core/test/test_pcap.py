@@ -26,7 +26,6 @@ import time
 import tempfile
 
 from unittest import mock
-import nose
 
 from ait.core import dmc, pcap
 
@@ -316,7 +315,3 @@ def testQuery():
 
     os.remove(TmpRes)
     os.remove(TmpFilename)
-
-
-if __name__ == '__main__':
-  nose.main()

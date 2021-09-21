@@ -14,8 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-import nose
-import nose.tools
+import pytest
 
 import ait
 from ait.core import evr

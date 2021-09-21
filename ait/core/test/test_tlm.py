@@ -21,8 +21,7 @@ import os
 import csv
 import struct
 
-import nose
-from nose.tools import *
+import pytest
 
 from ait.core import tlm
 
@@ -89,11 +88,11 @@ class TestFieldDefinition(object):
         '      type: MSB_U16\n'
     )
 
-    def setUp(self):
+    def setup_class(self):
         with open(self.test_yaml_test1, 'wt') as out:
             out.write(self.yaml_docs_test1)
 
-    def tearDown(self):
+    def teardown_class(self):
         os.remove(self.test_yaml_test1)
 
     def test_field_definition(self):
@@ -142,11 +141,11 @@ class TestDerivationDefinition(object):
         '      type: MSB_U16\n'
     )
 
-    def setUp(self):
+    def setup_class(self):
         with open(self.test_yaml_deriv1, 'wt') as out:
             out.write(self.yaml_docs_deriv1)
 
-    def tearDown(self):
+    def teardown_class(self):
         os.remove(self.test_yaml_deriv1)
 
     def test_derivation_definition(self):
@@ -182,7 +181,6 @@ class TestDerivationDefinition(object):
 
         os.remove(test_yaml_deriv2)
 
-    @raises(Exception)
     def test_deriv_defn_noeqn(self):
         test_yaml_deriv2 = '/tmp/test_deriv2.yaml'
         yaml_docs_deriv2 = (
@@ -194,9 +192,10 @@ class TestDerivationDefinition(object):
         )
 
         with open(test_yaml_deriv2, 'wb') as out:
-            out.write(yaml_docs_deriv2)
+            out.write(yaml_docs_deriv2.encode('utf-8'))
 
-        tlmdict = tlm.TlmDict(test_yaml_deriv2)
+        with pytest.raises(Exception):
+            tlmdict = tlm.TlmDict(test_yaml_deriv2)
 
         os.remove(test_yaml_deriv2)
 
@@ -224,14 +223,14 @@ class TestTlmConfig(object):
         '  type:  U8\n'
     )
 
-    def setUp(self):
+    def setup_class(self):
         with open(self.test_yaml_inc1, 'wt') as out:
             out.write(self.yaml_docs_inc1)
 
         with open(self.test_yaml_inc2, 'wt') as out:
             out.write(self.yaml_docs_inc2)
 
-    def tearDown(self):
+    def teardown_class(self):
         os.remove(self.test_yaml_inc1)
         os.remove(self.test_yaml_inc2)
 
@@ -523,7 +522,3 @@ def testSingleItemList():
     assert defn.fieldmap['foo'].nbytes == 1
     assert defn.fieldmap['bar'].bytes == 1
     assert defn.fieldmap['baz'].bytes == [9, 10]
-
-
-if __name__ == '__main__':
-    nose.main()

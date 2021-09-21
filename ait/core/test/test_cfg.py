@@ -18,8 +18,6 @@ import sys
 import os
 import time
 
-import nose
-
 from ait.core import cfg
 
 from ait.core.test import TestFile
@@ -291,7 +289,3 @@ def test_AitConfig ():
 
         config.reload()
         assert_AitConfig(config, path, filename)
-
-
-if __name__ == '__main__':
-    nose.main()

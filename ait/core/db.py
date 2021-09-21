@@ -645,6 +645,9 @@ class InfluxDBBackend(GenericBackend):
         query result. If there is no opcode / EVR-code for a particular raw
         value the value is skipped (and thus defaulted to 0).
 
+        TODO: Reevaluate this assumption that missing opcodes / EVR-codes should be
+        left as 0 if a match isn't found in the dictionary.
+
         Arguments
             packet_id (string or PacketDefinition)
                 The "id" for the packet to create. If packet_id is a string it must

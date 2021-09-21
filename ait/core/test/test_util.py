@@ -183,7 +183,3 @@ def test_YAMLError_exception(log_mock):
     e = util.YAMLError(message)
     assert message == e.message
     log_mock.assert_called_with(message)
-
-if __name__ == '__main__':
-    unittest.main(verbosity=2)
-    nose.main()

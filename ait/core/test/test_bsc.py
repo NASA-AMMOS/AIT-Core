@@ -26,8 +26,7 @@ import socket
 import time
 from unittest import mock
 
-import nose
-import nose.tools
+import pytest
 
 from ait.core import bsc, pcap
 
@@ -292,11 +291,8 @@ class TestSocketStreamCapturer(object):
         sl = bsc.SocketStreamCapturer(handler, ['', 9000], 'udp')
 
         # We expect an error when we input a bad time index value
-        nose.tools.assert_raises(
-            ValueError,
-            sl._decode_time_rotation_index,
-            'this is not a valid value'
-        )
+        with pytest.raises(ValueError):
+            sl._decode_time_rotation_index('this is not a valid value')
 
         assert 2 == sl._decode_time_rotation_index('tm_mday')
 

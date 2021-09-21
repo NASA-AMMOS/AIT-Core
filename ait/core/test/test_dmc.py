@@ -21,9 +21,9 @@ import time
 import datetime
 import os
 import os.path
-import nose
-import nose.tools
 from unittest import mock
+
+import pytest
 
 import ait.core
 from ait.core import dmc
@@ -92,14 +92,14 @@ def test_leap_second_attrs():
     assert ls.valid_date == ls._data['valid']
     assert ls.get_current_GPS_offset() == ls.leapseconds[-1][-1]
 
-@nose.tools.raises(ValueError)
 def test_leap_second_by_date_invalid_gps_date():
     ait.config.leapseconds._config['filename'] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"
     )
 
     dmc.LeapSeconds._load_leap_second_data()
-    dmc.LeapSeconds.get_GPS_offset_for_date(datetime.datetime(1980, 1, 1))
+    with pytest.raises(ValueError):
+        dmc.LeapSeconds.get_GPS_offset_for_date(datetime.datetime(1980, 1, 1))
 
 def test_leap_second_by_date():
     ait.config.leapseconds._config['filename'] = os.path.join(
@@ -141,7 +141,6 @@ def test_leap_second_data_load():
     assert dmc.LeapSeconds.leapseconds[0] == (datetime.datetime(1981, 7, 1), 1)
     assert type(dmc.LeapSeconds.valid_date) == type(datetime.datetime.now())
 
-@nose.tools.raises(ValueError)
 @mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)))
 def test_failed_leapsecond_load_and_update():
     ait.config.leapseconds._config['filename'] = os.path.join(
@@ -149,7 +148,8 @@ def test_failed_leapsecond_load_and_update():
     )
 
     dmc.LeapSeconds._data = None
-    dmc.LeapSeconds._load_leap_second_data()
+    with pytest.raises(ValueError):
+        dmc.LeapSeconds._load_leap_second_data()
 
 @mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 200)))
 def test_update_leap_second_data():
@@ -167,7 +167,6 @@ def test_update_leap_second_data():
     assert os.path.isfile(ait.config.leapseconds.filename)
     os.remove(ait.config.leapseconds.filename)
 
-@nose.tools.raises(ValueError)
 @mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)))
 def test_unable_to_pull_leapsecond_data():
     ait.config.leapseconds._config['filename'] = os.path.join(
@@ -175,7 +174,5 @@ def test_unable_to_pull_leapsecond_data():
     )
 
     dmc.LeapSeconds._data = None
-    dmc.LeapSeconds._update_leap_second_data()
-
-if __name__ == '__main__':
-    nose.main()
+    with pytest.raises(ValueError):
+        dmc.LeapSeconds._update_leap_second_data()

@@ -22,7 +22,7 @@ import pkg_resources
 import jsonschema
 import logging
 
-import nose
+import pytest
 from unittest import mock
 
 import ait
@@ -88,10 +88,8 @@ class TestYAMLProcessor(object):
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
-        nose.tools.assert_raises(
-            util.YAMLError,
-            yp.load, self.test_yaml_file
-        )
+        with pytest.raises(util.YAMLError):
+            yp.load(self.test_yaml_file)
 
         os.remove(self.test_yaml_file)
 
@@ -132,10 +130,8 @@ class TestYAMLProcessor(object):
         open(self.test_yaml_file, 'w').close()
 
         yp = val.YAMLProcessor(clean=False)
-        nose.tools.assert_raises(
-            util.YAMLError,
-            yp.process, self.test_yaml_file
-        )
+        with pytest.raises(util.YAMLError):
+            yp.process(self.test_yaml_file)
 
         os.remove(self.test_yaml_file)
 
@@ -149,10 +145,8 @@ class TestYAMLProcessor(object):
         open(self.test_yaml_file, 'w').close()
 
         yp = val.YAMLProcessor(clean=False)
-        nose.tools.assert_raises(
-            IOError,
-            yp.process, '/tmp/thisFileDoesntExistAndWillCauseAnError'
-        )
+        with pytest.raises(IOError):
+            yp.process('/tmp/thisFileDoesntExistAndWillCauseAnError')
 
         os.remove(self.test_yaml_file)
 
@@ -175,10 +169,8 @@ class TestSchemaProcessor(object):
         schemaproc = val.SchemaProcessor()
 
         schema = os.path.join('not', 'a', 'valid', 'path.json')
-        nose.tools.assert_raises(
-            jsonschema.SchemaError,
-            schemaproc.load, schema
-        )
+        with pytest.raises(jsonschema.SchemaError):
+            schemaproc.load(schema)
 
     def test_schema_load_failure_no_json_object(self):
         test_file_path = '/tmp/test.json'
@@ -186,10 +178,8 @@ class TestSchemaProcessor(object):
 
         schemaproc = val.SchemaProcessor()
 
-        nose.tools.assert_raises(
-            jsonschema.SchemaError,
-            schemaproc.load, test_file_path
-        )
+        with pytest.raises(jsonschema.SchemaError):
+            schemaproc.load(test_file_path)
 
         os.remove(test_file_path)
 
@@ -447,7 +437,3 @@ def testLimitsValidation():
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
-
-
-if __name__ == '__main__':
-    nose.main()

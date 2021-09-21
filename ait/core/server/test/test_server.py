@@ -1,15 +1,18 @@
 import os
 import os.path
 
-import nose
-from nose.tools import *
 from unittest import mock, TestCase
+import pytest
 
 import ait.core
 import ait.core.server
 from ait.core import cfg
 from ait.core.server.handlers import *
 from ait.core.server.server import Server
+
+
+def teardown_module():
+    ait.config.reload(filename=os.environ['AIT_CONFIG'])
 
 
 @mock.patch.object(ait.core.log, 'warn')
@@ -229,12 +232,12 @@ class TestStreamCreation(object):
         """ Tests that a ValueError is raised when creating streams
         with a config of None """
         server = Server()
-        with assert_raises_regexp(ValueError,
-                                  'No stream config to create stream from.'):
+        with pytest.raises(ValueError,
+                                  match='No stream config to create stream from.'):
             server._create_inbound_stream(None)
 
-        with assert_raises_regexp(ValueError,
-                                  'No stream config to create stream from.'):
+        with pytest.raises(ValueError,
+                                  match='No stream config to create stream from.'):
             server._create_outbound_stream(None)
 
     def test_no_stream_name(self,
@@ -245,9 +248,9 @@ class TestStreamCreation(object):
         config = {'input': 'some_stream',
                   'handlers': [{'name': 'some-handler'}]}
         server = Server()
-        with assert_raises_regexp(cfg.AitConfigMissing,
-                                  'The parameter %s is missing from config.yaml'
-                                  % 'stream name'):
+        with pytest.raises(cfg.AitConfigMissing,
+                                  match='The parameter stream name is missing from config.yaml'
+                                  ):
             server._get_stream_name(config)
 
     def test_duplicate_stream_name(self,
@@ -263,24 +266,24 @@ class TestStreamCreation(object):
 
         # Testing existing name in plugins
         server.plugins = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError,
-                                  ('Duplicate stream name "{}" encountered.'
+        with pytest.raises(ValueError,
+                                  match=('Duplicate stream name "{}" encountered.'
                                    ' Stream names must be unique.').format('myname')):
             server._get_stream_name(config)
 
         # Testing existing name in inbound_streams
         server.plugins = [ ]
         server.inbound_streams = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError,
-                                  ('Duplicate stream name "{}" encountered.'
+        with pytest.raises(ValueError,
+                                  match=('Duplicate stream name "{}" encountered.'
                                    ' Stream names must be unique.').format('myname')):
             server._get_stream_name(config)
 
         # Testing existing name in outbound_streams
         server.inbound_streams = [ ]
         server.outbound_streams = [FakeStream(name='myname')]
-        with assert_raises_regexp(ValueError,
-                                  ('Duplicate stream name "{}" encountered.'
+        with pytest.raises(ValueError,
+                                  match=('Duplicate stream name "{}" encountered.'
                                    ' Stream names must be unique.').format('myname')):
             server._get_stream_name(config)
 
@@ -296,8 +299,8 @@ class TestStreamCreation(object):
         config = {'name': 'some_stream',
                   'handlers': [{'name': 'some-handler'}]}
 
-        with assert_raises_regexp(cfg.AitConfigMissing,
-                                  'The parameter {} is missing from config.yaml'
+        with pytest.raises(cfg.AitConfigMissing,
+                                  match='The parameter {} is missing from config.yaml'
                                   .format('inbound stream {}\'s input'.format('some_stream'))):
             server._create_inbound_stream(config)
 
@@ -366,8 +369,8 @@ class TestHandlerCreation(object):
         """ Tests that a ValueError is raised when creating a handler with
         a config of None """
         server = Server()
-        with assert_raises_regexp(ValueError,
-                                  'No handler config to create handler from.'):
+        with pytest.raises(ValueError,
+                                  match='No handler config to create handler from.'):
             server._create_handler(None)
 
     def test_handler_creation_with_no_configs(self,
@@ -406,7 +409,7 @@ class TestHandlerCreation(object):
         server = Server()
 
         config = {'name': 'some_nonexistant_handler'}
-        with assert_raises_regexp(ImportError, "No module named '{}'".format(config['name'])):
+        with pytest.raises(ImportError, match="No module named '{}'".format(config['name'])):
             server._create_handler(config)
 
 
@@ -455,8 +458,8 @@ class TestPluginCreation(object):
         server = Server()
 
         config = None
-        with assert_raises_regexp(ValueError,
-                                  'No plugin config to create plugin from.'):
+        with pytest.raises(ValueError,
+                                  match='No plugin config to create plugin from.'):
             server._create_plugin(config)
 
     def test_plugin_missing_name(self,
@@ -466,8 +469,8 @@ class TestPluginCreation(object):
         server = Server()
 
         config = {'inputs': 'some_inputs'}
-        with assert_raises_regexp(cfg.AitConfigMissing,
-                                  'The parameter plugin name is missing from config.yaml'):
+        with pytest.raises(cfg.AitConfigMissing,
+                                  match='The parameter plugin name is missing from config.yaml'):
             server._create_plugin(config)
 
     @mock.patch.object(ait.core.log, 'warn')
@@ -510,8 +513,8 @@ class TestPluginCreation(object):
 
         server.plugins = [FakeStream(name='Plugin')]
         config = {'name': 'Plugin', 'inputs': 'some_inputs'}
-        with assert_raises_regexp(ValueError,
-                                  'Plugin "Plugin" already loaded. Only one plugin of a given name is allowed'):
+        with pytest.raises(ValueError,
+                                  match='Plugin "Plugin" already loaded. Only one plugin of a given name is allowed'):
             server._create_plugin(config)
 
     def test_plugin_doesnt_exist(self,
@@ -521,8 +524,8 @@ class TestPluginCreation(object):
         server = Server()
 
         config = {'name': 'some_nonexistant_plugin', 'inputs': 'some_inputs'}
-        with assert_raises_regexp(ImportError,
-                                  "No module named 'some_nonexistant_plugin'"):
+        with pytest.raises(ImportError,
+                                  match="No module named 'some_nonexistant_plugin'"):
             server._create_plugin(config)
 
 

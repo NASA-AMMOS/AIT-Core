@@ -16,7 +16,6 @@
 
 import gevent.monkey
 gevent.monkey.patch_all()
-import nose
 
 from ait.core import ccsds
 
@@ -69,7 +68,3 @@ def testCcsdsHeaderEncode():
     header.length   = 5678
 
     assert header._data == bytearray([0x18, 0x2A, 0xC4, 0xD2, 0x16, 0x2E])
-
-
-if __name__ == '__main__':
-    nose.main()

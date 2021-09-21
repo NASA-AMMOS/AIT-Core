@@ -18,8 +18,6 @@ import os
 import csv
 import struct
 
-import nose
-
 import ait
 from ait.core import limits, tlm
 

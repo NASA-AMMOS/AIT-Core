@@ -22,8 +22,7 @@ import binascii
 import datetime
 import struct
 
-import nose
-import nose.tools
+import pytest
 
 from ait.core import dtype
 
@@ -89,19 +88,19 @@ def testArrayType():
     assert array.decode(bin456, 2) == 6
     assert array.decode(bin456, slice(1, 3)) == [5, 6]
 
-    with nose.tools.assert_raises(ValueError):
+    with pytest.raises(ValueError):
         array.encode(1, 2)
 
-    with nose.tools.assert_raises(IndexError):
+    with pytest.raises(IndexError):
         array.decode(bin456[1:5])
 
-    with nose.tools.assert_raises(IndexError):
+    with pytest.raises(IndexError):
         array.decode(bin456, 3)
 
-    with nose.tools.assert_raises(TypeError):
+    with pytest.raises(TypeError):
         array.decode(bin456, 'foo')
 
-    with nose.tools.assert_raises(TypeError):
+    with pytest.raises(TypeError):
         dtype.ArrayType('U8', '4')
 
 
@@ -208,10 +207,10 @@ def testget():
 
     assert dtype.get('LSB_U32[10]') == dtype.ArrayType('LSB_U32', 10)
 
-    with nose.tools.assert_raises(ValueError):
+    with pytest.raises(ValueError):
         dtype.get('U8["foo"]')
 
-    with nose.tools.assert_raises(ValueError):
+    with pytest.raises(ValueError):
         dtype.get('U8[-42]')
 
 def testString():

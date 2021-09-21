@@ -1,4 +1,3 @@
-from nose.tools import *
 from unittest import mock
 import zmq.green
 
@@ -7,17 +6,18 @@ from ait.core.server.broker import Broker
 from ait.core.server.stream import ZMQStream
 from ait.core.server.handlers import PacketHandler
 
+import pytest
 
-class TestStream(object):
-    broker = Broker()
-    stream = ZMQStream('some_stream',
-                       ['input_stream'],
-                       [PacketHandler(input_type=int,
-                                      output_type=str,
-                                      packet='CCSDS_HEADER')],
-                       zmq_args={'zmq_context': broker.context})
 
-    def setUp(self):
+class TestStream():
+    def setup_method(self):
+        self.broker = Broker()
+        self.stream = ZMQStream('some_stream',
+                           ['input_stream'],
+                           [PacketHandler(input_type=int,
+                                          output_type=str,
+                                          packet='CCSDS_HEADER')],
+                           zmq_args={'zmq_context': self.broker.context})
         self.stream.handlers = [PacketHandler(input_type=int,
                                               output_type=str,
                                               packet='CCSDS_HEADER')]
@@ -51,9 +51,7 @@ class TestStream(object):
         assert self.stream.valid_workflow() is False
 
     def test_stream_creation_invalid_workflow(self):
-        with assert_raises_regexp(ValueError,
-                                  'Sequential workflow inputs and outputs ' +
-                                  'are not compatible. Workflow is invalid.'):
+        with pytest.raises(ValueError):
             ZMQStream('some_stream',
                            'input_stream',
                            [PacketHandler(input_type=int, output_type=str, packet='CCSDS_HEADER'),

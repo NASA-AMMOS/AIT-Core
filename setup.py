@@ -71,10 +71,10 @@ setup(
             'sphinxcontrib-httpdomain'
         ],
         'tests': [
-            'nose',
             'coverage',
             'mock',
             'pylint'
+            'pytest'
         ],
     },
 

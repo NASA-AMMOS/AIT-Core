@@ -15,12 +15,14 @@
 import datetime as dt
 import inspect
 import os
+import os.path
 import sqlite3
 import unittest
 
-import nose.tools
+import pytest
 from unittest import mock
 
+import ait.core
 import ait.core.cfg as cfg
 import ait.core.db as db
 import ait.core.dmc as dmc
@@ -301,11 +303,8 @@ class TestInfluxDBBackend(unittest.TestCase):
 
         # Test bad packet name exception
         #######################################
-        nose.tools.assert_raises(
-            ValueError,
-            sqlbackend.query_packets,
-            packets=['not_a_valid_packet']
-        )
+        with pytest.raises(ValueError):
+            sqlbackend.query_packets(packets=['not_a_valid_packet'])
 
     def test_query_fail_handling(self):
         # This test is only relevant if we can raise a specific exception. Skip otherwise
@@ -463,8 +462,8 @@ class TestInfluxDBBackend(unittest.TestCase):
             'SampleTime8': 100,
             'SampleTime32': 168496141,
             'SampleTime40': 1113733097.03125,
-            'SampleCmd16': 1,
-            'SampleEvr16': 1
+            'SampleEvr16': 1,
+            'SampleCmd16': 1
         }
 
         pkt = db.InfluxDBBackend.create_packet_from_result(tlmdict['TestPacket'], res)
@@ -725,11 +724,8 @@ class TestSQLiteBackend(unittest.TestCase):
 
         # Test bad packet name exception
         #######################################
-        nose.tools.assert_raises(
-            ValueError,
-            sqlbackend.query_packets,
-            packets=['not_a_valid_packet']
-        )
+        with pytest.raises(ValueError):
+            sqlbackend.query_packets(packets=['not_a_valid_packet'])
 
     def test_query_fail_handling(self):
         sqlbackend = db.SQLiteBackend()

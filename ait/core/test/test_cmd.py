@@ -15,7 +15,6 @@
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import nose
 import struct
 
 from ait.core import cmd, dtype
@@ -140,7 +139,3 @@ def testGetDefaultDict ():
 
     assert cmddict is not None
     assert isinstance(cmddict, cmd.CmdDict)
-
-
-if __name__ == '__main__':
-    nose.main()

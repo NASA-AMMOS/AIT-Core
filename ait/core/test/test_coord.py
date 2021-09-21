@@ -19,7 +19,6 @@ gevent.monkey.patch_all()
 
 import datetime
 import math
-import nose
 
 from ait.core import dmc, coord
 
@@ -51,6 +50,3 @@ def test_eci2geodetic():
     assert float_equality(math.degrees(lla[0]), 6.0558200)
     assert float_equality(math.degrees(lla[1]), -75.1266047)
     assert float_equality(lla[2], 978.4703290)
-
-if __name__ == '__main__':
-  nose.main()
