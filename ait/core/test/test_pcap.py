@@ -15,6 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import datetime
@@ -33,58 +34,58 @@ TmpFile = None
 TmpFilename = None
 
 with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    TmpFile = tempfile.NamedTemporaryFile(mode='wb')
+    warnings.simplefilter("ignore")
+    TmpFile = tempfile.NamedTemporaryFile(mode="wb")
     TmpFilename = TmpFile.name
 
 
-def testPCapGlobalHeader ():
+def testPCapGlobalHeader():
     header = pcap.PCapGlobalHeader()
-    assert header.magic_number  == 0xA1B2C3D4
+    assert header.magic_number == 0xA1B2C3D4
     assert header.version_major == 2
     assert header.version_minor == 4
-    assert header.thiszone      == 0
-    assert header.sigfigs       == 0
-    assert header.snaplen       == 65535
-    assert header.network       == 147
-    assert header.pack()        == header._data
-    assert len(header)          == 24
-    assert header.incomplete()  == False
+    assert header.thiszone == 0
+    assert header.sigfigs == 0
+    assert header.snaplen == 65535
+    assert header.network == 147
+    assert header.pack() == header._data
+    assert len(header) == 24
+    assert header.incomplete() == False
 
 
-def testPCapPacketHeader ():
+def testPCapPacketHeader():
     header = pcap.PCapPacketHeader()
     assert time.time() - header.ts <= 1
     assert header.incl_len == 0
     assert header.orig_len == 0
-    assert header.pack()   == header._data
+    assert header.pack() == header._data
 
 
-def testReadBigEndian ():
-    bytes = b'Hello World!'
-    ts    = int( time.time() )
+def testReadBigEndian():
+    bytes = b"Hello World!"
+    ts = int(time.time())
 
     # Write pcap file
-    with open(TmpFilename, 'wb') as stream:
-        stream.write( struct.pack('>IHHiIII', 0xA1B2C3D4, 2, 4, 0, 0, 65535, 147) )
-        stream.write( struct.pack('>IIII', ts, 0, len(bytes), len(bytes)) )
+    with open(TmpFilename, "wb") as stream:
+        stream.write(struct.pack(">IHHiIII", 0xA1B2C3D4, 2, 4, 0, 0, 65535, 147))
+        stream.write(struct.pack(">IIII", ts, 0, len(bytes), len(bytes)))
         stream.write(bytes)
 
     # Read pcap using API
-    with pcap.open(TmpFilename, 'r') as stream:
-        assert stream.header.magic_number  == 0xA1B2C3D4
+    with pcap.open(TmpFilename, "r") as stream:
+        assert stream.header.magic_number == 0xA1B2C3D4
         assert stream.header.version_major == 2
         assert stream.header.version_minor == 4
-        assert stream.header.thiszone      == 0
-        assert stream.header.sigfigs       == 0
-        assert stream.header.snaplen       == 65535
-        assert stream.header.network       == 147
+        assert stream.header.thiszone == 0
+        assert stream.header.sigfigs == 0
+        assert stream.header.snaplen == 65535
+        assert stream.header.network == 147
 
         header, packet = stream.read()
-        assert header.ts       == ts
+        assert header.ts == ts
         assert header.incl_len == len(bytes)
         assert header.orig_len == len(bytes)
-        assert packet          == bytes
+        assert packet == bytes
 
         header, packet = stream.read()
         assert header.incomplete()
@@ -93,31 +94,31 @@ def testReadBigEndian ():
     os.unlink(TmpFilename)
 
 
-def testReadLittleEndian ():
-    bytes = b'Hello World!'
-    ts    = int( time.time() )
+def testReadLittleEndian():
+    bytes = b"Hello World!"
+    ts = int(time.time())
 
     # Write pcap file
-    with open(TmpFilename, 'wb') as stream:
-        stream.write( struct.pack('<IHHiIII', 0xA1B2C3D4, 2, 4, 0, 0, 65535, 147) )
-        stream.write( struct.pack('<IIII', ts, 0, len(bytes), len(bytes)) )
+    with open(TmpFilename, "wb") as stream:
+        stream.write(struct.pack("<IHHiIII", 0xA1B2C3D4, 2, 4, 0, 0, 65535, 147))
+        stream.write(struct.pack("<IIII", ts, 0, len(bytes), len(bytes)))
         stream.write(bytes)
 
     # Read pcap using API
-    with pcap.open(TmpFilename, 'r') as stream:
-        assert stream.header.magic_number  == 0xA1B2C3D4
+    with pcap.open(TmpFilename, "r") as stream:
+        assert stream.header.magic_number == 0xA1B2C3D4
         assert stream.header.version_major == 2
         assert stream.header.version_minor == 4
-        assert stream.header.thiszone      == 0
-        assert stream.header.sigfigs       == 0
-        assert stream.header.snaplen       == 65535
-        assert stream.header.network       == 147
+        assert stream.header.thiszone == 0
+        assert stream.header.sigfigs == 0
+        assert stream.header.snaplen == 65535
+        assert stream.header.network == 147
 
         header, packet = stream.read()
-        assert header.ts       == ts
+        assert header.ts == ts
         assert header.incl_len == len(bytes)
         assert header.orig_len == len(bytes)
-        assert packet          == bytes
+        assert packet == bytes
 
         header, packet = stream.read()
         assert header.incomplete()
@@ -126,49 +127,49 @@ def testReadLittleEndian ():
     os.unlink(TmpFilename)
 
 
-def testWrite ():
-    bytes = b'Hello World!'
-    ts    = time.time()
+def testWrite():
+    bytes = b"Hello World!"
+    ts = time.time()
 
     # Write pcap using API
-    with pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, "w") as stream:
         assert stream.write(bytes) == len(bytes)
 
     # Read pcap file
-    with open(TmpFilename, 'rb') as stream:
-        header = struct.unpack('IHHiIII', stream.read(24))
+    with open(TmpFilename, "rb") as stream:
+        header = struct.unpack("IHHiIII", stream.read(24))
         assert header == (0xA1B2C3D4, 2, 4, 0, 0, 65535, 147)
 
-        header = struct.unpack('IIII', stream.read(16))
-        assert header[0] - ts <= 1      # write timestamp
+        header = struct.unpack("IIII", stream.read(16))
+        assert header[0] - ts <= 1  # write timestamp
         assert header[2] == len(bytes)  # number of octets of packet saved in file
         assert header[3] == len(bytes)  # actual length of packet
 
         assert stream.read(header[2]) == bytes
-        assert len(stream.read())     == 0
+        assert len(stream.read()) == 0
 
     os.unlink(TmpFilename)
 
 
-def testWriteRead ():
-    packets = b'When a packet hits a pocket on a socket on a port.'.split()
+def testWriteRead():
+    packets = b"When a packet hits a pocket on a socket on a port.".split()
 
-    with pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, "w") as stream:
         for p in packets:
             stream.write(p)
 
-    with pcap.open(TmpFilename, 'r') as stream:
-        index   = 0
+    with pcap.open(TmpFilename, "r") as stream:
+        index = 0
         prev_ts = 0
 
         for header, packet in stream:
-            assert header.ts       >= prev_ts
-            assert header.incl_len == len( packets[index] )
-            assert header.orig_len == len( packets[index] )
-            assert packet          == packets[index]
+            assert header.ts >= prev_ts
+            assert header.incl_len == len(packets[index])
+            assert header.orig_len == len(packets[index])
+            assert packet == packets[index]
 
-            index   += 1
-            prev_ts  = header.ts
+            index += 1
+            prev_ts = header.ts
 
         assert index == len(packets)
 
@@ -179,14 +180,14 @@ def testWriteRead ():
     os.unlink(TmpFilename)
 
 
-def testPCapPacketHeaderInit ():
+def testPCapPacketHeaderInit():
     header = pcap.PCapPacketHeader()
-    assert header._format == 'IIII'
+    assert header._format == "IIII"
     assert header._size == 16
     assert header.incl_len == 0
     assert header.orig_len == 0
     assert header._data == header.pack()
-    assert header._swap == '@'
+    assert header._swap == "@"
 
     ts, usec = dmc.getTimestampUTC()
     header.ts_sec, header.ts_usec = ts, usec
@@ -196,15 +197,15 @@ def testPCapPacketHeaderInit ():
     assert header.timestamp == datetime.datetime.utcfromtimestamp(float_ts)
 
 
-@mock.patch('ait.core.log.info')
+@mock.patch("ait.core.log.info")
 def testSegmentBytes(log_info):
     try:
-        with pcap.open(TmpFilename, 'w') as output:
+        with pcap.open(TmpFilename, "w") as output:
             for p in range(10):
-                output.write( str(p) )
+                output.write(str(p))
 
-        pcap.segment(TmpFilename, 'foo.pcap', nbytes=41, dryrun=True)
-        expected = 'Would write 41 bytes, 1 packets, 1 seconds to foo.pcap.'
+        pcap.segment(TmpFilename, "foo.pcap", nbytes=41, dryrun=True)
+        expected = "Would write 41 bytes, 1 packets, 1 seconds to foo.pcap."
 
         assert len(log_info.call_args_list) == 10
         for call in log_info.call_args_list:
@@ -214,16 +215,15 @@ def testSegmentBytes(log_info):
         os.unlink(TmpFilename)
 
 
-@mock.patch('ait.core.log.info')
+@mock.patch("ait.core.log.info")
 def testSegmentPackets(log_info):
     try:
-        with pcap.open(TmpFilename, 'w') as output:
+        with pcap.open(TmpFilename, "w") as output:
             for p in range(10):
-                output.write( str(p) )
+                output.write(str(p))
 
-        pcap.segment(TmpFilename, 'foo.pcap', npackets=5, dryrun=True)
-        expected = 'Would write 109 bytes, 5 packets, 1 seconds to foo.pcap.'
-
+        pcap.segment(TmpFilename, "foo.pcap", npackets=5, dryrun=True)
+        expected = "Would write 109 bytes, 5 packets, 1 seconds to foo.pcap."
 
         assert len(log_info.call_args_list) == 2
         for call in log_info.call_args_list:
@@ -233,17 +233,17 @@ def testSegmentPackets(log_info):
         os.unlink(TmpFilename)
 
 
-@mock.patch('ait.core.log.info')
+@mock.patch("ait.core.log.info")
 def testSegmentSeconds(log_info):
     try:
         header = pcap.PCapPacketHeader(orig_len=1)
-        with pcap.open(TmpFilename, 'w') as output:
+        with pcap.open(TmpFilename, "w") as output:
             for p in range(10):
                 header.ts_sec = p
-                output.write( str(p), header )
+                output.write(str(p), header)
 
-        pcap.segment(TmpFilename, 'foo.pcap', nseconds=2, dryrun=True)
-        expected = 'Would write 58 bytes, 2 packets, 2 seconds to foo.pcap.'
+        pcap.segment(TmpFilename, "foo.pcap", nseconds=2, dryrun=True)
+        expected = "Would write 58 bytes, 2 packets, 2 seconds to foo.pcap."
 
         assert len(log_info.call_args_list) == 5
         for call in log_info.call_args_list:
@@ -255,11 +255,11 @@ def testSegmentSeconds(log_info):
 
 def testTimes():
     packets = "This is a nice little sentence".split()
-    with pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, "w") as stream:
         for p in packets:
             stream.write(p)
 
-    with pcap.open(TmpFilename, 'r') as stream:
+    with pcap.open(TmpFilename, "r") as stream:
         i = 0
         for header, packet in stream:
             if i is 0:
@@ -270,7 +270,7 @@ def testTimes():
 
     times = pcap.times(TmpFilename)
 
-    start =  times[TmpFilename][0][0]
+    start = times[TmpFilename][0][0]
     stop = times[TmpFilename][0][1]
 
     assert len(times[TmpFilename]) == 1
@@ -278,7 +278,7 @@ def testTimes():
     assert stop == exp_end
 
     # test when we have 2 separate time segments
-    with pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, "w") as stream:
         for p in packets:
             stream.write(p)
 
@@ -299,15 +299,15 @@ def testQuery():
     packets = "This is a nice little sentence".split()
     start = datetime.datetime.now()
 
-    with pcap.open(TmpFilename, 'w') as stream:
+    with pcap.open(TmpFilename, "w") as stream:
         for p in packets:
             stream.write(p)
     end = datetime.datetime.max
 
     pcap.query(start, end, TmpRes, (TmpFilename))
 
-    with pcap.open(TmpFilename, 'r') as stream1:
-        with pcap.open(TmpRes, 'r') as stream2:
+    with pcap.open(TmpFilename, "r") as stream1:
+        with pcap.open(TmpRes, "r") as stream2:
             header1, packet1 = stream1.read()
             header2, packet2 = stream2.read()
             assert header1.pack() == header2.pack()

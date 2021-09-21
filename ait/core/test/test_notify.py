@@ -18,32 +18,22 @@ import ait.core
 from ait.core import notify
 
 
-@mock.patch('ait.core.notify.send_text_alert')
-@mock.patch('ait.core.notify.send_email_alert')
+@mock.patch("ait.core.notify.send_text_alert")
+@mock.patch("ait.core.notify.send_email_alert")
 def test_trigger_notification(send_email_mock, send_text_mock):
-    ait.config._config['notifications'] = {
-        'email': {
-            'triggers': [
-                'email-only-trigger',
-                'both-trigger'
-            ]
-        },
-        'text': {
-            'triggers': [
-                'text-only-trigger',
-                'both-trigger'
-            ]
-        }
+    ait.config._config["notifications"] = {
+        "email": {"triggers": ["email-only-trigger", "both-trigger"]},
+        "text": {"triggers": ["text-only-trigger", "both-trigger"]},
     }
 
-    notify.trigger_notification('email-only-trigger', 'foo')
+    notify.trigger_notification("email-only-trigger", "foo")
     send_email_mock.assert_called()
 
-    notify.trigger_notification('text-only-trigger', 'foo')
+    notify.trigger_notification("text-only-trigger", "foo")
     send_text_mock.assert_called()
 
     send_email_mock.reset_mock()
     send_text_mock.reset_mock()
-    notify.trigger_notification('both-trigger', 'foo')
+    notify.trigger_notification("both-trigger", "foo")
     send_email_mock.assert_called()
     send_text_mock.assert_called()

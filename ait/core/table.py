@@ -29,7 +29,7 @@ class FSWColDefn(object):
     """FSWColDefn - Argument Definition
 
     Argument Definitions encapsulate all information required to define
-    a single column.  
+    a single column.
     """
 
     def __init__(self, *args, **kwargs):
@@ -256,13 +256,15 @@ class FSWTabDefn(object):
             log.error(msg)
             raise TypeError(msg)
 
-        raw = kwargs.get('raw', False)
+        raw = kwargs.get("raw", False)
 
         table = []
 
         # Extract header column names and values if applicable.
         if len(self.fswheaderdefns) > 0:
-            table.append([col.decode(in_stream, raw=raw) for col in self.fswheaderdefns])
+            table.append(
+                [col.decode(in_stream, raw=raw) for col in self.fswheaderdefns]
+            )
 
         # Decode rows from the remaining data
         while True:
@@ -502,8 +504,8 @@ def YAMLCtor_FSWColDefn(loader, node):  # noqa: N802
 
 def YAMLCtor_FSWTabDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
-    fields['fswheaderdefns'] = fields.pop('header', None)
-    fields['coldefns'] = fields.pop('columns', None)
+    fields["fswheaderdefns"] = fields.pop("header", None)
+    fields["coldefns"] = fields.pop("columns", None)
     return FSWTabDefn(**fields)
 
 

@@ -23,10 +23,13 @@ from ait.core import util
 
 
 """Specify some test file info"""
-TEST_FILE_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'util', 'test_util.txt')
+TEST_FILE_PATH = os.path.join(
+    os.path.dirname(__file__), "testdata", "util", "test_util.txt"
+)
 TEST_FILE_SIZE = 117
 TEST_FILE_CRC = 3099955026
 TEST_FILE_CRC_SKIP_BYTE = 651256842
+
 
 class Crc32FileTest(unittest.TestCase):
     """Unit test of the CRC-32 generator for files"""
@@ -41,6 +44,7 @@ class Crc32FileTest(unittest.TestCase):
         crc = util.crc32File(TEST_FILE_PATH, 1)
         self.assertEqual(crc, TEST_FILE_CRC_SKIP_BYTE)
 
+
 class EndianSwapU16Test(unittest.TestCase):
     """Unit test of the endianSwap method"""
 
@@ -50,6 +54,7 @@ class EndianSwapU16Test(unittest.TestCase):
         expected_output = bytearray([0x00, 0x13, 0x00, 0x01, 0x00, 0x08])
         output_array = util.endianSwapU16(input_array)
         self.assertEqual(output_array, expected_output)
+
 
 class GetFileSizeTest(unittest.TestCase):
     """Unit test for finding size of file"""
@@ -61,6 +66,7 @@ class GetFileSizeTest(unittest.TestCase):
         size = util.getFileSize(TEST_FILE_PATH)
         self.assertEqual(size, TEST_FILE_SIZE)
 
+
 class ToBCDTest(unittest.TestCase):
     """Unit test for converting from a number to a Binary Coded
     Decimal
@@ -69,7 +75,8 @@ class ToBCDTest(unittest.TestCase):
     def testToBCDWithInt(self):
         """Test toBCD with integer"""
         bcd = util.toBCD(25)
-        self.assertEqual("{0:b}".format(bcd), '100101')
+        self.assertEqual("{0:b}".format(bcd), "100101")
+
 
 class ToFloatTest(unittest.TestCase):
     """Unit test for toFloat method"""
@@ -90,6 +97,7 @@ class ToFloatTest(unittest.TestCase):
         """Test toFloat with return none"""
         f = util.toFloat("Foo")
         self.assertIsNone(f)
+
 
 class ToNumberTest(unittest.TestCase):
     """Unit test for toNumber method"""
@@ -121,7 +129,8 @@ class ToNumberTest(unittest.TestCase):
     def testToNumberWithDefaultReturnNone(self):
         """Test toNumber with String and None return"""
         n = util.toNumber("Foo")
-        self.assertIsNone(n);
+        self.assertIsNone(n)
+
 
 class ToReprTest(unittest.TestCase):
     """Unit test for converting Python object to
@@ -133,53 +142,57 @@ class ToReprTest(unittest.TestCase):
         pass
 
 
-def test_expandPath ():
-    pathname = os.path.join('~', 'bin', 'ait-orbits')
+def test_expandPath():
+    pathname = os.path.join("~", "bin", "ait-orbits")
     assert util.expandPath(pathname) == os.path.expanduser(pathname)
 
-    pathname = os.path.join('/', 'bin', 'ait-orbits')
+    pathname = os.path.join("/", "bin", "ait-orbits")
     assert util.expandPath(pathname) == pathname
 
-    pathname = os.path.join('' , 'bin', 'ait-orbits')
+    pathname = os.path.join("", "bin", "ait-orbits")
     assert util.expandPath(pathname) == os.path.abspath(pathname)
 
-    pathname = os.path.join('' , 'bin', 'ait-orbits')
-    prefix   = os.path.join('/', 'ait')
+    pathname = os.path.join("", "bin", "ait-orbits")
+    prefix = os.path.join("/", "ait")
     expected = os.path.join(prefix, pathname)
     assert util.expandPath(pathname, prefix) == expected
 
 
 def test_listAllFiles():
-    pathname = os.path.join('~','foo','bar')
+    pathname = os.path.join("~", "foo", "bar")
     directory = os.path.expanduser(pathname)
     try:
         os.makedirs(os.path.expanduser(directory))
-        files = [ os.path.join(directory, 'test_1.txt'), os.path.join(directory, 'test_2.txt') ]
+        files = [
+            os.path.join(directory, "test_1.txt"),
+            os.path.join(directory, "test_2.txt"),
+        ]
         for fname in files:
-            with open(fname, 'wb') as file:
+            with open(fname, "wb") as file:
                 os.utime(fname, None)
 
         # test relative path
         filelist = util.listAllFiles(pathname, ".txt")
         assert os.path.relpath(files[0], start=directory) in filelist
-        
+
         # test absolute path
         filelist = util.listAllFiles(pathname, ".txt", True)
         assert files[0] in filelist
     finally:
-        shutil.rmtree(os.path.expanduser(os.path.join('~','foo')))
+        shutil.rmtree(os.path.expanduser(os.path.join("~", "foo")))
 
 
-@mock.patch('ait.core.log.error')
+@mock.patch("ait.core.log.error")
 def test_YAMLValidationError_exception(log_mock):
-    message = 'foo'
+    message = "foo"
     e = util.YAMLValidationError(message)
     assert message == e.message
     log_mock.assert_called_with(message)
 
-@mock.patch('ait.core.log.error')
+
+@mock.patch("ait.core.log.error")
 def test_YAMLError_exception(log_mock):
-    message = 'foo'
+    message = "foo"
     e = util.YAMLError(message)
     assert message == e.message
     log_mock.assert_called_with(message)

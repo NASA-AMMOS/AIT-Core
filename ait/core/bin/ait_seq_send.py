@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 usage: ait-seq-send [options] filename.rts
 
 Sends the given relative timed sequence via the AIT server,
@@ -29,7 +29,7 @@ or if the 'udp' flag is set then directly via UDP.
 Examples:
 
   $ ait-seq-send test.rts
-'''
+"""
 
 import os
 import time
@@ -40,57 +40,59 @@ import ait.core
 from ait.core import api, log, util
 
 
-def system (command):
-    log.info('Executing: %s' % command)
+def system(command):
+    log.info("Executing: %s" % command)
     os.system(command)
 
 
-def main ():
+def main():
     log.begin()
 
-    descr = "Sends the given relative timed sequence via the AIT server, or if the 'udp' " \
-            "flag is set then directly via UDP."
+    descr = (
+        "Sends the given relative timed sequence via the AIT server, or if the 'udp' "
+        "flag is set then directly via UDP."
+    )
 
     parser = argparse.ArgumentParser(
-        description=descr,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-
-
+        description=descr, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     ## The optional argument(s)
-    arg_defns = OrderedDict({
-        '--topic': {
-            'type': str,
-            'default': ait.config.get('command.topic', ait.DEFAULT_CMD_TOPIC),
-            'help': 'Name of topic from which to publish data'
-        },
-        '--verbose': {
-            'action': 'store_true',
-            'default': False,
-            'help': 'Hexdump of the raw command being sent.'
-        },
-        '--udp': {
-            'action': 'store_true',
-            'default': False,
-            'help': 'Send data to UDP socket.'
-        },
-        '--host': {
-            'type': str,
-            'default': ait.DEFAULT_CMD_HOST,
-            'help': 'Host to which to send data'
-        },
-        '--port': {
-            'type'    : int,
-            'default' : ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
-            'help'    : 'Port on which to send data'
+    arg_defns = OrderedDict(
+        {
+            "--topic": {
+                "type": str,
+                "default": ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC),
+                "help": "Name of topic from which to publish data",
+            },
+            "--verbose": {
+                "action": "store_true",
+                "default": False,
+                "help": "Hexdump of the raw command being sent.",
+            },
+            "--udp": {
+                "action": "store_true",
+                "default": False,
+                "help": "Send data to UDP socket.",
+            },
+            "--host": {
+                "type": str,
+                "default": ait.DEFAULT_CMD_HOST,
+                "help": "Host to which to send data",
+            },
+            "--port": {
+                "type": int,
+                "default": ait.config.get("command.port", ait.DEFAULT_CMD_PORT),
+                "help": "Port on which to send data",
+            },
         }
-    })
+    )
 
     ## Required argument(s)
-    arg_defns['filename'] = {
-        'type' : str,
-        'help' : 'Name of the sequence file.',
-        'default' : None
+    arg_defns["filename"] = {
+        "type": str,
+        "help": "Name of the sequence file.",
+        "default": None,
     }
 
     ## Push argument defs to the parser
@@ -101,13 +103,12 @@ def main ():
     args = parser.parse_args()
 
     ## Extract args to local fields
-    host     = args.host
-    port     = args.port
-    verbose  = args.verbose
-    udp      = args.udp
-    topic    = args.topic
+    host = args.host
+    port = args.port
+    verbose = args.verbose
+    udp = args.udp
+    topic = args.topic
     filename = args.filename
-
 
     ## If UDP enabled, collect host/port info
     if udp:
@@ -121,28 +122,27 @@ def main ():
     else:
         cmdApi = api.CmdAPI(verbose=verbose, cmdtopic=topic)
 
-
     try:
-        with open(filename, 'r') as stream:
+        with open(filename, "r") as stream:
             for line in stream.readlines():
                 line = line.strip()
 
                 # Skip blank lines and comments
-                if len(line) == 0 or line.startswith('#'):
+                if len(line) == 0 or line.startswith("#"):
                     continue
 
                 # Meta-command
-                elif line.startswith('%'):
+                elif line.startswith("%"):
                     command = line[1:].strip()
                     system(command)
 
                 # Sequence command
                 else:
-                    tokens   = line.split()
-                    delay    = float(tokens[0])
-                    cmdName  = tokens[1]
-                    cmdArgs  = [ util.toNumber(t, t) for t in tokens[2:] ]
-                    cmdArgs  = cmdApi.parseArgs(cmdName, *cmdArgs)
+                    tokens = line.split()
+                    delay = float(tokens[0])
+                    cmdName = tokens[1]
+                    cmdArgs = [util.toNumber(t, t) for t in tokens[2:]]
+                    cmdArgs = cmdApi.parseArgs(cmdName, *cmdArgs)
                     time.sleep(delay)
                     log.info(line)
                     cmdApi.send(cmdName, *cmdArgs)
@@ -151,5 +151,6 @@ def main ():
 
     log.end()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

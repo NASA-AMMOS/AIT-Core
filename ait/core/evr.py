@@ -49,12 +49,12 @@ class EVRDict(dict):
 
     def load(self, content):
         if self.filename:
-            log.warn('EVRDict: Skipping load() attempt after previous initialization')
+            log.warn("EVRDict: Skipping load() attempt after previous initialization")
             return
 
         if os.path.isfile(content):
             self.filename = content
-            stream = open(self.filename, 'rb')
+            stream = open(self.filename, "rb")
         else:
             stream = content
 
@@ -73,11 +73,11 @@ class EVRDict(dict):
 
 
 def getDefaultSchema():
-    return pkg_resources.resource_filename('ait.core', 'data/evr_schema.json')
+    return pkg_resources.resource_filename("ait.core", "data/evr_schema.json")
 
 
 def getDefaultDict(reload=False):
-    return util.getDefaultDict(__name__, 'evrdict', EVRDict, reload)
+    return util.getDefaultDict(__name__, "evrdict", EVRDict, reload)
 
 
 def getDefaultEVRs():
@@ -90,6 +90,7 @@ def getDefaultDictFilename():
 
 class EVRDefn(json.SlotSerializer, object):
     """"""
+
     __slots__ = ["name", "code", "desc", "_message"]
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +103,7 @@ class EVRDefn(json.SlotSerializer, object):
         return util.toRepr(self)
 
     def format_message(self, evr_hist_data):
-        ''' Format EVR message with EVR data
+        """Format EVR message with EVR data
 
         Given a byte array of EVR data, format the EVR's message attribute
         printf format strings and split the byte array into appropriately
@@ -127,31 +128,31 @@ class EVRDefn(json.SlotSerializer, object):
             ValueError: When the bytearray cannot be fully processed with the
                 specified format strings. This is usually a result of the
                 expected data length and the byte array length not matching.
-        '''
+        """
         size_formatter_info = {
-            's' : -1,
-            'c' : 1,
-            'i' : 4,
-            'd' : 4,
-            'u' : 4,
-            'x' : 4,
-            'hh': 1,
-            'h' : 2,
-            'l' : 4,
-            'll': 8,
-            'f' : 8,
-            'g' : 8,
-            'e' : 8,
+            "s": -1,
+            "c": 1,
+            "i": 4,
+            "d": 4,
+            "u": 4,
+            "x": 4,
+            "hh": 1,
+            "h": 2,
+            "l": 4,
+            "ll": 8,
+            "f": 8,
+            "g": 8,
+            "e": 8,
         }
         type_formatter_info = {
-            'c' : 'U{}',
-            'i' : 'MSB_I{}',
-            'd' : 'MSB_I{}',
-            'u' : 'MSB_U{}',
-            'f' : 'MSB_D{}',
-            'e' : 'MSB_D{}',
-            'g' : 'MSB_D{}',
-            'x' : 'MSB_U{}',
+            "c": "U{}",
+            "i": "MSB_I{}",
+            "d": "MSB_I{}",
+            "u": "MSB_U{}",
+            "f": "MSB_D{}",
+            "e": "MSB_D{}",
+            "g": "MSB_D{}",
+            "x": "MSB_U{}",
         }
 
         formatters = re.findall("%(?:\d+\$)?([cdieEfgGosuxXhlL]+)", self._message)
@@ -169,16 +170,16 @@ class EVRDefn(json.SlotSerializer, object):
             fsize = size_formatter_info[f_size_char.lower()]
 
             try:
-                if f_type != 's':
+                if f_type != "s":
                     end_index = cur_byte_index + fsize
-                    fstr = type_formatter_info[f_type.lower()].format(fsize*8)
+                    fstr = type_formatter_info[f_type.lower()].format(fsize * 8)
 
                     # Type formatting can give us incorrect format strings when
                     # a size formatter promotes a smaller data type. For instnace,
                     # 'hhu' says we'll promote a char (1 byte) to an unsigned
                     # int for display. Here, the type format string would be
                     # incorrectly set to 'MSB_U8' if we didn't correct.
-                    if fsize == 1 and 'MSB_' in fstr:
+                    if fsize == 1 and "MSB_" in fstr:
                         fstr = fstr[4:]
 
                     d = dtype.PrimitiveType(fstr).decode(
@@ -190,7 +191,7 @@ class EVRDefn(json.SlotSerializer, object):
                 # the data and decode data.
                 else:
                     end_index = evr_hist_data.find(0x00, cur_byte_index)
-                    d = str(evr_hist_data[cur_byte_index:end_index], 'utf-8')
+                    d = str(evr_hist_data[cur_byte_index:end_index], "utf-8")
 
                 data_chunks.append(d)
             except:
@@ -202,7 +203,7 @@ class EVRDefn(json.SlotSerializer, object):
 
             # If we were formatting a string we need to add another index offset
             # to exclude the null terminator.
-            if f == 's':
+            if f == "s":
                 cur_byte_index += 1
 
         # Format and return the EVR message if formatters were present, otherwise
@@ -216,7 +217,7 @@ class EVRDefn(json.SlotSerializer, object):
             msg = self._message
             for f in formatters:
                 if len(f) > 1:
-                    msg = msg.replace('%{}'.format(f), '%{}'.format(f[-1]))
+                    msg = msg.replace("%{}".format(f), "%{}".format(f[-1]))
 
             return msg % tuple(data_chunks)
 
@@ -228,11 +229,13 @@ class EVRDefn(json.SlotSerializer, object):
     def message(self, value):
         self._message = value
 
+
 def YAMLCtor_EVRDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
-    fields['argdefns'] = fields.pop('arguments', None)
+    fields["argdefns"] = fields.pop("arguments", None)
     return createEVRDefn(**fields)
 
-yaml.add_constructor('!EVR' , YAMLCtor_EVRDefn)
+
+yaml.add_constructor("!EVR", YAMLCtor_EVRDefn)
 
 util.__init_extensions__(__name__, globals())

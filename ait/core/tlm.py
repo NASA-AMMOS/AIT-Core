@@ -41,8 +41,7 @@ class wordarray(object):
     byte, boundaries.
     """
 
-    __slots__ = [ '_bytes' ]
-
+    __slots__ = ["_bytes"]
 
     def __init__(self, bytes):
         """Creates a new wordarray from the given bytearray.
@@ -77,34 +76,30 @@ class wordarray(object):
         return len(self._bytes) / 2
 
 
-
 class DNToEUConversion(json.SlotSerializer, object):
-    """DNToEUConversion
-    """
+    """DNToEUConversion"""
 
-    __slots__ = [ '_equation', 'units', '_when' ]
+    __slots__ = ["_equation", "units", "_when"]
 
     def __init__(self, equation, units=None, when=None, terms=None):
         if when:
             when = PacketExpression(when)
 
         self._equation = PacketExpression(equation)
-        self.units     = units
-        self._when     = when
-
+        self.units = units
+        self._when = when
 
     def eval(self, packet):
         """Returns the result of evaluating this DNToEUConversion in the
         context of the given Packet.
         """
         result = None
-        terms  = None
+        terms = None
 
         if self._when is None or self._when.eval(packet):
             result = self._equation.eval(packet)
 
         return result
-
 
 
 class FieldList(collections.Sequence):
@@ -117,18 +112,18 @@ class FieldList(collections.Sequence):
     by the private Packet field accessor _getattr().
     """
 
-    __slots__ = [ '_defn', '_packet', '_raw' ]
+    __slots__ = ["_defn", "_packet", "_raw"]
 
     def __init__(self, packet, defn, raw):
         self._packet = packet
-        self._defn   = defn
-        self._raw    = raw
+        self._defn = defn
+        self._raw = raw
 
-    def __eq__ (self, other):
-        return  (
-            isinstance(other, collections.Sequence) and
-            len(self) == len(other) and
-            all(self[n] == other[n] for n in range(len(self)))
+    def __eq__(self, other):
+        return (
+            isinstance(other, collections.Sequence)
+            and len(self) == len(other)
+            and all(self[n] == other[n] for n in range(len(self)))
         )
 
     def __getitem__(self, key):
@@ -136,7 +131,6 @@ class FieldList(collections.Sequence):
 
     def __len__(self):
         return self._defn.type.nelems
-
 
 
 class DerivationDefinition(json.SlotSerializer, object):
@@ -147,10 +141,7 @@ class DerivationDefinition(json.SlotSerializer, object):
 
     """
 
-    __slots__ = [
-        "name", "desc", "equation", "units", "_type", "_title", "enum",
-        "when"
-    ]
+    __slots__ = ["name", "desc", "equation", "units", "_type", "_title", "enum", "when"]
 
     def __init__(self, *args, **kwargs):
         """Creates a new DerivationDefinition."""
@@ -193,7 +184,7 @@ class DerivationDefinition(json.SlotSerializer, object):
         Validation error messages are appended to an optional messages
         array.
         """
-        valid     = True
+        valid = True
         primitive = value
 
         def log(msg):
@@ -215,7 +206,6 @@ class DerivationDefinition(json.SlotSerializer, object):
         return valid
 
 
-
 class FieldDefinition(json.SlotSerializer, object):
     """FieldDefinition
 
@@ -229,8 +219,19 @@ class FieldDefinition(json.SlotSerializer, object):
     """
 
     __slots__ = [
-        "_bytes", "desc", "dntoeu", "enum", "expr", "mask", "name", "shift",
-        "_type", "units", "when", "_title", "aliases"
+        "_bytes",
+        "desc",
+        "dntoeu",
+        "enum",
+        "expr",
+        "mask",
+        "name",
+        "shift",
+        "_type",
+        "units",
+        "when",
+        "_title",
+        "aliases",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -257,13 +258,11 @@ class FieldDefinition(json.SlotSerializer, object):
         if self.when:
             self.when = createPacketExpression(self.when)
 
-
     def __jsonOmit__(self, key, val):
-        return val is None or val is '' or (key == 'shift' and val == 0)
+        return val is None or val is "" or (key == "shift" and val == 0)
 
     def __repr__(self):
         return util.toRepr(self)
-
 
     @property
     def nbytes(self):
@@ -310,7 +309,6 @@ class FieldDefinition(json.SlotSerializer, object):
         else:
             self._bytes = value
 
-
     def decode(self, bytes, raw=False, index=None):
         """Decodes the given bytes according to this Field Definition.
 
@@ -322,10 +320,9 @@ class FieldDefinition(json.SlotSerializer, object):
         the specified position(s) will be decoded.
         """
         if index is not None and isinstance(self.type, dtype.ArrayType):
-            value = self.type.decode( bytes[self.slice()], index, raw )
+            value = self.type.decode(bytes[self.slice()], index, raw)
         else:
-            value = self.type.decode( bytes[self.slice()], raw )
-
+            value = self.type.decode(bytes[self.slice()], raw)
 
         # Apply bit mask if needed
         if self.mask is not None:
@@ -338,7 +335,6 @@ class FieldDefinition(json.SlotSerializer, object):
             value = self.enum.get(value, value)
 
         return value
-
 
     def encode(self, value):
         """Encodes the given value according to this FieldDefinition."""
@@ -353,7 +349,6 @@ class FieldDefinition(json.SlotSerializer, object):
 
         return self.type.encode(value) if self.type else bytearray()
 
-
     def slice(self, offset=0):
         """Returns a Python slice object (e.g. for array indexing) indicating
         the start and stop byte position of this Telemetry field.  The
@@ -362,23 +357,22 @@ class FieldDefinition(json.SlotSerializer, object):
         """
         if self.bytes is None:
             start = 0
-            stop  = start + self.nbytes
+            stop = start + self.nbytes
         elif type(self.bytes) is int:
             start = self.bytes
-            stop  = start + self.nbytes
+            stop = start + self.nbytes
         else:
             start = self.bytes[0]
-            stop  = self.bytes[1] + 1
+            stop = self.bytes[1] + 1
 
         return slice(start + offset, stop + offset)
-
 
     def validate(self, value, messages=None):
         """Returns True if the given field value is valid, False otherwise.
         Validation error messages are appended to an optional messages
         array.
         """
-        valid     = True
+        valid = True
         primitive = value
 
         def log(msg):
@@ -400,22 +394,21 @@ class FieldDefinition(json.SlotSerializer, object):
         return valid
 
 
-
 class Packet(object):
-    """Packet
-    """
+    """Packet"""
+
     def __init__(self, defn, data=None):
         """Creates a new Packet based on the given Packet Definition and
         binary (raw) packet data.
         """
-        object.__setattr__(self, '_defn', defn)
+        object.__setattr__(self, "_defn", defn)
 
         if data is None:
             data = bytearray(self.nbytes)
         elif not isinstance(data, bytearray):
             data = bytearray(data)
 
-        object.__setattr__(self, '_data', data)
+        object.__setattr__(self, "_data", data)
 
         if defn.history:
             defn.history.add(self)
@@ -423,18 +416,16 @@ class Packet(object):
     def __repr__(self):
         return self._defn.__repr__()
 
-
     def __getattr__(self, fieldname):
         """Returns the value of the given packet field name."""
         return self._getattr(fieldname)
-
 
     def __setattr__(self, fieldname, value):
         """Sets the given packet field name to value."""
         self._assertField(fieldname)
 
-        defn    = self._defn.fieldmap[fieldname]
-        bytes   = defn.encode(value)
+        defn = self._defn.fieldmap[fieldname]
+        bytes = defn.encode(value)
         indices = defn.slice()
 
         if defn.mask is not None:
@@ -457,11 +448,10 @@ class Packet(object):
             data = self._data[indices]
             mask = bytearray(struct.pack(defn.type.format, defn.mask))
 
-            for b in range( len(data) ):
-                bytes[b] |= (data[b] & ~mask[b])
+            for b in range(len(data)):
+                bytes[b] |= data[b] & ~mask[b]
 
         self._data[indices] = bytes
-
 
     def _assertField(self, fieldname):
         """Raise AttributeError when Packet has no field with the given
@@ -470,8 +460,7 @@ class Packet(object):
             values = self._defn.name, fieldname
             raise AttributeError("Packet '%s' has no field '%s'" % values)
 
-
-    def _getattr (self, fieldname, raw=False, index=None):
+    def _getattr(self, fieldname, raw=False, index=None):
         """Returns the value of the given packet field name.
 
         If raw is True, the field value is only decoded.  That is no
@@ -480,9 +469,9 @@ class Packet(object):
         self._assertField(fieldname)
         value = None
 
-        if fieldname == 'raw':
+        if fieldname == "raw":
             value = createRawPacket(self)
-        elif fieldname == 'history':
+        elif fieldname == "history":
             value = self._defn.history
         else:
             if fieldname in self._defn.derivationmap:
@@ -505,30 +494,27 @@ class Packet(object):
 
         return value
 
-
     def _hasattr(self, fieldname):
         """Returns True if this packet contains fieldname, False otherwise."""
-        special = 'history', 'raw'
-        return (fieldname in special or 
-                fieldname in self._defn.fieldmap or
-                fieldname in self._defn.derivationmap)
-
+        special = "history", "raw"
+        return (
+            fieldname in special
+            or fieldname in self._defn.fieldmap
+            or fieldname in self._defn.derivationmap
+        )
 
     @property
     def nbytes(self):
         """The size of this packet in bytes."""
         return self._defn.nbytes
 
-
     @property
     def words(self):
         """Packet data as a wordarray."""
         return wordarray(self._data)
 
-
     def toJSON(self):
-        return { name: getattr(self, name) for name in self._defn.fieldmap }
-
+        return {name: getattr(self, name) for name in self._defn.fieldmap}
 
     def validate(self, messages=None):
         """Returns True if the given Packet is valid, False otherwise.
@@ -536,7 +522,6 @@ class Packet(object):
         array.
         """
         return self._defn.validate(self, messages)
-
 
 
 class PacketContext(object):
@@ -555,13 +540,11 @@ class PacketContext(object):
     table when evaluating PacketExpressions.
     """
 
-    __slots__ = [ '_packet' ]
-
+    __slots__ = ["_packet"]
 
     def __init__(self, packet):
         """Creates a new PacketContext for the given Packet."""
         self._packet = packet
-
 
     def __getitem__(self, name):
         """Returns packet[name]"""
@@ -571,7 +554,7 @@ class PacketContext(object):
         if self._packet._hasattr(name):
             result = self._packet._getattr(name)
         else:
-            msg    = "Packet '%s' has no field '%s'"
+            msg = "Packet '%s' has no field '%s'"
             values = self._packet._defn.name, name
             raise KeyError(msg % values)
 
@@ -579,12 +562,23 @@ class PacketContext(object):
 
 
 class PacketDefinition(json.SlotSerializer, object):
-    """PacketDefinition
-    """
-    NextUID   = 1
-    __slots__ = [ 'ccsds', 'constants', 'desc', 'fields', 'fieldmap', 'uid',
-                  'functions', 'globals', 'history', 'name', 'derivations',
-                  'derivationmap' ]
+    """PacketDefinition"""
+
+    NextUID = 1
+    __slots__ = [
+        "ccsds",
+        "constants",
+        "desc",
+        "fields",
+        "fieldmap",
+        "uid",
+        "functions",
+        "globals",
+        "history",
+        "name",
+        "derivations",
+        "derivationmap",
+    ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new PacketDefinition."""
@@ -594,21 +588,22 @@ class PacketDefinition(json.SlotSerializer, object):
 
         if self.ccsds:
             import ccsds
+
             self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
 
         if self.derivations is None:
-            self.derivations   = [ ]
-            self.derivationmap = { }
+            self.derivations = []
+            self.derivationmap = {}
         else:
-            self.derivations   = handle_includes(self.derivations)
-            self.derivationmap = { defn.name: defn for defn in self.derivations }
+            self.derivations = handle_includes(self.derivations)
+            self.derivationmap = {defn.name: defn for defn in self.derivations}
 
         if self.fields is None:
-            self.fields   = [ ]
-            self.fieldmap = { }
+            self.fields = []
+            self.fieldmap = {}
         else:
-            self.fields   = handle_includes(self.fields)
-            self.fieldmap = { defn.name: defn for defn in self.fields }
+            self.fields = handle_includes(self.fields)
+            self.fieldmap = {defn.name: defn for defn in self.fields}
 
         if self.history:
             self.history = PacketHistory(self, names=self.history)
@@ -616,12 +611,11 @@ class PacketDefinition(json.SlotSerializer, object):
         if self.ccsds:
             self.uid = self.ccsds.apid
         else:
-            self.uid                  = PacketDefinition.NextUID
+            self.uid = PacketDefinition.NextUID
             PacketDefinition.NextUID += 1
 
         self._update_globals()
         self._update_bytes(self.fields)
-
 
     def __repr__(self):
         return util.toRepr(self)
@@ -629,14 +623,14 @@ class PacketDefinition(json.SlotSerializer, object):
     def __getstate__(self):
         return {
             name: getattr(self, name)
-            for name in PacketDefinition.__slots__ if name != 'globals'
+            for name in PacketDefinition.__slots__
+            if name != "globals"
         }
 
     def __setstate__(self, state):
         for s in PacketDefinition.__slots__:
             setattr(self, s, state.get(s, None))
         self._update_globals()
-
 
     def _update_bytes(self, defns, start=0):
         """Updates the 'bytes' field in all FieldDefinition.
@@ -658,24 +652,23 @@ class PacketDefinition(json.SlotSerializer, object):
 
         pos = slice(start, start)
         for fd in defns:
-            if fd.bytes == '@prev' or fd.bytes is None:
-                if fd.bytes == '@prev':
+            if fd.bytes == "@prev" or fd.bytes is None:
+                if fd.bytes == "@prev":
                     fd.bytes = None
-                    pos      = fd.slice(pos.start)
+                    pos = fd.slice(pos.start)
                 elif fd.bytes is None:
-                    pos      = fd.slice(pos.stop)
+                    pos = fd.slice(pos.stop)
                 if pos.start == pos.stop - 1:
                     fd.bytes = pos.start
                 else:
-                    fd.bytes = [ pos.start, pos.stop - 1 ]
+                    fd.bytes = [pos.start, pos.stop - 1]
             pos = fd.slice()
         return pos.stop
 
-
     def _update_globals(self):
         if self.globals is None:
-            self.globals = { }
-            exec('from math import *', self.globals)
+            self.globals = {}
+            exec("from math import *", self.globals)
             util.__load_functions__(self.globals)
 
         if self.constants:
@@ -687,8 +680,7 @@ class PacketDefinition(json.SlotSerializer, object):
                 self.globals[fn.name] = fn._func
 
         if self.history:
-            self.globals['history'] = self.history
-
+            self.globals["history"] = self.history
 
     @property
     def nbytes(self):
@@ -700,7 +692,6 @@ class PacketDefinition(json.SlotSerializer, object):
             max_byte = max(max_byte, byte)
 
         return max_byte + 1
-
 
     def validate(self, pkt, messages=None):
         """Returns True if the given Packet is valid, False otherwise.
@@ -726,24 +717,26 @@ class PacketDefinition(json.SlotSerializer, object):
 
         return valid
 
-
     def toJSON(self, derivations=False):
-        slots = ['name', 'desc', 'constants', 'functions', 'history', 'uid']
+        slots = ["name", "desc", "constants", "functions", "history", "uid"]
 
         if self.ccsds is not None:
-            slots += 'ccsds'
+            slots += "ccsds"
 
         if derivations:
-            slots += 'derivations'
+            slots += "derivations"
 
-        obj   = json.slotsToJSON(self, slots)
-        obj['fields'] = { defn.name: defn.toJSON() for defn in self.fields }
+        obj = json.slotsToJSON(self, slots)
+        obj["fields"] = {defn.name: defn.toJSON() for defn in self.fields}
         return obj
 
-
     def simulate(self, fill=None):
-        size   = self.nbytes
-        values = bytearray(range(size)) if fill is None else bytearray(str(fill) * size, 'utf-8')
+        size = self.nbytes
+        values = (
+            bytearray(range(size))
+            if fill is None
+            else bytearray(str(fill) * size, "utf-8")
+        )
         return Packet(self, values)
 
 
@@ -763,14 +756,12 @@ class PacketExpression(object):
 
     """
 
-    __slots__ = [ '_code', '_expr' ]
-
+    __slots__ = ["_code", "_expr"]
 
     def __init__(self, expr):
         """Creates a new PacketExpression from the given string expression."""
-        self._code = compile(expr, '<string>', mode='eval')
+        self._code = compile(expr, "<string>", mode="eval")
         self._expr = expr
-
 
     def __reduce__(self):
         """Pickles and Unpickles PacketExpressions.
@@ -780,16 +771,13 @@ class PacketExpression(object):
         and unpickle by passing that string to the PacketExpression
         constructor.
         """
-        return (PacketExpression, (self._expr, ))
-
+        return (PacketExpression, (self._expr,))
 
     def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, self._expr)
-
+        return "%s(%s)" % (self.__class__.__name__, self._expr)
 
     def __str__(self):
         return self._expr
-
 
     def eval(self, packet):
         """Returns the result of evaluating this PacketExpression in the
@@ -797,57 +785,52 @@ class PacketExpression(object):
         """
         try:
             context = createPacketContext(packet)
-            result  = eval(self._code, packet._defn.globals, context)
+            result = eval(self._code, packet._defn.globals, context)
         except ZeroDivisionError:
             result = None
 
         return result
 
-
     def toJSON(self):
         return self._expr
 
 
-
 class PacketFunction(object):
-    """PacketFunction
-    """
+    """PacketFunction"""
 
-    __slots__ = [ '_args', '_expr', '_func', '_name', '_sig' ]
+    __slots__ = ["_args", "_expr", "_func", "_name", "_sig"]
 
     def __init__(self, signature, expression, syms):
         """Creates a new PacketFunction from the given string signature and
         expression.
         """
-        self._sig  = signature
+        self._sig = signature
         self._expr = expression
 
-        lparen = signature.find('(')
-        rparen = signature.find(')')
+        lparen = signature.find("(")
+        rparen = signature.find(")")
 
         if lparen == -1 or rparen == -1:
             msg = 'Function signature "%s" has no parentheses'
             raise SyntaxError(msg % signature)
 
-        defn = 'def %s:\n' % signature
+        defn = "def %s:\n" % signature
 
         if type(expression) is dict:
             for cond, subexpr in expression.items():
-                defn += '    if (%s):\n' % self.__sanitize(cond)
-                defn += '        return (%s)\n' % subexpr
+                defn += "    if (%s):\n" % self.__sanitize(cond)
+                defn += "        return (%s)\n" % subexpr
         else:
-            defn += '    return (%s)\n' % str(expression)
+            defn += "    return (%s)\n" % str(expression)
 
-
-        args = signature[lparen + 1:rparen]
+        args = signature[lparen + 1 : rparen]
 
         exec(defn, syms)
-        del syms['__builtins__']
+        del syms["__builtins__"]
 
-        self._args = [ a.strip() for a in args.split(',') ]
+        self._args = [a.strip() for a in args.split(",")]
         self._name = signature[:lparen].strip()
         self._func = syms[self._name]
-
 
     def __reduce__(self):
         """Pickles and Unpickles PacketFunctions.
@@ -859,111 +842,95 @@ class PacketFunction(object):
         """
         return (PacketFunction, (self._sign, self._expr))
 
-
     def __repr__(self):
         s = '%s("%s", ' % (self.__class__.__name__, self._sig)
 
         if type(self._expr) is dict:
-            s += '%s)' % repr(self._expr)
+            s += "%s)" % repr(self._expr)
         else:
             s += '"%s")' % str(self._expr)
 
         return s
 
-
     def __str__(self):
-        s = '%s:' % self._sig
+        s = "%s:" % self._sig
 
         if type(self._expr) is dict:
             for cond, subexpr in self._expr.items():
-                s += '\n    %s: %s' % (cond.encode('utf-8'), subexpr)
+                s += "\n    %s: %s" % (cond.encode("utf-8"), subexpr)
         else:
-            s += ' %s' % str(self._expr)
+            s += " %s" % str(self._expr)
 
         return s
 
-
-    def __sanitize (self, cond):
-        return str( cond.replace(u'\u2264', '<=').replace(u'\u2265', '>=') )
-
+    def __sanitize(self, cond):
+        return str(cond.replace("\u2264", "<=").replace("\u2265", ">="))
 
     def invoke(self, *args):
         """Returns the result of invoking this PacketFunction."""
         return self._func.__call__(*args)
 
-
     @property
-    def arguments (self):
+    def arguments(self):
         return self._args
 
-
     @property
-    def expression (self):
+    def expression(self):
         return self._expr
 
-
     @property
-    def name (self):
+    def name(self):
         return self._name
 
-
     @property
-    def signature (self):
+    def signature(self):
         return self._sig
 
 
-
 class PacketHistory(object):
-    """PacketHistory
-    """
+    """PacketHistory"""
 
-    __slots__ = [ '_defn', '_dict', '_names' ]
+    __slots__ = ["_defn", "_dict", "_names"]
 
     def __init__(self, defn, names=None):
         if names is None and defn.history is not None:
             names = defn.history
 
         if names is None:
-            names = [ ]
+            names = []
 
-        self._defn  = defn
+        self._defn = defn
         self._names = names
-        self._dict  = { name: 0 for name in names }
-
+        self._dict = {name: 0 for name in names}
 
     def __contains__(self, fieldname):
         """Returns True if fieldname is in this PacketHistory."""
         return fieldname in self._names
-
 
     def __getattr__(self, fieldname):
         """Returns the value of the given packet field name."""
         self._assertField(fieldname)
         return self._dict.get(fieldname, None)
 
-
     def __getitem__(self, fieldname):
         """Returns packet.fieldname"""
         return self._dict.get(fieldname, None)
 
-
     def __getstate__(self):
         """Serialize state, avoiding __getattr__()."""
-        return { s: getattr(self, s) for s in PacketHistory.__slots__ }
-
+        return {s: getattr(self, s) for s in PacketHistory.__slots__}
 
     def __setstate__(self, state):
         """Deserialize state, avoiding __getattr__()."""
         for s in PacketHistory.__slots__:
             setattr(self, s, state.get(s, None))
 
-
     def _assertField(self, name):
         """Raise AttributeError when PacketHistory has no field with the given
         name.
         """
         if name not in self._names:
-            msg    = 'PacketHistory "%s" has no field "%s"'
+            msg = 'PacketHistory "%s" has no field "%s"'
             values = self._defn.name, name
             raise AttributeError(msg % values)
 
@@ -978,7 +945,6 @@ class PacketHistory(object):
         return self._names
 
 
-
 class RawPacket(object):
     """RawPacket
 
@@ -990,13 +956,11 @@ class RawPacket(object):
     substitutions or DN to EU conversions applied.
     """
 
-    __slots__ = [ '_packet' ]
-
+    __slots__ = ["_packet"]
 
     def __init__(self, packet):
         """Creates a new RawPacket based on the given Packet."""
         self._packet = packet
-
 
     def __getattr__(self, fieldname):
         """Returns the value of the given packet fieldname as a raw
@@ -1005,13 +969,13 @@ class RawPacket(object):
         return self._packet._getattr(fieldname, raw=True)
 
 
-
 class TlmDict(dict):
     """TlmDict
 
     Tlm Dictionaries provide a Python dictionary (i.e. hashtable)
     interface mapping Packet names to Packet Definitions.
     """
+
     def __init__(self, *args, **kwargs):
         """Creates a new Telemetry Dictionary from the given telemetry
         dictionary filename or YAML string.
@@ -1029,13 +993,12 @@ class TlmDict(dict):
         if defn.name not in self:
             self[defn.name] = defn
         else:
-            msg = f'Duplicate packet name {defn.name}'
+            msg = f"Duplicate packet name {defn.name}"
             log.error(msg)
             raise util.YAMLError(msg)
 
     def create(self, name, data=None):
-        """Creates a new packet with the given definition and raw data.
-        """
+        """Creates a new packet with the given definition and raw data."""
         return createPacket(self[name], data) if name in self else None
 
     def load(self, content):
@@ -1049,9 +1012,9 @@ class TlmDict(dict):
         if self.filename is None:
             if os.path.isfile(content):
                 self.filename = content
-                stream        = open(self.filename, 'rb')
+                stream = open(self.filename, "rb")
             else:
-                stream        = content
+                stream = content
 
             pkts = yaml.load(stream, Loader=yaml.Loader)
             pkts = handle_includes(pkts)
@@ -1062,8 +1025,7 @@ class TlmDict(dict):
                 stream.close()
 
     def toJSON(self):
-        return { name: defn.toJSON() for name, defn in self.items() }
-
+        return {name: defn.toJSON() for name, defn in self.items()}
 
 
 class TlmDictWriter(object):
@@ -1071,22 +1033,30 @@ class TlmDictWriter(object):
 
     Writes telemetry dictionary to a file in selected formats
     """
+
     def __init__(self, tlmdict=None):
         self.tlmdict = tlmdict or getDefaultDict()
 
     def writeToCSV(self, output_path=None):
-        '''writeToCSV - write the telemetry dictionary to csv
-        '''
-        header = ['Name', 'First Byte', 'Last Byte', 'Bit Mask', 'Endian',
-                  'Type', 'Description', 'Values']
+        """writeToCSV - write the telemetry dictionary to csv"""
+        header = [
+            "Name",
+            "First Byte",
+            "Last Byte",
+            "Bit Mask",
+            "Endian",
+            "Type",
+            "Description",
+            "Values",
+        ]
 
         if output_path is None:
             output_path = ait.config._directory
 
         for pkt_name in self.tlmdict:
-            filename = os.path.join(output_path, pkt_name + '.csv')
+            filename = os.path.join(output_path, pkt_name + ".csv")
 
-            with open(filename, 'wt') as output:
+            with open(filename, "wt") as output:
                 csvwriter = csv.writer(output, quoting=csv.QUOTE_ALL)
                 csvwriter.writerow(header)
 
@@ -1094,28 +1064,39 @@ class TlmDictWriter(object):
                     # Pre-process some fields
 
                     # Description
-                    desc = fld.desc.replace('\n', ' ') if fld.desc is not None else ""
+                    desc = fld.desc.replace("\n", " ") if fld.desc is not None else ""
 
                     # Mask
                     mask = hex(fld.mask) if fld.mask is not None else ""
 
                     # Enumerations
-                    enums = '\n'.join("%s: %s" % (k, fld.enum[k])
-                            for k in fld.enum) if fld.enum is not None else ""
+                    enums = (
+                        "\n".join("%s: %s" % (k, fld.enum[k]) for k in fld.enum)
+                        if fld.enum is not None
+                        else ""
+                    )
 
                     # Set row
-                    row = [fld.name, fld.slice().start, fld.slice().stop,
-                           mask, fld.type.endian, fld.type.name, desc, enums]
+                    row = [
+                        fld.name,
+                        fld.slice().start,
+                        fld.slice().stop,
+                        mask,
+                        fld.type.endian,
+                        fld.type.name,
+                        desc,
+                        enums,
+                    ]
 
                     csvwriter.writerow(row)
 
 
 def getDefaultDict(reload=False):
-    return util.getDefaultDict(__name__, 'tlmdict', TlmDict, reload)
+    return util.getDefaultDict(__name__, "tlmdict", TlmDict, reload)
 
 
 def getDefaultSchema():
-    return pkg_resources.resource_filename('ait.core', 'data/tlm_schema.json')
+    return pkg_resources.resource_filename("ait.core", "data/tlm_schema.json")
 
 
 def getDefaultDictFilename():
@@ -1123,19 +1104,20 @@ def getDefaultDictFilename():
 
 
 def handle_includes(defns):
-    '''Recursive handling of includes for any input list of defns.
+    """Recursive handling of includes for any input list of defns.
     The assumption here is that when an include is handled by the
     pyyaml reader, it adds them as a list, which is stands apart from the rest
     of the expected YAML definitions.
-    '''
+    """
     newdefns = []
     for d in defns:
-        if isinstance(d,list):
+        if isinstance(d, list):
             newdefns.extend(handle_includes(d))
         else:
             newdefns.append(d)
 
     return newdefns
+
 
 def YAMLCtor_PacketDefinition(loader, node):
     fields = loader.construct_mapping(node, deep=True)
@@ -1156,15 +1138,15 @@ def YAMLCtor_include(loader, node):
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
-    with open(name,'r') as f:
+    with open(name, "r") as f:
         data = yaml.load(f, Loader=yaml.Loader)
     return data
 
 
-yaml.add_constructor('!include'   , YAMLCtor_include)
-yaml.add_constructor('!Packet'    , YAMLCtor_PacketDefinition)
-yaml.add_constructor('!Field'     , YAMLCtor_FieldDefinition)
-yaml.add_constructor('!Derivation', YAMLCtor_DerivationDefinition)
+yaml.add_constructor("!include", YAMLCtor_include)
+yaml.add_constructor("!Packet", YAMLCtor_PacketDefinition)
+yaml.add_constructor("!Field", YAMLCtor_FieldDefinition)
+yaml.add_constructor("!Derivation", YAMLCtor_DerivationDefinition)
 
 
 util.__init_extensions__(__name__, globals())

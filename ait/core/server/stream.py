@@ -31,26 +31,27 @@ class Stream(object):
                         provided input and output types
         """
         self.name = name
-        self.inputs = inputs if inputs is not None else [ ]
+        self.inputs = inputs if inputs is not None else []
         self.handlers = handlers
 
         if not self.valid_workflow():
-            raise ValueError('Sequential workflow inputs and outputs ' +
-                             'are not compatible. Workflow is invalid.')
+            raise ValueError(
+                "Sequential workflow inputs and outputs "
+                + "are not compatible. Workflow is invalid."
+            )
 
         # This calls __init__ on subclass of ZMQClient
-        if 'output' in kwargs:
-            super(Stream, self).__init__(input=self.inputs,
-                                         output=kwargs['output'],
-                                         **zmq_args)
+        if "output" in kwargs:
+            super(Stream, self).__init__(
+                input=self.inputs, output=kwargs["output"], **zmq_args
+            )
         else:
-            super(Stream, self).__init__(input=self.inputs,
-                                         **zmq_args)
+            super(Stream, self).__init__(input=self.inputs, **zmq_args)
 
     def __repr__(self):
-        return '<{} name={}>'.format(
-                    str(type(self)).split('.')[-1].split('\'')[0],
-                    self.name)
+        return "<{} name={}>".format(
+            str(type(self)).split(".")[-1].split("'")[0], self.name
+        )
 
     def process(self, input_data, topic=None):
         """
@@ -69,7 +70,10 @@ class Stream(object):
             if output:
                 input_data = output
             else:
-                msg = type(handler).__name__ + " returned no data and caused the handling process to end."
+                msg = (
+                    type(handler).__name__
+                    + " returned no data and caused the handling process to end."
+                )
                 ait.core.log.info(msg)
                 return
 
@@ -85,8 +89,7 @@ class Stream(object):
         for ix, handler in enumerate(self.handlers[:-1]):
             next_input_type = self.handlers[ix + 1].input_type
 
-            if (handler.output_type is not None and
-                    next_input_type is not None):
+            if handler.output_type is not None and next_input_type is not None:
                 if handler.output_type != next_input_type:
                     return False
 
@@ -119,4 +122,6 @@ class PortOutputStream(Stream, PortOutputClient):
     """
 
     def __init__(self, name, inputs, output, handlers, zmq_args={}):
-        super(PortOutputStream, self).__init__(name, inputs, handlers, zmq_args, output=output)
+        super(PortOutputStream, self).__init__(
+            name, inputs, handlers, zmq_args, output=output
+        )

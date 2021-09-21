@@ -8,6 +8,7 @@ class Handler(object):
     called by the stream the handler is attached to when the stream receives
     data.
     """
+
     __metaclass__ = ABCMeta
 
     def __init__(self, input_type=None, output_type=None, **kwargs):
@@ -26,7 +27,7 @@ class Handler(object):
             setattr(self, key, value)
 
     def __repr__(self):
-        return '<handler.%s>' % (self.__class__.__name__)
+        return "<handler.%s>" % (self.__class__.__name__)
 
     @abstractmethod
     def handle(self, input_data):

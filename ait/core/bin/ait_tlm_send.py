@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Usage: ait-tlm-send [options] <pcap-filename>
 
 Sends the telemetry contained in the given pcap file via UDP.
@@ -26,7 +26,7 @@ Examples:
 
   $ ait-tlm-send test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
 
-'''
+"""
 
 
 import socket
@@ -42,32 +42,32 @@ def main():
         log.begin()
 
         parser = argparse.ArgumentParser(
-            description=__doc__,
-            formatter_class=argparse.RawDescriptionHelpFormatter)
+            description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        )
 
         # Add required command line arguments
-        parser.add_argument('filename')
+        parser.add_argument("filename")
 
         # Add optional command line arguments
-        parser.add_argument('--port', default=3076, type=int)
-        parser.add_argument('--verbose', action='store_true', default=False)
+        parser.add_argument("--port", default=3076, type=int)
+        parser.add_argument("--verbose", action="store_true", default=False)
 
         # Get command line arguments
         args = vars(parser.parse_args())
 
-        filename = args['filename']
-        host    = 'localhost'
-        port    = args['port']
-        sock    = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        verbose = args['verbose']
+        filename = args["filename"]
+        host = "localhost"
+        port = args["port"]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        verbose = args["verbose"]
 
         if not verbose:
-            log.info('Will only report every 10 telemetry packets')
-            log.info('Will only report long telemetry send delays')
+            log.info("Will only report every 10 telemetry packets")
+            log.info("Will only report long telemetry send delays")
 
-        with pcap.open(filename, 'r') as stream:
+        with pcap.open(filename, "r") as stream:
             npackets = 0
-            prev_ts  = None
+            prev_ts = None
 
             for header, packet in stream:
                 if prev_ts is None:
@@ -76,31 +76,32 @@ def main():
                 delay = header.ts - prev_ts
 
                 if delay >= 2:
-                    log.info('Next telemetry in %1.2f seconds' % delay)
+                    log.info("Next telemetry in %1.2f seconds" % delay)
 
                 time.sleep(delay)
 
                 nbytes = len(packet)
 
                 if npackets == 0:
-                    log.info('Sent first telemetry packet (%d bytes)' % nbytes)
+                    log.info("Sent first telemetry packet (%d bytes)" % nbytes)
                 elif verbose:
-                    log.info('Sent telemetry (%d bytes)' % nbytes)
+                    log.info("Sent telemetry (%d bytes)" % nbytes)
                 elif npackets % 10 == 0:
-                    log.info('Sent 10 telemetry packets')
+                    log.info("Sent 10 telemetry packets")
 
                 sock.sendto(packet, (host, port))
 
                 npackets += 1
-                prev_ts   = header.ts
+                prev_ts = header.ts
 
     except KeyboardInterrupt:
-      log.info('Received Ctrl-C.  Stopping telemetry stream.')
+        log.info("Received Ctrl-C.  Stopping telemetry stream.")
 
     except Exception as e:
-      log.error('TLM send error: %s' % str(e))
+        log.error("TLM send error: %s" % str(e))
 
     log.end()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

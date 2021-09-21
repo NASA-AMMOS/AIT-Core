@@ -13,7 +13,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 ait-limits-find-dn
 
 Extract the DN-equivalent value for EU limit trip thresholds
@@ -38,7 +38,7 @@ example value limit:
         warn:
           - TABLE_FOO
           - TABLE_BAR
-'''
+"""
 
 from ait.core import limits
 from ait.core import log
@@ -151,5 +151,6 @@ def main():
     table = [fmt.format(*row) for row in s]
     print("\n".join(table))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

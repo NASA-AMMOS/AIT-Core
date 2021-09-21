@@ -26,6 +26,7 @@ def test_evr_load():
 
     assert evr_dicts.codes[1].name == "NO_ERROR"
 
+
 def test_evr_message_format_single_formatter():
     evr_dicts = evr.getDefaultDict()
     example = evr_dicts.codes[1]
@@ -37,27 +38,32 @@ def test_evr_message_format_single_formatter():
 
     assert result == expected
 
+
 def test_evr_message_format_multiple_formatters():
     evr_dicts = evr.getDefaultDict()
     example = evr_dicts.codes[1]
     example.message = "Unexpected length for %c command %s and %u."
-    input_data = bytearray([0x21, 0x46, 0x6f, 0x6f, 0x00, 0xff, 0x11, 0x33, 0x44])
+    input_data = bytearray([0x21, 0x46, 0x6F, 0x6F, 0x00, 0xFF, 0x11, 0x33, 0x44])
 
     expected = "Unexpected length for ! command Foo and 4279317316."
     result = example.format_message(input_data)
 
     assert result == expected
 
+
 def test_evr_message_format_complex_formatters():
     evr_dicts = evr.getDefaultDict()
     example = evr_dicts.codes[1]
     example.message = "Unexpected length for %c command %s and %llu."
-    input_data = bytearray([0x21, 0x46, 0x6f, 0x6f, 0x00, 0x80, 0x00, 0x00, 0x00, 0xff, 0x11, 0x33, 0x44])
+    input_data = bytearray(
+        [0x21, 0x46, 0x6F, 0x6F, 0x00, 0x80, 0x00, 0x00, 0x00, 0xFF, 0x11, 0x33, 0x44]
+    )
 
     expected = "Unexpected length for ! command Foo and 9223372041134093124."
     result = example.format_message(input_data)
 
     assert result == expected
+
 
 def test_evr_no_formatters_found():
     evr_dicts = evr.getDefaultDict()
@@ -67,6 +73,7 @@ def test_evr_no_formatters_found():
     result = example.format_message(input_data)
 
     assert result == example.message
+
 
 def test_bad_formatter_parsing():
     evr_dicts = evr.getDefaultDict()
@@ -81,90 +88,92 @@ def test_bad_formatter_parsing():
     except ValueError as e:
         assert str(e) == msg
 
+
 def test_standard_formatter_handling():
     evr_dicts = evr.getDefaultDict()
     example = evr_dicts.codes[1]
 
-    example.message = '%c'
+    example.message = "%c"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '\x01'
+    assert result == "\x01"
 
-    example.message = '%d'
+    example.message = "%d"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '16909060'
+    assert result == "16909060"
 
-    example.message = '%u'
+    example.message = "%u"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '16909060'
+    assert result == "16909060"
 
-    example.message = '%i'
+    example.message = "%i"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '16909060'
+    assert result == "16909060"
 
-    example.message = '%x'
-    result = example.format_message(bytearray([0x00, 0x00, 0x00, 0x0f]))
-    assert result == 'f'
+    example.message = "%x"
+    result = example.format_message(bytearray([0x00, 0x00, 0x00, 0x0F]))
+    assert result == "f"
 
-    example.message = '%X'
-    result = example.format_message(bytearray([0x00, 0x00, 0x00, 0x0f]))
-    assert result == 'F'
+    example.message = "%X"
+    result = example.format_message(bytearray([0x00, 0x00, 0x00, 0x0F]))
+    assert result == "F"
 
-    example.message = '%f'
-    result = example.format_message(bytearray([
-        0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55
-    ]))
-    assert result == '123.438743'
+    example.message = "%f"
+    result = example.format_message(
+        bytearray([0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55])
+    )
+    assert result == "123.438743"
 
-    example.message = '%e'
-    result = example.format_message(bytearray([
-        0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55
-    ]))
-    assert result == '1.234387e+02'
+    example.message = "%e"
+    result = example.format_message(
+        bytearray([0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55])
+    )
+    assert result == "1.234387e+02"
 
-    example.message = '%E'
-    result = example.format_message(bytearray([
-        0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55
-    ]))
-    assert result == '1.234387E+02'
+    example.message = "%E"
+    result = example.format_message(
+        bytearray([0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55])
+    )
+    assert result == "1.234387E+02"
 
-    example.message = '%g'
-    result = example.format_message(bytearray([
-        0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55
-    ]))
-    assert result == '123.439'
+    example.message = "%g"
+    result = example.format_message(
+        bytearray([0x40, 0x5E, 0xDC, 0x14, 0x5D, 0x85, 0x16, 0x55])
+    )
+    assert result == "123.439"
+
 
 def test_complex_formatter_handling():
     evr_dicts = evr.getDefaultDict()
     example = evr_dicts.codes[1]
 
-    example.message = '%hhu'
+    example.message = "%hhu"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '1'
+    assert result == "1"
 
-    example.message = '%hu'
+    example.message = "%hu"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '258'
+    assert result == "258"
 
-    example.message = '%lu'
+    example.message = "%lu"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '16909060'
+    assert result == "16909060"
 
-    example.message = '%llu'
+    example.message = "%llu"
     result = example.format_message(
         bytearray([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
     )
-    assert result == '72623859790382856'
+    assert result == "72623859790382856"

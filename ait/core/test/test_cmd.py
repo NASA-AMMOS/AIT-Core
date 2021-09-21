@@ -13,6 +13,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import struct
@@ -40,73 +41,73 @@ CMDDICT_TEST = """
 """
 
 
-def testArgDefn ():
-    name = 'SEQ_ENABLE_DISABLE'
+def testArgDefn():
+    name = "SEQ_ENABLE_DISABLE"
     defn = cmd.CmdDict(CMDDICT_TEST)[name]
 
-    arg  = defn.argdefns[0]
-    assert arg.bytes   == [0, 1]
-    assert arg.desc    == None
-    assert arg.enum    == None
-    assert arg.fixed   == False
-    assert arg.name    == 'sequence_id'
-    assert arg.nbytes  == 2
-    assert arg.range   == None
+    arg = defn.argdefns[0]
+    assert arg.bytes == [0, 1]
+    assert arg.desc == None
+    assert arg.enum == None
+    assert arg.fixed == False
+    assert arg.name == "sequence_id"
+    assert arg.nbytes == 2
+    assert arg.range == None
     assert arg.slice() == slice(0, 2)
-    assert arg.type    == dtype.get('MSB_U16')
-    assert arg.units   == None
-    assert arg.value   == None
+    assert arg.type == dtype.get("MSB_U16")
+    assert arg.units == None
+    assert arg.value == None
 
-    assert type( repr(arg)    ) is str
+    assert type(repr(arg)) is str
 
     arg = defn.argdefns[1]
-    assert arg.bytes   == 2
-    assert arg.desc    == None
-    assert arg.enum    == {'DISABLED': 0, 'ENABLED': 1}
-    assert arg.fixed   == False
-    assert arg.name    == 'enable'
-    assert arg.nbytes  == 1
-    assert arg.range   == None
+    assert arg.bytes == 2
+    assert arg.desc == None
+    assert arg.enum == {"DISABLED": 0, "ENABLED": 1}
+    assert arg.fixed == False
+    assert arg.name == "enable"
+    assert arg.nbytes == 1
+    assert arg.range == None
     assert arg.slice() == slice(2, 3)
-    assert arg.type    == dtype.get('U8')
-    assert arg.units   == None
-    assert arg.value   == None
+    assert arg.type == dtype.get("U8")
+    assert arg.units == None
+    assert arg.value == None
 
-    assert type( repr(arg)    ) is str
+    assert type(repr(arg)) is str
 
 
-def testArgDefnDecode ():
-    name = 'SEQ_ENABLE_DISABLE'
+def testArgDefnDecode():
+    name = "SEQ_ENABLE_DISABLE"
     defn = cmd.CmdDict(CMDDICT_TEST)[name]
 
     arg = defn.argdefns[0]
-    assert arg.decode( struct.pack('>H', 1234) ) == 1234
+    assert arg.decode(struct.pack(">H", 1234)) == 1234
 
     arg = defn.argdefns[1]
-    assert arg.decode( struct.pack('>B', 0) ) == 'DISABLED'
-    assert arg.decode( struct.pack('>B', 1) ) == 'ENABLED'
-    assert arg.decode( struct.pack('>B', 2) ) == 2
+    assert arg.decode(struct.pack(">B", 0)) == "DISABLED"
+    assert arg.decode(struct.pack(">B", 1)) == "ENABLED"
+    assert arg.decode(struct.pack(">B", 2)) == 2
 
 
-def testArgDefnEncode ():
-    name = 'SEQ_ENABLE_DISABLE'
+def testArgDefnEncode():
+    name = "SEQ_ENABLE_DISABLE"
     defn = cmd.CmdDict(CMDDICT_TEST)[name]
 
     arg = defn.argdefns[0]
-    assert arg.encode(1234) == struct.pack('>H', 1234)
+    assert arg.encode(1234) == struct.pack(">H", 1234)
 
     arg = defn.argdefns[1]
-    assert arg.encode( 'DISABLED') == struct.pack('>B', 0)
-    assert arg.encode( 'ENABLED' ) == struct.pack('>B', 1)
-    assert arg.encode( 2         ) == struct.pack('>B', 2)
+    assert arg.encode("DISABLED") == struct.pack(">B", 0)
+    assert arg.encode("ENABLED") == struct.pack(">B", 1)
+    assert arg.encode(2) == struct.pack(">B", 2)
 
 
-def testArgDefnValidate ():
-    name = 'SEQ_ENABLE_DISABLE'
+def testArgDefnValidate():
+    name = "SEQ_ENABLE_DISABLE"
     defn = cmd.CmdDict(CMDDICT_TEST)[name]
 
     arg = defn.argdefns[0]
-    assert arg.validate(1)   == True
+    assert arg.validate(1) == True
     assert arg.validate(1.2) == False
 
     arg.range = [0, 2]
@@ -116,25 +117,25 @@ def testArgDefnValidate ():
     assert arg.validate(3) == False
 
     arg = defn.argdefns[1]
-    assert arg.validate('ENABLED' ) == True
-    assert arg.validate('DISABLED') == True
-    assert arg.validate('FOOBAR')   == False
+    assert arg.validate("ENABLED") == True
+    assert arg.validate("DISABLED") == True
+    assert arg.validate("FOOBAR") == False
 
-    msgs = [ ]
-    assert arg.validate('FOOBAR', msgs) == False
+    msgs = []
+    assert arg.validate("FOOBAR", msgs) == False
     assert len(msgs) > 0
 
 
-def testCmdDefn ():
-    name = 'SEQ_ENABLE_DISABLE'
+def testCmdDefn():
+    name = "SEQ_ENABLE_DISABLE"
     defn = cmd.CmdDict(CMDDICT_TEST)[name]
 
-    assert defn.name   == name
+    assert defn.name == name
     assert defn.opcode == 0x0042
-    assert defn.nargs  == 2
+    assert defn.nargs == 2
 
 
-def testGetDefaultDict ():
+def testGetDefaultDict():
     cmddict = cmd.getDefaultDict()
 
     assert cmddict is not None

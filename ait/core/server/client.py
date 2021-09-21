@@ -1,7 +1,9 @@
 import gevent
 import gevent.socket
 import gevent.server as gs
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
+
+gevent.monkey.patch_all()
 
 import zmq.green as zmq
 import socket
@@ -18,16 +20,18 @@ class ZMQClient(object):
     and publishes to it.
     """
 
-    def __init__(self,
-                 zmq_context,
-                 zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
-                 **kwargs):
+    def __init__(
+        self,
+        zmq_context,
+        zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
+        zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+        **kwargs,
+    ):
 
         self.context = zmq_context
         # open PUB socket & connect to broker
         self.pub = self.context.socket(zmq.PUB)
-        self.pub.connect(zmq_proxy_xsub_url.replace('*', 'localhost'))
+        self.pub.connect(zmq_proxy_xsub_url.replace("*", "localhost"))
 
         # calls gevent.Greenlet or gs.DatagramServer __init__
         super(ZMQClient, self).__init__(**kwargs)
@@ -42,10 +46,10 @@ class ZMQClient(object):
             return
 
         self.pub.send_multipart(msg)
-        log.debug('Published message from {}'.format(self))
+        log.debug("Published message from {}".format(self))
 
     def process(self, input_data, topic=None):
-        """ This method must be implemented by all streams and plugins that
+        """This method must be implemented by all streams and plugins that
         inherit from ZMQClient. It is called whenever a message is received.
 
         Params:
@@ -55,8 +59,11 @@ class ZMQClient(object):
         Raises:
             NotImplementedError since not implemented in base parent class
         """
-        raise(NotImplementedError('This method must be implemented in all '
-                                  'subclasses of Client.'))
+        raise (
+            NotImplementedError(
+                "This method must be implemented in all " "subclasses of Client."
+            )
+        )
 
 
 class ZMQInputClient(ZMQClient, gevent.Greenlet):
@@ -68,19 +75,21 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
     on all messages received.
     """
 
-    def __init__(self,
-                 zmq_context,
-                 zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
-                 **kwargs):
+    def __init__(
+        self,
+        zmq_context,
+        zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
+        zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+        **kwargs,
+    ):
 
-        super(ZMQInputClient, self).__init__(zmq_context,
-                                             zmq_proxy_xsub_url,
-                                             zmq_proxy_xpub_url)
+        super(ZMQInputClient, self).__init__(
+            zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
+        )
 
         self.context = zmq_context
         self.sub = self.context.socket(zmq.SUB)
-        self.sub.connect(zmq_proxy_xpub_url.replace('*', 'localhost'))
+        self.sub.connect(zmq_proxy_xpub_url.replace("*", "localhost"))
 
         gevent.Greenlet.__init__(self)
 
@@ -94,13 +103,14 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
                     log.error(f"{self} received invalid topic or message. Skipping")
                     continue
 
-                log.debug('{} received message from {}'.format(self, topic))
+                log.debug("{} received message from {}".format(self, topic))
                 self.process(message, topic=topic)
 
         except Exception as e:
-            log.error('Exception raised in {} while receiving messages: {}'
-                       .format(self, e))
-            raise(e)
+            log.error(
+                "Exception raised in {} while receiving messages: {}".format(self, e)
+            )
+            raise (e)
 
 
 class PortOutputClient(ZMQInputClient):
@@ -110,24 +120,25 @@ class PortOutputClient(ZMQInputClient):
     outgoing message data to this port.
     """
 
-    def __init__(self,
-                 zmq_context,
-                 zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
-                 **kwargs):
+    def __init__(
+        self,
+        zmq_context,
+        zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
+        zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+        **kwargs,
+    ):
 
-        super(PortOutputClient, self).__init__(zmq_context,
-                                               zmq_proxy_xsub_url,
-                                               zmq_proxy_xpub_url)
-        self.out_port = kwargs['output']
+        super(PortOutputClient, self).__init__(
+            zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
+        )
+        self.out_port = kwargs["output"]
         self.context = zmq_context
         # override pub to be udp socket
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
-        self.pub.sendto(msg, ('localhost', int(self.out_port)))
-        log.debug('Published message from {}'.format(self))
-
+        self.pub.sendto(msg, ("localhost", int(self.out_port)))
+        log.debug("Published message from {}".format(self))
 
 
 class PortInputClient(ZMQClient, gs.DatagramServer):
@@ -136,24 +147,29 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
     on a port. It opens a UDP port for receiving messages, listens for them,
     and calls the process method on all messages received.
     """
-    def __init__(self,
-                 zmq_context,
-                 zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
-                 zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
-                 **kwargs):
 
-        if 'input' in kwargs and type(kwargs['input'][0]) is int:
-            super(PortInputClient, self).__init__(zmq_context,
-                                                  zmq_proxy_xsub_url,
-                                                  zmq_proxy_xpub_url,
-                                                  listener=int(kwargs['input'][0]))
+    def __init__(
+        self,
+        zmq_context,
+        zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
+        zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+        **kwargs,
+    ):
+
+        if "input" in kwargs and type(kwargs["input"][0]) is int:
+            super(PortInputClient, self).__init__(
+                zmq_context,
+                zmq_proxy_xsub_url,
+                zmq_proxy_xpub_url,
+                listener=int(kwargs["input"][0]),
+            )
         else:
-            raise(ValueError('Input must be port in order to create PortInputClient'))
+            raise (ValueError("Input must be port in order to create PortInputClient"))
 
         # open sub socket
         self.sub = gevent.socket.socket(gevent.socket.AF_INET, gevent.socket.SOCK_DGRAM)
 
     def handle(self, packet, address):
         # This function provided for gs.DatagramServer class
-        log.debug('{} received message from port {}'.format(self, address))
+        log.debug("{} received message from port {}".format(self, address))
         self.process(packet)

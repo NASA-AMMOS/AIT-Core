@@ -16,11 +16,14 @@ from collections import defaultdict
 import pickle
 
 import gevent
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
+
+gevent.monkey.patch_all()
 
 import ait.core
 from ait.core import limits, log, notify, tlm
 from ait.core.server.plugin import Plugin
+
 
 class TelemetryLimitMonitor(Plugin):
     def __init__(self, inputs, outputs, **kwargs):
@@ -28,18 +31,20 @@ class TelemetryLimitMonitor(Plugin):
 
         self.limit_dict = defaultdict(dict)
         for k, v in limits.getDefaultDict().items():
-            packet, field = k.split('.')
+            packet, field = k.split(".")
             self.limit_dict[packet][field] = v
 
         self.packet_dict = defaultdict(dict)
         for k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
-        self.notif_thrshld = ait.config.get('notifications.options.threshold', 1)
-        self.notif_freq = ait.config.get('notifications.options.frequency', float('inf'))
+        self.notif_thrshld = ait.config.get("notifications.options.threshold", 1)
+        self.notif_freq = ait.config.get(
+            "notifications.options.frequency", float("inf")
+        )
 
         self.limit_trip_repeats = {}
-        log.info('Starting telemetry limit monitoring')
+        log.info("Starting telemetry limit monitoring")
 
     def process(self, input_data, topic=None, **kwargs):
         try:
@@ -48,8 +53,10 @@ class TelemetryLimitMonitor(Plugin):
             packet = self.packet_dict[pkt_id]
             decoded = tlm.Packet(packet, data=bytearray(pkt_data))
         except Exception as e:
-            log.error('TelemetryLimitMonitor: {}'.format(e))
-            log.error('TelemetryLimitMonitor received input_data that it is unable to process. Skipping input ...')
+            log.error("TelemetryLimitMonitor: {}".format(e))
+            log.error(
+                "TelemetryLimitMonitor received input_data that it is unable to process. Skipping input ..."
+            )
             return
 
         if packet.name in self.limit_dict:
@@ -63,28 +70,30 @@ class TelemetryLimitMonitor(Plugin):
                     self.limit_trip_repeats[packet.name][field] = 0
 
                 if defn.error(v):
-                    msg = 'Field {} error out of limit with value {}'.format(field, v)
+                    msg = "Field {} error out of limit with value {}".format(field, v)
                     log.error(msg)
 
                     self.limit_trip_repeats[packet.name][field] += 1
                     repeats = self.limit_trip_repeats[packet.name][field]
 
-                    if (repeats == self.notif_thrshld or
-                        (repeats > self.notif_thrshld and
-                        (repeats - self.notif_thrshld) % self.notif_freq == 0)):
-                        notify.trigger_notification('limit-error', msg)
+                    if repeats == self.notif_thrshld or (
+                        repeats > self.notif_thrshld
+                        and (repeats - self.notif_thrshld) % self.notif_freq == 0
+                    ):
+                        notify.trigger_notification("limit-error", msg)
 
                 elif defn.warn(v):
-                    msg = 'Field {} warning out of limit with value {}'.format(field, v)
+                    msg = "Field {} warning out of limit with value {}".format(field, v)
                     log.warn(msg)
 
                     self.limit_trip_repeats[packet.name][field] += 1
                     repeats = self.limit_trip_repeats[packet.name][field]
 
-                    if (repeats == self.notif_thrshld or
-                        (repeats > self.notif_thrshld and
-                        (repeats - self.notif_thrshld) % self.notif_freq == 0)):
-                        notify.trigger_notification('limit-warn', msg)
+                    if repeats == self.notif_thrshld or (
+                        repeats > self.notif_thrshld
+                        and (repeats - self.notif_thrshld) % self.notif_freq == 0
+                    ):
+                        notify.trigger_notification("limit-warn", msg)
 
                 else:
                     self.limit_trip_repeats[packet.name][field] = 0

@@ -14,9 +14,9 @@ def main():
     log.begin()
 
     arguments = {
-        'filename': {
-            'metavar': '</path/to/cmdhist.pcap>',
-            'help': 'command history pcap'
+        "filename": {
+            "metavar": "</path/to/cmdhist.pcap>",
+            "help": "command history pcap",
         }
     }
 
@@ -28,9 +28,10 @@ def main():
 
     with pcap.open(args.filename) as stream:
         for header, data in stream:
-            print(header.timestamp.strftime('%Y-%m-%d %H:%M:%S') + '\t' + data.decode())
+            print(header.timestamp.strftime("%Y-%m-%d %H:%M:%S") + "\t" + data.decode())
 
     log.end()
+
 
 if __name__ == "__main__":
     main()

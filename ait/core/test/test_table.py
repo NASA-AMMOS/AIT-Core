@@ -364,14 +364,17 @@ class TestBadEnumHandling(unittest.TestCase):
                 3: TEST_ENUM_3
                 4: TEST_ENUM_0
         """
-        table_defn_path = os.path.join(tempfile.gettempdir(), "test_table_dupe_enum.yaml")
+        table_defn_path = os.path.join(
+            tempfile.gettempdir(), "test_table_dupe_enum.yaml"
+        )
 
         with open(table_defn_path, "w") as infile:
             infile.write(test_table)
 
-        with self.assertLogs('ait', level="ERROR") as cm:
+        with self.assertLogs("ait", level="ERROR") as cm:
             tabdict = table.FSWTabDict(table_defn_path)
             assert len(cm.output) == 1
+
 
 class TestTableTimeHandling(unittest.TestCase):
     @classmethod

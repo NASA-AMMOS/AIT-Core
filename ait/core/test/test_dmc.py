@@ -15,6 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import time
@@ -28,7 +29,7 @@ import pytest
 import ait.core
 from ait.core import dmc
 
-LEAPSECOND_DATA_RESPONSE = '''#
+LEAPSECOND_DATA_RESPONSE = """#
 #    Updated through IERS Bulletin C55
 #    File expires on:  28 December 2018
 #
@@ -56,44 +57,49 @@ LEAPSECOND_DATA_RESPONSE = '''#
 2982009600	29	# 1 Jul 1994
 3029443200	30	# 1 Jan 1996
 3076704000	31	# 1 Jul 1997
-'''
+"""
+
 
 class MockResponse:
     def __init__(self, text, status_code):
         self.text = text
         self.status_code = status_code
 
-def test_getTimestampUTC():
-    expected = time.strftime('%Y-%j', time.gmtime())
 
-    actual = time.strftime('%Y-%j', time.gmtime(dmc.getTimestampUTC()[0]))
+def test_getTimestampUTC():
+    expected = time.strftime("%Y-%j", time.gmtime())
+
+    actual = time.strftime("%Y-%j", time.gmtime(dmc.getTimestampUTC()[0]))
 
     assert actual == expected
 
-def test_getUTCDatetimeDOY_w_days():
-    days      = 1
-    t         = datetime.datetime.utcnow() + datetime.timedelta(days=days)
-    timestamp = t.timetuple()
-    exp_year  = timestamp.tm_year
-    exp_day   = '%03d' % timestamp.tm_yday
 
-    dtime     = dmc.getUTCDatetimeDOY(days=days).split('T')[0].split('-')
+def test_getUTCDatetimeDOY_w_days():
+    days = 1
+    t = datetime.datetime.utcnow() + datetime.timedelta(days=days)
+    timestamp = t.timetuple()
+    exp_year = timestamp.tm_year
+    exp_day = "%03d" % timestamp.tm_yday
+
+    dtime = dmc.getUTCDatetimeDOY(days=days).split("T")[0].split("-")
     assert str(exp_year) == dtime[0]
-    assert str(exp_day)  == dtime[1]
+    assert str(exp_day) == dtime[1]
+
 
 def test_leap_second_attrs():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"
     )
 
     ls = dmc.LeapSeconds
     ls._load_leap_second_data()
-    assert ls.leapseconds == ls._data['leapseconds']
-    assert ls.valid_date == ls._data['valid']
+    assert ls.leapseconds == ls._data["leapseconds"]
+    assert ls.valid_date == ls._data["valid"]
     assert ls.get_current_GPS_offset() == ls.leapseconds[-1][-1]
 
+
 def test_leap_second_by_date_invalid_gps_date():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"
     )
 
@@ -101,8 +107,9 @@ def test_leap_second_by_date_invalid_gps_date():
     with pytest.raises(ValueError):
         dmc.LeapSeconds.get_GPS_offset_for_date(datetime.datetime(1980, 1, 1))
 
+
 def test_leap_second_by_date():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"
     )
 
@@ -129,11 +136,14 @@ def test_leap_second_by_date():
     assert ls.get_GPS_offset_for_date(datetime.datetime(2017, 1, 1)) == 18
 
     # Make sure not supplying a date returns the offset for the current date
-    assert (ls.get_GPS_offset_for_date(datetime.datetime.utcnow()) ==
-            ls.get_GPS_offset_for_date())
+    assert (
+        ls.get_GPS_offset_for_date(datetime.datetime.utcnow())
+        == ls.get_GPS_offset_for_date()
+    )
+
 
 def test_leap_second_data_load():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "leapseconds.dat"
     )
 
@@ -141,9 +151,13 @@ def test_leap_second_data_load():
     assert dmc.LeapSeconds.leapseconds[0] == (datetime.datetime(1981, 7, 1), 1)
     assert type(dmc.LeapSeconds.valid_date) == type(datetime.datetime.now())
 
-@mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)))
+
+@mock.patch(
+    "requests.get",
+    mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)),
+)
 def test_failed_leapsecond_load_and_update():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "invalidpath", "leapseconds.dat"
     )
 
@@ -151,9 +165,13 @@ def test_failed_leapsecond_load_and_update():
     with pytest.raises(ValueError):
         dmc.LeapSeconds._load_leap_second_data()
 
-@mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 200)))
+
+@mock.patch(
+    "requests.get",
+    mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 200)),
+)
 def test_update_leap_second_data():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "tmp_leapseconds.out"
     )
 
@@ -167,9 +185,13 @@ def test_update_leap_second_data():
     assert os.path.isfile(ait.config.leapseconds.filename)
     os.remove(ait.config.leapseconds.filename)
 
-@mock.patch('requests.get', mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)))
+
+@mock.patch(
+    "requests.get",
+    mock.MagicMock(return_value=MockResponse(LEAPSECOND_DATA_RESPONSE, 400)),
+)
 def test_unable_to_pull_leapsecond_data():
-    ait.config.leapseconds._config['filename'] = os.path.join(
+    ait.config.leapseconds._config["filename"] = os.path.join(
         os.path.dirname(__file__), "testdata", "dmc", "tmp_leapseconds.out"
     )
 

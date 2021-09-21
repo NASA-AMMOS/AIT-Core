@@ -27,21 +27,21 @@ import ait
 import ait.core
 
 
-
 def setUp():
     """Set up tests.
 
     Turn logging level to CRITICAL: due to failure test cases, there
     are many verbose log messages that are useful in context.
     """
-    logging.getLogger('ait').setLevel(logging.CRITICAL)
+    logging.getLogger("ait").setLevel(logging.CRITICAL)
+
 
 def tearDown():
     """Tear down tests.
 
     Turn logging level back to INFO.
     """
-    logging.getLogger('ait').setLevel(logging.INFO)
+    logging.getLogger("ait").setLevel(logging.INFO)
 
 
 class TestFile:
@@ -62,25 +62,23 @@ class TestFile:
     will be deleted.
     """
 
-    def __init__ (self, data):
+    def __init__(self, data):
         """Creates a new TestFile and writes data to a temporary file."""
         self._filename = None
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self._tfile = tempfile.NamedTemporaryFile(mode='wt')
+            self._tfile = tempfile.NamedTemporaryFile(mode="wt")
             self._filename = self._tfile.name
 
-        with open(self._filename, 'wt') as output:
+        with open(self._filename, "wt") as output:
             output.write(data)
 
-
-    def __enter__ (self):
+    def __enter__(self):
         """Enter the runtime context and return filename."""
         return self._filename
 
-
-    def __exit__ (self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         """Exit the runtime context and delete filename."""
         self._tfile.close()
         self._filename = None

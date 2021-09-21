@@ -35,7 +35,7 @@ import collections
 from ait.core import cmd, dtype, log, tlm, util
 
 
-class YAMLProcessor (object):
+class YAMLProcessor(object):
 
     __slots__ = ["ymlfile", "data", "loaded", "doclines", "_clean"]
 
@@ -67,7 +67,7 @@ class YAMLProcessor (object):
             if self._clean:
                 self.data = self.process(self.ymlfile)
             else:
-                with open(self.ymlfile, 'rb') as stream:
+                with open(self.ymlfile, "rb") as stream:
                     for data in yaml.load_all(stream, Loader=yaml.Loader):
                         self.data.append(data)
 
@@ -87,13 +87,13 @@ class YAMLProcessor (object):
             # Used for finding/displaying errors
             self.doclines = []
             linenum = None
-            with open(ymlfile, 'r') as txt:
+            with open(ymlfile, "r") as txt:
                 for linenum, line in enumerate(txt):
                     # Pattern to match document start lines
-                    doc_pattern = re.compile('(---) (![a-z]+)(.*$)', flags=re.I)
+                    doc_pattern = re.compile("(---) (![a-z]+)(.*$)", flags=re.I)
 
                     # Pattern to match sequence start lines
-                    seq_pattern = re.compile('(\s*)(-+) !([a-z]+)(.*$)', flags=re.I)
+                    seq_pattern = re.compile("(\s*)(-+) !([a-z]+)(.*$)", flags=re.I)
 
                     # If we find a document, remove the tag
                     if doc_pattern.match(line):
@@ -101,7 +101,9 @@ class YAMLProcessor (object):
                         self.doclines.append(linenum)
                     elif seq_pattern.match(line):
                         # Replace the sequence start with key string
-                        line = seq_pattern.sub(r"\1\2 \3: line " + str(linenum), line).lower()
+                        line = seq_pattern.sub(
+                            r"\1\2 \3: line " + str(linenum), line
+                        ).lower()
 
                     output = output + line
 
@@ -110,7 +112,7 @@ class YAMLProcessor (object):
                 raise util.YAMLError(msg)
             else:
                 # Append one more document to docline for the end
-                self.doclines.append(linenum+1)
+                self.doclines.append(linenum + 1)
 
             return output
 
@@ -121,7 +123,7 @@ class YAMLProcessor (object):
 
 class SchemaProcessor(object):
 
-    __slots__ = ['_schemafile', 'data', '_proc_schema', 'loaded']
+    __slots__ = ["_schemafile", "data", "_proc_schema", "loaded"]
 
     def __init__(self, schemafile=None):
         """Creates a new YAML validator for the given schema and yaml file
@@ -155,7 +157,13 @@ class SchemaProcessor(object):
         try:
             self.data = json.load(open(self._schemafile))
         except (IOError, ValueError) as e:
-            msg = "Could not load schema file '" + self._schemafile + "': '" + str(e) + "'"
+            msg = (
+                "Could not load schema file '"
+                + self._schemafile
+                + "': '"
+                + str(e)
+                + "'"
+            )
             raise jsonschema.SchemaError(msg)
 
         self.loaded = True
@@ -172,7 +180,7 @@ class ErrorHandler(object):
     information on JSON Schema errors.
     """
 
-    __slots__ = ['error', 'doclines', 'ymlfile', 'schemafile', 'messages']
+    __slots__ = ["error", "doclines", "ymlfile", "schemafile", "messages"]
 
     def __init__(self, error=None, ymlfile=None, schemafile=None):
         self.error = error
@@ -182,12 +190,12 @@ class ErrorHandler(object):
     def process(self, docnum, doclines, error, messages=None):
         # TODO: Process the various types of errors
 
-        start = doclines[docnum]+1
+        start = doclines[docnum] + 1
         if error.message.endswith("is not of type u'object'"):
             msg = "Invalid root object in YAML. Check format."
             messages.append(msg)
-        elif len(doclines) > docnum+1:
-            end = doclines[docnum+1]+1
+        elif len(doclines) > docnum + 1:
+            end = doclines[docnum + 1] + 1
             self.pretty(start, end, error, messages)
         else:
             # Only one value for doclines since only 1 doc
@@ -231,7 +239,7 @@ class ErrorHandler(object):
                 found = False
 
                 context = collections.deque(maxlen=20)
-                tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n"""
+                tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n" ""
                 for cnt, path in enumerate(error.relative_path):
 
                     # Need to set the key we are looking, and then check the array count
@@ -259,9 +267,9 @@ class ErrorHandler(object):
 
                         # Check if line contains the error
                         if ":" in line:
-                            l = line.split(':')
+                            l = line.split(":")
                             key = l[0]
-                            value = ':'.join(l[1:])
+                            value = ":".join(l[1:])
 
                             # TODO:
                             # Handle maxItems TBD
@@ -279,17 +287,30 @@ class ErrorHandler(object):
                                 # check if we are at our match_count and end of the path
                                 if match_count == array_index:
                                     # check if we are at end of the jsonpath
-                                    if cnt == len(jsonpath)-1:
+                                    if cnt == len(jsonpath) - 1:
                                         # we are at the end of path so let's stop here'
                                         if error.validator == "type":
                                             if value.strip() == str(error.instance):
-                                                errormsg = "Value '%s' should be of type '%s'" % (error.instance, str(error.validator_value))
-                                                line = line.replace("\n", (tag % errormsg))
+                                                errormsg = (
+                                                    "Value '%s' should be of type '%s'"
+                                                    % (
+                                                        error.instance,
+                                                        str(error.validator_value),
+                                                    )
+                                                )
+                                                line = line.replace(
+                                                    "\n", (tag % errormsg)
+                                                )
                                                 foundline = linenum
                                                 found = True
-                                            elif value.strip() == "" and error.instance is None:
+                                            elif (
+                                                value.strip() == ""
+                                                and error.instance is None
+                                            ):
                                                 errormsg = "Missing value for %s." % key
-                                                line = line.replace("\n", (tag % errormsg))
+                                                line = line.replace(
+                                                    "\n", (tag % errormsg)
+                                                )
                                                 foundline = linenum
                                                 found = True
 
@@ -305,9 +326,6 @@ class ErrorHandler(object):
 
                                 match_count += 1
 
-
-                                
-
                         # for the context queue, we want to get the error to appear in
                         # the middle of the error output. to do so, we will only append
                         # to the queue in 2 cases:
@@ -316,11 +334,12 @@ class ErrorHandler(object):
                         #    just keep pushing on the queue until we find it in the YAML.
                         # 2. once we find the error (found == True), we just want to push
                         #    onto the queue until the the line is in the middle
-                        if not found or (found and context.maxlen > (linenum-foundline)*2):
+                        if not found or (
+                            found and context.maxlen > (linenum - foundline) * 2
+                        ):
                             context.append(line)
-                        elif found and context.maxlen <= (linenum-foundline)*2:
+                        elif found and context.maxlen <= (linenum - foundline) * 2:
                             break
-
 
                     # Loop through the queue and generate a readable msg output
                     out = ""
@@ -328,7 +347,11 @@ class ErrorHandler(object):
                         out += line
 
                     if foundline:
-                        msg = "Error found on line %d in %s:\n\n%s" % (foundline, self.ymlfile, out)
+                        msg = "Error found on line %d in %s:\n\n%s" % (
+                            foundline,
+                            self.ymlfile,
+                            out,
+                        )
                         messages.append(msg)
 
                         # reset the line it was found on and the context
@@ -342,7 +365,7 @@ class ErrorHandler(object):
 
 class Validator(object):
 
-    __slots__ = ['_ymlfile', '_schemafile', '_ymlproc', '_schemaproc', 'ehandler']
+    __slots__ = ["_ymlfile", "_schemafile", "_ymlproc", "_schemaproc", "ehandler"]
 
     def __init__(self, ymlfile, schemafile):
         """Creates a new YAML validator for the given schema and yaml file
@@ -370,12 +393,18 @@ class Validator(object):
         self._schemaproc = SchemaProcessor(self._schemafile)
         valid = True
 
-        log.debug("BEGIN: Schema-based validation for YAML '%s' with schema '%s'", self._ymlfile, self._schemafile)
+        log.debug(
+            "BEGIN: Schema-based validation for YAML '%s' with schema '%s'",
+            self._ymlfile,
+            self._schemafile,
+        )
 
         # Make sure the yml and schema have been loaded
         if self._ymlproc.loaded and self._schemaproc.loaded:
             # Load all of the yaml documents. Could be more than one in the same YAML file.
-            for docnum, data in enumerate(yaml.load_all(self._ymlproc.data, Loader=yaml.Loader)):
+            for docnum, data in enumerate(
+                yaml.load_all(self._ymlproc.data, Loader=yaml.Loader)
+            ):
 
                 # Since YAML allows integer keys but JSON does not, we need to first
                 # dump the data as a JSON string to encode all of the potential integers
@@ -389,8 +418,14 @@ class Validator(object):
                 # Loop through the errors (if any) and set valid = False if any are found
                 # Display the error message
                 for error in v.iter_errors(data):
-                    msg = "Schema-based validation failed for YAML file '" + self._ymlfile + "'"
-                    self.ehandler.process(docnum, self._ymlproc.doclines, error, messages)
+                    msg = (
+                        "Schema-based validation failed for YAML file '"
+                        + self._ymlfile
+                        + "'"
+                    )
+                    self.ehandler.process(
+                        docnum, self._ymlproc.doclines, error, messages
+                    )
                     valid = False
 
                 if not valid:
@@ -405,7 +440,7 @@ class Validator(object):
         return valid
 
 
-class CmdValidator (Validator):
+class CmdValidator(Validator):
     def __init__(self, ymlfile=None, schema=None):
         super(CmdValidator, self).__init__(ymlfile, schema)
 
@@ -444,10 +479,10 @@ class CmdValidator (Validator):
             ### set the command rules
             #
             # set uniqueness rule for command names
-            rules.append(UniquenessRule('name', "Duplicate command name: %s", messages))
+            rules.append(UniquenessRule("name", "Duplicate command name: %s", messages))
 
             # set uniqueness rule for opcodes
-            rules.append(UniquenessRule('opcode', "Duplicate opcode: %s", messages))
+            rules.append(UniquenessRule("opcode", "Duplicate opcode: %s", messages))
 
             for key in cmddict.keys():
                 cmddefn = cmddict[key]
@@ -460,19 +495,49 @@ class CmdValidator (Validator):
                 ### set rules for command arguments
                 #
                 # set uniqueness rule for opcodes
-                argrules.append(UniquenessRule('name', "Duplicate argument name: " + cmddefn.name + ".%s", messages))
+                argrules.append(
+                    UniquenessRule(
+                        "name",
+                        "Duplicate argument name: " + cmddefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set type rule for arg.type
-                argrules.append(TypeRule('type', "Invalid argument type for argument: " + cmddefn.name + ".%s", messages))
+                argrules.append(
+                    TypeRule(
+                        "type",
+                        "Invalid argument type for argument: " + cmddefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set argument size rule for arg.type.nbytes
-                argrules.append(TypeSizeRule('nbytes', "Invalid argument size for argument: " + cmddefn.name + ".%s", messages))
+                argrules.append(
+                    TypeSizeRule(
+                        "nbytes",
+                        "Invalid argument size for argument: " + cmddefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set argument enumerations rule to check no enumerations contain un-quoted YAML special variables
-                argrules.append(EnumRule('enum', "Invalid enum value for argument: " + cmddefn.name + ".%s", messages))
+                argrules.append(
+                    EnumRule(
+                        "enum",
+                        "Invalid enum value for argument: " + cmddefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set byte order rule to ensure proper ordering of aruguments
-                argrules.append(ByteOrderRule('bytes', "Invalid byte order for argument: " + cmddefn.name + ".%s", messages))
+                argrules.append(
+                    ByteOrderRule(
+                        "bytes",
+                        "Invalid byte order for argument: " + cmddefn.name + ".%s",
+                        messages,
+                    )
+                )
                 #
                 ###
 
@@ -495,7 +560,13 @@ class CmdValidator (Validator):
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
-                    msg = "Validation Failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
+                    msg = (
+                        "Validation Failed for YAML file '"
+                        + self._ymlfile
+                        + "': '"
+                        + str(e.message)
+                        + "'"
+                    )
                 else:
                     msg = "Validation Failed for YAML file '" + self._ymlfile + "'"
 
@@ -504,7 +575,7 @@ class CmdValidator (Validator):
                 return False
 
 
-class TlmValidator (Validator):
+class TlmValidator(Validator):
     def __init__(self, ymlfile=None, schema=None):
         super(TlmValidator, self).__init__(ymlfile, schema)
 
@@ -541,7 +612,7 @@ class TlmValidator (Validator):
             ### set the packet rules
             #
             # set uniqueness rule for packet names
-            rules.append(UniquenessRule('name', "Duplicate packet name: %s", messages))
+            rules.append(UniquenessRule("name", "Duplicate packet name: %s", messages))
 
             ###
             # Loop through the keys and check each PacketDefinition
@@ -557,16 +628,40 @@ class TlmValidator (Validator):
                 ### set rules for telemetry fields
                 #
                 # set uniqueness rule for field name
-                fldrules.append(UniquenessRule('name', "Duplicate field name: " + pktdefn.name + ".%s", messages))
+                fldrules.append(
+                    UniquenessRule(
+                        "name",
+                        "Duplicate field name: " + pktdefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set type rule for field.type
-                fldrules.append(TypeRule('type', "Invalid field type for field: " + pktdefn.name + ".%s", messages))
+                fldrules.append(
+                    TypeRule(
+                        "type",
+                        "Invalid field type for field: " + pktdefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set field size rule for field.type.nbytes
-                fldrules.append(TypeSizeRule('nbytes', "Invalid field size for field: " + pktdefn.name + ".%s", messages))
+                fldrules.append(
+                    TypeSizeRule(
+                        "nbytes",
+                        "Invalid field size for field: " + pktdefn.name + ".%s",
+                        messages,
+                    )
+                )
 
                 # set field enumerations rule to check no enumerations contain un-quoted YAML special variables
-                fldrules.append(EnumRule('enum', "Invalid enum value for field: " + pktdefn.name + ".%s", messages))
+                fldrules.append(
+                    EnumRule(
+                        "enum",
+                        "Invalid enum value for field: " + pktdefn.name + ".%s",
+                        messages,
+                    )
+                )
                 #
                 ###
 
@@ -589,7 +684,13 @@ class TlmValidator (Validator):
             # Display the error message
             if messages is not None:
                 if len(e.message) < 128:
-                    msg = "Validation Failed for YAML file '" + self._ymlfile + "': '" + str(e.message) + "'"
+                    msg = (
+                        "Validation Failed for YAML file '"
+                        + self._ymlfile
+                        + "': '"
+                        + str(e.message)
+                        + "'"
+                    )
                 else:
                     msg = "Validation Failed for YAML file '" + self._ymlfile + "'"
 
@@ -671,10 +772,16 @@ class TypeSizeRule(ValidationRule):
             defnbytes = defn.slice().stop - defn.slice().start
             if nbytes != defnbytes:
                 self.messages.append(self.msg % defn.name)
-                self.messages.append("Definition size of (" + str(defnbytes) +
-                                     " bytes) does not match size of data" +
-                                     " type " +str(defn.type.name) + " (" +
-                                     str(nbytes) + " byte(s))")
+                self.messages.append(
+                    "Definition size of ("
+                    + str(defnbytes)
+                    + " bytes) does not match size of data"
+                    + " type "
+                    + str(defn.type.name)
+                    + " ("
+                    + str(nbytes)
+                    + " byte(s))"
+                )
                 # TODO self.messages.append("TBD location message")
                 self.valid = False
 
@@ -685,6 +792,7 @@ class EnumRule(ValidationRule):
     interpretted as boolean True/False unless explicitly quoted in the YAML
     file. The YAML boolean strings include (TRUE/FALSE/ON/OFF/YES/NO) .
     """
+
     def __init__(self, attr, msg, messages=[]):
         """Takes in an attribute name, error message, and list of error
         messages to append to
@@ -699,9 +807,11 @@ class EnumRule(ValidationRule):
                 val = enum.get(key)
                 if type(key) is bool or type(val) is bool:
                     self.messages.append(self.msg % str(defn.name))
-                    self.messages.append("Must enclose all YAML boolean " +
-                                         "strings (TRUE/FALSE/ON/OFF/YES/NO) " +
-                                         "with quotes.")
+                    self.messages.append(
+                        "Must enclose all YAML boolean "
+                        + "strings (TRUE/FALSE/ON/OFF/YES/NO) "
+                        + "with quotes."
+                    )
                     # TODO self.messages.append("TBD location message")
                     self.valid = False
 
@@ -721,10 +831,9 @@ class ByteOrderRule(ValidationRule):
         range.
         """
         # Check enum does not contain boolean keys
-        if (defn.slice().start != self.prevstop):
+        if defn.slice().start != self.prevstop:
             self.messages.append(self.msg % str(defn.name))
             # TODO self.messages.append("TBD location message")
             self.valid = False
 
         self.prevstop = defn.slice().stop
-

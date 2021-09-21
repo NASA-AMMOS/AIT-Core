@@ -15,6 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import os
@@ -29,11 +30,11 @@ import ait
 from ait.core import cmd, tlm, val, util, evr
 
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata', 'val')
+DATA_PATH = os.path.join(os.path.dirname(__file__), "testdata", "val")
 
 
 class TestYAMLProcessor(object):
-    test_yaml_file = '/tmp/test.yaml'
+    test_yaml_file = "/tmp/test.yaml"
 
     def test_yamlprocess_init(self):
         yp = val.YAMLProcessor()
@@ -43,15 +44,15 @@ class TestYAMLProcessor(object):
         assert yp._clean
         assert yp.ymlfile is None
 
-    @mock.patch('ait.core.val.YAMLProcessor.load')
+    @mock.patch("ait.core.val.YAMLProcessor.load")
     def test_ymlfile_setter(self, yaml_load_mock):
         yp = val.YAMLProcessor()
         assert yaml_load_mock.call_count == 0
-        ymlfile = 'something that is not None'
+        ymlfile = "something that is not None"
         yp.load(ymlfile)
         assert yaml_load_mock.call_count == 1
 
-    @mock.patch('ait.core.val.YAMLProcessor.process')
+    @mock.patch("ait.core.val.YAMLProcessor.process")
     def test_yaml_load_with_clean(self, process_mock):
         yp = val.YAMLProcessor()
         yp.load()
@@ -59,21 +60,16 @@ class TestYAMLProcessor(object):
         assert yp.loaded
 
     def test_yaml_load_without_clean(self):
-        yaml_docs = (
-            '---\n'
-            'a: hello\n'
-            '---\n'
-            'b: goodbye\n'
-        )
+        yaml_docs = "---\n" "a: hello\n" "---\n" "b: goodbye\n"
 
-        with open(self.test_yaml_file, 'wt') as out:
+        with open(self.test_yaml_file, "wt") as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
         yp.load(self.test_yaml_file)
         assert len(yp.data) == 2
-        assert yp.data[0]['a'] == 'hello'
-        assert yp.data[1]['b'] == 'goodbye'
+        assert yp.data[0]["a"] == "hello"
+        assert yp.data[1]["b"] == "goodbye"
 
         os.remove(self.test_yaml_file)
 
@@ -84,7 +80,7 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        with open(self.test_yaml_file, 'wt') as out:
+        with open(self.test_yaml_file, "wt") as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -94,13 +90,9 @@ class TestYAMLProcessor(object):
         os.remove(self.test_yaml_file)
 
     def test_basic_process_doc_object_name_strip(self):
-        yaml_docs = (
-            'a: hello\n'
-            '--- !foo\n'
-            'b: goodbye\n'
-        )
+        yaml_docs = "a: hello\n" "--- !foo\n" "b: goodbye\n"
 
-        with open(self.test_yaml_file, 'w') as out:
+        with open(self.test_yaml_file, "w") as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -108,16 +100,13 @@ class TestYAMLProcessor(object):
 
         assert len(yp.doclines) == 2
         assert yp.doclines == [1, 3]
-        assert '!foo' not in out
+        assert "!foo" not in out
         os.remove(self.test_yaml_file)
 
     def test_basic_process_seq_name_strip(self):
-        yaml_docs = (
-            ' - !bar\n'
-            ' - blah\n'
-        )
+        yaml_docs = " - !bar\n" " - blah\n"
 
-        with open(self.test_yaml_file, 'w') as out:
+        with open(self.test_yaml_file, "w") as out:
             out.write(yaml_docs)
 
         yp = val.YAMLProcessor(clean=False)
@@ -127,7 +116,7 @@ class TestYAMLProcessor(object):
         os.remove(self.test_yaml_file)
 
     def test_empty_file_process(self):
-        open(self.test_yaml_file, 'w').close()
+        open(self.test_yaml_file, "w").close()
 
         yp = val.YAMLProcessor(clean=False)
         with pytest.raises(util.YAMLError):
@@ -142,18 +131,18 @@ class TestYAMLProcessor(object):
         ---
         b: processing wont even get here
         """
-        open(self.test_yaml_file, 'w').close()
+        open(self.test_yaml_file, "w").close()
 
         yp = val.YAMLProcessor(clean=False)
         with pytest.raises(IOError):
-            yp.process('/tmp/thisFileDoesntExistAndWillCauseAnError')
+            yp.process("/tmp/thisFileDoesntExistAndWillCauseAnError")
 
         os.remove(self.test_yaml_file)
 
 
 class TestSchemaProcessor(object):
     def test_schema_load(self):
-        """ Test variable settings from proper schema loading. """
+        """Test variable settings from proper schema loading."""
         schemaproc = val.SchemaProcessor()
 
         # Test success
@@ -165,16 +154,16 @@ class TestSchemaProcessor(object):
         assert schemaproc.schemafile == schemaproc._schemafile
 
     def test_schema_load_failure_bad_file(self):
-        """ Test Exception raise on not existent file load. """
+        """Test Exception raise on not existent file load."""
         schemaproc = val.SchemaProcessor()
 
-        schema = os.path.join('not', 'a', 'valid', 'path.json')
+        schema = os.path.join("not", "a", "valid", "path.json")
         with pytest.raises(jsonschema.SchemaError):
             schemaproc.load(schema)
 
     def test_schema_load_failure_no_json_object(self):
-        test_file_path = '/tmp/test.json'
-        open(test_file_path, 'w').close()
+        test_file_path = "/tmp/test.json"
+        open(test_file_path, "w").close()
 
         schemaproc = val.SchemaProcessor()
 
@@ -186,13 +175,13 @@ class TestSchemaProcessor(object):
 
 class TestErrorHandler(object):
     def test_error_handler_init(self):
-        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
-        assert eh.error == 'error'
-        assert eh.ymlfile == 'ymlfile'
-        assert eh.schemafile == 'schemafile'
+        eh = val.ErrorHandler("error", "ymlfile", "schemafile")
+        assert eh.error == "error"
+        assert eh.ymlfile == "ymlfile"
+        assert eh.schemafile == "schemafile"
 
     def test_process_bad_root_object(self):
-        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler("error", "ymlfile", "schemafile")
         messages = []
         error = mock.MagicMock()
         error.message = "this is not of type u'object'"
@@ -200,9 +189,9 @@ class TestErrorHandler(object):
         assert len(messages) == 1
         assert messages[0] == "Invalid root object in YAML. Check format."
 
-    @mock.patch('ait.core.val.ErrorHandler.pretty')
+    @mock.patch("ait.core.val.ErrorHandler.pretty")
     def test_process_docline_docnum_mismatch(self, pretty_mock):
-        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler("error", "ymlfile", "schemafile")
         messages = []
         error = mock.MagicMock()
         error.message = "Some error message"
@@ -210,9 +199,9 @@ class TestErrorHandler(object):
         assert pretty_mock.called
         pretty_mock.assert_called_with(3, 4, error, messages)
 
-    @mock.patch('ait.core.val.ErrorHandler.pretty')
+    @mock.patch("ait.core.val.ErrorHandler.pretty")
     def test_procces_with_single_doc(self, pretty_mock):
-        eh = val.ErrorHandler('error', 'ymlfile', 'schemafile')
+        eh = val.ErrorHandler("error", "ymlfile", "schemafile")
         messages = []
         error = mock.MagicMock()
         error.message = "Some error message"
@@ -231,7 +220,7 @@ def validate(args):
 
 def dispmsgs(msgs):
     for msg in msgs:
-        print(f'Validation Test Error: {msg} \n')
+        print(f"Validation Test Error: {msg} \n")
 
 
 def cmdval(args):
@@ -251,12 +240,13 @@ def tlmval(args):
 
     return msgs, v
 
+
 def testYAMLProcesserLoad():
     ymlproc = val.YAMLProcessor()
 
     # Test bad path
     try:
-        ymlfile = os.path.join('invalid', 'file', 'path.yaml')
+        ymlfile = os.path.join("invalid", "file", "path.yaml")
         ymlproc.load(ymlfile)
         assert False
     except IOError:
@@ -264,7 +254,7 @@ def testYAMLProcesserLoad():
         assert not ymlproc.loaded
 
     # Test valid yaml
-    ymlproc.load(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
+    ymlproc.load(os.path.join(DATA_PATH, "testValidCmd1.yaml"))
 
     assert ymlproc.data is not None
     assert ymlproc.loaded
@@ -272,122 +262,161 @@ def testYAMLProcesserLoad():
 
 def testYAMLProcessorProcess():
     ymlproc = val.YAMLProcessor()
-    ymlproc.process(os.path.join(DATA_PATH,  "testValidCmd1.yaml"))
+    ymlproc.process(os.path.join(DATA_PATH, "testValidCmd1.yaml"))
 
     # check the document lines are correct
     doclines = [85]
     assert doclines == ymlproc.doclines
 
+
 def testValidatorCmd():
     msgs = []
 
     # test successful validation
-    msgs, v = validate([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), cmd.getDefaultSchema()])
+    msgs, v = validate(
+        [os.path.join(DATA_PATH, "testValidCmd1.yaml"), cmd.getDefaultSchema()]
+    )
     assert v
     assert len(msgs) == 0
 
     # test failed validation
-    msgs, v = validate([os.path.join(DATA_PATH,  "testInvalidCmd1.yaml"), cmd.getDefaultSchema()])
+    msgs, v = validate(
+        [os.path.join(DATA_PATH, "testInvalidCmd1.yaml"), cmd.getDefaultSchema()]
+    )
 
     assert not v
     assert len(msgs) == 1
     assert "Value 'BAD_OPCODE' should be of type 'integer'" in msgs[0]
 
+
 def testCmdValidator():
     # test successful cmd validation
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testValidCmd1.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testValidCmd1.yaml"), cmd.getDefaultSchema()]
+    )
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     try:
-        msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator1.yaml"), cmd.getDefaultSchema()])
+        msgs, v = cmdval(
+            [os.path.join(DATA_PATH, "testCmdValidator1.yaml"), cmd.getDefaultSchema()]
+        )
         assert False
     except util.YAMLError as e:
         assert "Duplicate Command name" in e.message
 
     try:
-        msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator2.yaml"), cmd.getDefaultSchema()])
+        msgs, v = cmdval(
+            [os.path.join(DATA_PATH, "testCmdValidator2.yaml"), cmd.getDefaultSchema()]
+        )
         assert False
     except util.YAMLError as e:
         assert "Duplicate Command opcode" in e.message
 
     # test failed cmd validation - bad argtype
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator3.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator3.yaml"), cmd.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 1
     assert "Invalid argument type" in msgs[0]
 
     # test failed cmd validation - bad nbytes
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator4.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator4.yaml"), cmd.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 2
     assert "Invalid argument size" in msgs[0]
 
     # test failed cmd validation - bad byte order
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator5.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator5.yaml"), cmd.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 1
     assert "Invalid byte order" in msgs[0]
 
     # test failed cmd validation - bad start byte
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator6.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator6.yaml"), cmd.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 1
     assert "Invalid byte order" in msgs[0]
 
     # test success cmd validation - ensure quoted YAML booleans in enums
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator7.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator7.yaml"), cmd.getDefaultSchema()]
+    )
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     # test failed cmd validation - YAML booleans not quoted
-    msgs, v = cmdval([os.path.join(DATA_PATH,  "testCmdValidator8.yaml"), cmd.getDefaultSchema()])
+    msgs, v = cmdval(
+        [os.path.join(DATA_PATH, "testCmdValidator8.yaml"), cmd.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 2
     assert "Invalid enum value" in msgs[0]
 
+
 def testTlmValidator():
     # test successful tlm validation
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testValidTlm1.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testValidTlm1.yaml"), tlm.getDefaultSchema()]
+    )
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
     # test failed tlm validation - duplicate packet name
     try:
-        msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator1.yaml"), tlm.getDefaultSchema()])
+        msgs, v = tlmval(
+            [os.path.join(DATA_PATH, "testTlmValidator1.yaml"), tlm.getDefaultSchema()]
+        )
         assert False
     except util.YAMLError as e:
         assert "Duplicate packet name" in e.message
 
     # test failed tlm validation - duplicate field name
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator2.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testTlmValidator2.yaml"), tlm.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 1
     assert "Duplicate field name" in msgs[0]
 
     # test failed tlm validation - invalid field type
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator3.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testTlmValidator3.yaml"), tlm.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 1
     assert "Invalid field type" in msgs[0]
 
     # test failed tlm validation - invalid field size for field type specified
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator4.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testTlmValidator4.yaml"), tlm.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 2
     assert "Invalid field size" in msgs[0]
 
     # test failed tlm validation - un-quoted YAML special variables in enumerations
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator5.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testTlmValidator5.yaml"), tlm.getDefaultSchema()]
+    )
     assert not v
     assert len(msgs) == 2
     assert "Invalid enum value" in msgs[0]
 
     # test failed tlm validation - empty string for a YAML field
-    msgs, v = tlmval([os.path.join(DATA_PATH,  "testTlmValidator6.yaml"), tlm.getDefaultSchema()])
+    msgs, v = tlmval(
+        [os.path.join(DATA_PATH, "testTlmValidator6.yaml"), tlm.getDefaultSchema()]
+    )
 
     assert not v
     assert len(msgs) == 1
@@ -423,16 +452,17 @@ def testEvrValidation():
 def testTableValidation():
     # Validation test of current table configuration
     yml = ait.config.table.filename
-    schema = pkg_resources.resource_filename('ait.core', 'data/table_schema.json')
+    schema = pkg_resources.resource_filename("ait.core", "data/table_schema.json")
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
 
+
 def testLimitsValidation():
     # Validation test of current table configuration
     yml = ait.config.limits.filename
-    schema = pkg_resources.resource_filename('ait.core', 'data/limits_schema.json')
+    schema = pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
     msgs, v = validate([yml, schema])
     dispmsgs(msgs)
     assert v

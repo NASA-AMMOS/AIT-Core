@@ -24,7 +24,7 @@
 ##
 ##'''
 
-'''
+"""
 usage: ait-cmd-send [options] command [arguments]
 
 Sends the given command and its arguments to the ISS simulator via 
@@ -39,7 +39,7 @@ the AIT server, or if the 'udp' flag is set then directly via UDP.
 Examples:
 
   $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
-'''
+"""
 
 import argparse
 from collections import OrderedDict
@@ -51,54 +51,52 @@ from ait.core import api, log, util
 def main():
     log.begin()
 
-    descr = "Sends the given command and its arguments to the ISS simulator via  " \
-            "the AIT server, or if the 'udp' flag is set then directly via UDP."
-
-    parser = argparse.ArgumentParser(
-
-        description=descr,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    descr = (
+        "Sends the given command and its arguments to the ISS simulator via  "
+        "the AIT server, or if the 'udp' flag is set then directly via UDP."
     )
 
+    parser = argparse.ArgumentParser(
+        description=descr, formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
 
-    arg_defns = OrderedDict({
-        '--topic': {
-            'type': str,
-            'default': ait.config.get('command.topic', ait.DEFAULT_CMD_TOPIC),
-            'help': 'Name of topic from which to publish data'
-        },
-        '--verbose': {
-            'action': 'store_true',
-            'default': False,
-            'help': 'Hexdump of the raw command being sent.'
-        },
-        '--udp': {
-            'action': 'store_true',
-            'default': False,
-            'help': 'Send data to UDP socket.'
-        },
-        '--host': {
-            'type': str,
-            'default': ait.DEFAULT_CMD_HOST,
-            'help': 'Host to which to send data'
-        },
-        '--port': {
-            'type'    : int,
-            'default' : ait.config.get('command.port', ait.DEFAULT_CMD_PORT),
-            'help'    : 'Port on which to send data'
+    arg_defns = OrderedDict(
+        {
+            "--topic": {
+                "type": str,
+                "default": ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC),
+                "help": "Name of topic from which to publish data",
+            },
+            "--verbose": {
+                "action": "store_true",
+                "default": False,
+                "help": "Hexdump of the raw command being sent.",
+            },
+            "--udp": {
+                "action": "store_true",
+                "default": False,
+                "help": "Send data to UDP socket.",
+            },
+            "--host": {
+                "type": str,
+                "default": ait.DEFAULT_CMD_HOST,
+                "help": "Host to which to send data",
+            },
+            "--port": {
+                "type": int,
+                "default": ait.config.get("command.port", ait.DEFAULT_CMD_PORT),
+                "help": "Port on which to send data",
+            },
         }
-    })
+    )
 
-    arg_defns['command'] = {
-        'type' : str,
-        'help' : 'Name of the command to send.'
-    }
+    arg_defns["command"] = {"type": str, "help": "Name of the command to send."}
 
-    arg_defns['arguments'] = {
-        'type'      : util.toNumberOrStr,
-        'metavar'   : 'arguments',
-        'nargs'     : '*',
-        'help'      : 'Command arguments.'
+    arg_defns["arguments"] = {
+        "type": util.toNumberOrStr,
+        "metavar": "arguments",
+        "nargs": "*",
+        "help": "Command arguments.",
     }
 
     ## Push argument defs to the parser
@@ -109,11 +107,11 @@ def main():
     args = parser.parse_args()
 
     ## Extract args to local fields
-    host     = args.host
-    port     = args.port
-    verbose  = args.verbose
-    udp      = args.udp
-    topic    = args.topic
+    host = args.host
+    port = args.port
+    verbose = args.verbose
+    udp = args.udp
+    topic = args.topic
 
     ## If UDP enabled, collect host/port info
     if udp:
@@ -133,5 +131,6 @@ def main():
 
     log.end()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

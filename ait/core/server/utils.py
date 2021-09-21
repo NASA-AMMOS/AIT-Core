@@ -32,7 +32,7 @@ def encode_message(topic, data):
 
     """
     try:
-        enc = [bytes(topic, 'utf-8'), pickle.dumps(data)]
+        enc = [bytes(topic, "utf-8"), pickle.dumps(data)]
     except:
         enc = None
 
@@ -55,7 +55,7 @@ def decode_message(msg):
     [topic, message] = msg
 
     try:
-        tpc = topic.decode('utf-8')
+        tpc = topic.decode("utf-8")
         msg = pickle.loads(message)
     except:
         tpc = None

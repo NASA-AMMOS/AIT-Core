@@ -35,23 +35,24 @@ import ait.core
 from ait.core import log
 
 GPS_Epoch = datetime.datetime(1980, 1, 6, 0, 0, 0)
-TICs      = [ ]
-TwoPi     = 2 * math.pi
+TICs = []
+TwoPi = 2 * math.pi
 
-DOY_Format = '%Y-%jT%H:%M:%SZ'
-ISO_8601_Format = '%Y-%m-%dT%H:%M:%SZ'
-RFC3339_Format = '%Y-%m-%dT%H:%M:%S.%fZ'
+DOY_Format = "%Y-%jT%H:%M:%SZ"
+ISO_8601_Format = "%Y-%m-%dT%H:%M:%SZ"
+RFC3339_Format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-_DEFAULT_FILE_NAME = 'leapseconds.dat'
+_DEFAULT_FILE_NAME = "leapseconds.dat"
 LeapSeconds = None
+
 
 def getTimestampUTC():
     """getTimestampUTC() -> (ts_sec, ts_usec)
 
     Returns the current UTC time in seconds and microseconds.
     """
-    utc     = datetime.datetime.utcnow()
-    ts_sec  = calendar.timegm( utc.timetuple() )
+    utc = datetime.datetime.utcnow()
+    ts_sec = calendar.timegm(utc.timetuple())
     ts_usec = utc.microsecond
     return ts_sec, ts_usec
 
@@ -65,8 +66,10 @@ def getUTCDatetimeDOY(days=0, hours=0, minutes=0, seconds=0):
         YYYY-DDDTHH:mm:ssZ
 
     """
-    return (datetime.datetime.utcnow() + 
-        datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)).strftime(DOY_Format)
+    return (
+        datetime.datetime.utcnow()
+        + datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+    ).strftime(DOY_Format)
 
 
 def tic():
@@ -102,7 +105,7 @@ def toc():
             and detailed profiling.
     """
     end = datetime.datetime.now()
-    return totalSeconds( end - TICs.pop() ) if len(TICs) else None
+    return totalSeconds(end - TICs.pop()) if len(TICs) else None
 
 
 def toGPSWeekAndSecs(timestamp=None):
@@ -115,9 +118,9 @@ def toGPSWeekAndSecs(timestamp=None):
     leap = LeapSeconds.get_GPS_offset_for_date(timestamp)
 
     secsInWeek = 604800
-    delta      = totalSeconds(timestamp - GPS_Epoch) + leap
-    seconds    = delta % secsInWeek
-    week       = int( math.floor(delta / secsInWeek) )
+    delta = totalSeconds(timestamp - GPS_Epoch) + leap
+    seconds = delta % secsInWeek
+    week = int(math.floor(delta / secsInWeek))
 
     return (week, seconds)
 
@@ -157,17 +160,17 @@ def toGMST(dt=None):
     else:
         jd = dt
 
-    tUT1  = (jd - 2451545.0) / 36525.0
-    gmst  = 67310.54841 + (876600 * 3600 + 8640184.812866) * tUT1
-    gmst += 0.093104 * tUT1**2
-    gmst -= 6.2e-6   * tUT1**3
+    tUT1 = (jd - 2451545.0) / 36525.0
+    gmst = 67310.54841 + (876600 * 3600 + 8640184.812866) * tUT1
+    gmst += 0.093104 * tUT1 ** 2
+    gmst -= 6.2e-6 * tUT1 ** 3
 
     # Convert from seconds to degrees, i.e.
     # 86400 seconds / 360 degrees = 240 seconds / degree
-    gmst /= 240.
+    gmst /= 240.0
 
     # Convert to radians
-    gmst  = math.radians(gmst) % TwoPi
+    gmst = math.radians(gmst) % TwoPi
 
     if gmst < 0:
         gmst += TwoPi
@@ -188,16 +191,16 @@ def toJulian(dt=None):
         dt = datetime.datetime.utcnow()
 
     if dt.month < 3:
-        year  = dt.year  -  1
+        year = dt.year - 1
         month = dt.month + 12
     else:
-        year  = dt.year
+        year = dt.year
         month = dt.month
 
-    A   = int(year / 100.0)
-    B   = 2 - A + int(A / 4.0)
-    C   = ( (dt.second / 60.0 + dt.minute) / 60.0 + dt.hour ) / 24.0
-    jd  = int(365.25  * (year + 4716))
+    A = int(year / 100.0)
+    B = 2 - A + int(A / 4.0)
+    C = ((dt.second / 60.0 + dt.minute) / 60.0 + dt.hour) / 24.0
+    jd = int(365.25 * (year + 4716))
     jd += int(30.6001 * (month + 1)) + dt.day + B - 1524.5 + C
 
     return jd
@@ -241,6 +244,7 @@ def totalSeconds(td):
 
     return ts
 
+
 def rfc3339StrToDatetime(datestr):
     """rfc3339StrToDatetime(str) -> datetime
 
@@ -249,7 +253,9 @@ def rfc3339StrToDatetime(datestr):
     """
     if datestr is None:
         return None
-    return datetime.datetime.strptime(datestr, RFC3339_Format).replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.strptime(datestr, RFC3339_Format).replace(
+        tzinfo=datetime.timezone.utc
+    )
 
 
 class UTCLeapSeconds(object):
@@ -259,27 +265,27 @@ class UTCLeapSeconds(object):
 
     @property
     def leapseconds(self):
-        return self._data['leapseconds']
+        return self._data["leapseconds"]
 
     @property
     def valid_date(self):
-        return self._data['valid']
+        return self._data["valid"]
 
     def is_valid(self):
-        return datetime.datetime.now() < self._data['valid']
+        return datetime.datetime.now() < self._data["valid"]
 
     def get_current_GPS_offset(self):
-        return self._data['leapseconds'][-1][-1]
+        return self._data["leapseconds"][-1][-1]
 
     def get_GPS_offset_for_date(self, timestamp=None):
         if timestamp is None:
-                timestamp = datetime.datetime.utcnow()
+            timestamp = datetime.datetime.utcnow()
 
         if timestamp < GPS_Epoch:
-                e = "The timestamp date is before the GPS epoch"
-                raise ValueError(e)
+            e = "The timestamp date is before the GPS epoch"
+            raise ValueError(e)
 
-        for offset in reversed(self._data['leapseconds']):
+        for offset in reversed(self._data["leapseconds"]):
             # Offsets are stored as a tuple (date, offset)
             # indicating the `date` when `offset` took effect.
             if timestamp >= offset[0]:
@@ -289,39 +295,39 @@ class UTCLeapSeconds(object):
 
     def _load_leap_second_data(self):
         ls_file = ait.config.get(
-            'leapseconds.filename',
-            os.path.join(ait.config._directory, _DEFAULT_FILE_NAME)
+            "leapseconds.filename",
+            os.path.join(ait.config._directory, _DEFAULT_FILE_NAME),
         )
 
         try:
-            log.info('Attempting to load leapseconds.dat')
-            with open(ls_file, 'rb') as outfile:
+            log.info("Attempting to load leapseconds.dat")
+            with open(ls_file, "rb") as outfile:
                 self._data = pickle.load(outfile)
-            log.info('Loaded leapseconds config file successfully')
+            log.info("Loaded leapseconds config file successfully")
         except IOError:
-            log.info('Unable to locate leapseconds config file')
+            log.info("Unable to locate leapseconds config file")
 
         if not (self._data and self.is_valid()):
             try:
                 self._update_leap_second_data()
             except ValueError:
                 msg = (
-                    'Leapsecond data update failed. '
-                    'This may cause problems with some functionality'
+                    "Leapsecond data update failed. "
+                    "This may cause problems with some functionality"
                 )
                 log.warn(msg)
 
                 if self._data:
-                    log.warn('Continuing with out of date leap second data')
+                    log.warn("Continuing with out of date leap second data")
                 else:
-                    raise ValueError('Could not load leap second data')
+                    raise ValueError("Could not load leap second data")
         else:
-            t = self._data['valid']
-            log_t = t.strftime('%m/%d/%Y')
-            log.info('Leapseconds data valid until %s', log_t)
+            t = self._data["valid"]
+            log_t = t.strftime("%m/%d/%Y")
+            log.info("Leapseconds data valid until %s", log_t)
 
     def _update_leap_second_data(self):
-        """ Updates the systems leap second information
+        """Updates the systems leap second information
 
         Pulls the latest leap second information from
         https://www.ietf.org/timezones/data/leap-seconds.list
@@ -332,42 +338,48 @@ class UTCLeapSeconds(object):
             IOError: If the path to the leap seconds file is not valid
         """
 
-        log.info('Attempting to acquire latest leapsecond data')
+        log.info("Attempting to acquire latest leapsecond data")
 
         ls_file = ait.config.get(
-            'leapseconds.filename',
-            os.path.join(ait.config._directory, _DEFAULT_FILE_NAME)
+            "leapseconds.filename",
+            os.path.join(ait.config._directory, _DEFAULT_FILE_NAME),
         )
 
-        url = 'https://www.ietf.org/timezones/data/leap-seconds.list'
+        url = "https://www.ietf.org/timezones/data/leap-seconds.list"
         r = requests.get(url)
 
         if r.status_code != 200:
-            msg = 'Unable to locate latest timezone data. Connection to IETF failed'
+            msg = "Unable to locate latest timezone data. Connection to IETF failed"
             log.error(msg)
             raise ValueError(msg)
 
-        text = r.text.split('\n')
-        lines = [l for l in text if l.startswith('#@') or not l.startswith('#')]
+        text = r.text.split("\n")
+        lines = [l for l in text if l.startswith("#@") or not l.startswith("#")]
 
-        data = {'valid': None, 'leapseconds': []}
-        data['valid'] = datetime.datetime(1900, 1, 1) + datetime.timedelta(seconds=int(lines[0].split('\t')[1]))
+        data = {"valid": None, "leapseconds": []}
+        data["valid"] = datetime.datetime(1900, 1, 1) + datetime.timedelta(
+            seconds=int(lines[0].split("\t")[1])
+        )
 
         leap = 1
         for l in lines[1:-1]:
-            t = datetime.datetime(1900, 1, 1) + datetime.timedelta(seconds=int(l.split('\t')[0]))
+            t = datetime.datetime(1900, 1, 1) + datetime.timedelta(
+                seconds=int(l.split("\t")[0])
+            )
             if t < GPS_Epoch:
                 continue
 
-            data['leapseconds'].append((t, leap))
+            data["leapseconds"].append((t, leap))
             leap += 1
 
-        log.info('Leapsecond data processed')
-        
+        log.info("Leapsecond data processed")
+
         self._data = data
-        with open(ls_file, 'wb') as outfile:
+        with open(ls_file, "wb") as outfile:
             pickle.dump(data, outfile)
 
-        log.info('Successfully generated leapseconds config file')
+        log.info("Successfully generated leapseconds config file")
 
-if not LeapSeconds: LeapSeconds = UTCLeapSeconds()
+
+if not LeapSeconds:
+    LeapSeconds = UTCLeapSeconds()

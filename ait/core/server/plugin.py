@@ -1,10 +1,13 @@
 from abc import ABCMeta, abstractmethod
 
 import gevent
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
+
+gevent.monkey.patch_all()
 
 import ait.core
 from .client import ZMQInputClient
+
 
 class Plugin(ZMQInputClient):
     """
@@ -37,7 +40,7 @@ class Plugin(ZMQInputClient):
         super(Plugin, self).__init__(**zmq_args)
 
     def __repr__(self):
-        return '<Plugin name={}>'.format(self.name)
+        return "<Plugin name={}>".format(self.name)
 
     @abstractmethod
     def process(self, input_data, topic=None):

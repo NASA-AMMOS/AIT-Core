@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Usage:
         ait-dict-writer [options] (--tlm | --cmd)
 
@@ -38,49 +38,51 @@ Description:
 
         Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
         U.S. Government Sponsorship acknowledged.
-'''
+"""
 
 import sys
 import argparse
 
 from ait.core import log, tlm
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    # Add optional command line arguments    
-    parser.add_argument('--format', default='csv')
-    parser.add_argument('--path', default='')
+    # Add optional command line arguments
+    parser.add_argument("--format", default="csv")
+    parser.add_argument("--path", default="")
 
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--tlm', action='store_true', default=False)
-    group.add_argument('--cmd', action='store_true', default=False)
+    group.add_argument("--tlm", action="store_true", default=False)
+    group.add_argument("--cmd", action="store_true", default=False)
 
     # Get command line arguments
     args = vars(parser.parse_args())
 
     # output format for the file
-    format = args['format']
+    format = args["format"]
 
     # output path
-    path = args['path']
+    path = args["path"]
 
     # initialize telemetry dictionary writer
-    if args['tlm']:
+    if args["tlm"]:
         writer = tlm.TlmDictWriter()
 
     # initialize command dictionary writer
-    if args['cmd']:
+    if args["cmd"]:
         log.error("Not yet supported")
         sys.exit()
 
     # write to csv
-    if format == 'csv':
+    if format == "csv":
         writer.writeToCSV(output_path=path)
     else:
         log.error("Invalid <format> specified.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

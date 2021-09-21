@@ -21,6 +21,7 @@ import struct
 import ait
 from ait.core import limits, tlm
 
+
 def test_limit_range():
     """
     # test_limit_range
@@ -36,8 +37,8 @@ def test_limit_range():
         warn: 40.0
     """
     ldict = limits.LimitsDict(test_limit_range.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].upper.error == 45.0
-    assert ldict['1553_HS_Packet.Voltage_A'].lower.warn == 10.0
+    assert ldict["1553_HS_Packet.Voltage_A"].upper.error == 45.0
+    assert ldict["1553_HS_Packet.Voltage_A"].lower.warn == 10.0
 
 
 def test_limit_error_value():
@@ -51,7 +52,7 @@ def test_limit_error_value():
         error: Not Present
     """
     ldict = limits.LimitsDict(test_limit_error_value.__doc__)
-    assert 'Not Present' in ldict['CCSDS_HEADER.secondary_header_flag'].lower.error
+    assert "Not Present" in ldict["CCSDS_HEADER.secondary_header_flag"].lower.error
 
 
 def test_check_upper_error():
@@ -69,7 +70,7 @@ def test_check_upper_error():
         warn: 40.0
     """
     ldict = limits.LimitsDict(test_check_upper_error.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].error(46)
+    assert ldict["1553_HS_Packet.Voltage_A"].error(46)
 
 
 def test_check_missing_value_warn():
@@ -83,7 +84,7 @@ def test_check_missing_value_warn():
         error: Not Present
     """
     ldict = limits.LimitsDict(test_check_missing_value_warn.__doc__)
-    assert ldict['CCSDS_HEADER.secondary_header_flag'].warn('Foo') == False
+    assert ldict["CCSDS_HEADER.secondary_header_flag"].warn("Foo") == False
 
 
 def test_check_missing_value_error():
@@ -97,7 +98,7 @@ def test_check_missing_value_error():
         warn: Not Present
     """
     ldict = limits.LimitsDict(test_check_missing_value_error.__doc__)
-    assert ldict['CCSDS_HEADER.secondary_header_flag'].error('Foo') == False
+    assert ldict["CCSDS_HEADER.secondary_header_flag"].error("Foo") == False
 
 
 def test_check_missing_lower_warn():
@@ -113,7 +114,7 @@ def test_check_missing_lower_warn():
         warn: 40.0
     """
     ldict = limits.LimitsDict(test_check_missing_lower_warn.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].warn(6) == False
+    assert ldict["1553_HS_Packet.Voltage_A"].warn(6) == False
 
 
 def test_check_missing_upper_warn():
@@ -129,7 +130,7 @@ def test_check_missing_upper_warn():
         error: 45.0
     """
     ldict = limits.LimitsDict(test_check_missing_upper_warn.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].warn(15) == False
+    assert ldict["1553_HS_Packet.Voltage_A"].warn(15) == False
 
 
 def test_check_missing_lower_error():
@@ -145,7 +146,7 @@ def test_check_missing_lower_error():
         warn: 40.0
     """
     ldict = limits.LimitsDict(test_check_missing_lower_error.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].error(15) == False
+    assert ldict["1553_HS_Packet.Voltage_A"].error(15) == False
 
 
 def test_check_missing_upper_error():
@@ -161,7 +162,7 @@ def test_check_missing_upper_error():
         warn: 45.0
     """
     ldict = limits.LimitsDict(test_check_missing_upper_error.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].error(15) == False
+    assert ldict["1553_HS_Packet.Voltage_A"].error(15) == False
 
 
 def test_check_lower_warn():
@@ -178,7 +179,8 @@ def test_check_lower_warn():
         warn: 40.0
     """
     ldict = limits.LimitsDict(test_check_lower_warn.__doc__)
-    assert ldict['1553_HS_Packet.Voltage_A'].warn(6)
+    assert ldict["1553_HS_Packet.Voltage_A"].warn(6)
+
 
 def test_check_value_error():
     """
@@ -192,8 +194,9 @@ def test_check_value_error():
         warn: TABLE_FOO
     """
     ldict = limits.LimitsDict(test_check_value_error.__doc__)
-    assert ldict['Ethernet_HS_Packet.product_type'].error('TABLE_BAR')
-    assert ldict['Ethernet_HS_Packet.product_type'].warn('TABLE_FOO')
+    assert ldict["Ethernet_HS_Packet.product_type"].error("TABLE_BAR")
+    assert ldict["Ethernet_HS_Packet.product_type"].warn("TABLE_FOO")
+
 
 def test_check_value_list_warn():
     """
@@ -207,8 +210,9 @@ def test_check_value_list_warn():
         warn: [ FOO, BAR ]
     """
     ldict = limits.LimitsDict(test_check_value_list_warn.__doc__)
-    assert ldict['Ethernet_HS_Packet.product_type'].error('FOOBAR')
-    assert ldict['Ethernet_HS_Packet.product_type'].warn('BAR')
+    assert ldict["Ethernet_HS_Packet.product_type"].error("FOOBAR")
+    assert ldict["Ethernet_HS_Packet.product_type"].warn("BAR")
+
 
 def test_check_value_list_warn2():
     """
@@ -224,5 +228,4 @@ def test_check_value_list_warn2():
           - BAR
     """
     ldict = limits.LimitsDict(test_check_value_list_warn2.__doc__)
-    assert ldict['Ethernet_HS_Packet.product_type'].warn('BAR')
-
+    assert ldict["Ethernet_HS_Packet.product_type"].warn("BAR")

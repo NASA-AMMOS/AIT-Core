@@ -33,13 +33,16 @@ from ait.core import log, util
 
 
 DEFAULT_PATH_VARS = {
-    'year': time.strftime('%Y', time.gmtime()),
-    'doy' : time.strftime('%j', time.gmtime())
+    "year": time.strftime("%Y", time.gmtime()),
+    "doy": time.strftime("%j", time.gmtime()),
 }
 
-PATH_KEYS = 'directory', 'file', 'filename', 'path', 'pathname'
+PATH_KEYS = "directory", "file", "filename", "path", "pathname"
 
-def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parameter_key='', *keys):
+
+def expandConfigPaths(
+    config, prefix=None, datetime=None, pathvars=None, parameter_key="", *keys
+):
     """Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
@@ -58,20 +61,26 @@ def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parame
 
             for p in cleaned:
                 if not os.path.exists(p):
-                    msg = "Config parameter {}.{} specifies nonexistent path {}".format(parameter_key, name, p)
+                    msg = "Config parameter {}.{} specifies nonexistent path {}".format(
+                        parameter_key, name, p
+                    )
                     log.warn(msg)
 
             config[name] = cleaned[0] if len(cleaned) == 1 else cleaned
 
         elif isinstance(value, dict):
-            param_key = name if parameter_key == '' else parameter_key + '.' + name
+            param_key = name if parameter_key == "" else parameter_key + "." + name
             expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
 
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    param_key = name if parameter_key == '' else parameter_key + '.' + name
-                    expandConfigPaths(item, prefix, datetime, pathvars, param_key, *keys)
+                    param_key = (
+                        name if parameter_key == "" else parameter_key + "." + name
+                    )
+                    expandConfigPaths(
+                        item, prefix, datetime, pathvars, param_key, *keys
+                    )
 
 
 def replaceVariables(path, datetime=None, pathvars=None):
@@ -82,20 +91,20 @@ def replaceVariables(path, datetime=None, pathvars=None):
 
     # if path variables are not given, set as empty list
     if pathvars is None:
-        pathvars = [ ]
+        pathvars = []
 
     # create an init path list to loop through
     if isinstance(path, list):
         path_list = path
     else:
-        path_list = [ path ]
+        path_list = [path]
 
     # Set up the regex to search for variables
-    regex = re.compile('\$\{(.*?)\}')
+    regex = re.compile("\$\{(.*?)\}")
 
     # create a newpath list that will hold the 'cleaned' paths
     # with variables and strftime format directives replaced
-    newpath_list = [ ]
+    newpath_list = []
 
     for p in path_list:
         # create temppath_list to be used a we work through the
@@ -115,8 +124,7 @@ def replaceVariables(path, datetime=None, pathvars=None):
                     raise TypeError(msg)
 
                 # get the list of possible variable values
-                value_list = v if type(v) is list else [ v ]
-
+                value_list = v if type(v) is list else [v]
 
                 # create temp_list for now
                 temp_list = []
@@ -129,7 +137,7 @@ def replaceVariables(path, datetime=None, pathvars=None):
                 for v in value_list:
                     for newpath in newpath_list:
                         # remove the path from newpath_list
-                        temp_list.append(newpath.replace('${%s}' % k, str(v)))
+                        temp_list.append(newpath.replace("${%s}" % k, str(v)))
 
                 # replace newpath_list
                 newpath_list = temp_list
@@ -143,20 +151,20 @@ def replaceVariables(path, datetime=None, pathvars=None):
     return newpath_list
 
 
-def flatten (d, *keys):
+def flatten(d, *keys):
     """Flattens the dictionary d by merging keys in order such that later
     keys take precedence over earlier keys.
 
     """
-    flat = { }
+    flat = {}
 
     for k in keys:
-        flat = merge(flat, d.pop(k, { }))
+        flat = merge(flat, d.pop(k, {}))
 
     return flat
 
 
-def loadYAML (filename=None, data=None):
+def loadYAML(filename=None, data=None):
     """Loads either the given YAML configuration file or YAML data.
 
     Returns None if there was an error reading from the configuration
@@ -166,7 +174,7 @@ def loadYAML (filename=None, data=None):
 
     try:
         if filename:
-            data = open(filename, 'rt')
+            data = open(filename, "rt")
 
         config = yaml.load(data, Loader=yaml.Loader)
 
@@ -179,7 +187,7 @@ def loadYAML (filename=None, data=None):
     return config
 
 
-def merge (d, o):
+def merge(d, o):
     """Recursively merges keys from o into d and returns d."""
     for k in o.keys():
         if type(o[k]) is dict and k in d:
@@ -189,12 +197,11 @@ def merge (d, o):
     return d
 
 
-
 class AitConfigError(Exception):
     """Raised when a AIT configuration parameter is present, but
     is in some way incorrect."""
-    pass
 
+    pass
 
 
 class AitConfigMissing(Exception):
@@ -202,13 +209,12 @@ class AitConfigMissing(Exception):
 
     def __init__(self, param):
         values = param, ait.config._filename
-        format = 'The parameter %s is missing from config.yaml (%s).'
+        format = "The parameter %s is missing from config.yaml (%s)."
         super(AitConfigMissing, self).__init__(format % values)
         self.param = param
 
 
-
-class AitConfig (object):
+class AitConfig(object):
     """AitConfig
 
     A AitConfig object holds configuration parameters read from a
@@ -219,12 +225,13 @@ class AitConfig (object):
     NOTE: The platform string is Python's sys.platform, i.e. 'linux2',
     'darwin', 'win32'.
     """
-    _ROOT_DIR = os.path.abspath(os.environ.get('AIT_ROOT', os.getcwd()))
 
-    if 'AIT_ROOT' not in os.environ:
+    _ROOT_DIR = os.path.abspath(os.environ.get("AIT_ROOT", os.getcwd()))
+
+    if "AIT_ROOT" not in os.environ:
         log.warn('AIT_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
 
-    def __init__ (self, filename=None, data=None, config=None, pathvars=None):
+    def __init__(self, filename=None, data=None, config=None, pathvars=None):
         """Creates a new AitConfig object with configuration data read from
         the given YAML configuration file or passed-in via the given
         config dictionary.
@@ -241,56 +248,56 @@ class AitConfig (object):
         self._pathvars = pathvars
 
         if data is None and filename is None:
-            if 'AIT_CONFIG' in os.environ:
-                filename = os.path.abspath(os.environ.get('AIT_CONFIG'))
+            if "AIT_CONFIG" in os.environ:
+                filename = os.path.abspath(os.environ.get("AIT_CONFIG"))
             else:
-                msg = 'AIT_CONFIG is not set. Exiting ...'
+                msg = "AIT_CONFIG is not set. Exiting ..."
                 log.error(msg)
                 raise ValueError(msg)
 
         if config is None:
             self.reload(filename, data)
         else:
-            self._config   = config
+            self._config = config
             self._filename = filename
 
-    def __contains__ (self, name):
+    def __contains__(self, name):
         """Returns True if name is in this AitConfig, False otherwise."""
         return name in self._config
 
-    def __eq__ (self, other):
+    def __eq__(self, other):
         return isinstance(other, AitConfig) and self._config == other._config
 
-    def __ne__ (self, other):
+    def __ne__(self, other):
         return not self == other
 
-    def __getattr__ (self, name):
+    def __getattr__(self, name):
         """Returns the attribute value AitConfig.name."""
         if name not in self:
             raise AttributeError(f'No attribute "{name}" in AitConfig.')
         return self._getattr_(name)
 
-    def __getitem__ (self, name):
+    def __getitem__(self, name):
         """Returns the value of AitConfig[name]."""
         if name not in self:
             raise KeyError('No key "%s" in AitConfig.' % name)
         return self._getattr_(name)
 
-    def __repr__ (self):
+    def __repr__(self):
         """Return a printable representation of this AitConfig."""
-        args = [ ]
+        args = []
 
         if self._filename:
             args.append('filename="%s"' % self._filename)
 
-        args.append('data=%s' % self._config)
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(args))
+        args.append("data=%s" % self._config)
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(args))
 
-    def __str__ (self):
+    def __str__(self):
         """Return a string representation of this AitConfig."""
         return self.__repr__()
 
-    def _getattr_ (self, name):
+    def _getattr_(self, name):
         """Internal method.  Used by __getattr__() and __getitem__()."""
         value = self._config.get(name)
 
@@ -300,39 +307,39 @@ class AitConfig (object):
         return value
 
     @property
-    def _directory (self):
+    def _directory(self):
         """The directory for this AitConfig."""
         if self._filename is None:
-            return os.path.join(self._ROOT_DIR, 'config')
+            return os.path.join(self._ROOT_DIR, "config")
         else:
             return os.path.dirname(self._filename)
 
     @property
-    def _hostname (self):
+    def _hostname(self):
         """The hostname for this AitConfig."""
-        return platform.node().split('.')[0]
+        return platform.node().split(".")[0]
 
     @property
-    def _platform (self):
+    def _platform(self):
         """The platform for this AitConfig."""
         return sys.platform
 
     @property
     def _datapaths(self):
         """Returns a simple key-value map for easy access to data paths"""
-        paths = { }
+        paths = {}
         try:
-            data = self._config['data']
+            data = self._config["data"]
             for k in data:
-                paths[k] = data[k]['path']
+                paths[k] = data[k]["path"]
         except KeyError as e:
             raise AitConfigMissing(str(e))
         except Exception as e:
-            raise AitConfigError('Error reading data paths: %s' % e)
+            raise AitConfigError("Error reading data paths: %s" % e)
 
         return paths
 
-    def reload (self, filename=None, data=None):
+    def reload(self, filename=None, data=None):
         """Reloads the a AIT configuration.
 
         The AIT configuration is automatically loaded when the AIT
@@ -343,11 +350,11 @@ class AitConfig (object):
         if data is None and filename is None:
             filename = self._filename
 
-        self._config   = loadYAML(filename, data)
+        self._config = loadYAML(filename, data)
         self._filename = filename
 
         if self._config is not None:
-            keys         = 'default', self._platform, self._hostname
+            keys = "default", self._platform, self._hostname
             self._config = flatten(self._config, *keys)
 
             # on reload, if pathvars have not been set, we want to start
@@ -356,16 +363,17 @@ class AitConfig (object):
             if self._pathvars is None:
                 self._pathvars = self.getDefaultPathVariables()
 
-            expandConfigPaths(self._config, 
-                            self._directory,
-                            self._datetime,
-                            merge(self._config, self._pathvars))
+            expandConfigPaths(
+                self._config,
+                self._directory,
+                self._datetime,
+                merge(self._config, self._pathvars),
+            )
 
         else:
-            self._config = { }
+            self._config = {}
 
-
-    def get (self, name, default=None):
+    def get(self, name, default=None):
         """Returns the attribute value *AitConfig.name* or *default*
         if name does not exist.
 
@@ -381,9 +389,9 @@ class AitConfig (object):
             return self[name]
 
         config = self
-        parts  = name.split('.')
-        heads  = parts[:-1]
-        tail   = parts[-1]
+        parts = name.split(".")
+        heads = parts[:-1]
+        tail = parts[-1]
 
         for part in heads:
             if part in config and type(config[part]) is AitConfig:
@@ -393,31 +401,30 @@ class AitConfig (object):
 
         return config[tail] if tail in config else default
 
-
     def getDefaultFilename(self):
-        if 'AIT_CONFIG' in os.environ:
-            filename = os.path.abspath(os.environ.get('AIT_CONFIG'))
+        if "AIT_CONFIG" in os.environ:
+            filename = os.path.abspath(os.environ.get("AIT_CONFIG"))
         else:
-            msg = 'AIT_CONFIG not set. Falling back to AIT_ROOT or CWD'
+            msg = "AIT_CONFIG not set. Falling back to AIT_ROOT or CWD"
             log.warn(msg)
-            filename = os.path.join(self._directory, 'config.yaml')
+            filename = os.path.join(self._directory, "config.yaml")
 
         return filename
 
     def getDefaultPathVariables(self):
         pathvars = DEFAULT_PATH_VARS
-        pathvars['platform'] = self._platform
-        pathvars['hostname'] = self._hostname
+        pathvars["platform"] = self._platform
+        pathvars["hostname"] = self._hostname
         return pathvars
 
     def addPathVariables(self, pathvars):
-        """ Adds path variables to the pathvars map property"""
+        """Adds path variables to the pathvars map property"""
         if type(pathvars) is dict:
             self._pathvars = merge(self._pathvars, pathvars)
 
 
 # Create a singleton AitConfig accessible via ait.config
-sys.modules['ait'].config = AitConfig()
+sys.modules["ait"].config = AitConfig()
 
 # Re-initialize logging now that ait.config.logging.* parameters may exist.
 log.reinit()

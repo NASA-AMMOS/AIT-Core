@@ -46,63 +46,60 @@ from ait.core import log, pcap
 
 def main():
     ap = argparse.ArgumentParser(
-        epilog=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    ap.add_argument('-n', '--dry-run',
-        action = 'store_true',
-        help   = 'Dry run; do not actually write files',
+    ap.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Dry run; do not actually write files",
     )
 
-    ap.add_argument('-b', '--bytes',
-        help    = 'Segment evey B bytes',
-        metavar = 'B',
-        type    = int
+    ap.add_argument("-b", "--bytes", help="Segment evey B bytes", metavar="B", type=int)
+
+    ap.add_argument(
+        "-p", "--packets", help="Segment evey P packets", metavar="P", type=int
     )
 
-    ap.add_argument('-p', '--packets',
-        help    = 'Segment evey P packets',
-        metavar = 'P',
-        type    = int
+    ap.add_argument(
+        "-s",
+        "--seconds",
+        help="Segment when first and last pcap timestamps span S seconds",
+        metavar="S",
+        type=int,
     )
 
-    ap.add_argument('-s', '--seconds',
-        help    = 'Segment when first and last pcap timestamps span S seconds',
-        metavar = 'S',
-        type    = int
+    ap.add_argument(
+        "format", help="Segment filename (should include strftime(3) time format)"
     )
 
-    ap.add_argument('format',
-        help = 'Segment filename (should include strftime(3) time format)'
-    )
-
-    ap.add_argument('file',
-        nargs = '+',
-        help  = 'Packet Capture (.pcap) file(s)'
-    )
+    ap.add_argument("file", nargs="+", help="Packet Capture (.pcap) file(s)")
 
     args = ap.parse_args()
 
     if args.bytes is None and args.packets is None and args.seconds is None:
-        msg = 'At least one of -b, -p, or -s is required.'
+        msg = "At least one of -b, -p, or -s is required."
         ap.error(msg)
 
     try:
-        pcap.segment(filenames = args.file,
-                     format    = args.format,
-                     nbytes    = args.bytes,
-                     npackets  = args.packets,
-                     nseconds  = args.seconds,
-                     dryrun    = args.dry_run)
+        pcap.segment(
+            filenames=args.file,
+            format=args.format,
+            nbytes=args.bytes,
+            npackets=args.packets,
+            nseconds=args.seconds,
+            dryrun=args.dry_run,
+        )
 
     except KeyboardInterrupt:
-        log.info('Received Ctrl-C.  Aborting pcap segmentation.')
+        log.info("Received Ctrl-C.  Aborting pcap segmentation.")
 
     except IOError as e:
         log.error(str(e))
 
     log.end()
 
-if __name__ == '__main__':
-  main()
+
+if __name__ == "__main__":
+    main()

@@ -15,6 +15,7 @@
 
 
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 from ait.core import ccsds
@@ -23,48 +24,48 @@ from ait.core import ccsds
 def testCcsdsDefinition():
     defn = ccsds.CcsdsDefinition(apid=42, length=128)
 
-    assert defn.version   == 0
-    assert defn.type      == 0
+    assert defn.version == 0
+    assert defn.type == 0
     assert defn.secondary == None
-    assert defn.shflag    == 0
-    assert defn.apid      == 42
-    assert defn.seqflags  == 0b11
-    assert defn.length    == 128
+    assert defn.shflag == 0
+    assert defn.apid == 42
+    assert defn.seqflags == 0b11
+    assert defn.length == 128
 
 
 def testCcsdsHeaderDefaults():
     header = ccsds.CcsdsHeader()
 
-    assert header.version      == 0
-    assert header.type         == 0
-    assert header.shflag       == 0
-    assert header.apid         == 0
+    assert header.version == 0
+    assert header.type == 0
+    assert header.shflag == 0
+    assert header.apid == 0
     assert header.raw.seqflags == 0b11
-    assert header.seqcount     == 0
-    assert header.length       == 0
+    assert header.seqcount == 0
+    assert header.length == 0
 
 
 def testCcsdsHeaderDecode():
     header = ccsds.CcsdsHeader([0x18, 0x2A, 0xC4, 0xD2, 0x16, 0x2E])
 
-    assert header.version      == 0
-    assert header.type         == 1
-    assert header.shflag       == 1
-    assert header.apid         == 42
+    assert header.version == 0
+    assert header.type == 1
+    assert header.shflag == 1
+    assert header.apid == 42
     assert header.raw.seqflags == 0b11
-    assert header.seqcount     == 1234
-    assert header.length       == 5678
+    assert header.seqcount == 1234
+    assert header.length == 5678
 
 
 def testCcsdsHeaderEncode():
     header = ccsds.CcsdsHeader()
 
-    header.version  = 0
-    header.type     = 1
-    header.shflag   = 1
-    header.apid     = 42
+    header.version = 0
+    header.type = 1
+    header.shflag = 1
+    header.apid = 42
     header.seqflags = 0b11
     header.seqcount = 1234
-    header.length   = 5678
+    header.length = 5678
 
     assert header._data == bytearray([0x18, 0x2A, 0xC4, 0xD2, 0x16, 0x2E])

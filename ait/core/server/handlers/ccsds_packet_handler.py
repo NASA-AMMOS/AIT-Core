@@ -5,6 +5,7 @@ import ait.core.log
 from ait.core.server.handler import Handler
 from ait.core import tlm
 
+
 class CCSDSPacketHandler(Handler):
     """
     This CCSDS handler provides a way to accept multiple packet types on a
@@ -15,6 +16,7 @@ class CCSDSPacketHandler(Handler):
     is extracted from the raw binary data, and a tuple of the UID and user data
     field is returned.
     """
+
     def __init__(self, input_type=None, output_type=None, **kwargs):
         """
         Params:
@@ -31,15 +33,19 @@ class CCSDSPacketHandler(Handler):
             ValueError:   If packet in config is not present in default tlm dict.
         """
         super(CCSDSPacketHandler, self).__init__(input_type, output_type)
-        self.packet_types = kwargs['packet_types']
-        self.packet_secondary_header_length = kwargs.get('packet_secondary_header_length', 0)
+        self.packet_types = kwargs["packet_types"]
+        self.packet_secondary_header_length = kwargs.get(
+            "packet_secondary_header_length", 0
+        )
 
         # Check if all packet names in config are in telemetry dictionary
         tlm_dict = tlm.getDefaultDict()
         for packet_name in self.packet_types.values():
             if packet_name not in tlm_dict.keys():
-                msg = 'CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.'.format(packet_name)
-                msg += ' Available packet types are {}'.format(tlm_dict.keys())
+                msg = "CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.".format(
+                    packet_name
+                )
+                msg += " Available packet types are {}".format(tlm_dict.keys())
                 raise ValueError(msg)
 
     def handle(self, input_data):
@@ -53,17 +59,23 @@ class CCSDSPacketHandler(Handler):
         # Check if packet length is at least 7 bytes
         primary_header_length = 6
         if len(input_data) < primary_header_length + 1:
-            ait.core.log.info('CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes.')
+            ait.core.log.info(
+                "CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes."
+            )
             return
 
         # Extract APID from packet
-        packet_apid = str(bin(int(binascii.hexlify(input_data[0:2]), 16) & 0x07FF))[2:].zfill(11)
+        packet_apid = str(bin(int(binascii.hexlify(input_data[0:2]), 16) & 0x07FF))[
+            2:
+        ].zfill(11)
 
         # Check if packet_apid matches with an APID in the config
         config_apid = self.comp_apid(packet_apid)
         if not config_apid:
-            msg = 'CCSDSPacketHandler: Packet APID {} not present in config.'.format(packet_apid)
-            msg += ' Available packet APIDs are {}'.format(self.packet_types.keys())
+            msg = "CCSDSPacketHandler: Packet APID {} not present in config.".format(
+                packet_apid
+            )
+            msg += " Available packet APIDs are {}".format(self.packet_types.keys())
             ait.core.log.info(msg)
             return
 
@@ -76,11 +88,12 @@ class CCSDSPacketHandler(Handler):
         packet_data_length = int(binascii.hexlify(input_data[4:6]), 16) + 1
         if len(input_data) < primary_header_length + packet_data_length:
             ait.core.log.info(
-                'CCSDSPacketHandler: Packet data length is less than stated length in packet primary header.')
+                "CCSDSPacketHandler: Packet data length is less than stated length in packet primary header."
+            )
             return
         udf_length = packet_data_length - self.packet_secondary_header_length
         udf_start = primary_header_length + self.packet_secondary_header_length
-        user_data_field = input_data[udf_start:udf_start + udf_length + 1]
+        user_data_field = input_data[udf_start : udf_start + udf_length + 1]
 
         return pickle.dumps((packet_uid, user_data_field), 2)
 
@@ -95,7 +108,7 @@ class CCSDSPacketHandler(Handler):
         for config_apid in self.packet_types:
             match = True
             for i in range(11):
-                if config_apid[i] != 'X' and config_apid[i] != server_apid[i]:
+                if config_apid[i] != "X" and config_apid[i] != server_apid[i]:
                     match = False
                     break
             if match:
