@@ -59,16 +59,25 @@ setup(
     ],
 
     extras_require = {
-        'docs':  [
-            'Sphinx==2.2.2',
-            'sphinx_rtd_theme',
-            'sphinxcontrib-httpdomain'
-        ],
-        'tests': [
-            'coverage',
-            'mock',
-            'pytest'
-        ],
+        'dev': [
+            "black",
+            "flake8",
+            "flake8-bugbear",
+            "flake8-docstrings",
+            "pep8-naming",
+            "mypy",
+            "pydocstyle",
+            "coverage",
+            "pytest",
+            "pytest-cov",
+            "pytest-watch",
+            "pytest-xdist",
+            "pre-commit",
+            "sphinx",
+            "sphinx-rtd-theme",
+            'sphinxcontrib-httpdomain',
+            "tox"
+        ]
     },
 
     entry_points = {
