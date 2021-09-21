@@ -1,6 +1,5 @@
 import unittest
 import pickle
-from nose.tools import *
 from unittest import mock
 
 from ait.core import tlm
