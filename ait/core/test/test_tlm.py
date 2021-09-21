@@ -205,7 +205,7 @@ class TestDerivationDefinition(object):
             out.write(yaml_docs_deriv2.encode("utf-8"))
 
         with pytest.raises(Exception):
-            tlmdict = tlm.TlmDict(test_yaml_deriv2)
+            tlm.TlmDict(test_yaml_deriv2)
 
         os.remove(test_yaml_deriv2)
 

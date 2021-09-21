@@ -20,30 +20,14 @@ import ait
 from ait.core import log
 
 
-class SysLogParserTest:
-    """Unit test ait.core.log.SysLogParser"""
-
-    message = ""
-    expected = {}
-
-    def run_test(self):
-        """Test parsing of syslog"""
-        parts = log.parseSyslog(self.message)
-        for key, expected in self.expected.items():
-            actual = parts.get(key, "")
-            msg = 'Syslog Parsing failed for "%s" ' % key
-            msg += '(expected: "%s", actual: "%s")' % (expected, actual)
-            self.assertEquals(expected, actual, msg)
-
-
-class SysLogParserTestSuccess(SysLogParserTest, unittest.TestCase):
+def test_syslog_parser_success():
     """Unit test of the log.SysLogParser.parse method"""
 
-    message = (
+    test_message = (
         "<14>1 2015-03-06T21:29:43.756496Z LMC-037512 ait 12074 "
         "INFO - Waiting for AIT telemetry on port 2514"
     )
-    expected = {
+    test_expected = {
         "pri": "14",
         "version": "1",
         "timestamp": "2015-03-06T21:29:43.756496Z",
@@ -53,16 +37,22 @@ class SysLogParserTestSuccess(SysLogParserTest, unittest.TestCase):
         "msgid": "INFO",
         "msg": "Waiting for AIT telemetry on port 2514",
     }
+    parts = log.parseSyslog(test_message)
+    for key, expected in test_expected.items():
+        actual = parts.get(key, "")
+        msg = 'Syslog Parsing failed for "%s" ' % key
+        msg += '(expected: "%s", actual: "%s")' % (expected, actual)
+        assert actual == expected
 
 
-class SysLogParserTestMsgWithHyphen(SysLogParserTest, unittest.TestCase):
+def test_syslog_parser_msg_with_hypen():
     """Unit test of the log.SysLogParser.parse method"""
 
-    message = (
+    test_message = (
         "<14>1 2015-03-06T21:29:43.756496Z LMC-037512 ait 12074 "
         "INFO - Waiting for AIT - GUI telemetry"
     )
-    expected = {
+    test_expected = {
         "pri": "14",
         "version": "1",
         "timestamp": "2015-03-06T21:29:43.756496Z",
@@ -72,9 +62,9 @@ class SysLogParserTestMsgWithHyphen(SysLogParserTest, unittest.TestCase):
         "msgid": "INFO",
         "msg": "Waiting for AIT - GUI telemetry",
     }
-
-
-if __name__ == "__main__":
-    log.begin()
-    unittest.main(verbosity=4)
-    log.end()
+    parts = log.parseSyslog(test_message)
+    for key, expected in test_expected.items():
+        actual = parts.get(key, "")
+        msg = 'Syslog Parsing failed for "%s" ' % key
+        msg += '(expected: "%s", actual: "%s")' % (expected, actual)
+        assert actual == expected

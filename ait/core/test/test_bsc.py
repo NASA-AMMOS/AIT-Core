@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -32,7 +30,7 @@ import pytest
 from ait.core import bsc, pcap
 
 
-class TestSocketStreamCapturer(object):
+class TestSocketStreamCapturer():
     @mock.patch("gevent.socket.socket")
     def test_mocked_udp_socket(self, socket_mock):
         handler = {"name": "name", "log_dir": "/tmp"}
@@ -355,7 +353,7 @@ class TestSocketStreamCapturer(object):
         assert sl.capture_handlers[0]["name"] == "h1"
 
 
-class TestStreamCaptureManager(object):
+class TestStreamCaptureManager():
     @mock.patch("ait.core.bsc.SocketStreamCapturer")
     def test_log_manager_init(self, socket_log_mock):
         loggers = [
