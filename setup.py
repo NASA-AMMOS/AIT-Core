@@ -29,12 +29,6 @@ here = path.abspath(path.dirname(__file__))
 with io.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-class DevWithGithooks(develop):
-    def run(self):
-        develop.run(self)
-        if path.exists('.git/hooks'):
-            shutil.copy('./build/githooks/pre-commit', '.git/hooks')
-
 setup(
     name         = 'ait-core',
     version      = '2.3.5',
@@ -88,8 +82,4 @@ setup(
             f != '__init__.py'
         ]
     },
-
-    cmdclass = {
-        'develop': DevWithGithooks
-    }
 )
