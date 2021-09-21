@@ -67,7 +67,6 @@ setup(
         'tests': [
             'coverage',
             'mock',
-            'pylint'
             'pytest'
         ],
     },
