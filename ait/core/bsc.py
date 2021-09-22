@@ -21,7 +21,6 @@ loggers.
 """
 
 import calendar
-import datetime
 import json
 import os
 import socket
@@ -550,7 +549,7 @@ class StreamCaptureManager(object):
                             '"{}" for handler "{}"'
                         ).format(transform, capture_handler_conf["name"])
                         log.warn(msg)
-                elif hasattr(transform, "__call__"):
+                elif callable(transform):
                     transforms.append(transform)
                 else:
                     msg = (
@@ -621,7 +620,7 @@ class StreamCaptureManager(object):
             name:
                 The name of the handler who's log file should be rotated.
         """
-        for sc_key, sc in self._stream_capturers.items():
+        for _sc_key, sc in self._stream_capturers.items():
             for h in sc[0].capture_handlers:
                 if h["name"] == name:
                     sc[0]._rotate_log(h)
@@ -672,7 +671,7 @@ class StreamCaptureManager(object):
             the :func:`SocketStreamCapturer.dump_handler_config_data` method.
         """
         handler_confs = []
-        for address, stream_capturer in self._stream_capturers.items():
+        for _address, stream_capturer in self._stream_capturers.items():
             handler_data = stream_capturer[0].dump_handler_config_data()
             for h in handler_data:
                 if h["handler"]["name"] == name:
