@@ -23,7 +23,6 @@ import sys
 import socket
 import datetime
 import time
-import re
 
 import logging
 import logging.handlers
@@ -62,7 +61,7 @@ class LogFormatter(logging.Formatter):
         datefmt = self.DATEFMT
         logging.Formatter.__init__(self, format, datefmt)
 
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record, datefmt=None):  # noqa
         """Return the creation time of the specified LogRecord as formatted
         text."""
         if datefmt is None:
@@ -116,7 +115,7 @@ class SysLogFormatter(logging.Formatter):
         record.hostname = self.hostname
         return logging.Formatter.format(self, record)
 
-    def formatTime(self, record, datefmt=None):
+    def formatTime(self, record, datefmt=None):  # noqa
         """Returns the creation time of the given LogRecord as formatted text.
 
         NOTE: The datefmt parameter and self.converter (the time
@@ -158,7 +157,7 @@ class SysLogHandler(logging.handlers.SysLogHandler):
         self.setFormatter(SysLogFormatter(self.bsd))
 
 
-def addLocalHandlers(logger):
+def add_local_handlers(logger):
     """Adds logging handlers to logger to log to the following local
     resources:
 
@@ -174,7 +173,7 @@ def addLocalHandlers(logger):
     logger.addHandler(SysLogHandler(("localhost", 2514)))
 
 
-def addRemoteHandlers(logger):
+def add_remote_handlers(logger):
     """Adds logging handlers to logger to remotely log to:
 
         ait.config.logging.hostname:514  (i.e. syslogd)
@@ -219,14 +218,14 @@ def init():
 
     logger.setLevel(logging.INFO)
 
-    addLocalHandlers(logger)
-    addRemoteHandlers(logger)
+    add_local_handlers(logger)
+    add_remote_handlers(logger)
 
 
 reinit = init
 
 
-def parseSyslog(msg):
+def parse_syslog(msg):
     """Parses Syslog messages (RFC 5424)
 
     The `Syslog Message Format (RFC 5424)
