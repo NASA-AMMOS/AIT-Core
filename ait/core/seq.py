@@ -24,12 +24,11 @@ import os
 import math
 import struct
 import sys
-import time
 
-from ait.core import cmd, log, util
+from ait.core import cmd, util
 
 
-def setBit(value, bit, bitval):
+def set_bit(value, bit, bitval):
     """Returns value with a specific bit position set to bitval."""
     if bitval:
         return value | (1 << bit)
@@ -63,7 +62,7 @@ class Seq(object):
         if self.pathname is not None:
             self.read()
 
-    def _parseHeader(self, line, lineno, log):
+    def _parse_header(self, line, lineno, log):
         """Parses a sequence header line containing 'name: value' pairs."""
         if line.startswith("#") and line.find(":") > 0:
             tokens = [t.strip().lower() for t in line[1:].split(":", 1)]
@@ -79,7 +78,7 @@ class Seq(object):
                         value = util.toNumber(tokens[1], None)
                         if value is None:
                             msg = 'Parameter "%s" value "%s" is not a number.'
-                            log.error(msg % (name, tokens[1]), poss)
+                            log.error(msg % (name, tokens[1]), pos)
                         else:
                             self.header[name] = value
 
@@ -134,7 +133,7 @@ class Seq(object):
         """Adds a new command with a relative time delay to this sequence."""
         self.lines.append(SeqCmd(cmd, delay, attrs))
 
-    def printText(self, stream=None):
+    def print_text(self, stream=None):
         """Prints a text representation of this sequence to the given stream or
         standard output.
         """
@@ -168,7 +167,7 @@ class Seq(object):
         else:
             self.readText(filename)
 
-    def readBinary(self, filename=None):
+    def read_binary(self, filename=None):
         """Reads a binary command sequence from the given filename (defaults to
         self.pathname).
         """
@@ -176,20 +175,23 @@ class Seq(object):
             filename = self.pathname
 
         stream = open(filename, "rb")
-        magic = struct.unpack(">H", stream.read(2))[0]
-        uploadtype = stream.read(1)
+        # Read magic number from binary
+        _ = struct.unpack(">H", stream.read(2))[0]
+        # Read upload type from binary
+        _ = stream.read(1)
         self.version = struct.unpack("B", stream.read(1))[0]
         ncmds = struct.unpack(">H", stream.read(2))[0]
         self.seqid = struct.unpack(">H", stream.read(2))[0]
-        reserved = stream.read(20)
+        # Read reserved space from binary
+        _ = stream.read(20)
         self.crc32 = struct.unpack(">I", stream.read(4))[0]
 
-        for n in range(ncmds):
+        for _n in range(ncmds):
             # Each encoded command is 4 bytes for the time offset + the command size
             bytes = stream.read(4 + self.cmd_size)
             self.lines.append(SeqCmd.decode(bytes, self.cmddict))
 
-    def readText(self, filename=None):
+    def read_text(self, filename=None):
         """Reads a text command sequence from the given filename (defaults to
         self.pathname).
         """
@@ -197,7 +199,7 @@ class Seq(object):
             filename = self.pathname
 
         self.header = {}
-        inBody = False
+        in_body = False
 
         with open(filename, "rt") as stream:
             for (lineno, line) in enumerate(stream.readlines()):
@@ -205,10 +207,10 @@ class Seq(object):
                 if stripped == "":
                     continue
                 elif stripped.startswith("#"):
-                    if not inBody:
-                        self._parseHeader(line, lineno, self.log)
+                    if not in_body:
+                        self._parse_header(line, lineno, self.log)
                 else:
-                    inBody = True
+                    in_body = True
                     self.lines.append(
                         SeqCmd.parse(line, lineno, self.log, self.cmddict)
                     )
@@ -232,7 +234,7 @@ class Seq(object):
             self.message.append('Filename "%s" does not exist.')
         else:
             try:
-                with open(self.pathname, "r") as stream:
+                with open(self.pathname, "r"):
                     pass
             except IOError:
                 self.messages.append('Could not open "%s" for reading.' % self.pathname)
@@ -245,7 +247,7 @@ class Seq(object):
 
         return len(self.log.messages) == 0
 
-    def writeBinary(self, filename=None):
+    def write_binary(self, filename=None):
         """Writes a binary representation of this sequence to the given filename
         (defaults to self.binpath).
         """
@@ -267,7 +269,7 @@ class Seq(object):
             output.write(struct.pack(">I", 0))
 
             pad = struct.pack("B", 0)
-            for n in range(20):
+            for _n in range(20):
                 output.write(pad)
 
             for line in self.lines:
@@ -279,7 +281,7 @@ class Seq(object):
             output.seek(28)
             output.write(struct.pack(">I", self.crc32))
 
-    def writeText(self, filename=None):
+    def write_text(self, filename=None):
         """Writes a text representation of this sequence to the given filename
         (defaults to self.txtpath).
         """
@@ -475,9 +477,9 @@ class SeqCmdAttrs(SeqAtom):
     def default(self):
         """The default sequence command attributes (as an integer)."""
         byte = 0
-        for bit, name, value0, value1, default in SeqCmdAttrs.Table:
+        for bit, _name, _value0, value1, default in SeqCmdAttrs.Table:
             if default == value1:
-                byte = setBit(byte, bit, 1)
+                byte = set_bit(byte, bit, 1)
         return byte
 
     @classmethod
@@ -489,7 +491,7 @@ class SeqCmdAttrs(SeqAtom):
         self = cls()
         defval = self.default
 
-        for bit, name, value0, value1, default in SeqCmdAttrs.Table:
+        for bit, name, value0, value1, _default in SeqCmdAttrs.Table:
             mask = 1 << bit
             bitset = mask & byte
             defset = mask & defval
@@ -505,10 +507,10 @@ class SeqCmdAttrs(SeqAtom):
         """Encodes this SeqCmdAttrs to binary and returns a bytearray."""
         byte = self.default
 
-        for bit, name, value0, value1, default in SeqCmdAttrs.Table:
+        for bit, name, _value0, value1, _default in SeqCmdAttrs.Table:
             if name in self.attrs:
                 value = self.attrs[name]
-                byte = setBit(byte, bit, value == value1)
+                byte = set_bit(byte, bit, value == value1)
 
         return struct.pack("B", byte)
 
