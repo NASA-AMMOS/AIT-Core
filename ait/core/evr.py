@@ -65,8 +65,8 @@ class EVRDict(dict):
             log.error(msg)
             return
 
-        for e in evrs:
-            self.add(e)
+        for evr in evrs:
+            self.add(evr)
 
     def toJSON(self):
         return {code: defn.toJSON() for code, defn in self.items()}

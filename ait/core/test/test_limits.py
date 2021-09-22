@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,13 +11,13 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-import os
 import csv
+import os
 import struct
 
 import ait
-from ait.core import limits, tlm
+from ait.core import limits
+from ait.core import tlm
 
 
 def test_limit_range():

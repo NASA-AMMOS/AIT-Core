@@ -39,16 +39,16 @@ gevent.monkey.patch_all()
 
 RAW_SOCKET_FD = None
 try:
-    import rawsocket
+    import rawsocket  # type: ignore
 
     RAW_SOCKET_FD = rawsocket.rawsocket_fd()
 except ImportError:
-    log.debug(
+    log.debug(  # type: ignore
         "The rawsocket library cannot be imported. "
         "Defaulting to the non-rawsocket approach."
     )
 except IOError:
-    log.info(
+    log.info(  # type: ignore
         "Unable to spawn rawsocket-helper. "
         "This may be a permissions issue (not SUID root?). "
         "Defaulting to non-rawsocket approach."

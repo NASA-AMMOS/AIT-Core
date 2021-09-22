@@ -142,4 +142,3 @@ Running AIT / OpenMCT
 1) Start the AIT server (configured to run AIT's OpenMct plugin)
 2) Start OpenMCT server  (npm start)
 3) Open browser to location of the OpenMCT UI endpoint.
-

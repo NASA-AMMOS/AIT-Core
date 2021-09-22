@@ -21,7 +21,7 @@ default:
 
     limits:
         filename:  limits.yaml
-      
+
     table:
         filename: table.yaml
 

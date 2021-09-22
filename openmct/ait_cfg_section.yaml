@@ -1,4 +1,4 @@
-# Copy-paste the non-commented out section of YAML to install 
+# Copy-paste the non-commented out section of YAML to install
 # the AIT OpenMCT plugin for your server
 # Port default is 8082, ensure this matches the AIT integration config
 # in OpenMCT's index.html.

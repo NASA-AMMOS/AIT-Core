@@ -15,7 +15,7 @@
 # information to foreign countries or providing access to foreign persons.
 
 """
-Usage: ait-tlm-simulate [options] 
+Usage: ait-tlm-simulate [options]
 
 Sends simulated telemetry.
 
@@ -25,11 +25,11 @@ Sends simulated telemetry.
   --packetFill        Byte to fill packet with         (default:None)
 
 If no packetName specified, will choose the first available packetDefn.
-If no packetFill specified, will fill packet using range. 
+If no packetFill specified, will fill packet using range.
 
 Examples:
 
-  $ ait-tlm-simulate 
+  $ ait-tlm-simulate
 
 """
 

@@ -27,7 +27,7 @@
 """
 usage: ait-cmd-send [options] command [arguments]
 
-Sends the given command and its arguments to the ISS simulator via 
+Sends the given command and its arguments to the ISS simulator via
 the AIT server, or if the 'udp' flag is set then directly via UDP.
 
 --verbose          Hexdump data                  (default: False)

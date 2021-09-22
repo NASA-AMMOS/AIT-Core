@@ -11,19 +11,16 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Unit and Functional Tests
 
 The ait.test module provides functional and unit tests for ait modules.
 """
-
+import logging
 import os
 import tempfile
 import warnings
-import logging
 
-import ait
 import ait.core
 
 

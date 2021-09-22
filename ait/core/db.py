@@ -36,7 +36,7 @@ from ait.core import cfg, cmd, dmc, dtype, evr, log, tlm
 Backend = None
 
 
-@ait.deprecated(
+@ait.deprecated(  # type: ignore
     "connect() will be replaced with SQLiteBackend methods in a future release"
 )
 def connect(database):
@@ -47,7 +47,7 @@ def connect(database):
     return Backend.connect(database)
 
 
-@ait.deprecated(
+@ait.deprecated(  # type: ignore
     "create() will be replaced with SQLiteBackend methods in a future release"
 )
 def create(database, tlmdict=None):
@@ -65,7 +65,7 @@ def create(database, tlmdict=None):
     return dbconn
 
 
-@ait.deprecated(
+@ait.deprecated(  # type: ignore
     "createTable() will be replaced with SQLiteBackend methods in a future release"
 )
 def createTable(dbconn, pd):
@@ -77,7 +77,7 @@ def createTable(dbconn, pd):
     dbconn.commit()
 
 
-@ait.deprecated(
+@ait.deprecated(  # type: ignore
     "getTypename() will be replaced with SQLiteBackend methods in a future release"
 )
 def getTypename(defn):
@@ -86,7 +86,7 @@ def getTypename(defn):
     return "REAL" if defn.type.float or defn.dntoeu else "INTEGER"
 
 
-@ait.deprecated(
+@ait.deprecated(  # type: ignore
     "insert() will be replaced with SQLiteBackend methods in a future release"
 )
 def insert(dbconn, packet):
@@ -111,7 +111,7 @@ def insert(dbconn, packet):
     dbconn.execute(sql, values)
 
 
-@ait.deprecated("use() will be replaced with SQLiteBackend methods in a future release")
+@ait.deprecated("use() will be replaced with SQLiteBackend methods in a future release")  # type: ignore
 def use(backend):
     """Use the given database backend, e.g. 'MySQLdb', 'psycopg2',
     'MySQLdb', etc.
@@ -125,8 +125,8 @@ def use(backend):
         raise cfg.AitConfigError(msg)
 
 
-if ait.config.get("database.backend"):
-    use(ait.config.get("database.backend"))
+if ait.config.get("database.backend"):  # type: ignore
+    use(ait.config.get("database.backend"))  # type: ignore
 
 
 class AITDBResult:
@@ -264,7 +264,7 @@ class GenericBackend(object):
 
     __metaclass__ = ABCMeta
 
-    _backend = None
+    _backend = ""
     _conn = None
 
     @abstractmethod
@@ -603,7 +603,7 @@ class InfluxDBBackend(GenericBackend):
         if self._conn:
             self._conn.close()
 
-    @ait.deprecated(
+    @ait.deprecated(  # type: ignore
         "create_packets_from_results has been deprecated. Near equivalent functionality "
         "is available in create_packet_from_result."
     )

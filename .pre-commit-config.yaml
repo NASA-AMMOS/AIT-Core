@@ -1,0 +1,86 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-merge-conflict
+    -   id: debug-statements
+
+-   repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.6.0
+    hooks:
+    -   id: reorder-python-imports
+        files: ^src/|test/
+
+-   repo: local
+    hooks:
+    -   id: mypy
+        name: mypy
+        entry: mypy ait
+        language: system
+        pass_filenames: false
+        exclude: "bin/"
+
+-   repo: local
+    hooks:
+    -   id: black
+        name: black
+        entry: black
+        files: ^src/|test/
+        language: system
+        #exclude_types: [yaml, yml, dat, txt]
+        types: [python]
+
+-   repo: local
+    hooks:
+    -   id: flake8
+        name: flake8
+        entry: flake8 ait
+        language: system
+        pass_filenames: false
+
+-   repo: local
+    hooks:
+    -   id: tlm_yaml_check
+        name: AIT TLM YAML check
+        entry: 'ait-yaml-validate --tlm'
+        language: system
+        stages: [push]
+        pass_filenames: false
+
+-   repo: local
+    hooks:
+    -   id: cmd_yaml_check
+        name: AIT CMD YAML check
+        entry: 'ait-yaml-validate --cmd'
+        language: system
+        stages: [push]
+        pass_filenames: false
+
+-   repo: local
+    hooks:
+    -   id: evr_yaml_check
+        name: AIT EVR YAML check
+        entry: 'ait-yaml-validate --evr'
+        language: system
+        stages: [push]
+        pass_filenames: false
+
+-   repo: local
+    hooks:
+    -   id: limits_yaml_check
+        name: AIT LIMITS YAML check
+        entry: 'ait-yaml-validate --limits'
+        language: system
+        stages: [push]
+        pass_filenames: false
+
+-   repo: local
+    hooks:
+    -   id: tests
+        name: Tests
+        entry: pytest
+        language: system
+        stages: [push]
+        pass_filenames: false

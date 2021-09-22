@@ -229,7 +229,7 @@ class AitConfig(object):
     _ROOT_DIR = os.path.abspath(os.environ.get("AIT_ROOT", os.getcwd()))
 
     if "AIT_ROOT" not in os.environ:
-        log.warn('AIT_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)
+        log.warn('AIT_ROOT not set.  Defaulting to "%s"' % _ROOT_DIR)  # type: ignore
 
     def __init__(self, filename=None, data=None, config=None, pathvars=None):
         """Creates a new AitConfig object with configuration data read from
@@ -424,7 +424,7 @@ class AitConfig(object):
 
 
 # Create a singleton AitConfig accessible via ait.config
-sys.modules["ait"].config = AitConfig()
+sys.modules["ait"].config = AitConfig()  # type: ignore[attr-defined]
 
 # Re-initialize logging now that ait.config.logging.* parameters may exist.
 log.reinit()

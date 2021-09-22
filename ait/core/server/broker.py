@@ -4,6 +4,8 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
+from typing import List, Any
+
 import ait.core
 import ait.core.server
 from ait.core import log
@@ -16,10 +18,10 @@ class Broker(gevent.Greenlet):
     This broker subscribes all ZMQ clients to their input topics.
     """
 
-    inbound_streams = []
-    outbound_streams = []
-    servers = []
-    plugins = []
+    inbound_streams: List[Any] = []
+    outbound_streams: List[Any] = []
+    servers: List[Any] = []
+    plugins: List[Any] = []
 
     def __init__(self):
         self.context = zmq.Context()

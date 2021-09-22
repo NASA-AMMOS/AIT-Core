@@ -21,6 +21,7 @@ for encoding and decoding between AIT data structures and JSON.
 
 import collections
 import json
+from typing import *  # type: ignore
 
 
 def slotsToJSON(obj, slots=None):
@@ -88,7 +89,7 @@ def toJSON(obj):
 
 
 class SlotSerializer(object):
-    __slots__ = []
+    __slots__: List[str] = []
 
     def __jsonOmit__(self, key, val):
         return val is None or val is ""

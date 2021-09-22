@@ -11,16 +11,14 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 import datetime as dt
 import inspect
-import os
 import os.path
 import sqlite3
 import unittest
+from unittest import mock
 
 import pytest
-from unittest import mock
 
 import ait.core
 import ait.core.cfg as cfg

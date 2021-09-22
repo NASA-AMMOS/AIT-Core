@@ -287,7 +287,7 @@ class CmdDefn(json.SlotSerializer, object):
             setattr(self, slot, kwargs.get(name, None))
 
         if self.ccsds:
-            import ccsds
+            import ait.core.ccsds as ccsds
 
             self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
 

@@ -71,6 +71,8 @@ import struct
 import sys
 import re
 
+from typing import Dict, Any
+
 from ait.core import cmd, dmc, log, util
 
 
@@ -90,7 +92,7 @@ PrimitiveTypes = None
 # ait.core.dtype.get(typename).  (Populated below based on
 # information in PrimitiveTypeFormats).
 #
-PrimitiveTypeMap = {}
+PrimitiveTypeMap: Dict[str, Any] = {}
 
 
 # PrimitiveTypeFormats

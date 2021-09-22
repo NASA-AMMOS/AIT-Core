@@ -1,10 +1,10 @@
-import unittest
 import pickle
+import unittest
 from unittest import mock
 
 from ait.core import tlm
-from ait.core.server.handlers import PacketHandler
 from ait.core.server.handlers import CCSDSPacketHandler
+from ait.core.server.handlers import PacketHandler
 
 
 class TestCCSDSPacketCheck(unittest.TestCase):

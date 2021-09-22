@@ -32,12 +32,12 @@ If our command required arguments we could specify them a number of ways::
     my_instrument.cmd.send('AIT_SET_OP_MODE PAYLOAD_SAFE')
     my_instrument.cmd.send('AIT_SET_OP_MODE', 'PAYLOAD_SAFE')
     my_instrument.cmd.send('AIT_SET_OP_MODE', mode='PAYLOAD_SAFE')
-    
+
 
 Wait
 ----
 
-The :func:`ait.core.api.wait` function allows us to halt execution in a script until a specified number of seconds have passed or until a supplied condition evaluates to ``True``. 
+The :func:`ait.core.api.wait` function allows us to halt execution in a script until a specified number of seconds have passed or until a supplied condition evaluates to ``True``.
 
 Wait until 2 seconds have passed::
 
@@ -51,10 +51,10 @@ Expressions can be specified as a string (as above), a lambda, or as a function.
 
     # Using a string
     wait('my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2')
-    
+
     # Using a lambda expression
     wait(lambda: my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2)
-    
+
     # Using a function
     def twoCmdsRcvd(): return my_instrument.tlm.1553_HS_Packet.CmdsRcvd == 2
     wait(twoCmdsRcvd)
@@ -103,7 +103,7 @@ Below we'll create an example script to do a simple test of the API to ensure th
         log.info('Command received')
     else:
         log.info('Timeout')
-       
+
 .. _api_telem_setup:
 
 Getting Telemetry to Monitor
@@ -127,7 +127,7 @@ The input streams that send messages to this topic can be configured via the **s
                     - name: ait.server.handlers.PacketHandler
                       packet: 1553_HS_Packet
 
-            
+
 You should ensure that any custom handlers you write output their messages in the same format if you wish to use them with the API. Similarly, you must ensure that any streams specified in the **server.api-telemetry-streams** field output their data in the correct format. The server does not attempt to validate this when configuration is provided and message format issues will (very likely) cause problems when the API attempts to process them.
 
 The server will do its best to detect all available input streams and use them as inputs to this topic if no configuration is provided via the **server.api-telemetry-streams** field. An input stream is considered valid in this case if its last handler is one of the handlers that outputs in the Packet-UID-annotated format.

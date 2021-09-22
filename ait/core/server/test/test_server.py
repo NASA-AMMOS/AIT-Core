@@ -1,10 +1,9 @@
-import os
 import os.path
+from unittest import mock
+from unittest import TestCase
 
-from unittest import mock, TestCase
 import pytest
 
-import ait.core
 import ait.core.server
 from ait.core import cfg
 from ait.core.server.handlers import *

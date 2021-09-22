@@ -1,12 +1,12 @@
 from unittest import mock
+
+import pytest
 import zmq.green
 
 import ait.core
 from ait.core.server.broker import Broker
-from ait.core.server.stream import ZMQStream
 from ait.core.server.handlers import PacketHandler
-
-import pytest
+from ait.core.server.stream import ZMQStream
 
 
 class TestStream:

@@ -9,7 +9,7 @@
   fields:
     - !Field
       name:       version
-      desc:       
+      desc:
       bytes:       0
       type:       U8
       mask:       0xE0

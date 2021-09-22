@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,10 +11,9 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 import os
-import unittest
 import shutil
+import unittest
 from unittest import mock
 
 from ait.core import util
