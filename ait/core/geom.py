@@ -37,7 +37,7 @@ to at least 2009 and probably even earlier.
 
 
 class Point(object):
-    """Point is a simple 2D Cartesian point object with public 'x' and
+    r"""Point is a simple 2D Cartesian point object with public 'x' and
     'y' coordinate fields.  The operators +, -, +=, -=, \*, \*=, /, /=, ==
     and !=.
     """
@@ -606,8 +606,8 @@ class Polygon(object):
         >>> p.center()
         Point(2.89285714286, 4.82142857143)
         """
-        Cx = 0.0
-        Cy = 0.0
+        Cx = 0.0  # noqa
+        Cy = 0.0  # noqa
         denom = 6.0 * self.area()
 
         for segment in self.segments():
@@ -752,13 +752,3 @@ class Rect(object):
         Returns the width of this Rectangle.
         """
         return self.lr.y - self.ul.x
-
-
-def runTests():
-    import doctest
-
-    doctest.testmod()
-
-
-if __name__ == "__main__":
-    runTests()
