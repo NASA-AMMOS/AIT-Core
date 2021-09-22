@@ -342,7 +342,7 @@ class CmdDefn(json.SlotSerializer, object):
         else:
             return True
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         obj = super(CmdDefn, self).toJSON()
         obj["arguments"] = obj.pop("argdefns")
 
@@ -437,14 +437,13 @@ class CmdDict(dict):
         if defn is None:
             raise TypeError("Unrecognized command: %s" % name)
 
-        return createCmd(defn, *args, **kwargs)
+        return createCmd(defn, *args, **kwargs)  # noqa
 
     def decode(self, bytes):
         """Decodes the given bytes according to this AIT Command
         Definition.
         """
         opcode = struct.unpack(">H", bytes[0:2])[0]
-        nbytes = struct.unpack("B", bytes[2:3])[0]
         name = None
         args = []
 
@@ -486,30 +485,30 @@ class CmdDict(dict):
             if isinstance(stream, IOBase):
                 stream.close()
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return {name: defn.toJSON() for name, defn in self.items()}
 
 
-def getDefaultCmdDict(reload=False):
+def getDefaultCmdDict(reload=False):  # noqa
     return getDefaultDict(reload=reload)
 
 
-def getDefaultDict(reload=False):
+def getDefaultDict(reload=False):  # noqa
     return util.getDefaultDict(__name__, "cmddict", CmdDict, reload)
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.cmddict.filename
 
 
-def getDefaultSchema():
+def getDefaultSchema():  # noqa
     return pkg_resources.resource_filename("ait.core", "data/cmd_schema.json")
 
 
-def getMaxCmdSize():
+def getMaxCmdSize():  # noqa
     """Returns the maximum size TReK command in bytes
 
-    Converts from words to bytes (hence the \*2) and
+    Converts from words to bytes (hence the ``* 2``) and
     removes 1 word for CCSDS header (-1)
     """
     return (MAX_CMD_WORDS - 1) * 2
@@ -531,19 +530,19 @@ def handle_includes(defns):
     return newdefns
 
 
-def YAMLCtor_ArgDefn(loader, node):
+def YAMLCtor_ArgDefn(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
     fields["fixed"] = node.tag == "!Fixed"
-    return createArgDefn(**fields)
+    return createArgDefn(**fields)  # noqa
 
 
-def YAMLCtor_CmdDefn(loader, node):
+def YAMLCtor_CmdDefn(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
     fields["argdefns"] = fields.pop("arguments", None)
-    return createCmdDefn(**fields)
+    return createCmdDefn(**fields)  # noqa
 
 
-def YAMLCtor_include(loader, node):
+def YAMLCtor_include(loader, node):  # noqa
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
