@@ -18,12 +18,12 @@ AIT Event Record (EVR) Reader
 The ait.core.evr module is used to read the EVRs from a YAML file.
 """
 
-import binascii
 import os
 import pkg_resources
 import re
 import yaml
 
+import ait.core
 from ait.core import dtype, json, log, util
 
 
@@ -68,23 +68,23 @@ class EVRDict(dict):
         for evr in evrs:
             self.add(evr)
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return {code: defn.toJSON() for code, defn in self.items()}
 
 
-def getDefaultSchema():
+def getDefaultSchema():  # noqa
     return pkg_resources.resource_filename("ait.core", "data/evr_schema.json")
 
 
-def getDefaultDict(reload=False):
+def getDefaultDict(reload=False):  # noqa
     return util.getDefaultDict(__name__, "evrdict", EVRDict, reload)
 
 
-def getDefaultEVRs():
+def getDefaultEVRs():  # noqa
     return getDefaultDict()
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.evrdict.filename
 
 
@@ -155,7 +155,7 @@ class EVRDefn(json.SlotSerializer, object):
             "x": "MSB_U{}",
         }
 
-        formatters = re.findall("%(?:\d+\$)?([cdieEfgGosuxXhlL]+)", self._message)
+        formatters = re.findall(r"%(?:\d+\$)?([cdieEfgGosuxXhlL]+)", self._message)
 
         cur_byte_index = 0
         data_chunks = []
@@ -194,7 +194,8 @@ class EVRDefn(json.SlotSerializer, object):
                     d = str(evr_hist_data[cur_byte_index:end_index], "utf-8")
 
                 data_chunks.append(d)
-            except:
+            # TODO: Make this not suck
+            except Exception:
                 msg = "Unable to format EVR Message with data {}".format(evr_hist_data)
                 log.error(msg)
                 raise ValueError(msg)
@@ -230,10 +231,10 @@ class EVRDefn(json.SlotSerializer, object):
         self._message = value
 
 
-def YAMLCtor_EVRDefn(loader, node):
+def YAMLCtor_EVRDefn(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
     fields["argdefns"] = fields.pop("arguments", None)
-    return createEVRDefn(**fields)
+    return createEVRDefn(**fields)  # noqa
 
 
 yaml.add_constructor("!EVR", YAMLCtor_EVRDefn)
