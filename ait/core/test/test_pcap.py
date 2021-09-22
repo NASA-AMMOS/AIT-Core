@@ -186,7 +186,7 @@ def testPCapPacketHeaderInit():
     assert header._data == header.pack()
     assert header._swap == "@"
 
-    ts, usec = dmc.getTimestampUTC()
+    ts, usec = dmc.get_timestamp_utc()
     header.ts_sec, header.ts_usec = ts, usec
 
     float_ts = float(ts) + (float(usec) / 1e6)

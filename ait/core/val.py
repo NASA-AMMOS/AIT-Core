@@ -262,9 +262,9 @@ class ErrorHandler(object):
 
                         # Check if line contains the error
                         if ":" in line:
-                            line = line.split(":")
-                            key = line[0]
-                            value = ":".join(line[1:])
+                            l_split = line.split(":")
+                            key = l_split[0]
+                            value = ":".join(l_split[1:])
 
                             # TODO:
                             # Handle maxItems TBD
@@ -690,17 +690,17 @@ class TlmValidator(Validator):
 
 
 class ValidationRule(object):
-    def __init__(self, attr, msg=None, messages=None):
+    def __init__(self, attr, msg=None, messages=[]):  # noqa
         self.attr = attr
         self.valid = True
         self.msg = msg
-        self.messages = messages or []
+        self.messages = messages
 
 
 class UniquenessRule(ValidationRule):
     """Checks the uniqueness of an attribute across YAML documents"""
 
-    def __init__(self, attr, msg, messages=None):
+    def __init__(self, attr, msg, messages=[]):  # noqa
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -723,7 +723,7 @@ class UniquenessRule(ValidationRule):
 class TypeRule(ValidationRule):
     """Checks the object's type is an allowable types"""
 
-    def __init__(self, attr, msg, messages=None):
+    def __init__(self, attr, msg, messages=[]):  # noqa
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -744,7 +744,7 @@ class TypeRule(ValidationRule):
 class TypeSizeRule(ValidationRule):
     """Checks the object size matches the designated type"""
 
-    def __init__(self, attr, msg, messages=None):
+    def __init__(self, attr, msg, messages=[]):  # noqa
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -783,7 +783,7 @@ class EnumRule(ValidationRule):
     file. The YAML boolean strings include (TRUE/FALSE/ON/OFF/YES/NO) .
     """
 
-    def __init__(self, attr, msg, messages=None):
+    def __init__(self, attr, msg, messages=[]):  # noqa
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -809,7 +809,7 @@ class EnumRule(ValidationRule):
 class ByteOrderRule(ValidationRule):
     """Checks the byte ordering based on the previous set stop byte/bit"""
 
-    def __init__(self, attr, msg, messages=None):
+    def __init__(self, attr, msg, messages=[]):  # noqa
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """

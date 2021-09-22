@@ -481,7 +481,7 @@ class InfluxDBBackend(GenericBackend):
                 pkt_conv = [
                     (
                         # strptime throws away timezone, so re-enforce UTC
-                        dmc.rfc3339StrToDatetime(d["time"]),
+                        dmc.rfc3339_str_to_datetime(d["time"]),
                         InfluxDBBackend.create_packet_from_result(pkt_names[i], d),
                     )
                     for i, d in enumerate(packets)
@@ -832,7 +832,7 @@ class SQLiteBackend(GenericBackend):
                 pkt_conv = [
                     (
                         # strptime throws away timezone, so re-enforce UTC
-                        dmc.rfc3339StrToDatetime(d[0]),
+                        dmc.rfc3339_str_to_datetime(d[0]),
                         SQLiteBackend.create_packet_from_result(results[i][0], d[1]),
                     )
                     for i, d in enumerate(packets)

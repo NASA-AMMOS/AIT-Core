@@ -385,9 +385,9 @@ class ArrayType(object):
         if isinstance(index, slice):
             step = 1 if index.step is None else index.step
             indices = range(index.start, index.stop, step)
-            result = [self.decodeElem(bytes, n, raw) for n in indices]
+            result = [self.decode_elem(bytes, n, raw) for n in indices]
         else:
-            result = self.decodeElem(bytes, index, raw)
+            result = self.decode_elem(bytes, index, raw)
 
         return result
 
@@ -666,7 +666,7 @@ class Time32Type(PrimitiveType):
         if not isinstance(value, datetime.datetime):
             raise TypeError("encode() argument must be a Python datetime")
 
-        return super(Time32Type, self).encode(dmc.toGPSSeconds(value))
+        return super(Time32Type, self).encode(dmc.to_gps_seconds(value))
 
     def decode(self, bytes, raw=False):
         """decode(bytearray, raw=False) -> value
@@ -679,7 +679,7 @@ class Time32Type(PrimitiveType):
         number of seconds will be returned instead.
         """
         sec = super(Time32Type, self).decode(bytes)
-        return sec if raw else dmc.toLocalTime(sec)
+        return sec if raw else dmc.to_local_time(sec)
 
 
 class Time40Type(PrimitiveType):

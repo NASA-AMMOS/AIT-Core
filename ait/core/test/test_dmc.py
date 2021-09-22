@@ -66,7 +66,7 @@ class MockResponse:
 def test_getTimestampUTC():
     expected = time.strftime("%Y-%j", time.gmtime())
 
-    actual = time.strftime("%Y-%j", time.gmtime(dmc.getTimestampUTC()[0]))
+    actual = time.strftime("%Y-%j", time.gmtime(dmc.get_timestamp_utc()[0]))
 
     assert actual == expected
 
@@ -78,7 +78,7 @@ def test_getUTCDatetimeDOY_w_days():
     exp_year = timestamp.tm_year
     exp_day = "%03d" % timestamp.tm_yday
 
-    dtime = dmc.getUTCDatetimeDOY(days=days).split("T")[0].split("-")
+    dtime = dmc.get_utc_datetime_doy(days=days).split("T")[0].split("-")
     assert str(exp_year) == dtime[0]
     assert str(exp_day) == dtime[1]
 
@@ -92,7 +92,7 @@ def test_leap_second_attrs():
     ls._load_leap_second_data()
     assert ls.leapseconds == ls._data["leapseconds"]
     assert ls.valid_date == ls._data["valid"]
-    assert ls.get_current_GPS_offset() == ls.leapseconds[-1][-1]
+    assert ls.get_current_gps_offset() == ls.leapseconds[-1][-1]
 
 
 def test_leap_second_by_date_invalid_gps_date():
@@ -102,7 +102,7 @@ def test_leap_second_by_date_invalid_gps_date():
 
     dmc.LeapSeconds._load_leap_second_data()
     with pytest.raises(ValueError):
-        dmc.LeapSeconds.get_GPS_offset_for_date(datetime.datetime(1980, 1, 1))
+        dmc.LeapSeconds.get_gps_offset_for_date(datetime.datetime(1980, 1, 1))
 
 
 def test_leap_second_by_date():
@@ -112,30 +112,30 @@ def test_leap_second_by_date():
 
     ls = dmc.LeapSeconds
     ls._load_leap_second_data()
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1981, 1, 1)) == 0
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1981, 7, 1)) == 1
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1982, 7, 1)) == 2
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1983, 7, 1)) == 3
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1985, 7, 1)) == 4
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1988, 1, 1)) == 5
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1990, 1, 1)) == 6
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1991, 1, 1)) == 7
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1992, 7, 1)) == 8
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1993, 7, 1)) == 9
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1994, 7, 1)) == 10
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1996, 1, 1)) == 11
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1997, 7, 1)) == 12
-    assert ls.get_GPS_offset_for_date(datetime.datetime(1999, 1, 1)) == 13
-    assert ls.get_GPS_offset_for_date(datetime.datetime(2006, 1, 1)) == 14
-    assert ls.get_GPS_offset_for_date(datetime.datetime(2009, 1, 1)) == 15
-    assert ls.get_GPS_offset_for_date(datetime.datetime(2012, 7, 1)) == 16
-    assert ls.get_GPS_offset_for_date(datetime.datetime(2015, 7, 1)) == 17
-    assert ls.get_GPS_offset_for_date(datetime.datetime(2017, 1, 1)) == 18
+    assert ls.get_gps_offset_for_date(datetime.datetime(1981, 1, 1)) == 0
+    assert ls.get_gps_offset_for_date(datetime.datetime(1981, 7, 1)) == 1
+    assert ls.get_gps_offset_for_date(datetime.datetime(1982, 7, 1)) == 2
+    assert ls.get_gps_offset_for_date(datetime.datetime(1983, 7, 1)) == 3
+    assert ls.get_gps_offset_for_date(datetime.datetime(1985, 7, 1)) == 4
+    assert ls.get_gps_offset_for_date(datetime.datetime(1988, 1, 1)) == 5
+    assert ls.get_gps_offset_for_date(datetime.datetime(1990, 1, 1)) == 6
+    assert ls.get_gps_offset_for_date(datetime.datetime(1991, 1, 1)) == 7
+    assert ls.get_gps_offset_for_date(datetime.datetime(1992, 7, 1)) == 8
+    assert ls.get_gps_offset_for_date(datetime.datetime(1993, 7, 1)) == 9
+    assert ls.get_gps_offset_for_date(datetime.datetime(1994, 7, 1)) == 10
+    assert ls.get_gps_offset_for_date(datetime.datetime(1996, 1, 1)) == 11
+    assert ls.get_gps_offset_for_date(datetime.datetime(1997, 7, 1)) == 12
+    assert ls.get_gps_offset_for_date(datetime.datetime(1999, 1, 1)) == 13
+    assert ls.get_gps_offset_for_date(datetime.datetime(2006, 1, 1)) == 14
+    assert ls.get_gps_offset_for_date(datetime.datetime(2009, 1, 1)) == 15
+    assert ls.get_gps_offset_for_date(datetime.datetime(2012, 7, 1)) == 16
+    assert ls.get_gps_offset_for_date(datetime.datetime(2015, 7, 1)) == 17
+    assert ls.get_gps_offset_for_date(datetime.datetime(2017, 1, 1)) == 18
 
     # Make sure not supplying a date returns the offset for the current date
     assert (
-        ls.get_GPS_offset_for_date(datetime.datetime.utcnow())
-        == ls.get_GPS_offset_for_date()
+        ls.get_gps_offset_for_date(datetime.datetime.utcnow())
+        == ls.get_gps_offset_for_date()
     )
 
 

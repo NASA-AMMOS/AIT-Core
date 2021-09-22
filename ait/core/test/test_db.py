@@ -447,7 +447,7 @@ class TestInfluxDBBackend(unittest.TestCase):
 
         for i, test_data in enumerate(ret_data[0][1]):
 
-            assert dmc.rfc3339StrToDatetime(test_data["time"]) == res_pkts[i][0]
+            assert dmc.rfc3339_str_to_datetime(test_data["time"]) == res_pkts[i][0]
             assert res_pkts[i][1].Voltage_A == i
 
     @mock.patch("importlib.import_module")
@@ -829,5 +829,5 @@ class TestSQLiteBackend(unittest.TestCase):
         assert isinstance(res_pkts[0], tuple)
 
         for i, test_data in enumerate(ret_data):
-            assert dmc.rfc3339StrToDatetime(ret_data[i][0]) == res_pkts[i][0]
+            assert dmc.rfc3339_str_to_datetime(ret_data[i][0]) == res_pkts[i][0]
             assert res_pkts[i][1].Voltage_A == i

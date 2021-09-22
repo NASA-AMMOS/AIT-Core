@@ -34,7 +34,7 @@ def test_cbrt():
 def test_eci2ecef():
     eci = -6.0744 * 1e6, -1.8289 * 1e6, 0.6685 * 1e6
     t = datetime.datetime(2010, 1, 17, 10, 20, 36)
-    gmst = dmc.toGMST(t)
+    gmst = dmc.to_gmst(t)
     ecef = coord.eci2ecef(eci[0], eci[1], eci[2], gmst=gmst)
     assert float_equality(ecef[0], 1628340.306018)
     assert float_equality(ecef[1], -6131208.5609442)
@@ -44,7 +44,7 @@ def test_eci2ecef():
 def test_eci2geodetic():
     eci = -6.0744 * 1e6, -1.8289 * 1e6, 0.6685 * 1e6
     t = datetime.datetime(2010, 1, 17, 10, 20, 36)
-    gmst = dmc.toGMST(t)
+    gmst = dmc.to_gmst(t)
     lla = list(coord.eci2geodetic(eci[0], eci[1], eci[2], gmst=gmst))
     lla[0] = math.fmod(lla[0], math.pi * 2)
     lla[1] = math.fmod(lla[1], math.pi * 2)

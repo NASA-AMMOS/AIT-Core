@@ -23,7 +23,7 @@ import math
 import struct
 import datetime
 
-from .dmc import getTimestampUTC
+from .dmc import get_timestamp_utc
 from ait.core import log
 
 """
@@ -154,7 +154,7 @@ class PCapPacketHeader:
         self._swap = swap
 
         if stream is None:
-            self.ts_sec, self.ts_usec = getTimestampUTC()
+            self.ts_sec, self.ts_usec = get_timestamp_utc()
             self.incl_len = min(orig_len, maxlen)
             self.orig_len = orig_len
             self._data = self.pack()

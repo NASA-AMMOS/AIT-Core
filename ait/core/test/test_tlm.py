@@ -64,7 +64,7 @@ class TestTlmDictWriter(object):
         tlmdict = tlm.TlmDict(self.test_yaml_file)
 
         writer = tlm.TlmDictWriter(tlmdict=tlmdict)
-        writer.writeToCSV(self.test_outpath)
+        writer.write_to_csv(self.test_outpath)
 
         expected_csv = os.path.join(self.test_outpath, "Packet1.csv")
         assert os.path.isfile(expected_csv)

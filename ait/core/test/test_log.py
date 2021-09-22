@@ -34,7 +34,7 @@ def test_syslog_parser_success():
         "msgid": "INFO",
         "msg": "Waiting for AIT telemetry on port 2514",
     }
-    parts = log.parseSyslog(test_message)
+    parts = log.parse_syslog(test_message)
     for key, expected in test_expected.items():
         actual = parts.get(key, "")
         msg = 'Syslog Parsing failed for "%s" ' % key
@@ -59,7 +59,7 @@ def test_syslog_parser_msg_with_hypen():
         "msgid": "INFO",
         "msg": "Waiting for AIT - GUI telemetry",
     }
-    parts = log.parseSyslog(test_message)
+    parts = log.parse_syslog(test_message)
     for key, expected in test_expected.items():
         actual = parts.get(key, "")
         msg = 'Syslog Parsing failed for "%s" ' % key
