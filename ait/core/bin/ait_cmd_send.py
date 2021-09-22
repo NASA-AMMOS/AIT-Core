@@ -125,7 +125,7 @@ def main():
     else:
         cmdApi = api.CmdAPI(verbose=verbose, cmdtopic=topic)
 
-    cmdArgs = cmdApi.parseArgs(args.command, *args.arguments)
+    cmdArgs = cmdApi.parse_args(args.command, *args.arguments)
 
     cmdApi.send(args.command, *cmdArgs)
 

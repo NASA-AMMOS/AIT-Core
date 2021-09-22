@@ -11,22 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-"""
-AIT API
-
-The ait.core.api module provides an Application Programming
-Interface (API) to your instrument by bringing together the core.cmd
-and core.tlm modules in a complementary whole, allowing you to
-script instrument interactions, e.g.:
-
-.. code-block:: python
-
-    # TBA
-"""
-
-from __future__ import absolute_import
-
 import gevent.monkey
 
 gevent.monkey.patch_all()
@@ -50,6 +34,20 @@ import ait
 import ait.core
 from ait.core import cmd, gds, log, pcap, tlm, util
 import ait.core.server.utils as serv_utils
+
+
+"""
+AIT API
+
+The ait.core.api module provides an Application Programming
+Interface (API) to your instrument by bringing together the core.cmd
+and core.tlm modules in a complementary whole, allowing you to
+script instrument interactions, e.g.:
+
+.. code-block:: python
+
+    # TBA
+"""
 
 
 class APIError(Exception):
@@ -117,25 +115,25 @@ class CmdAPI:
         self._cmddict = cmddict
         self._verbose = verbose
 
-        ## Setup the destination of our commands and arguments based on destination
-        ## information.
+        # Setup the destination of our commands and arguments based on destination
+        # information.
         if udp_dest:
-            ## Convert partial info to full tuple
+            # Convert partial info to full tuple
             if type(udp_dest) is int:
                 udp_dest = (ait.DEFAULT_CMD_HOST, udp_dest)
             elif type(udp_dest) is str:
                 udp_dest = (udp_dest, ait.DEFAULT_CMD_PORT)
 
-            ## Sanify check that we have a tuple
+            # Sanify check that we have a tuple
             if type(udp_dest) is not tuple:
                 errmsg = "Illegal type of 'udp_dest' argument: " + type(udp_dest)
                 errmsg += ".  Legal types: {int,str,tuple}"
                 raise TypeError(errmsg)
 
-        ## Our UDP socket
+        # Our UDP socket
         self._udp_socket = None
 
-        ## Our ZMQ publisher socket
+        # Our ZMQ publisher socket
         self._pub_socket = None
 
         if udp_dest:
@@ -150,7 +148,7 @@ class CmdAPI:
             self._pub_socket = self._cntxt.socket(zmq.PUB)
             self._pub_socket.connect(self._pub_url)
 
-            ## Allow for the ZMQ connection to complete by sleeping
+            # Allow for the ZMQ connection to complete by sleeping
             self._pub_conn_sleep = int(
                 ait.config.get("command.zmq_conn_sleep", ait.DEFAULT_CMD_ZMQ_SLEEP)
             )
@@ -160,7 +158,7 @@ class CmdAPI:
             ait.core.log.debug(sleep_msg)
             time.sleep(self._pub_conn_sleep)
 
-            ## Retrieve the command topic to be used
+            # Retrieve the command topic to be used
             self._pub_topic = (
                 ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC)
                 if cmdtopic is None
@@ -202,7 +200,7 @@ class CmdAPI:
                 gds.hexdump(encoded, preamble=cmdobj.name + ":" + pad)
 
             try:
-                ## Send to either UDP socket or ZMQ publish socket
+                # Send to either UDP socket or ZMQ publish socket
 
                 if self._udp_socket:
                     values = (self._host, self._port, str(cmdobj))
@@ -252,7 +250,7 @@ class CmdAPI:
 
         return True, []
 
-    def parseArgs(self, command, *args):
+    def parse_args(self, command, *args):
         """Iterates over presumably naively parsed arguments and enforces the
         associated argument type definitions from the command def when possible.
 
@@ -456,7 +454,7 @@ class GeventDeque(object):
         """
         return self._pop(block, timeout, left=True)
 
-    def remove(item):
+    def remove(self, item):
         """Removes the first occurrence of *item*. If not found,
         raises a ValueError.
 
@@ -663,7 +661,7 @@ class Instrument(object):
         return TlmWrapperAttr(self._pkt_buffs)
 
 
-def wait(cond, msg=None, _timeout=10, _raiseException=True):
+def wait(cond, msg=None, _timeout=10, _raise_exception=True):
     """Waits either a specified number of seconds, e.g.:
 
     .. code-block:: python
@@ -689,7 +687,7 @@ def wait(cond, msg=None, _timeout=10, _raiseException=True):
     The :exception:``APITimeoutError`` exception may be supressed in
     favor of returning ``True`` on success (i.e. condition satisfied)
     and ``False`` on failure (i.e. timeout exceeded) by setting the
-    ``_raiseException`` parameter to ``False``.
+    ``_raise_exception`` parameter to ``False``.
 
     The :exception:``FalseWaitError`` will be thrown only if a boolean
     with value "False" is passed as an argument to wait. The purpose of
@@ -724,7 +722,7 @@ def wait(cond, msg=None, _timeout=10, _raiseException=True):
     else:
         while True:
             if _timeout is not None and elapsed >= _timeout:
-                if _raiseException:
+                if _raise_exception:
                     raise APITimeoutError(_timeout, msg)
                 else:
                     status = False
@@ -760,13 +758,13 @@ class UIAPI(object):
                 should be displayed to the user before a timeout occurs.
                 Defaults to -1 which indicates there is no timeout limit.
         """
-        return self.msgBox("confirm", _timeout=_timeout, msg=msg)
+        return self.msg_box("confirm", _timeout=_timeout, msg=msg)
 
-    def msgBox(self, promptType, _timeout=-1, **options):
+    def msg_box(self, prompt_type, _timeout=-1, **options):
         """Send a user prompt request to the GUI
 
         Arguments:
-            promptType (string):
+            prompt_type (string):
                 The prompt type to send to the GUI. Currently
                 the only type supported is 'confirm'.
 
@@ -804,18 +802,18 @@ class UIAPI(object):
             APITimeoutError:
                 If the timeout value is reached without receiving a response.
         """
-        if promptType == "confirm":
-            return self._sendConfirmPrompt(_timeout, options)
+        if prompt_type == "confirm":
+            return self._send_confirm_prompt(_timeout, options)
         else:
-            raise ValueError("Unknown prompt type: {}".format(promptType))
+            raise ValueError("Unknown prompt type: {}".format(prompt_type))
 
-    def _sendConfirmPrompt(self, _timeout, options):
+    def _send_confirm_prompt(self, _timeout, options):
         """"""
         if "msg" not in options:
             raise KeyError("Confirm prompt options does not contain a `msg` attribute")
 
         data = {"type": "confirm", "options": options, "timeout": _timeout}
-        ret = self._sendMsgBoxRequest(data)
+        ret = self._send_msg_box_request(data)
 
         if ret == "timeout":
             raise APIError("Confirm request returned invalid response: {}".format(ret))
@@ -824,20 +822,20 @@ class UIAPI(object):
         elif ret == "deny":
             return False
 
-    def _sendMsgBoxRequest(self, data):
+    def _send_msg_box_request(self, data):
         host = ait.config.get("gui.host", "localhost")
         port = ait.config.get("gui.port", 8080)
         url = "http://{}:{}/prompt".format(host, port)
-        connTimeout = data["timeout"] * 2
+        conn_timeout = data["timeout"] * 2
 
         try:
-            if connTimeout > 0:
-                ret = requests.post(url, json=data, timeout=connTimeout)
+            if conn_timeout > 0:
+                ret = requests.post(url, json=data, timeout=conn_timeout)
             else:
                 ret = requests.post(url, json=data)
 
             ret = json.loads(ret.text)["response"]
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             log.error("User prompt request connection failed")
             ret = None
         except requests.exceptions.HTTPError:
@@ -847,7 +845,7 @@ class UIAPI(object):
             log.error("User prompt request failed due to too many redirects")
             ret = None
         except requests.exceptions.Timeout:
-            raise APITimeoutError(timeout=timeout, msg="User confirm prompt timed out")
+            raise APITimeoutError(timeout=conn_timeout, msg="User confirm prompt timed out")
         except KeyError:
             log.error("User prompt request received malformed response")
             ret = None

@@ -142,7 +142,7 @@ def main():
                     delay = float(tokens[0])
                     cmdName = tokens[1]
                     cmdArgs = [util.toNumber(t, t) for t in tokens[2:]]
-                    cmdArgs = cmdApi.parseArgs(cmdName, *cmdArgs)
+                    cmdArgs = cmdApi.parse_args(cmdName, *cmdArgs)
                     time.sleep(delay)
                     log.info(line)
                     cmdApi.send(cmdName, *cmdArgs)
