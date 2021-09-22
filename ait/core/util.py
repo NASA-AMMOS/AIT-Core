@@ -26,7 +26,6 @@ import stat
 import sys
 import time
 import zlib
-import types
 
 import pickle
 
@@ -102,7 +101,7 @@ else:
     timer = time.time
 
 
-def __init_extensions__(modname, modsyms):
+def __init_extensions__(modname, modsyms):  # noqa
     """Initializes a module (given its name and :func:`globals()` symbol
     table) for AIT extensions.
 
@@ -124,7 +123,7 @@ def __init_extensions__(modname, modsyms):
     :class:`ait.core.cmd.Cmd` (and probably inherit from it).
     """
 
-    def createFunc(cls, extname):
+    def createFunc(cls, extname):  # noqa
         """Creates and returns a new ``createXXX()`` function to instantiate
         either the given class by class object (*cls*) or extension
         class name (*extname*).
@@ -167,10 +166,10 @@ def __init_extensions__(modname, modsyms):
                 values = modname, clsname, extname
                 log.info("Replacing %s.%s with custom extension: %s" % values)
 
-        modsyms["create" + clsname] = createFunc(cls, extname)
+        modsyms["create" + clsname] = createFunc(cls, extname)  # noqa
 
 
-def __load_functions__(symtbl):
+def __load_functions__(symtbl):  # noqa
     """Loads all Python functions from the module specified in the
     ``functions`` configuration parameter (in config.yaml) into the given
     symbol table (Python dictionary).
@@ -190,23 +189,23 @@ def __load_functions__(symtbl):
                 symtbl[name] = func
 
 
-def crc32File(filename, skip=0):
+def crc32File(filename, skip=0):  # noqa
     """Computes the CRC-32 of the contents of filename, optionally
     skipping a certain number of bytes at the beginning of the file.
     """
     with open(filename, "rb") as stream:
-        discard = stream.read(skip)
+        _ = stream.read(skip)
         return zlib.crc32(stream.read()) & 0xFFFFFFFF
 
 
-def endianSwapU16(bytes):
+def endianSwapU16(bytes):  # noqa
     """Swaps pairs of bytes (16-bit words) in the given bytearray."""
     for b in range(0, len(bytes), 2):
         bytes[b], bytes[b + 1] = bytes[b + 1], bytes[b]
     return bytes
 
 
-def setDictDefaults(d, defaults):
+def setDictDefaults(d, defaults):  # noqa
     """Sets all defaults for the given dictionary to those contained in a
     second defaults dictionary.  This convenience method calls:
 
@@ -220,7 +219,7 @@ def setDictDefaults(d, defaults):
     return d
 
 
-def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
+def getDefaultDict(modname, config_key, loader, reload=False, filename=None):  # noqa
     """Returns default AIT dictonary for modname
 
     This helper function encapulates the core logic necessary to
@@ -239,7 +238,7 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
     if filename is not None and (default is None or reload is True):
         try:
             default = ObjectCache(filename, loader).load()
-            setattr(module, "DefaultDict", default)
+            setattr(module, "DefaultDict", default)  # noqa
         except IOError as e:
             msg = 'Could not load default %s "%s": %s'
             log.error(msg, config_key, filename, str(e))
@@ -247,13 +246,12 @@ def getDefaultDict(modname, config_key, loader, reload=False, filename=None):
     return default or loader()
 
 
-def getFileSize(filename):
+def getFileSize(filename):  # noqa
     """Returns the size of filename in bytes."""
     return os.stat(filename)[stat.ST_SIZE]
 
 
-def toBCD(n):
-
+def toBCD(n):  # noqa
     """Converts the number n into Binary Coded Decimal."""
     bcd = 0
     bits = 0
@@ -261,14 +259,14 @@ def toBCD(n):
     while True:
         n, r = divmod(n, 10)
         bcd |= r << bits
-        if n is 0:
+        if n == 0:
             break
         bits += 4
 
     return bcd
 
 
-def toFloat(str, default=None):
+def toFloat(str, default=None):  # noqa
     """toFloat(str[, default]) -> float | default
 
     Converts the given string to a floating-point value.  If the
@@ -299,7 +297,7 @@ def toFloat(str, default=None):
     return value
 
 
-def toNumber(str, default=None):
+def toNumber(str, default=None):  # noqa
     """toNumber(str[, default]) -> integer | float | default
 
     Converts the given string to a numeric value.  The string may be a
@@ -339,7 +337,7 @@ def toNumber(str, default=None):
     return value
 
 
-def toNumberOrStr(str):
+def toNumberOrStr(str):  # noqa
     """toNumberOrStr(str) -> integer | float | string
 
     Converts the given string to a numeric value, if possible. Otherwise
@@ -348,7 +346,7 @@ def toNumberOrStr(str):
     return toNumber(str, str)
 
 
-def toRepr(obj):
+def toRepr(obj):  # noqa
     """toRepr(obj) -> string
 
     Converts the Python object to a string representation of the kind
@@ -358,9 +356,9 @@ def toRepr(obj):
     names = []
 
     if hasattr(obj, "__dict__"):
-        names += getattr(obj, "__dict__").keys()
+        names += getattr(obj, "__dict__").keys()  # noqa
     if hasattr(obj, "__slots__"):
-        names += getattr(obj, "__slots__")
+        names += getattr(obj, "__slots__")  # noqa
 
     for name in names:
         value = getattr(obj, name)
@@ -374,7 +372,7 @@ def toRepr(obj):
     return "%s(%s)" % (obj.__class__.__name__, ", ".join(args))
 
 
-def toStringDuration(duration):
+def toStringDuration(duration):  # noqa
     """Returns a description of the given duration in the most appropriate
     units (e.g. seconds, ms, us, or ns).
     """
@@ -391,7 +389,7 @@ def toStringDuration(duration):
     return "%fs" % duration
 
 
-def expandPath(pathname, prefix=None):
+def expandPath(pathname, prefix=None):  # noqa
     """Return pathname as an absolute path, either expanded by the users
     home directory ("~") or with prefix prepended.
     """
@@ -408,7 +406,7 @@ def expandPath(pathname, prefix=None):
     return os.path.abspath(expanded)
 
 
-def listAllFiles(directory, suffix=None, abspath=False):
+def listAllFiles(directory, suffix=None, abspath=False):  # noqa
     """Returns the list of all files within the input directory and
     all subdirectories.
     """
@@ -416,7 +414,7 @@ def listAllFiles(directory, suffix=None, abspath=False):
 
     directory = expandPath(directory)
 
-    for dirpath, dirnames, filenames in os.walk(directory, followlinks=True):
+    for dirpath, _dirnames, filenames in os.walk(directory, followlinks=True):
         if suffix:
             filenames = [f for f in filenames if f.endswith(suffix)]
 
@@ -424,8 +422,6 @@ def listAllFiles(directory, suffix=None, abspath=False):
             filepath = os.path.join(dirpath, filename)
             if not abspath:
                 filepath = os.path.relpath(filepath, start=directory)
-
-                # os.path.join(path, filename)
 
             files.append(filepath)
 
@@ -446,24 +442,3 @@ class YAMLError(Exception):
         self.message = arg
 
         log.error(self.message)
-
-
-if __name__ == "__main__":
-    # HACK: The 'doctest' module imports 'pdb' which imports 'cmd'.
-    # Since none of these modules are using Python absolute imports, The
-    # Python 'cmd' module conflicts with 'ait.cmd' (in this directory).
-    # As a workaround, temporarily remove the current directory from our
-    # path prior to importing doctest.
-
-    import sys
-
-    saved = sys.path.pop(0)
-    import doctest
-
-    sys.path.insert(0, saved)
-
-    (num_failed, num_tests) = doctest.testmod()
-    filename = os.path.basename(__file__)
-
-    if num_failed == 0:
-        print(f"{filename:20} All {num_tests:3} tests passed!")
