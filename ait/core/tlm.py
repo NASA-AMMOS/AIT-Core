@@ -32,8 +32,8 @@ import ait
 from ait.core import dtype, json, log, util
 
 
-class wordarray(object):
-    """Wordarrays are somewhat analogous to Python bytearrays, but
+class WordArray:
+    """WordArrays are somewhat analogous to Python bytearrays, but
     currently much more limited in functionality.  They provide a
     readonly view of a bytearray addressable and iterable as a sequence
     of 16-bit words.  This is convenient for telemetry processing as
@@ -76,7 +76,7 @@ class wordarray(object):
         return len(self._bytes) / 2
 
 
-class DNToEUConversion(json.SlotSerializer, object):
+class DNToEUConversion(json.SlotSerializer):
     """DNToEUConversion"""
 
     __slots__ = ["_equation", "units", "_when"]
@@ -94,7 +94,6 @@ class DNToEUConversion(json.SlotSerializer, object):
         context of the given Packet.
         """
         result = None
-        terms = None
 
         if self._when is None or self._when.eval(packet):
             result = self._equation.eval(packet)
@@ -133,7 +132,7 @@ class FieldList(collections.Sequence):
         return self._defn.type.nelems
 
 
-class DerivationDefinition(json.SlotSerializer, object):
+class DerivationDefinition(json.SlotSerializer):
     """DerivationDefinition
 
     DerivationDefinition encapsulates all information required to define
@@ -149,7 +148,7 @@ class DerivationDefinition(json.SlotSerializer, object):
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
 
-        self.equation = createPacketExpression(self.equation)
+        self.equation = createPacketExpression(self.equation)  # noqa
 
     def __repr__(self):
         return util.toRepr(self)
@@ -206,7 +205,7 @@ class DerivationDefinition(json.SlotSerializer, object):
         return valid
 
 
-class FieldDefinition(json.SlotSerializer, object):
+class FieldDefinition(json.SlotSerializer):
     """FieldDefinition
 
     FieldDefinitions encapsulate all information required to define a
@@ -250,16 +249,16 @@ class FieldDefinition(json.SlotSerializer, object):
                 mask >>= 1
 
         if self.dntoeu:
-            self.dntoeu = createDNToEUConversion(**self.dntoeu)
+            self.dntoeu = createDNToEUConversion(**self.dntoeu)  # noqa
 
         if self.expr:
-            self.expr = createPacketExpression(self.expr)
+            self.expr = createPacketExpression(self.expr)  # noqa
 
         if self.when:
-            self.when = createPacketExpression(self.when)
+            self.when = createPacketExpression(self.when)  # noqa
 
-    def __jsonOmit__(self, key, val):
-        return val is None or val is "" or (key == "shift" and val == 0)
+    def __jsonOmit__(self, key, val):  # noqa
+        return val is None or val == "" or (key == "shift" and val == 0)
 
     def __repr__(self):
         return util.toRepr(self)
@@ -394,7 +393,7 @@ class FieldDefinition(json.SlotSerializer, object):
         return valid
 
 
-class Packet(object):
+class Packet:
     """Packet"""
 
     def __init__(self, defn, data=None):
@@ -422,7 +421,7 @@ class Packet(object):
 
     def __setattr__(self, fieldname, value):
         """Sets the given packet field name to value."""
-        self._assertField(fieldname)
+        self._assert_field(fieldname)
 
         defn = self._defn.fieldmap[fieldname]
         bytes = defn.encode(value)
@@ -453,7 +452,7 @@ class Packet(object):
 
         self._data[indices] = bytes
 
-    def _assertField(self, fieldname):
+    def _assert_field(self, fieldname):
         """Raise AttributeError when Packet has no field with the given
         name."""
         if not self._hasattr(fieldname):
@@ -466,11 +465,11 @@ class Packet(object):
         If raw is True, the field value is only decoded.  That is no
         enumeration substituions or DN to EU conversions are applied.
         """
-        self._assertField(fieldname)
+        self._assert_field(fieldname)
         value = None
 
         if fieldname == "raw":
-            value = createRawPacket(self)
+            value = createRawPacket(self)  # noqa
         elif fieldname == "history":
             value = self._defn.history
         else:
@@ -480,7 +479,7 @@ class Packet(object):
                 defn = self._defn.fieldmap[fieldname]
 
             if isinstance(defn.type, dtype.ArrayType) and index is None:
-                return createFieldList(self, defn, raw)
+                return createFieldList(self, defn, raw)  # noqa
 
             if defn.when is None or defn.when.eval(self):
                 if isinstance(defn, DerivationDefinition):
@@ -511,9 +510,9 @@ class Packet(object):
     @property
     def words(self):
         """Packet data as a wordarray."""
-        return wordarray(self._data)
+        return WordArray(self._data)
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return {name: getattr(self, name) for name in self._defn.fieldmap}
 
     def validate(self, messages=None):
@@ -524,7 +523,7 @@ class Packet(object):
         return self._defn.validate(self, messages)
 
 
-class PacketContext(object):
+class PacketContext:
     """PacketContext
 
     A PacketContext provides a simple wrapper around a Packet so that
@@ -549,7 +548,6 @@ class PacketContext(object):
     def __getitem__(self, name):
         """Returns packet[name]"""
         result = None
-        packet = self._packet
 
         if self._packet._hasattr(name):
             result = self._packet._getattr(name)
@@ -561,7 +559,7 @@ class PacketContext(object):
         return result
 
 
-class PacketDefinition(json.SlotSerializer, object):
+class PacketDefinition(json.SlotSerializer):
     """PacketDefinition"""
 
     NextUID = 1
@@ -676,7 +674,7 @@ class PacketDefinition(json.SlotSerializer, object):
 
         if self.functions:
             for signature, body in self.functions.items():
-                fn = createPacketFunction(signature, body, self.globals)
+                fn = createPacketFunction(signature, body, self.globals)  # noqa
                 self.globals[fn.name] = fn._func
 
         if self.history:
@@ -717,7 +715,7 @@ class PacketDefinition(json.SlotSerializer, object):
 
         return valid
 
-    def toJSON(self, derivations=False):
+    def toJSON(self, derivations=False):  # noqa
         slots = ["name", "desc", "constants", "functions", "history", "uid"]
 
         if self.ccsds is not None:
@@ -740,7 +738,7 @@ class PacketDefinition(json.SlotSerializer, object):
         return Packet(self, values)
 
 
-class PacketExpression(object):
+class PacketExpression:
     """PacketExpression
 
     A Packet Expression is a simple mathematical expression that can
@@ -784,18 +782,18 @@ class PacketExpression(object):
         context of the given Packet.
         """
         try:
-            context = createPacketContext(packet)
+            context = createPacketContext(packet)  # noqa
             result = eval(self._code, packet._defn.globals, context)
         except ZeroDivisionError:
             result = None
 
         return result
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self._expr
 
 
-class PacketFunction(object):
+class PacketFunction:
     """PacketFunction"""
 
     __slots__ = ["_args", "_expr", "_func", "_name", "_sig"]
@@ -887,7 +885,7 @@ class PacketFunction(object):
         return self._sig
 
 
-class PacketHistory(object):
+class PacketHistory:
     """PacketHistory"""
 
     __slots__ = ["_defn", "_dict", "_names"]
@@ -909,7 +907,7 @@ class PacketHistory(object):
 
     def __getattr__(self, fieldname):
         """Returns the value of the given packet field name."""
-        self._assertField(fieldname)
+        self._assert_field(fieldname)
         return self._dict.get(fieldname, None)
 
     def __getitem__(self, fieldname):
@@ -925,7 +923,7 @@ class PacketHistory(object):
         for s in PacketHistory.__slots__:
             setattr(self, s, state.get(s, None))
 
-    def _assertField(self, name):
+    def _assert_field(self, name):
         """Raise AttributeError when PacketHistory has no field with the given
         name.
         """
@@ -941,11 +939,11 @@ class PacketHistory(object):
             if value is not None:
                 self._dict[name] = value
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self._names
 
 
-class RawPacket(object):
+class RawPacket:
     """RawPacket
 
     Wraps a packet such that:
@@ -999,7 +997,7 @@ class TlmDict(dict):
 
     def create(self, name, data=None):
         """Creates a new packet with the given definition and raw data."""
-        return createPacket(self[name], data) if name in self else None
+        return createPacket(self[name], data) if name in self else None  # noqa
 
     def load(self, content):
         """Loads Packet Definitions from the given YAML content into this
@@ -1024,11 +1022,11 @@ class TlmDict(dict):
             if isinstance(stream, IOBase):
                 stream.close()
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return {name: defn.toJSON() for name, defn in self.items()}
 
 
-class TlmDictWriter(object):
+class TlmDictWriter:
     """TlmDictWriter
 
     Writes telemetry dictionary to a file in selected formats
@@ -1037,7 +1035,7 @@ class TlmDictWriter(object):
     def __init__(self, tlmdict=None):
         self.tlmdict = tlmdict or getDefaultDict()
 
-    def writeToCSV(self, output_path=None):
+    def write_to_csv(self, output_path=None):
         """writeToCSV - write the telemetry dictionary to csv"""
         header = [
             "Name",
@@ -1091,15 +1089,15 @@ class TlmDictWriter(object):
                     csvwriter.writerow(row)
 
 
-def getDefaultDict(reload=False):
+def getDefaultDict(reload=False):  # noqa
     return util.getDefaultDict(__name__, "tlmdict", TlmDict, reload)
 
 
-def getDefaultSchema():
+def getDefaultSchema():  # noqa
     return pkg_resources.resource_filename("ait.core", "data/tlm_schema.json")
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.tlmdict.filename
 
 
@@ -1119,22 +1117,22 @@ def handle_includes(defns):
     return newdefns
 
 
-def YAMLCtor_PacketDefinition(loader, node):
+def YAMLCtor_PacketDefinition(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    return createPacketDefinition(**fields)
+    return createPacketDefinition(**fields)  # noqa
 
 
-def YAMLCtor_FieldDefinition(loader, node):
+def YAMLCtor_FieldDefinition(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    return createFieldDefinition(**fields)
+    return createFieldDefinition(**fields)  # noqa
 
 
-def YAMLCtor_DerivationDefinition(loader, node):
+def YAMLCtor_DerivationDefinition(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    return createDerivationDefinition(**fields)
+    return createDerivationDefinition(**fields)  # noqa
 
 
-def YAMLCtor_include(loader, node):
+def YAMLCtor_include(loader, node):  # noqa
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
