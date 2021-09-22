@@ -40,6 +40,7 @@ src/doc/dict/cmd/cmddict-07-cmddefs.tex
 
 # Temporary files
 *~
+tags*
 
 # Unignore (hack)
 !build/clean.py
