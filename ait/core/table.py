@@ -502,7 +502,7 @@ def YAMLCtor_FSWColDefn(loader, node):  # noqa: N802
     return FSWColDefn(**fields)
 
 
-def YAMLCtor_FSWTabDefn(loader, node):
+def YAMLCtor_FSWTabDefn(loader, node):  # noqa: N802
     fields = loader.construct_mapping(node, deep=True)
     fields["fswheaderdefns"] = fields.pop("header", None)
     fields["coldefns"] = fields.pop("columns", None)
