@@ -20,11 +20,10 @@ for encoding and decoding between AIT data structures and JSON.
 """
 
 import collections
-import json
-from typing import *  # type: ignore
+from typing import List
 
 
-def slotsToJSON(obj, slots=None):
+def slotsToJSON(obj, slots=None):  # noqa
     """Converts the given Python object to one suitable for Javascript
     Object Notation (JSON) serialization via :func:`json.dump` or
     :func:`json.dumps`.  This function delegates to :func:`toJSON`.
@@ -44,20 +43,20 @@ def slotsToJSON(obj, slots=None):
             if hasattr(base, "__slots__"):
                 slots.extend(base.__slots__)
 
-    testOmit = hasattr(obj, "__jsonOmit__") and callable(obj.__jsonOmit__)
+    test_omit = hasattr(obj, "__jsonOmit__") and callable(obj.__jsonOmit__)
     result = {}
 
     for slot in slots:
         key = slot[1:] if slot.startswith("_") else slot
         val = getattr(obj, slot, None)
 
-        if testOmit is False or obj.__jsonOmit__(key, val) is False:
+        if test_omit is False or obj.__jsonOmit__(key, val) is False:
             result[key] = toJSON(val)
 
     return result
 
 
-def toJSON(obj):
+def toJSON(obj):  # noqa
     """Converts the given Python object to one suitable for Javascript
     Object Notation (JSON) serialization via :func:`json.dump` or
     :func:`json.dumps`.  If the Python object has a :meth:`toJSON`
@@ -91,8 +90,8 @@ def toJSON(obj):
 class SlotSerializer(object):
     __slots__: List[str] = []
 
-    def __jsonOmit__(self, key, val):
-        return val is None or val is ""
+    def __jsonOmit__(self, key, val):  # noqa
+        return val is None or val == ""
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return slotsToJSON(self)
