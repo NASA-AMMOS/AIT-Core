@@ -19,11 +19,6 @@ The ait.core.val module provides validation of content for YAML
 files based on specified schema.
 """
 
-from __future__ import absolute_import
-
-
-import os
-
 import json
 import yaml
 from yaml.scanner import ScannerError
@@ -90,10 +85,10 @@ class YAMLProcessor(object):
             with open(ymlfile, "r") as txt:
                 for linenum, line in enumerate(txt):
                     # Pattern to match document start lines
-                    doc_pattern = re.compile("(---) (![a-z]+)(.*$)", flags=re.I)
+                    doc_pattern = re.compile(r"(---) (![a-z]+)(.*$)", flags=re.I)
 
                     # Pattern to match sequence start lines
-                    seq_pattern = re.compile("(\s*)(-+) !([a-z]+)(.*$)", flags=re.I)
+                    seq_pattern = re.compile(r"(\s*)(-+) !([a-z]+)(.*$)", flags=re.I)
 
                     # If we find a document, remove the tag
                     if doc_pattern.match(line):
@@ -240,7 +235,7 @@ class ErrorHandler(object):
 
                 context = collections.deque(maxlen=20)
                 tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n" ""
-                for cnt, path in enumerate(error.relative_path):
+                for cnt, _path in enumerate(error.relative_path):
 
                     # Need to set the key we are looking, and then check the array count
                     # if it is an array, we have some interesting checks to do
@@ -267,9 +262,9 @@ class ErrorHandler(object):
 
                         # Check if line contains the error
                         if ":" in line:
-                            l = line.split(":")
-                            key = l[0]
-                            value = ":".join(l[1:])
+                            line = line.split(":")
+                            key = line[0]
+                            value = ":".join(line[1:])
 
                             # TODO:
                             # Handle maxItems TBD
@@ -476,7 +471,7 @@ class CmdValidator(Validator):
             # list of rules to validate against
             rules = []
 
-            ### set the command rules
+            # set the command rules
             #
             # set uniqueness rule for command names
             rules.append(UniquenessRule("name", "Duplicate command name: %s", messages))
@@ -492,7 +487,7 @@ class CmdValidator(Validator):
                 # list of argument rules to validate against
                 argrules = []
 
-                ### set rules for command arguments
+                # set rules for command arguments
                 #
                 # set uniqueness rule for opcodes
                 argrules.append(
@@ -599,22 +594,17 @@ class TlmValidator(Validator):
             tlmdict = tlm.TlmDict(self._ymlfile)
 
         try:
-            # instantiate the document number. this will increment in order to
-            # track the line numbers and section where validation fails
-            docnum = 0
-
             # boolean to hold argument validity
             fldsvalid = True
 
             # list of rules to validate against
             rules = []
 
-            ### set the packet rules
+            # set the packet rules
             #
             # set uniqueness rule for packet names
             rules.append(UniquenessRule("name", "Duplicate packet name: %s", messages))
 
-            ###
             # Loop through the keys and check each PacketDefinition
             for key in tlmdict.keys():
                 pktdefn = tlmdict[key]
@@ -625,7 +615,7 @@ class TlmValidator(Validator):
                 # list of field rules to validate against
                 fldrules = []
 
-                ### set rules for telemetry fields
+                # set rules for telemetry fields
                 #
                 # set uniqueness rule for field name
                 fldrules.append(
@@ -700,17 +690,17 @@ class TlmValidator(Validator):
 
 
 class ValidationRule(object):
-    def __init__(self, attr, msg=None, messages=[]):
+    def __init__(self, attr, msg=None, messages=None):
         self.attr = attr
         self.valid = True
         self.msg = msg
-        self.messages = messages
+        self.messages = messages or []
 
 
 class UniquenessRule(ValidationRule):
     """Checks the uniqueness of an attribute across YAML documents"""
 
-    def __init__(self, attr, msg, messages=[]):
+    def __init__(self, attr, msg, messages=None):
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -733,7 +723,7 @@ class UniquenessRule(ValidationRule):
 class TypeRule(ValidationRule):
     """Checks the object's type is an allowable types"""
 
-    def __init__(self, attr, msg, messages=[]):
+    def __init__(self, attr, msg, messages=None):
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -744,8 +734,8 @@ class TypeRule(ValidationRule):
 
         Assumes the defn has 'type' and 'name' attributes
         """
-        allowedTypes = dtype.PrimitiveType, dtype.ArrayType
-        if not isinstance(defn.type, allowedTypes):
+        allowed_types = dtype.PrimitiveType, dtype.ArrayType
+        if not isinstance(defn.type, allowed_types):
             self.messages.append(self.msg % str(defn.name))
             # self.messages.append("TBD location message")
             self.valid = False
@@ -754,7 +744,7 @@ class TypeRule(ValidationRule):
 class TypeSizeRule(ValidationRule):
     """Checks the object size matches the designated type"""
 
-    def __init__(self, attr, msg, messages=[]):
+    def __init__(self, attr, msg, messages=None):
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -793,7 +783,7 @@ class EnumRule(ValidationRule):
     file. The YAML boolean strings include (TRUE/FALSE/ON/OFF/YES/NO) .
     """
 
-    def __init__(self, attr, msg, messages=[]):
+    def __init__(self, attr, msg, messages=None):
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
@@ -819,7 +809,7 @@ class EnumRule(ValidationRule):
 class ByteOrderRule(ValidationRule):
     """Checks the byte ordering based on the previous set stop byte/bit"""
 
-    def __init__(self, attr, msg, messages=[]):
+    def __init__(self, attr, msg, messages=None):
         """Takes in an attribute name, error message, and list of error
         messages to append to
         """
