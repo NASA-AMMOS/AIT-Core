@@ -28,105 +28,7 @@ import os.path
 import sqlite3
 
 import ait
-from ait.core import cfg, cmd, dmc, dtype, evr, log, tlm
-
-
-# Backend must implement DB-API 2.0 [PEP 249]
-# (https://www.python.org/dev/peps/pep-0249/).
-Backend = None
-
-
-@ait.deprecated(  # type: ignore
-    "connect() will be replaced with SQLiteBackend methods in a future release"
-)
-def connect(database):
-    """Returns a connection to the given database."""
-    if Backend is None:
-        raise cfg.AitConfigMissing("database.backend")
-
-    return Backend.connect(database)
-
-
-@ait.deprecated(  # type: ignore
-    "create() will be replaced with SQLiteBackend methods in a future release"
-)
-def create(database, tlmdict=None):
-    """Creates a new database for the given Telemetry Dictionary and
-    returns a connection to it.
-    """
-    if tlmdict is None:
-        tlmdict = tlm.getDefaultDict()
-
-    dbconn = connect(database)
-
-    for name, defn in tlmdict.items():
-        createTable(dbconn, defn)
-
-    return dbconn
-
-
-@ait.deprecated(  # type: ignore
-    "createTable() will be replaced with SQLiteBackend methods in a future release"
-)
-def createTable(dbconn, pd):
-    """Creates a database table for the given PacketDefinition."""
-    cols = ("%s %s" % (defn.name, getTypename(defn)) for defn in pd.fields)
-    sql = "CREATE TABLE IF NOT EXISTS %s (%s)" % (pd.name, ", ".join(cols))
-
-    dbconn.execute(sql)
-    dbconn.commit()
-
-
-@ait.deprecated(  # type: ignore
-    "getTypename() will be replaced with SQLiteBackend methods in a future release"
-)
-def getTypename(defn):
-    """Returns the SQL typename required to store the given
-    FieldDefinition."""
-    return "REAL" if defn.type.float or defn.dntoeu else "INTEGER"
-
-
-@ait.deprecated(  # type: ignore
-    "insert() will be replaced with SQLiteBackend methods in a future release"
-)
-def insert(dbconn, packet):
-    """Inserts the given packet into the connected database."""
-    values = []
-    pd = packet._defn
-
-    for defn in pd.fields:
-        if defn.enum:
-            val = getattr(packet.raw, defn.name)
-        else:
-            val = getattr(packet, defn.name)
-
-        if val is None and defn.name in pd.history:
-            val = getattr(packet.history, defn.name)
-
-        values.append(val)
-
-    qmark = ["?"] * len(values)
-    sql = "INSERT INTO %s VALUES (%s)" % (pd.name, ", ".join(qmark))
-
-    dbconn.execute(sql, values)
-
-
-@ait.deprecated("use() will be replaced with SQLiteBackend methods in a future release")  # type: ignore
-def use(backend):
-    """Use the given database backend, e.g. 'MySQLdb', 'psycopg2',
-    'MySQLdb', etc.
-    """
-    global Backend
-
-    try:
-        Backend = importlib.import_module(backend)
-    except ImportError:
-        msg = "Could not import (load) database.backend: %s" % backend
-        raise cfg.AitConfigError(msg)
-
-
-if ait.config.get("database.backend"):  # type: ignore
-    use(ait.config.get("database.backend"))  # type: ignore
+from ait.core import cfg, cmd, dmc, evr, log, tlm
 
 
 class AITDBResult:
@@ -307,7 +209,7 @@ class GenericBackend(object):
 
     @classmethod
     @abstractmethod
-    def create_packet_from_result(self, packet_name, result):
+    def create_packet_from_result(cls, packet_name, result):
         """Return an AIT Packet from a given database query result item
 
         Creates and returns an AIT Packet denoted by `packet_name` with
@@ -608,7 +510,7 @@ class InfluxDBBackend(GenericBackend):
         "is available in create_packet_from_result."
     )
     @classmethod
-    def create_packets_from_results(self, packet_name, result_set):
+    def create_packets_from_results(cls, packet_name, result_set):
         """Generate AIT Packets from a InfluxDB query ResultSet
 
         Extract Influx DB query results into one packet per result entry. This
@@ -631,7 +533,7 @@ class InfluxDBBackend(GenericBackend):
 
         """
         try:
-            pkt_defn = tlm.getDefaultDict()[packet_name]
+            tlm.getDefaultDict()[packet_name]
         except KeyError:
             log.error(
                 "Unknown packet name {} Unable to unpack ResultSet".format(packet_name)
@@ -644,7 +546,7 @@ class InfluxDBBackend(GenericBackend):
         ]
 
     @classmethod
-    def create_packet_from_result(self, packet_id, result):
+    def create_packet_from_result(cls, packet_id, result):
         """Create an AIT Packet from an InfluxDB query ResultSet item
 
         Extract Influx DB query results entry into an AIT packet. This
@@ -766,7 +668,7 @@ class SQLiteBackend(GenericBackend):
             the currently configured telemetry dictionary.
         """
         tlmdict = kwargs.get("tlmdict", tlm.getDefaultDict())
-        for name, defn in tlmdict.items():
+        for _name, defn in tlmdict.items():
             self._create_table(defn)
 
     def _create_table(self, packet_defn):
@@ -957,7 +859,7 @@ class SQLiteBackend(GenericBackend):
             self._conn.close()
 
     @classmethod
-    def create_packet_from_result(self, packet_name, data):
+    def create_packet_from_result(cls, packet_name, data):
         try:
             pkt_defn = tlm.getDefaultDict()[packet_name]
         except KeyError:
@@ -968,5 +870,4 @@ class SQLiteBackend(GenericBackend):
             )
             return None
 
-        pkt = tlm.Packet(pkt_defn)
         return tlm.Packet(pkt_defn, data=data)
