@@ -556,7 +556,7 @@ def times(filenames, tolerance=2):
             header, packet = stream.read()
             start, stop = header.timestamp, header.timestamp
 
-            for header, packet in stream:
+            for header, _packet in stream:
                 if header.timestamp - stop > delta:
                     times[filename].append((start, stop))
                     start = header.timestamp
