@@ -33,7 +33,7 @@ from ait.core import cmd, tlm, val, util, evr
 DATA_PATH = os.path.join(os.path.dirname(__file__), "testdata", "val")
 
 
-class TestYAMLProcessor():
+class TestYAMLProcessor:
     test_yaml_file = "/tmp/test.yaml"
 
     def test_yamlprocess_init(self):
@@ -140,7 +140,7 @@ class TestYAMLProcessor():
         os.remove(self.test_yaml_file)
 
 
-class TestSchemaProcessor():
+class TestSchemaProcessor:
     def test_schema_load(self):
         """Test variable settings from proper schema loading."""
         schemaproc = val.SchemaProcessor()
@@ -173,7 +173,7 @@ class TestSchemaProcessor():
         os.remove(test_file_path)
 
 
-class TestErrorHandler():
+class TestErrorHandler:
     def test_error_handler_init(self):
         eh = val.ErrorHandler("error", "ymlfile", "schemafile")
         assert eh.error == "error"

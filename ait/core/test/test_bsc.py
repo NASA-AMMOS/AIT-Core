@@ -30,7 +30,7 @@ import pytest
 from ait.core import bsc, pcap
 
 
-class TestSocketStreamCapturer():
+class TestSocketStreamCapturer:
     @mock.patch("gevent.socket.socket")
     def test_mocked_udp_socket(self, socket_mock):
         handler = {"name": "name", "log_dir": "/tmp"}
@@ -353,7 +353,7 @@ class TestSocketStreamCapturer():
         assert sl.capture_handlers[0]["name"] == "h1"
 
 
-class TestStreamCaptureManager():
+class TestStreamCaptureManager:
     @mock.patch("ait.core.bsc.SocketStreamCapturer")
     def test_log_manager_init(self, socket_log_mock):
         loggers = [
