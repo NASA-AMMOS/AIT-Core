@@ -63,7 +63,6 @@ tuples, for succinctness:
     >>> print("\\n".join(messages))
     error: value '65536' out of range [0, 65535].
     error: float '1e+06' cannot be represented as an integer.
-
 """
 
 import datetime
@@ -71,9 +70,9 @@ import struct
 import sys
 import re
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
-from ait.core import cmd, dmc, log, util
+from ait.core import cmd, dmc, log
 
 
 # PrimitiveTypes
@@ -261,7 +260,7 @@ class PrimitiveType(object):
         """
         return struct.unpack(self.format, memoryview(bytestring))[0]
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self.name
 
     def validate(self, value, messages=None, prefix=None):
@@ -314,15 +313,15 @@ PrimitiveTypes = sorted(PrimitiveTypeMap.keys())
 class ArrayType(object):
     __slots__ = ["_nelems", "_type"]
 
-    def __init__(self, elemType, nelems):
-        """Creates a new ArrayType of nelems, each of type elemType."""
-        if isinstance(elemType, str):
-            elemType = get(elemType)
+    def __init__(self, elem_type, nelems):
+        """Creates a new ArrayType of nelems, each of type elem_type."""
+        if isinstance(elem_type, str):
+            elem_type = get(elem_type)
 
         if not isinstance(nelems, int):
             raise TypeError("ArrayType(..., nelems) must be an integer")
 
-        self._type = elemType
+        self._type = elem_type
         self._nelems = nelems
 
     def __eq__(self, other):
@@ -336,7 +335,7 @@ class ArrayType(object):
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.name)
 
-    def _assertIndex(self, index):
+    def _assert_index(self, index):
         """Raise TypeError or IndexError if index is not an integer or out of
         range for the number of elements in this array, respectively.
         """
@@ -392,11 +391,11 @@ class ArrayType(object):
 
         return result
 
-    def decodeElem(self, bytes, index, raw=False):
+    def decode_elem(self, bytes, index, raw=False):
         """Decodes a single element at array[index] from a sequence bytes
         that contain data for the entire array.
         """
-        self._assertIndex(index)
+        self._assert_index(index)
         start = int(index * self.type.nbytes)
         stop = int(start + self.type.nbytes)
 
@@ -808,31 +807,25 @@ ComplexTypeMap = {
 }
 
 
-def getPDT(typename):
-    """get(typename) -> PrimitiveType
-
-    Returns the PrimitiveType for typename or None.
-    """
+def get_pdt(typename) -> Optional[str]:
+    """Returns the PrimitiveType for typename or None."""
     if typename not in PrimitiveTypeMap and typename.startswith("S"):
         PrimitiveTypeMap[typename] = PrimitiveType(typename)
 
     return PrimitiveTypeMap.get(typename, None)
 
 
-def getCDT(typename):
-    """getCDT(typename) -> ComplexType
-
-    Returns the ComplexType for typename or None.
-    """
+def get_cdt(typename) -> Optional[str]:
+    """Returns the ComplexType for typename or None."""
     return ComplexTypeMap.get(typename, None)
 
 
-def get(typename):
+def get(typename) -> Optional[str]:
     """get(typename) -> PrimitiveType or ComplexType
 
     Returns the PrimitiveType or ComplexType for typename or None.
     """
-    dt = getPDT(typename) or getCDT(typename)
+    dt = get_pdt(typename) or get_cdt(typename)
 
     if dt is None:
         pdt, nelems = ArrayType.parse(typename)
