@@ -19,14 +19,10 @@ The ait.core.gds module provides utility functions specific to GDS
 command-line tools.
 """
 
-import os
-import sys
-import getopt
+from typing import Optional, ByteString
 import zlib
-import socket
-import argparse
 
-from ait.core import log, util
+from ait.core import log
 
 
 def compress(input_filename, output_filename=None, verbose=False):
@@ -46,7 +42,7 @@ def compress(input_filename, output_filename=None, verbose=False):
     output_size = 0
 
     if output_filename is None:
-        output_filename = input_fillename + ".ait-zlib"
+        output_filename = input_filename + ".ait-zlib"
 
     try:
         stream = open(input_filename, "rb")
@@ -70,7 +66,7 @@ def compress(input_filename, output_filename=None, verbose=False):
             log.info("Wrote %s (%d bytes).", output_filename, output_size)
             log.info("Compressed %6.2f percent", percent)
 
-    except (IOError, OSError) as e:
+    except OSError as e:
         log.error(str(e) + ".")
 
     return output_size
@@ -105,7 +101,7 @@ def hexdump(bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
         else:
             dump = preamble
         end = min(size, n + stepsize)
-        dump += hexdumpLine(bytes[n:end], stepsize)
+        dump += hexdump_line(bytes[n:end], stepsize)
 
         if printfunc is None:
             print(dump)
@@ -113,34 +109,40 @@ def hexdump(bytes, addr=None, preamble=None, printfunc=None, stepsize=16):
             printfunc(dump)
 
 
-def hexdumpLine(bytes, length=None):
-    """hexdumpLine(bytes[, length])
+def hexdump_line(_bytes: ByteString, length: Optional[int] = None) -> str:
+    """Create a hexdump formatted line for supplied bytes.
 
-    Returns a single hexdump formatted line for bytes.  If length is
-    greater than len(bytes), the line will be padded with ASCII space
-    characters to indicate no byte data is present.
+    If length is greater than len(_bytes), the line will be padded with ASCII
+    space characters to indicate no byte data is present.
 
-    Used by hexdump().
+    Arguments:
+        _bytes: The bytes to format.
+
+        length (optional): The optional length of the output line. This should be
+            greater than the length of bytes if provided.
+
+    Returns:
+        The hexdump formatted line.
     """
     line = ""
 
     if length is None:
-        length = len(bytes)
+        length = len(_bytes)
 
     for n in range(0, length, 2):
-        if n < len(bytes) - 1:
-            line += "%02x%02x  " % (bytes[n], bytes[n + 1])
-        elif n < len(bytes):
-            line += "%02x    " % bytes[n]
+        if n < len(_bytes) - 1:
+            line += "%02x%02x  " % (_bytes[n], _bytes[n + 1])
+        elif n < len(_bytes):
+            line += "%02x    " % _bytes[n]
         else:
             line += "      "
 
     line += "*"
 
     for n in range(length):
-        if n < len(bytes):
-            if bytes[n] in range(32, 127):
-                line += "%c" % bytes[n]
+        if n < len(_bytes):
+            if _bytes[n] in range(32, 127):
+                line += "%c" % _bytes[n]
             else:
                 line += "."
         else:
