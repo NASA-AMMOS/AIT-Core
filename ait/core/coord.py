@@ -19,7 +19,6 @@ The ait.core.coord module provides various coordinate manpulation
 and transformation functions.
 """
 
-import datetime
 import math
 
 from ait.core import dmc
@@ -67,9 +66,9 @@ def eci2ecef(x, y, z, gmst=None):
     if gmst is None:
         gmst = dmc.toGMST()
 
-    X = (x * math.cos(gmst)) + (y * math.sin(gmst))
-    Y = (x * (-math.sin(gmst))) + (y * math.cos(gmst))
-    Z = z
+    X = (x * math.cos(gmst)) + (y * math.sin(gmst))  # noqa
+    Y = (x * (-math.sin(gmst))) + (y * math.cos(gmst))  # noqa
+    Z = z  # noqa
 
     return X, Y, Z
 
@@ -91,7 +90,6 @@ def eci2geodetic(x, y, z, gmst=None, ellipsoid=None):
         ellipsoid = WGS84
 
     a = WGS84.a
-    b = WGS84.b
     f = WGS84.f
     r = math.sqrt((x * x) + (y * y))
     e2 = (2 * f) - (f * f)
@@ -102,7 +100,7 @@ def eci2geodetic(x, y, z, gmst=None, ellipsoid=None):
 
     while k < kmax:
         slat = math.sin(lat)
-        C = 1 / math.sqrt(1 - e2 * (slat * slat))
+        C = 1 / math.sqrt(1 - e2 * (slat * slat))  # noqa
         lat = math.atan2(z + (a * C * e2 * slat), r)
         k += 1
 
