@@ -69,7 +69,7 @@ import yaml
 from io import IOBase
 
 import ait
-from ait.core import json, tlm, util
+from ait.core import json, util
 
 
 class Thresholds(json.SlotSerializer, object):
@@ -92,7 +92,7 @@ class Thresholds(json.SlotSerializer, object):
     def __setstate__(self, state):
         self.__dict__ = state
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self._thresholds
 
 
@@ -209,25 +209,25 @@ class LimitsDict(dict):
             if isinstance(stream, IOBase):
                 stream.close()
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return {name: defn.toJSON() for name, defn in self.items()}
 
 
-def getDefaultDict(reload=False):
+def getDefaultDict(reload=False):  # noqa
     return util.getDefaultDict(__name__, "limits", LimitsDict, reload)
 
 
-def getDefaultSchema():
+def getDefaultSchema():  # noqa
     return pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.limits.filename
 
 
-def YAMLCtor_LimitDefinition(loader, node):
+def YAMLCtor_LimitDefinition(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    return createLimitDefinition(**fields)
+    return createLimitDefinition(**fields)  # noqa
 
 
 yaml.add_constructor("!Limit", YAMLCtor_LimitDefinition)
