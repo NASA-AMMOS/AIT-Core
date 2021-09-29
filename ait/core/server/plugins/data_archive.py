@@ -21,7 +21,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-import ait.core
+import ait.core  # nowa
 from ait.core import log, tlm
 from ait.core.server.plugin import Plugin
 
@@ -52,7 +52,7 @@ class DataArchive(Plugin):
 
         self.datastore = datastore
         self.packet_dict = defaultdict(dict)
-        for k, v in tlm.getDefaultDict().items():
+        for _k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
         try:
