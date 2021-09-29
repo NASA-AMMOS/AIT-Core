@@ -28,7 +28,7 @@ class Broker(gevent.Greenlet):
         self.XSUB_URL = ait.config.get("server.xsub", ait.SERVER_DEFAULT_XSUB_URL)
         self.XPUB_URL = ait.config.get("server.xpub", ait.SERVER_DEFAULT_XPUB_URL)
 
-        ## Name of the topic associated with external commands
+        # Name of the topic associated with external commands
         self.command_topic = ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC)
 
         gevent.Greenlet.__init__(self)
@@ -90,7 +90,7 @@ class Broker(gevent.Greenlet):
                 else:
                     self._subscribe(subscriber, plugin.name)
 
-        ## Lastly setup the outputstream to receive commands
+        # Lastly setup the outputstream to receive commands
         self._subscribe_cmdr()
 
     def _subscribe_cmdr(self):
@@ -100,8 +100,8 @@ class Broker(gevent.Greenlet):
         for the first outbound stream.
         """
 
-        ## If command topic was not supplied, report error and return
-        ## Technically "shouldn't happen" but better to be safe.
+        # If command topic was not supplied, report error and return
+        # Technically "shouldn't happen" but better to be safe.
         if not self.command_topic:
             log.error(
                 "Cannot create entry point for command subscriber, "
@@ -112,7 +112,7 @@ class Broker(gevent.Greenlet):
         cmd_sub_flag_field = "cmd_subscriber"
         cmd_stream = None
 
-        ##Lookup for outbound stream with subscribe flag set
+        #Lookup for outbound stream with subscribe flag set
         cmd_streams = list(
             (
                 x
@@ -123,7 +123,7 @@ class Broker(gevent.Greenlet):
 
         cmd_stream = next(iter(cmd_streams), None)
 
-        ## Warn about multiple matches
+        # Warn about multiple matches
         if cmd_stream and len(cmd_streams) > 1:
             log.warn(
                 "Multiple output streams found with {} field enabled, "
@@ -132,7 +132,7 @@ class Broker(gevent.Greenlet):
                 )
             )
 
-        ## No stream yet, so just grab the first output stream
+        # No stream yet, so just grab the first output stream
         if not cmd_stream:
             cmd_stream = next((x for x in self.outbound_streams), None)
             if cmd_stream:
