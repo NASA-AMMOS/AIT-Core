@@ -5,7 +5,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-import ait.core
+import ait.core  # noqa
 from .client import ZMQInputClient
 
 
@@ -17,7 +17,7 @@ class Plugin(ZMQInputClient):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
+    def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
         """
         Params:
             inputs:     names of inbound streams plugin receives data from
@@ -33,6 +33,9 @@ class Plugin(ZMQInputClient):
         self.name = type(self).__name__
         self.inputs = inputs
         self.outputs = outputs
+
+        if zmq_args is None:
+            zmq_args = {}
 
         for key, value in kwargs.items():
             setattr(self, key, value)
