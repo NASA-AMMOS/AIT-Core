@@ -107,7 +107,7 @@ class Server(object):
     def _create_api_telem_stream(self):
         """"""
         stream_map = {"__valid_api_streams": []}
-        COMPATIBLE_HANDLERS = ["PacketHandler", "CCSDSPacketHandler"]
+        compatible_handlers = ["PacketHandler", "CCSDSPacketHandler"]
 
         streams = ait.config.get("server.inbound-streams", None)
         if streams is None:
@@ -119,12 +119,12 @@ class Server(object):
             stream_map[stream["name"]] = stream
 
             # If the last handler that runs in a stream is one of our
-            # COMPATIBLE_HANDLERS we count it as a valid API telemetry stream.
+            # compatible_handlers we count it as a valid API telemetry stream.
             # Users should use the config options for an explicit and less
             # restrictive list.
             if (
                 "handlers" in stream
-                and stream["handlers"][-1]["name"].split(".")[-1] in COMPATIBLE_HANDLERS
+                and stream["handlers"][-1]["name"].split(".")[-1] in compatible_handlers
             ):
                 stream_map["__valid_api_streams"].append(stream["name"])
                 continue
@@ -152,7 +152,7 @@ class Server(object):
                 log.info(
                     "Located potentially valid streams. "
                     f"{stream_map['__valid_api_streams']} uses a compatible handler "
-                    f"({COMPATIBLE_HANDLERS})."
+                    f"({compatible_handlers})."
                 )
                 config_streams = stream_map["__valid_api_streams"]
 
