@@ -60,10 +60,10 @@ def platform():
     return sys.platform
 
 
-def test_expandConfigPaths():
+def test_expand_config_paths():
     prefix = os.path.join("/", "ait")
     actual = {
-        "desc": "Test cfg.expandConfigPaths()",
+        "desc": "Test cfg.expand_config_paths()",
         "file": os.path.join("bin", "ait-orbits"),
         "filename": os.path.join("bin", "ait-orbits"),
         "nested": {
@@ -83,7 +83,7 @@ def test_expandConfigPaths():
         ],
     }
     expected = {
-        "desc": "Test cfg.expandConfigPaths()",
+        "desc": "Test cfg.expand_config_paths()",
         "file": os.path.join(prefix, "bin", "ait-orbits"),
         "filename": os.path.join(prefix, "bin", "ait-orbits"),
         "nested": {
@@ -103,34 +103,34 @@ def test_expandConfigPaths():
         ],
     }
 
-    cfg.expandConfigPaths(actual, prefix, None, None, "", "file", "filename")
+    cfg.expand_config_paths(actual, prefix, None, None, "", "file", "filename")
     assert actual == expected
 
 
-def test_expandConfigPaths_w_variables():
+def test_expand_config_paths_w_variables():
     prefix = os.path.join("/", "ait")
     pathvars = {"x": "test-x", "y": "test-y", "hostname": hostname()}
     actual = {
-        "desc": "Test cfg.expandConfigPaths() with variables",
+        "desc": "Test cfg.expand_config_paths() with variables",
         "file": os.path.join("bin", "${x}", "ait-orbits"),
         "filename": os.path.join("bin", "${y}", "ait-orbits"),
     }
     expected = {
-        "desc": "Test cfg.expandConfigPaths() with variables",
+        "desc": "Test cfg.expand_config_paths() with variables",
         "file": os.path.join(prefix, "bin", "test-x", "ait-orbits"),
         "filename": os.path.join(prefix, "bin", "test-y", "ait-orbits"),
     }
 
-    cfg.expandConfigPaths(actual, prefix, None, pathvars, "", "file", "filename")
+    cfg.expand_config_paths(actual, prefix, None, pathvars, "", "file", "filename")
     assert actual == expected
 
 
-def test_replaceVariables():
+def test_replace_variables():
     # Test expandPath with simple custom path variable
     pathvars = {"x": "test"}
     pathname = os.path.join("/", "${x}", "ait-orbits")
     expected = [os.path.join("/", pathvars["x"], "ait-orbits")]
-    assert cfg.replaceVariables(pathname, pathvars=pathvars) == expected
+    assert cfg.replace_variables(pathname, pathvars=pathvars) == expected
 
     # Test expandPath with more complex path variable with multiple
     # permutations
@@ -150,11 +150,11 @@ def test_replaceVariables():
             "/", pathvars["x"], pathvars["y"][1], pathvars["z"][1], "ait-orbits"
         ),
     ]
-    assert sorted(cfg.replaceVariables(pathname, pathvars=pathvars)) == sorted(expected)
+    assert sorted(cfg.replace_variables(pathname, pathvars=pathvars)) == sorted(expected)
 
 
-def test_replaceVariables_strftime():
-    # Test replaceVariables with strftime directives
+def test_replace_variables_strftime():
+    # Test replace_variables with strftime directives
     pathname = os.path.join("/", "%Y", "%Y-%j", "ait-orbits")
 
     expected = [
@@ -166,11 +166,11 @@ def test_replaceVariables_strftime():
         )
     ]
 
-    assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
+    assert sorted(cfg.replace_variables(pathname)) == sorted(expected)
 
 
-def test_replaceVariables_strftime_addday():
-    # Test replaceVariables with strftime directives
+def test_replace_variables_strftime_addday():
+    # Test replace_variables with strftime directives
     pathname = os.path.join("/", "%Y", "%Y-%j", "ait-orbits")
 
     expected = [
@@ -182,16 +182,16 @@ def test_replaceVariables_strftime_addday():
         )
     ]
 
-    assert sorted(cfg.replaceVariables(pathname)) == sorted(expected)
+    assert sorted(cfg.replace_variables(pathname)) == sorted(expected)
 
 
-def test_addPathVariables():
+def test_add_path_variables():
     config = cfg.AitConfig(data=YAML())
     before = config._pathvars
     before_len = len(before.keys())
 
     pathvars = {"x": "test-x", "y": "test-y"}
-    config.addPathVariables(pathvars)
+    config.add_path_variables(pathvars)
     after = config._pathvars
     after_len = len(after.keys())
 
@@ -229,9 +229,9 @@ def test_flatten():
     assert cfg.flatten(dict(d), "b", "a") == {"foo": "a"}
 
 
-def test_loadYAML():
+def test_load_yaml():
     with TestFile(data=YAML()) as filename:
-        assert cfg.loadYAML(filename) == cfg.loadYAML(data=YAML())
+        assert cfg.load_yaml(filename) == cfg.load_yaml(data=YAML())
 
 
 def test_merge():

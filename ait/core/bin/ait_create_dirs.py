@@ -219,7 +219,7 @@ def main():
         pathvars["doy"] = "%03d" % ait.config._datetime.tm_yday
 
         # Add the updated path variables for the date
-        ait.config.addPathVariables(pathvars)
+        ait.config.add_path_variables(pathvars)
 
         ait.config.reload()
 

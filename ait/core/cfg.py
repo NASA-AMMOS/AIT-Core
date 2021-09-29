@@ -40,7 +40,7 @@ DEFAULT_PATH_VARS = {
 PATH_KEYS = "directory", "file", "filename", "path", "pathname"
 
 
-def expandConfigPaths(
+def expand_config_paths(
     config, prefix=None, datetime=None, pathvars=None, parameter_key="", *keys
 ):
     """Updates all relative configuration paths in dictionary config,
@@ -57,7 +57,7 @@ def expandConfigPaths(
     for name, value in config.items():
         if name in keys and type(name) is str:
             expanded = util.expandPath(value, prefix)
-            cleaned = replaceVariables(expanded, datetime=datetime, pathvars=pathvars)
+            cleaned = replace_variables(expanded, datetime=datetime, pathvars=pathvars)
 
             for p in cleaned:
                 if not os.path.exists(p):
@@ -70,7 +70,7 @@ def expandConfigPaths(
 
         elif isinstance(value, dict):
             param_key = name if parameter_key == "" else parameter_key + "." + name
-            expandConfigPaths(value, prefix, datetime, pathvars, param_key, *keys)
+            expand_config_paths(value, prefix, datetime, pathvars, param_key, *keys)
 
         elif isinstance(value, list):
             for item in value:
@@ -78,12 +78,12 @@ def expandConfigPaths(
                     param_key = (
                         name if parameter_key == "" else parameter_key + "." + name
                     )
-                    expandConfigPaths(
+                    expand_config_paths(
                         item, prefix, datetime, pathvars, param_key, *keys
                     )
 
 
-def replaceVariables(path, datetime=None, pathvars=None):
+def replace_variables(path, datetime=None, pathvars=None):
     """Return absolute path with path variables replaced as applicable"""
 
     if datetime is None:
@@ -100,7 +100,7 @@ def replaceVariables(path, datetime=None, pathvars=None):
         path_list = [path]
 
     # Set up the regex to search for variables
-    regex = re.compile("\$\{(.*?)\}")
+    regex = re.compile(r"\$\{(.*?)\}")
 
     # create a newpath list that will hold the 'cleaned' paths
     # with variables and strftime format directives replaced
@@ -164,7 +164,7 @@ def flatten(d, *keys):
     return flat
 
 
-def loadYAML(filename=None, data=None):
+def load_yaml(filename=None, data=None):
     """Loads either the given YAML configuration file or YAML data.
 
     Returns None if there was an error reading from the configuration
@@ -350,7 +350,7 @@ class AitConfig(object):
         if data is None and filename is None:
             filename = self._filename
 
-        self._config = loadYAML(filename, data)
+        self._config = load_yaml(filename, data)
         self._filename = filename
 
         if self._config is not None:
@@ -361,9 +361,9 @@ class AitConfig(object):
             # with the defaults, add the platform and hostname, and
             # merge in all of the information provided in the config
             if self._pathvars is None:
-                self._pathvars = self.getDefaultPathVariables()
+                self._pathvars = self.get_default_path_variables()
 
-            expandConfigPaths(
+            expand_config_paths(
                 self._config,
                 self._directory,
                 self._datetime,
@@ -401,7 +401,7 @@ class AitConfig(object):
 
         return config[tail] if tail in config else default
 
-    def getDefaultFilename(self):
+    def get_default_filename(self):
         if "AIT_CONFIG" in os.environ:
             filename = os.path.abspath(os.environ.get("AIT_CONFIG"))
         else:
@@ -411,13 +411,13 @@ class AitConfig(object):
 
         return filename
 
-    def getDefaultPathVariables(self):
+    def get_default_path_variables(self):
         pathvars = DEFAULT_PATH_VARS
         pathvars["platform"] = self._platform
         pathvars["hostname"] = self._hostname
         return pathvars
 
-    def addPathVariables(self, pathvars):
+    def add_path_variables(self, pathvars):
         """Adds path variables to the pathvars map property"""
         if type(pathvars) is dict:
             self._pathvars = merge(self._pathvars, pathvars)
