@@ -14,7 +14,8 @@
 
 import sys
 
-from ait.core import cfg, log
+# cfg isn't used but we want the AIT-level config attribute created
+from ait.core import cfg, log  # noqa
 
 
 def deprecated(message):
@@ -32,13 +33,13 @@ sys.modules["ait"].deprecated = deprecated  # type: ignore[attr-defined]
 sys.modules["ait"].DEFAULT_CMD_PORT = 3075  # type: ignore[attr-defined]
 sys.modules["ait"].DEFAULT_CMD_HOST = "127.0.0.1"  # type: ignore[attr-defined]
 
-## Name of the ZMQ topic used to accept commands from external sources
+# Name of the ZMQ topic used to accept commands from external sources
 sys.modules["ait"].DEFAULT_CMD_TOPIC = "__commands__"  # type: ignore[attr-defined]
 
-## Name of the ZMQ topic / stream used for making telemetry packets available to the script API
+# Name of the ZMQ topic / stream used for making telemetry packets available to the script API
 sys.modules["ait"].DEFAULT_TLM_TOPIC = "__tlmpkts__"  # type: ignore[attr-defined]
 
-## Number of seconds to sleep after ZmqSocket.connect() call, affects clients
+# Number of seconds to sleep after ZmqSocket.connect() call, affects clients
 sys.modules["ait"].DEFAULT_CMD_ZMQ_SLEEP = 1  # type: ignore[attr-defined]
 
 
