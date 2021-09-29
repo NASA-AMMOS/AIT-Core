@@ -2,7 +2,7 @@ import ait.core.log
 from .client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
-class Stream(object):
+class Stream():
     """
     This is the base Stream class that all streams will inherit from.
     It calls its handlers to execute on all input messages sequentially,
@@ -10,7 +10,7 @@ class Stream(object):
     types were specified.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}, **kwargs):
+    def __init__(self, name, inputs, handlers, zmq_args=None, **kwargs):
         """
         Params:
             name:       string name of stream (should be unique)
@@ -33,6 +33,9 @@ class Stream(object):
         self.name = name
         self.inputs = inputs if inputs is not None else []
         self.handlers = handlers
+
+        if zmq_args is None:
+            zmq_args = {}
 
         if not self.valid_workflow():
             raise ValueError(
@@ -101,7 +104,7 @@ class PortInputStream(Stream, PortInputClient):
     This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}):
+    def __init__(self, name, inputs, handlers, zmq_args=None):
         super(PortInputStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
@@ -111,7 +114,7 @@ class ZMQStream(Stream, ZMQInputClient):
     to a ZMQ socket.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}):
+    def __init__(self, name, inputs, handlers, zmq_args=None):
         super(ZMQStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
@@ -121,7 +124,7 @@ class PortOutputStream(Stream, PortOutputClient):
     publishes to a UDP port.
     """
 
-    def __init__(self, name, inputs, output, handlers, zmq_args={}):
+    def __init__(self, name, inputs, output, handlers, zmq_args=None):
         super(PortOutputStream, self).__init__(
             name, inputs, handlers, zmq_args, output=output
         )
