@@ -33,7 +33,8 @@ def encode_message(topic, data):
     """
     try:
         enc = [bytes(topic, "utf-8"), pickle.dumps(data)]
-    except:
+    # TODO: This should be way less generic than Exception
+    except Exception:
         enc = None
 
     return enc
@@ -57,7 +58,8 @@ def decode_message(msg):
     try:
         tpc = topic.decode("utf-8")
         msg = pickle.loads(message)
-    except:
+    # TODO: This should be way less generic than Exception
+    except Exception:
         tpc = None
         msg = None
 
