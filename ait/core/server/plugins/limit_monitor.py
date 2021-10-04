@@ -35,7 +35,7 @@ class TelemetryLimitMonitor(Plugin):
             self.limit_dict[packet][field] = v
 
         self.packet_dict = defaultdict(dict)
-        for k, v in tlm.getDefaultDict().items():
+        for _k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
         self.notif_thrshld = ait.config.get("notifications.options.threshold", 1)

@@ -112,7 +112,7 @@ class Broker(gevent.Greenlet):
         cmd_sub_flag_field = "cmd_subscriber"
         cmd_stream = None
 
-        #Lookup for outbound stream with subscribe flag set
+        # Lookup for outbound stream with subscribe flag set
         cmd_streams = list(
             (
                 x

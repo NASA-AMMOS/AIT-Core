@@ -21,7 +21,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-import ait.core  # nowa
+import ait.core  # noqa
 from ait.core import log, tlm
 from ait.core.server.plugin import Plugin
 
