@@ -16,7 +16,7 @@ def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    args = ap.parse_args()
+    args = ap.parse_args()  # noqa
 
     tlm_cmd_serv = Server()
     tlm_cmd_serv.wait()

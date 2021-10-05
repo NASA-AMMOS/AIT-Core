@@ -57,7 +57,7 @@ def main():
         description=descr, formatter_class=argparse.RawDescriptionHelpFormatter
     )
 
-    ## The optional argument(s)
+    # The optional argument(s)
     arg_defns = OrderedDict(
         {
             "--topic": {
@@ -88,21 +88,21 @@ def main():
         }
     )
 
-    ## Required argument(s)
+    # Required argument(s)
     arg_defns["filename"] = {
         "type": str,
         "help": "Name of the sequence file.",
         "default": None,
     }
 
-    ## Push argument defs to the parser
+    # Push argument defs to the parser
     for name, params in arg_defns.items():
         parser.add_argument(name, **params)
 
-    ## Get arg results of the parser
+    # Get arg results of the parser
     args = parser.parse_args()
 
-    ## Extract args to local fields
+    # Extract args to local fields
     host = args.host
     port = args.port
     verbose = args.verbose
@@ -110,17 +110,17 @@ def main():
     topic = args.topic
     filename = args.filename
 
-    ## If UDP enabled, collect host/port info
+    # If UDP enabled, collect host/port info
     if udp:
         if host is not None:
             dest = (host, port)
         else:
             dest = port
 
-        cmdApi = api.CmdAPI(udp_dest=dest, verbose=verbose)
+        cmd_api = api.CmdAPI(udp_dest=dest, verbose=verbose)
     # Default CmdAPI connect hooks up to C&DH server 0MQ port
     else:
-        cmdApi = api.CmdAPI(verbose=verbose, cmdtopic=topic)
+        cmd_api = api.CmdAPI(verbose=verbose, cmdtopic=topic)
 
     try:
         with open(filename, "r") as stream:
@@ -140,12 +140,12 @@ def main():
                 else:
                     tokens = line.split()
                     delay = float(tokens[0])
-                    cmdName = tokens[1]
-                    cmdArgs = [util.toNumber(t, t) for t in tokens[2:]]
-                    cmdArgs = cmdApi.parse_args(cmdName, *cmdArgs)
+                    cmd_name = tokens[1]
+                    cmd_args = [util.toNumber(t, t) for t in tokens[2:]]
+                    cmd_args = cmd_api.parse_args(cmd_name, *cmd_args)
                     time.sleep(delay)
                     log.info(line)
-                    cmdApi.send(cmdName, *cmdArgs)
+                    cmd_api.send(cmd_name, *cmd_args)
     except IOError:
         log.error("Could not open '%s' for reading." % filename)
 

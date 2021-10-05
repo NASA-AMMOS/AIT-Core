@@ -64,7 +64,7 @@ def main():
     )
     parser.add_argument("--rotate-log-delta", type=int, default=1)
     parser.add_argument(
-        "--file-name-pattern", default="\%Y-\%m-\%d-\%H-\%M-\%S-{name}.pcap"
+        "--file-name-pattern", default="%Y-%m-%d-%H-%M-%S-{name}.pcap"
     )
 
     # Get command line arguments

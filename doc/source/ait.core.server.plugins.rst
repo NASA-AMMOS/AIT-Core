@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    ait.core.server.plugins.data_archive
    ait.core.server.plugins.limit_monitor

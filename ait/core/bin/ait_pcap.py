@@ -126,7 +126,6 @@ def main():
                 print("%s - %s" % (start, stop))
         else:
             for filename in sorted(times.keys()):
-                basename = os.path.basename(filename)
                 for start, stop in times[filename]:
                     print("%s: %s - %s" % (filename, start, stop))
     else:

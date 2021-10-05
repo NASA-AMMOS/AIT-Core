@@ -21,10 +21,7 @@ Inserts telemetry into a database from one or more PCAP files.
 
 import argparse
 import os
-import sys
-import socket
 import struct
-import time
 
 import ait
 from ait.core import db, log, tlm, pcap
@@ -84,7 +81,6 @@ def main():
         npackets = 0
         dbconn = None
         defn = tlm.getDefaultDict()[args.packet]
-        nbytes = defn.nbytes
 
         if args.backend == "sqlite":
             dbconn = db.SQLiteBackend()

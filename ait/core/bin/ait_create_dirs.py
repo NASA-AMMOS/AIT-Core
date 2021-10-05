@@ -125,7 +125,7 @@ import ait
 from ait.core import dmc, log
 
 
-def createDirStruct(paths, verbose=True):
+def create_dir_struct(paths, verbose=True):
     """Loops ait.config._datapaths from AIT_CONFIG and creates a directory.
 
     Replaces year and doy with the respective year and day-of-year.
@@ -140,7 +140,7 @@ def createDirStruct(paths, verbose=True):
             UTC Datetime string in ISO 8601 Format YYYY-MM-DDTHH:mm:ssZ
 
     """
-    for k, path in paths.items():
+    for _k, path in paths.items():
         p = None
         try:
             pathlist = path if type(path) is list else [path]
@@ -224,7 +224,7 @@ def main():
         ait.config.reload()
 
         # Create the directory
-        retcode = createDirStruct(ait.config._datapaths)
+        retcode = create_dir_struct(ait.config._datapaths)
 
     except Exception as e:
         print(e)

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import datetime
-import sys
 
 from ait.core import log, pcap
 

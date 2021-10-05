@@ -83,7 +83,7 @@ def decode_sequence_time(time, prev_time=None):
     if time_code == "A":
         converted_time = dt.datetime.strptime(time, "%Y-%jT%H:%M:%S:%f")
     elif time_code == "R":
-        if not prev_time or type(prev_time) is not type(dt.datetime.now()):
+        if not prev_time or not isinstance(prev_time, dt.datetime):
             msg = (
                 "Previous time not specified or incorrect format provided "
                 "when given a relative command"
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     out_file = "seq_out"
     seq_header_outpath = seq_header.get("on_board_filename", None)
     if args.output_name:
-        out_file = arg_outpath.strip()
+        out_file = args.output_name.strip()
     elif seq_header_outpath:
         out_file = seq_header_outpath.split(".")[0].strip()
 

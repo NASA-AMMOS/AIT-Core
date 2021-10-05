@@ -57,8 +57,6 @@ def main():
 
         # Parse the filename for the applicable information
         parts = os.path.basename(filename).split("_")
-        subsys = parts[-3]
-        desc = parts[-2]
         seqid = os.path.splitext(parts[-1])[0]
 
         try:

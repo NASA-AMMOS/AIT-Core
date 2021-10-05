@@ -39,7 +39,6 @@ def main():
     log.begin()
 
     try:
-        defaults = {}
         parser = argparse.ArgumentParser(
             description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
         )
@@ -68,8 +67,6 @@ def main():
             # Parse the filename for the applicable information
             parts = os.path.basename(filename).split("_")
             seqid = os.path.splitext(parts[-1])[0]
-            desc = parts[-2]
-            subsys = parts[-3]
 
             try:
                 seqid = int(seqid)

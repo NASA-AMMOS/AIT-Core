@@ -57,9 +57,7 @@ def main():
 
         # Parse the filename for the applicable information
         parts = os.path.basename(filename).split("_")
-        desc = os.path.splitext(parts[-1])[0]
         seqid = parts[-2]
-        subsys = parts[-3]
 
         try:
             int(seqid)

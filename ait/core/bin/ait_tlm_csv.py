@@ -168,21 +168,21 @@ def main():
                                 field = names[1]
                                 _raw = True
 
-                            fieldVal = packet._getattr(field, raw=_raw)
+                            field_val = packet._getattr(field, raw=_raw)
 
-                            if hasattr(fieldVal, "name"):
-                                fieldVal = fieldVal.name
+                            if hasattr(field_val, "name"):
+                                field_val = field_val.name
                             else:
-                                fieldVal = str(fieldVal)
+                                field_val = str(field_val)
 
                         except KeyError:
                             log.debug("%s not found in Packet" % field)
-                            fieldVal = None
+                            field_val = None
                         except ValueError:
                             # enumeration not found. just get the raw value
-                            fieldVal = packet._getattr(field, raw=True)
+                            field_val = packet._getattr(field, raw=True)
 
-                        row.append(fieldVal)
+                        row.append(field_val)
 
                     if args.ground_time:
                         row = [comp_time] + row

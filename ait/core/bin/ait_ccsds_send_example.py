@@ -10,7 +10,7 @@ hs_packet = struct.Struct(">BBBBBBBBBBBBBBBB")
 data = bytearray(b"\x02\xE7\x40\x00\x00\x0B\x00\x00\x00\x01\x01\x71\x0C\x41\x00\x01")
 
 """
-## CCSDS Packet ##
+# CCSDS Packet #
 version:                        000
 type:                           0
 secondary header flag:          0
