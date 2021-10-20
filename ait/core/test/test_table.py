@@ -373,6 +373,7 @@ class TestBadEnumHandling(unittest.TestCase):
             tabdict = table.FSWTabDict(table_defn_path)
             assert len(cm.output) == 1
 
+
 class TestTableTimeHandling(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

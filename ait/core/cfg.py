@@ -168,7 +168,11 @@ def loadYAML (filename=None, data=None):
         if filename:
             data = open(filename, 'rt')
 
+            print(f"DATA: {data}")
+
         config = yaml.load(data, Loader=yaml.Loader)
+
+        print(f"CONFIG: {config}")
 
         if isinstance(data, IOBase):
             data.close()

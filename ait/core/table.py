@@ -542,3 +542,7 @@ def decode_to_file(tbl_type, in_path, out_path):
 
 yaml.add_constructor("!FSWTable", YAMLCtor_FSWTabDefn)
 yaml.add_constructor("!FSWColumn", YAMLCtor_FSWColDefn)
+
+print(f'__name__: {__name__}')
+
+util.__init_extensions__(__name__, globals())

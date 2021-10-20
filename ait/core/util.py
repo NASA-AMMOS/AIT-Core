@@ -141,6 +141,8 @@ def __init_extensions__(modname, modsyms):
         subsequent calls.
         """
         def create(*args, **kwargs):
+            print("*****************")
+            print(create.cls)
             if create.cls is None:
                 parts = extname.rsplit('.', 1)
                 if len(parts) > 1:
@@ -166,10 +168,14 @@ def __init_extensions__(modname, modsyms):
         if extensions:
             extname = extensions.get(modname + '.' + clsname, None)
 
+            print(f"extname: {extname}")
+
             if extname:
                 cls    = None
                 values = modname, clsname, extname
                 log.info('Replacing %s.%s with custom extension: %s' % values)
+
+        print('create' + clsname)
 
         modsyms['create' + clsname] = createFunc(cls, extname)
 
