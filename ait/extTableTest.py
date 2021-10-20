@@ -6,3 +6,4 @@ import ait.core.table as table
 table_dict = table.getDefaultFSWTabDict()
 table_dict.create('MyTable')
 table_dict.load(filename=table_dict.filename)
+

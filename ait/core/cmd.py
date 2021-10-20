@@ -474,7 +474,7 @@ class CmdDict(dict):
             else:
                 stream        = content
 
-            cmds = yaml.load(stream, Loader=yaml.FullLoader)
+            cmds = yaml.load(stream, Loader=yaml.Loader)
             cmds = handle_includes(cmds)
             for cmd in cmds:
                 self.add(cmd)
@@ -544,8 +544,9 @@ def YAMLCtor_include(loader, node):
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
     with open(name,'r') as f:
-        data = yaml.load(f, Loader=yaml.FullLoader)
+        data = yaml.load(f, Loader=yaml.Loader)
     return data
+
 
 yaml.add_constructor('!include' , YAMLCtor_include)
 yaml.add_constructor('!Command' , YAMLCtor_CmdDefn)
