@@ -29,7 +29,6 @@ repos:
         entry: black
         files: ^src/|test/
         language: system
-        #exclude_types: [yaml, yml, dat, txt]
         types: [python]
 
 -   repo: local

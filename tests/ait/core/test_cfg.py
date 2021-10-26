@@ -16,7 +16,7 @@ import sys
 import time
 
 from ait.core import cfg
-from ait.core.test import TestFile
+from tests.ait.core import TestFile
 
 
 def YAML():

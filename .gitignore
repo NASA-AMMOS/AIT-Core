@@ -6,6 +6,7 @@ doc/source/ait.core.server.test*
 build/lib/*
 *.egg-info/
 *.egg
+.tox
 
 # Object Files
 *.o
