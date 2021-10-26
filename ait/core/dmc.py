@@ -122,7 +122,7 @@ def to_gps_week_and_secs(timestamp=None) -> Tuple[int, int]:
     if timestamp is None:
         timestamp = datetime.datetime.utcnow()
 
-    leap = LeapSeconds.get_GPS_offset_for_date(timestamp)
+    leap = LeapSeconds.get_GPS_offset_for_date(timestamp)  # type: ignore
 
     secs_in_week = 604800
     delta = (timestamp - GPS_Epoch).total_seconds() + leap

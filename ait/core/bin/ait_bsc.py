@@ -30,7 +30,7 @@ import ait
 from ait.core import bsc
 
 
-config_file = ait.config.bsc.filename
+config_file = ait.config.bsc.filename  # type: ignore
 
 
 def main():

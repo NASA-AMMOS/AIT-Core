@@ -70,7 +70,7 @@ import struct
 import sys
 import re
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from ait.core import cmd, dmc, log
 
@@ -807,7 +807,7 @@ ComplexTypeMap = {
 }
 
 
-def get_pdt(typename) -> Optional[str]:
+def get_pdt(typename):
     """Returns the PrimitiveType for typename or None."""
     if typename not in PrimitiveTypeMap and typename.startswith("S"):
         PrimitiveTypeMap[typename] = PrimitiveType(typename)
@@ -815,16 +815,13 @@ def get_pdt(typename) -> Optional[str]:
     return PrimitiveTypeMap.get(typename, None)
 
 
-def get_cdt(typename) -> Optional[str]:
+def get_cdt(typename):
     """Returns the ComplexType for typename or None."""
     return ComplexTypeMap.get(typename, None)
 
 
-def get(typename) -> Optional[str]:
-    """get(typename) -> PrimitiveType or ComplexType
-
-    Returns the PrimitiveType or ComplexType for typename or None.
-    """
+def get(typename):
+    """Returns the PrimitiveType or ComplexType for typename or None."""
     dt = get_pdt(typename) or get_cdt(typename)
 
     if dt is None:

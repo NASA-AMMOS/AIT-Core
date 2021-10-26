@@ -312,6 +312,9 @@ def notice(*args, **kwargs):
     logger.log(NOTICE, *args, **kwargs)
 
 
+# These are "guaranteed" at runtime to be not-None. Marking this as
+# type `Any` addresses mypy issues where log calls are marked as
+# "None" being not callable.
 logger = None
 crit = None
 debug = None

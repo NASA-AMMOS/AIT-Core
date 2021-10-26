@@ -5,7 +5,7 @@ import datetime as dt
 import os.path
 import sys
 
-import ait.core.log as log
+from ait.core import log
 
 """
 Convert MPS Seq files to AIT formatted sequence files
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
     in_file = args.inputseq
     if not os.path.exists(in_file):
-        log.error("Input MPS Sequence file does not exist.")
+        log.error("Input MPS Sequence file does not exist.")  # type: ignore
         sys.exit(1)
 
     with open(in_file, "r") as input_file:

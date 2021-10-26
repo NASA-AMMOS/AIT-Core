@@ -1,5 +1,5 @@
 # Distribution / Packaging / Build files
-.coverage
+.coverage*
 doc/build/*
 doc/source/ait.core.test*
 doc/source/ait.core.server.test*

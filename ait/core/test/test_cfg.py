@@ -150,7 +150,9 @@ def test_replace_variables():
             "/", pathvars["x"], pathvars["y"][1], pathvars["z"][1], "ait-orbits"
         ),
     ]
-    assert sorted(cfg.replace_variables(pathname, pathvars=pathvars)) == sorted(expected)
+    assert sorted(cfg.replace_variables(pathname, pathvars=pathvars)) == sorted(
+        expected
+    )
 
 
 def test_replace_variables_strftime():

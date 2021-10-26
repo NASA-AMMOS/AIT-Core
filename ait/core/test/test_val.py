@@ -262,7 +262,7 @@ def testYAMLProcessorProcess():
     ymlproc.process(os.path.join(DATA_PATH, "testValidCmd1.yaml"))
 
     # check the document lines are correct
-    doclines = [85]
+    doclines = [84]
     assert doclines == ymlproc.doclines
 
 
