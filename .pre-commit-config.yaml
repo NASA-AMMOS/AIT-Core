@@ -17,7 +17,7 @@ repos:
     hooks:
     -   id: mypy
         name: mypy
-        entry: mypy ait
+        entry: mypy --namespace-packages --package ait.core
         language: system
         pass_filenames: false
         exclude: "bin/"

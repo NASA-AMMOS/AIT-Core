@@ -1,0 +1,81 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name         = 'ait-core'
+version      = '2.3.5'
+description  = "NASA JPL's Ground Data System toolkit for Instrument and CubeSat Missions"
+license = 'MIT'
+readme = 'README.rst'
+homepage = 'https://github.com/NASA-AMMOS/AIT-Core'
+repository = 'https://github.com/NASA-AMMOS/AIT-Core'
+documentation = 'https://ait-core.readthedocs.io/en/latest'
+authors       = ['AMMOS Instrument Toolkit Development Team <ait-pmc@googlegroups.com>']
+
+packages = [
+    {include = "ait"}
+]
+
+include = [
+    "ait/core/data/*.json"
+]
+
+[tool.poetry.dependencies]
+python           = '~3.7'
+bottle           = '0.12.17'
+jsonschema       = '3.0.2'
+pyyaml           = '5.1.2'
+requests         = '>= 2.22.0'
+greenlet         = '0.4.16'
+gevent           = '1.4.0'
+gevent-websocket = '0.10.1'
+pyzmq            = '18.1.0'
+
+[tool.poetry.dev-dependencies]
+black                    = '*'
+flake8                   = '*'
+flake8-bugbear           = '*'
+pep8-naming              = '*'
+mypy                     = '*'
+types-PyYAML             = '*'
+types-requests           = '*'
+types-setuptools         = '*'
+pydocstyle               = '*'
+coverage                 = '*'
+pytest                   = '*'
+pytest-cov               = '*'
+pytest-watch             = '*'
+pytest-xdist             = '*'
+pre-commit               = '*'
+sphinx                   = '*'
+sphinx-rtd-theme         = '*'
+sphinxcontrib-httpdomain = '*'
+tox                      = '>= 3.8'
+twine                    = '^3.4.2'
+
+[tool.poetry.scripts]
+ait-bsc                = 'ait.core.bin.ait_bsc:main'
+ait-bsc-create-handler = 'ait.core.bin.ait_bsc_create_handler:main'
+ait-bsc-stop-handler   = 'ait.core.bin.ait_bsc_stop_handler:main'
+ait-ccsds-send-example = 'ait.core.bin.ait_ccsds_send_example:main'
+ait-cmd-hist           = 'ait.core.bin.ait_cmd_hist:main'
+ait-cmd-send           = 'ait.core.bin.ait_cmd_send:main'
+ait-create-dirs        = 'ait.core.bin.ait_create_dirs:main'
+ait-dict-writer        = 'ait.core.bin.ait_dict_writer:main'
+ait-limits-find-dn     = 'ait.core.bin.ait_limits_find_dn:main'
+ait-mps-seq-convert    = 'ait.core.bin.ait_mps_seq_convert:main'
+ait-pcap               = 'ait.core.bin.ait_pcap:main'
+ait-pcap-segment       = 'ait.core.bin.ait_pcap_segment:main'
+ait-seq-decode         = 'ait.core.bin.ait_seq_decode:main'
+ait-seq-encode         = 'ait.core.bin.ait_seq_encode:main'
+ait-seq-print          = 'ait.core.bin.ait_seq_print:main'
+ait-seq-send           = 'ait.core.bin.ait_seq_send:main'
+ait-server             = 'ait.core.bin.ait_server:main'
+ait-table-decode       = 'ait.core.bin.ait_table_decode:main'
+ait-table-encode       = 'ait.core.bin.ait_table_encode:main'
+ait-tlm-csv            = 'ait.core.bin.ait_tlm_csv:main'
+ait-tlm-db-insert      = 'ait.core.bin.ait_tlm_db_insert:main'
+ait-tlm-send           = 'ait.core.bin.ait_tlm_send:main'
+ait-tlm-simulate       = 'ait.core.bin.ait_tlm_simulate:main'
+ait-yaml-validate      = 'ait.core.bin.ait_yaml_validate:main'
