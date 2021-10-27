@@ -1,11 +1,12 @@
 # Distribution / Packaging / Build files
-.coverage
+.coverage*
 doc/build/*
 doc/source/ait.core.test*
 doc/source/ait.core.server.test*
 build/lib/*
 *.egg-info/
 *.egg
+.tox
 
 # Object Files
 *.o
@@ -40,6 +41,7 @@ src/doc/dict/cmd/cmddict-07-cmddefs.tex
 
 # Temporary files
 *~
+tags*
 
 # Unignore (hack)
 !build/clean.py

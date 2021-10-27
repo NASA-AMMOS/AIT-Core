@@ -44,14 +44,21 @@ class ArgDefn(json.SlotSerializer, object):
     A fixed argument (fixed=True) defines a fixed bit pattern in that
     argument's byte position(s).
     """
+
     __slots__ = [
-        "name", "desc", "units", "_type", "bytes", "_enum", "range",
-        "fixed", "value"
+        "name",
+        "desc",
+        "units",
+        "_type",
+        "bytes",
+        "_enum",
+        "range",
+        "fixed",
+        "value",
     ]
 
     def __init__(self, *args, **kwargs):
-        """Creates a new Argument Definition.
-        """
+        """Creates a new Argument Definition."""
         for slot in ArgDefn.__slots__:
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
@@ -83,6 +90,7 @@ class ArgDefn(json.SlotSerializer, object):
     @type.setter
     def type(self, value):
         from ait.core import dtype
+
         self._type = dtype.get(value) if type(value) is str else value
 
     @property
@@ -123,10 +131,10 @@ class ArgDefn(json.SlotSerializer, object):
         """
         if type(self.bytes) is int:
             start = self.bytes
-            stop  = start + 1
+            stop = start + 1
         else:
             start = self.bytes[0]
-            stop  = self.bytes[1] + 1
+            stop = self.bytes[1] + 1
 
         return slice(start + offset, stop + offset)
 
@@ -135,7 +143,7 @@ class ArgDefn(json.SlotSerializer, object):
         Validation error messages are appended to an optional messages
         array.
         """
-        valid     = True
+        valid = True
         primitive = value
 
         def log(msg):
@@ -145,7 +153,7 @@ class ArgDefn(json.SlotSerializer, object):
         if self.enum:
             if value not in self.enum.keys():
                 valid = False
-                args  = (self.name, str(value))
+                args = (self.name, str(value))
                 log("%s value '%s' not in allowed enumerated values." % args)
             else:
                 primitive = int(self.enum[value])
@@ -157,11 +165,10 @@ class ArgDefn(json.SlotSerializer, object):
         if self.range:
             if primitive < self.range[0] or primitive > self.range[1]:
                 valid = False
-                args  = (self.name, str(primitive), self.range[0], self.range[1])
+                args = (self.name, str(primitive), self.range[0], self.range[1])
                 log("%s value '%s' out of range [%d, %d]." % args)
 
         return valid
-
 
 
 class Cmd(object):
@@ -169,6 +176,7 @@ class Cmd(object):
 
     Commands reference their Command Definition and may contain arguments.
     """
+
     def __init__(self, defn, *args, **kwargs):
         """Creates a new AIT Command based on the given command
         definition and command arguments.  A Command may be created
@@ -177,12 +185,12 @@ class Cmd(object):
         self.defn = defn
 
         if len(args) > 0 and len(kwargs) > 0:
-            msg  = 'A Cmd may be created with either positional or '
-            msg += 'keyword arguments, but not both.'
+            msg = "A Cmd may be created with either positional or "
+            msg += "keyword arguments, but not both."
             raise TypeError(msg)
 
         if len(kwargs) > 0:
-            args = [ ]
+            args = []
             for defn in self.defn.args:
                 if defn.name in kwargs:
                     value = kwargs.pop(defn.name)
@@ -190,9 +198,8 @@ class Cmd(object):
                     value = None
                 args.append(value)
 
-        self.args          = args
+        self.args = args
         self._unrecognized = kwargs
-
 
     def __repr__(self):
         return self.defn.name + " " + " ".join([str(a) for a in self.args])
@@ -234,21 +241,21 @@ class Cmd(object):
         52050J, Section 3.2.3.4).  This leaves 53 words (106 bytes) for
         the command itself.
         """
-        opcode  = struct.pack('>H', self.defn.opcode)
-        offset  = len(opcode)
-        size    = max(offset + self.defn.argsize, pad)
+        opcode = struct.pack(">H", self.defn.opcode)
+        offset = len(opcode)
+        size = max(offset + self.defn.argsize, pad)
         encoded = bytearray(size)
 
         encoded[0:offset] = opcode
-        encoded[offset]   = self.defn.argsize
-        offset           += 1
-        index             = 0
+        encoded[offset] = self.defn.argsize
+        offset += 1
+        index = 0
 
         for defn in self.defn.argdefns:
             if defn.fixed:
                 value = defn.value
             else:
-                value  = self.args[index]
+                value = self.args[index]
                 index += 1
             encoded[defn.slice(offset)] = defn.encode(value)
 
@@ -262,7 +269,6 @@ class Cmd(object):
         return self.defn.validate(self, messages)
 
 
-
 class CmdDefn(json.SlotSerializer, object):
     """CmdDefn - Command Definition
 
@@ -271,8 +277,8 @@ class CmdDefn(json.SlotSerializer, object):
     subsystem, description and a list of argument definitions.  Name and
     opcode are required.  All others are optional.
     """
-    __slots__ = ( 'name', '_opcode', 'subsystem', 'ccsds', 'title', 'desc',
-                  'argdefns' )
+
+    __slots__ = ("name", "_opcode", "subsystem", "ccsds", "title", "desc", "argdefns")
 
     def __init__(self, *args, **kwargs):
         """Creates a new Command Definition."""
@@ -281,18 +287,18 @@ class CmdDefn(json.SlotSerializer, object):
             setattr(self, slot, kwargs.get(name, None))
 
         if self.ccsds:
-            import ccsds
+            import ait.core.ccsds as ccsds
+
             self.ccsds = ccsds.CcsdsDefinition(**self.ccsds)
 
         if self.argdefns is None:
             self.argdefns = []
 
-
     def __repr__(self):
         return util.toRepr(self)
 
     @property
-    def args (self):
+    def args(self):
         """The argument definitions to this command (excludes fixed
         arguments).
         """
@@ -336,12 +342,12 @@ class CmdDefn(json.SlotSerializer, object):
         else:
             return True
 
-    def toJSON(self):
-        obj              = super(CmdDefn, self).toJSON()
-        obj['arguments'] = obj.pop('argdefns')
+    def toJSON(self):  # noqa
+        obj = super(CmdDefn, self).toJSON()
+        obj["arguments"] = obj.pop("argdefns")
 
         if self.ccsds is None:
-            obj.pop('ccsds', None)
+            obj.pop("ccsds", None)
 
         return obj
 
@@ -351,12 +357,12 @@ class CmdDefn(json.SlotSerializer, object):
         array.
         """
         valid = True
-        args  = [ arg for arg in cmd.args if arg is not None ]
+        args = [arg for arg in cmd.args if arg is not None]
 
         if self.nargs != len(args):
             valid = False
             if messages is not None:
-                msg  = 'Expected %d arguments, but received %d.'
+                msg = "Expected %d arguments, but received %d."
                 messages.append(msg % (self.nargs, len(args)))
 
         for defn, value in zip(self.args, cmd.args):
@@ -376,19 +382,19 @@ class CmdDefn(json.SlotSerializer, object):
         return valid
 
 
-
 class CmdDict(dict):
     """CmdDict
 
     Command Dictionaries provide a Python dictionary (i.e. hashtable)
     interface mapping Command names to Command Definitions.
     """
+
     def __init__(self, *args, **kwargs):
         """Creates a new Command Dictionary from the given command dictionary
         filename.
         """
         self.filename = None
-        self.opcodes  = {}
+        self.opcodes = {}
 
         if len(args) == 1 and len(kwargs) == 0 and type(args[0]) == str:
             dict.__init__(self)
@@ -412,37 +418,34 @@ class CmdDict(dict):
             log.error(msg)
             raise util.YAMLError(msg)
 
-
     def create(self, name, *args, **kwargs):
         """Creates a new AIT command with the given arguments."""
         tokens = name.split()
 
         if len(tokens) > 1 and (len(args) > 0 or len(kwargs) > 0):
-            msg  = 'A Cmd may be created with either positional arguments '
-            msg += '(passed as a string or a Python list) or keyword '
-            msg += 'arguments, but not both.'
+            msg = "A Cmd may be created with either positional arguments "
+            msg += "(passed as a string or a Python list) or keyword "
+            msg += "arguments, but not both."
             raise TypeError(msg)
 
         if len(tokens) > 1:
             name = tokens[0]
-            args = [ util.toNumber(t, t) for t in tokens[1:] ]
+            args = [util.toNumber(t, t) for t in tokens[1:]]
 
         defn = self.get(name, None)
 
         if defn is None:
-            raise TypeError('Unrecognized command: %s' % name)
+            raise TypeError("Unrecognized command: %s" % name)
 
-        return createCmd(defn, *args, **kwargs)
-
+        return createCmd(defn, *args, **kwargs)  # noqa
 
     def decode(self, bytes):
         """Decodes the given bytes according to this AIT Command
         Definition.
         """
-        opcode  = struct.unpack(">H", bytes[0:2])[0]
-        nbytes  = struct.unpack("B",  bytes[2:3])[0]
-        name   = None
-        args   = []
+        opcode = struct.unpack(">H", bytes[0:2])[0]
+        name = None
+        args = []
 
         if opcode in self.opcodes:
             defn = self.opcodes[opcode]
@@ -451,7 +454,7 @@ class CmdDict(dict):
 
             for arg in defn.argdefns:
                 start = stop
-                stop  = start + arg.nbytes
+                stop = start + arg.nbytes
                 if arg.fixed:
                     pass  # FIXME: Confirm fixed bytes are as expected?
                 else:
@@ -470,9 +473,9 @@ class CmdDict(dict):
         if self.filename is None:
             if os.path.isfile(content):
                 self.filename = content
-                stream        = open(self.filename, 'rb')
+                stream = open(self.filename, "rb")
             else:
-                stream        = content
+                stream = content
 
             cmds = yaml.load(stream, Loader=yaml.Loader)
             cmds = handle_includes(cmds)
@@ -482,45 +485,44 @@ class CmdDict(dict):
             if isinstance(stream, IOBase):
                 stream.close()
 
-    def toJSON(self):
-        return { name: defn.toJSON() for name, defn in self.items() }
+    def toJSON(self):  # noqa
+        return {name: defn.toJSON() for name, defn in self.items()}
 
 
-
-def getDefaultCmdDict(reload=False):
+def getDefaultCmdDict(reload=False):  # noqa
     return getDefaultDict(reload=reload)
 
 
-def getDefaultDict(reload=False):
-    return util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
+def getDefaultDict(reload=False):  # noqa
+    return util.getDefaultDict(__name__, "cmddict", CmdDict, reload)
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.cmddict.filename
 
 
-def getDefaultSchema():
-    return pkg_resources.resource_filename('ait.core', 'data/cmd_schema.json')
+def getDefaultSchema():  # noqa
+    return pkg_resources.resource_filename("ait.core", "data/cmd_schema.json")
 
 
-def getMaxCmdSize():
-    """ Returns the maximum size TReK command in bytes
+def getMaxCmdSize():  # noqa
+    """Returns the maximum size TReK command in bytes
 
-    Converts from words to bytes (hence the \*2) and
+    Converts from words to bytes (hence the ``* 2``) and
     removes 1 word for CCSDS header (-1)
     """
     return (MAX_CMD_WORDS - 1) * 2
 
 
 def handle_includes(defns):
-    '''Recursive handling of includes for any input list of defns.
+    """Recursive handling of includes for any input list of defns.
     The assumption here is that when an include is handled by the
     pyyaml reader, it adds them as a list, which is stands apart from the rest
     of the expected YAML definitions.
-    '''
+    """
     newdefns = []
     for d in defns:
-        if isinstance(d,list):
+        if isinstance(d, list):
             newdefns.extend(handle_includes(d))
         else:
             newdefns.append(d)
@@ -528,28 +530,30 @@ def handle_includes(defns):
     return newdefns
 
 
-def YAMLCtor_ArgDefn(loader, node):
-    fields          = loader.construct_mapping(node, deep=True)
-    fields["fixed"] = node.tag == "!Fixed"
-    return createArgDefn(**fields)
-
-
-def YAMLCtor_CmdDefn(loader, node):
+def YAMLCtor_ArgDefn(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    fields['argdefns'] = fields.pop('arguments', None)
-    return createCmdDefn(**fields)
+    fields["fixed"] = node.tag == "!Fixed"
+    return createArgDefn(**fields)  # noqa
 
-def YAMLCtor_include(loader, node):
+
+def YAMLCtor_CmdDefn(loader, node):  # noqa
+    fields = loader.construct_mapping(node, deep=True)
+    fields["argdefns"] = fields.pop("arguments", None)
+    return createCmdDefn(**fields)  # noqa
+
+
+def YAMLCtor_include(loader, node):  # noqa
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
-    with open(name,'r') as f:
+    with open(name, "r") as f:
         data = yaml.load(f)
     return data
 
-yaml.add_constructor('!include' , YAMLCtor_include)
-yaml.add_constructor('!Command' , YAMLCtor_CmdDefn)
-yaml.add_constructor('!Argument', YAMLCtor_ArgDefn)
-yaml.add_constructor('!Fixed'   , YAMLCtor_ArgDefn)
+
+yaml.add_constructor("!include", YAMLCtor_include)
+yaml.add_constructor("!Command", YAMLCtor_CmdDefn)
+yaml.add_constructor("!Argument", YAMLCtor_ArgDefn)
+yaml.add_constructor("!Fixed", YAMLCtor_ArgDefn)
 
 util.__init_extensions__(__name__, globals())

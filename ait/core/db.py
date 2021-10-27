@@ -28,98 +28,11 @@ import os.path
 import sqlite3
 
 import ait
-from ait.core import cfg, cmd, dmc, dtype, evr, log, tlm
+from ait.core import cfg, cmd, dmc, evr, log, tlm
 
 
-# Backend must implement DB-API 2.0 [PEP 249]
-# (https://www.python.org/dev/peps/pep-0249/).
-Backend = None
-
-
-@ait.deprecated('connect() will be replaced with SQLiteBackend methods in a future release')
-def connect(database):
-    """Returns a connection to the given database."""
-    if Backend is None:
-        raise cfg.AitConfigMissing('database.backend')
-
-    return Backend.connect(database)
-
-
-@ait.deprecated('create() will be replaced with SQLiteBackend methods in a future release')
-def create(database, tlmdict=None):
-    """Creates a new database for the given Telemetry Dictionary and
-    returns a connection to it.
-    """
-    if tlmdict is None:
-        tlmdict = tlm.getDefaultDict()
-
-    dbconn = connect(database)
-
-    for name, defn in tlmdict.items():
-        createTable(dbconn, defn)
-
-    return dbconn
-
-
-@ait.deprecated('createTable() will be replaced with SQLiteBackend methods in a future release')
-def createTable(dbconn, pd):
-    """Creates a database table for the given PacketDefinition."""
-    cols = ('%s %s' % (defn.name, getTypename(defn)) for defn in pd.fields)
-    sql  = 'CREATE TABLE IF NOT EXISTS %s (%s)' % (pd.name, ', '.join(cols))
-
-    dbconn.execute(sql)
-    dbconn.commit()
-
-
-@ait.deprecated('getTypename() will be replaced with SQLiteBackend methods in a future release')
-def getTypename(defn):
-    """Returns the SQL typename required to store the given
-    FieldDefinition."""
-    return 'REAL' if defn.type.float or defn.dntoeu else 'INTEGER'
-
-
-@ait.deprecated('insert() will be replaced with SQLiteBackend methods in a future release')
-def insert(dbconn, packet):
-    """Inserts the given packet into the connected database."""
-    values = [ ]
-    pd     = packet._defn
-
-    for defn in pd.fields:
-        if defn.enum:
-            val = getattr(packet.raw, defn.name)
-        else:
-            val = getattr(packet, defn.name)
-
-        if val is None and defn.name in pd.history:
-            val = getattr(packet.history, defn.name)
-
-        values.append(val)
-
-    qmark = ['?'] * len(values)
-    sql   = 'INSERT INTO %s VALUES (%s)' % (pd.name, ', '.join(qmark))
-
-    dbconn.execute(sql, values)
-
-
-@ait.deprecated('use() will be replaced with SQLiteBackend methods in a future release')
-def use(backend):
-    """Use the given database backend, e.g. 'MySQLdb', 'psycopg2',
-    'MySQLdb', etc.
-    """
-    global Backend
-
-    try:
-        Backend = importlib.import_module(backend)
-    except ImportError:
-        msg = 'Could not import (load) database.backend: %s' % backend
-        raise cfg.AitConfigError(msg)
-
-if ait.config.get('database.backend'):
-    use( ait.config.get('database.backend') )
-
-
-class AITDBResult():
-    '''AIT Database result wrapper.
+class AITDBResult:
+    """AIT Database result wrapper.
 
     :class:`AITDBResult` is a minimal wrapper around database query results /
     errors. All AIT database APIs that execute a query will return their results
@@ -163,7 +76,7 @@ class AITDBResult():
         res = be.query_packets()
         for packet in res.get_packets():
             print(packet)
-    '''
+    """
 
     def __init__(self, query=None, results=None, packets=None, errors=None):
         self._query = query
@@ -203,7 +116,7 @@ class AITDBResult():
 
 
 class GenericBackend(object):
-    ''' Generic database backend abstraction
+    """Generic database backend abstraction
 
     GenericBackend attempts to adequately abstract database operations into
     a small set of common methods. Not all methods will be useful for every
@@ -249,11 +162,11 @@ class GenericBackend(object):
 
         close
             Close the connection to the database instance and handle any cleanup
-    '''
+    """
 
     __metaclass__ = ABCMeta
 
-    _backend = None
+    _backend = ""
     _conn = None
 
     @abstractmethod
@@ -261,60 +174,60 @@ class GenericBackend(object):
         try:
             self._backend = importlib.import_module(self._backend)
         except ImportError:
-            msg = 'Could not import (load) database.backend: %s' % self._backend
+            msg = "Could not import (load) database.backend: %s" % self._backend
             raise cfg.AitConfigError(msg)
 
     @abstractmethod
     def connect(self, **kwargs):
-        '''Connect to a backend's database instance.'''
+        """Connect to a backend's database instance."""
         pass
 
     @abstractmethod
     def create(self, **kwargs):
-        '''Create a database in the instance.'''
+        """Create a database in the instance."""
         pass
 
     @abstractmethod
     def insert(self, packet, **kwargs):
-        '''Insert a record into the database.'''
+        """Insert a record into the database."""
         pass
 
     @abstractmethod
     def query(self, query, **kwargs):
-        '''Query the database instance and return results.'''
+        """Query the database instance and return results."""
         pass
 
     @abstractmethod
     def query_packets(self, packets=None, start_time=None, end_time=None, **kwargs):
-        '''Query the database instance for packet objects
+        """Query the database instance for packet objects
 
         Return all packets of the defined type from the data store, filtering
         over an optional time range. If no parameters are specified, this will
         return all data for all packet types as Packet objects.
-        '''
+        """
         pass
 
     @classmethod
     @abstractmethod
-    def create_packet_from_result(self, packet_name, result):
-        '''Return an AIT Packet from a given database query result item
+    def create_packet_from_result(cls, packet_name, result):
+        """Return an AIT Packet from a given database query result item
 
         Creates and returns an AIT Packet denoted by `packet_name` with
         field values set given the contents of `result`. Values that are
         missing in the result will be defaulted in the returned Packet.
         Specific implementations will have caveats related to their backend
         and the limitations of the API.
-        '''
+        """
         pass
 
     @abstractmethod
     def close(self, **kwargs):
-        '''Close connection to the database instance.'''
+        """Close connection to the database instance."""
         pass
 
 
 class InfluxDBBackend(GenericBackend):
-    ''' InfluxDB Backend Abstraction
+    """InfluxDB Backend Abstraction
 
     This requires the InfluxDB Python library to be installed and InfluxDB
     to be installed. Note, the InfluxDB Python library is only supports up
@@ -323,17 +236,17 @@ class InfluxDBBackend(GenericBackend):
 
     https://github.com/influxdata/influxdb-python
     https://docs.influxdata.com/influxdb
-    '''
+    """
 
-    _backend = 'influxdb'
+    _backend = "influxdb"
     _conn = None
 
     def __init__(self):
-        ''''''
+        """"""
         super(InfluxDBBackend, self).__init__()
 
     def connect(self, **kwargs):
-        ''' Connect to an InfluxDB instance
+        """Connect to an InfluxDB instance
 
         Connects to an InfluxDB instance and switches to a given database.
         If the database doesn't exist it is created first via :func:`create`.
@@ -364,22 +277,22 @@ class InfluxDBBackend(GenericBackend):
           The database name for the connection. Passed as either
           the config key **database.dbname** or the kwargs argument
           **database**. Defaults to **ait**.
-        '''
-        host = kwargs.get('host', ait.config.get('database.host', 'localhost'))
-        port = kwargs.get('port', ait.config.get('database.port', 8086))
-        un = kwargs.get('un', ait.config.get('database.un', 'root'))
-        pw = kwargs.get('pw', ait.config.get('database.pw', 'root'))
-        dbname = kwargs.get('database', ait.config.get('database.dbname', 'ait'))
+        """
+        host = kwargs.get("host", ait.config.get("database.host", "localhost"))
+        port = kwargs.get("port", ait.config.get("database.port", 8086))
+        un = kwargs.get("un", ait.config.get("database.un", "root"))
+        pw = kwargs.get("pw", ait.config.get("database.pw", "root"))
+        dbname = kwargs.get("database", ait.config.get("database.dbname", "ait"))
 
         self._conn = self._backend.InfluxDBClient(host, port, un, pw)
 
-        if dbname not in [v['name'] for v in self._conn.get_list_database()]:
+        if dbname not in [v["name"] for v in self._conn.get_list_database()]:
             self.create(database=dbname)
 
         self._conn.switch_database(dbname)
 
     def create(self, **kwargs):
-        ''' Create a database in a connected InfluxDB instance
+        """Create a database in a connected InfluxDB instance
 
         **Configuration Parameters**
 
@@ -391,17 +304,19 @@ class InfluxDBBackend(GenericBackend):
         Raises:
             AttributeError:
                 If a connection to the database doesn't exist
-        '''
-        dbname = ait.config.get('database.dbname', kwargs.get('database', 'ait'))
+        """
+        dbname = ait.config.get("database.dbname", kwargs.get("database", "ait"))
 
         if self._conn is None:
-            raise AttributeError('Unable to create database. No connection to database exists.')
+            raise AttributeError(
+                "Unable to create database. No connection to database exists."
+            )
 
         self._conn.create_database(dbname)
         self._conn.switch_database(dbname)
 
     def insert(self, packet, time=None, **kwargs):
-        ''' Insert a packet into the database
+        """Insert a packet into the database
 
         Arguments
             packet
@@ -418,7 +333,7 @@ class InfluxDBBackend(GenericBackend):
                 Optional kwargs argument for specifying a dictionary of tags to
                 include when adding the values. Defaults to nothing.
 
-        '''
+        """
         fields = {}
         pd = packet._defn
 
@@ -432,28 +347,24 @@ class InfluxDBBackend(GenericBackend):
                 fields[defn.name] = val
 
         if len(fields) == 0:
-            log.error('No fields present to insert into Influx')
+            log.error("No fields present to insert into Influx")
             return
 
-        tags = kwargs.get('tags', {})
+        tags = kwargs.get("tags", {})
 
         if isinstance(time, dt.datetime):
             # time = time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             time = time.strftime(dmc.RFC3339_Format)
 
-        data = {
-            'measurement': pd.name,
-            'tags': tags,
-            'fields': fields
-        }
+        data = {"measurement": pd.name, "tags": tags, "fields": fields}
 
         if time:
-            data['time'] = time
+            data["time"] = time
 
         self._conn.write_points([data])
 
     def _query(self, query, **kwargs):
-        '''Query the database and return results
+        """Query the database and return results
 
         Queries the Influx instance and returns a ResultSet of values. For
         API documentation for InfluxDB-Python check out the project
@@ -462,11 +373,11 @@ class InfluxDBBackend(GenericBackend):
         Arguments
             query
                 The query string to send to the database
-        '''
+        """
         return self._conn.query(query, **kwargs)
 
     def query(self, query, **kwargs):
-        '''Query the database and return results
+        """Query the database and return results
 
         Queries the Influx instance and returns a ResultSet of values. For
         API documentation for InfluxDB-Python check out the project
@@ -479,16 +390,16 @@ class InfluxDBBackend(GenericBackend):
         Returns:
             An :class:`AITDBResult` with the database query results set in
             **results** or errors recorded in **errors**.
-        '''
+        """
         try:
             db_res = self._query(query)
             return AITDBResult(query=query, results=db_res)
         except self._backend.exceptions.InfluxDBClientError as e:
-            log.error(f'query_time_range failed with exception: {e}')
+            log.error(f"query_time_range failed with exception: {e}")
             return AITDBResult(query=query, errors=[str(e)])
 
     def query_packets(self, packets=None, start_time=None, end_time=None, **kwargs):
-        '''Query the database for packet types over a time range.
+        """Query the database for packet types over a time range.
 
         Query the database for packet types over a time range. By default, all packet
         types will be queried from the start of the GPS time epoch to current time.
@@ -527,7 +438,7 @@ class InfluxDBBackend(GenericBackend):
         Raises:
             ValueError: If a provided packet type name cannot be located in the
                 telemetry dictionary.
-        '''
+        """
         if packets is not None:
             tlm_dict = tlm.getDefaultDict()
             for name in packets:
@@ -535,9 +446,9 @@ class InfluxDBBackend(GenericBackend):
                     msg = f'Invalid packet name "{name}" provided'
                     log.error(msg)
                     raise ValueError(msg)
-            pkt_names = ', '.join(packets)
+            pkt_names = ", ".join(packets)
         else:
-            pkt_names = ', '.join([f'"{i}"' for i in tlm.getDefaultDict().keys()])
+            pkt_names = ", ".join([f'"{i}"' for i in tlm.getDefaultDict().keys()])
 
         if start_time is not None:
             stime = start_time.strftime(dmc.RFC3339_Format)
@@ -549,14 +460,14 @@ class InfluxDBBackend(GenericBackend):
         else:
             etime = dt.datetime.utcnow().strftime(dmc.RFC3339_Format)
 
-        yield_packet_time = kwargs.pop('yield_packet_time', False)
+        yield_packet_time = kwargs.pop("yield_packet_time", False)
 
         query_string = f"SELECT * FROM \"{pkt_names}\" WHERE time >= '{stime}' AND time <= '{etime}'"
 
         try:
             db_res = self._query(query_string, **kwargs)
         except self._backend.exceptions.InfluxDBClientError as e:
-            log.error(f'query_time_range failed with exception: {e}')
+            log.error(f"query_time_range failed with exception: {e}")
             return AITDBResult(query=query_string, errors=[str(e)])
 
         def influx_results_gen(db_res, **kwargs):
@@ -570,8 +481,8 @@ class InfluxDBBackend(GenericBackend):
                 pkt_conv = [
                     (
                         # strptime throws away timezone, so re-enforce UTC
-                        dmc.rfc3339StrToDatetime(d['time']),
-                        InfluxDBBackend.create_packet_from_result(pkt_names[i], d)
+                        dmc.rfc3339_str_to_datetime(d["time"]),
+                        InfluxDBBackend.create_packet_from_result(pkt_names[i], d),
                     )
                     for i, d in enumerate(packets)
                     if d is not None
@@ -586,23 +497,21 @@ class InfluxDBBackend(GenericBackend):
                         yield pkt
 
         return AITDBResult(
-            query=query_string,
-            packets=influx_results_gen(db_res, **kwargs)
+            query=query_string, packets=influx_results_gen(db_res, **kwargs)
         )
 
-
     def close(self, **kwargs):
-        ''' Close the database connection '''
+        """Close the database connection"""
         if self._conn:
             self._conn.close()
 
-    @ait.deprecated(
-        'create_packets_from_results has been deprecated. Near equivalent functionality '
-        'is available in create_packet_from_result.'
+    @ait.deprecated(  # type: ignore
+        "create_packets_from_results has been deprecated. Near equivalent functionality "
+        "is available in create_packet_from_result."
     )
     @classmethod
-    def create_packets_from_results(self, packet_name, result_set):
-        ''' Generate AIT Packets from a InfluxDB query ResultSet
+    def create_packets_from_results(cls, packet_name, result_set):
+        """Generate AIT Packets from a InfluxDB query ResultSet
 
         Extract Influx DB query results into one packet per result entry. This
         assumes that telemetry data was inserted in the format generated by
@@ -622,11 +531,13 @@ class InfluxDBBackend(GenericBackend):
             A list of packets extracted from the ResultSet object or None if
             an invalid packet name is supplied.
 
-        '''
+        """
         try:
-            pkt_defn = tlm.getDefaultDict()[packet_name]
+            tlm.getDefaultDict()[packet_name]
         except KeyError:
-            log.error('Unknown packet name {} Unable to unpack ResultSet'.format(packet_name))
+            log.error(
+                "Unknown packet name {} Unable to unpack ResultSet".format(packet_name)
+            )
             return None
 
         return [
@@ -635,8 +546,8 @@ class InfluxDBBackend(GenericBackend):
         ]
 
     @classmethod
-    def create_packet_from_result(self, packet_id, result):
-        '''Create an AIT Packet from an InfluxDB query ResultSet item
+    def create_packet_from_result(cls, packet_id, result):
+        """Create an AIT Packet from an InfluxDB query ResultSet item
 
         Extract Influx DB query results entry into an AIT packet. This
         assumes that telemetry data was inserted in the format generated by
@@ -644,6 +555,9 @@ class InfluxDBBackend(GenericBackend):
         evaluated if they can be properly encoded from the raw value in the
         query result. If there is no opcode / EVR-code for a particular raw
         value the value is skipped (and thus defaulted to 0).
+
+        TODO: Reevaluate this assumption that missing opcodes / EVR-codes should be
+        left as 0 if a match isn't found in the dictionary.
 
         Arguments
             packet_id (string or PacketDefinition)
@@ -660,17 +574,17 @@ class InfluxDBBackend(GenericBackend):
             A :class:`ait.core.tlm.Packet` with values initialized from the values in the
             ResultSet entry. If a field cannot be located in the result entry it will left
             as the default value in the Packet or set to None if it's a CMD / EVR type.
-        '''
+        """
         if isinstance(packet_id, str):
             try:
                 pkt_defn = tlm.getDefaultDict()[packet_id]
             except KeyError:
-                log.error(f'Unknown packet name {packet_id} Unable to unpack ResultSet')
+                log.error(f"Unknown packet name {packet_id} Unable to unpack ResultSet")
                 return None
         elif isinstance(packet_id, tlm.PacketDefinition):
             pkt_defn = packet_id
         else:
-            log.error(f'Unknown packet id type {packet_id}. Unable to unpack ResultSet')
+            log.error(f"Unknown packet id type {packet_id}. Unable to unpack ResultSet")
             return None
 
         new_pkt = tlm.Packet(pkt_defn)
@@ -679,49 +593,54 @@ class InfluxDBBackend(GenericBackend):
 
         for f, f_defn in pkt_defn.fieldmap.items():
             field_type_name = f_defn.type.name
-            if field_type_name == 'CMD16':
+            if field_type_name == "CMD16":
                 if cmd_dict.opcodes.get(result[f], None):
                     cmd_def = cmd_dict.opcodes.get(result[f])
                     setattr(new_pkt, f, cmd_def.name)
-            elif field_type_name == 'EVR16':
+            elif field_type_name == "EVR16":
                 if evr_dict.codes.get(result[f], None):
                     evr_def = evr_dict.codes.get(result[f])
                     setattr(new_pkt, f, evr_def.name)
-            elif field_type_name == 'TIME8':
+            elif field_type_name == "TIME8":
                 setattr(new_pkt, f, result[f] / 256.0)
-            elif field_type_name == 'TIME32':
+            elif field_type_name == "TIME32":
                 new_val = dmc.GPS_Epoch + dt.timedelta(seconds=result[f])
                 setattr(new_pkt, f, new_val)
-            elif field_type_name == 'TIME40':
+            elif field_type_name == "TIME40":
                 sec = int(result[f])
                 microsec = result[f] % 1 * 1e6
-                new_val = dmc.GPS_Epoch + dt.timedelta(seconds=sec, microseconds=microsec)
+                new_val = dmc.GPS_Epoch + dt.timedelta(
+                    seconds=sec, microseconds=microsec
+                )
                 setattr(new_pkt, f, new_val)
-            elif field_type_name == 'TIME64':
+            elif field_type_name == "TIME64":
                 sec = int(result[f])
                 microsec = result[f] % 1 * 1e6
-                new_val = dmc.GPS_Epoch + dt.timedelta(seconds=sec, microseconds=microsec)
+                new_val = dmc.GPS_Epoch + dt.timedelta(
+                    seconds=sec, microseconds=microsec
+                )
                 setattr(new_pkt, f, new_val)
             else:
                 try:
                     setattr(new_pkt, f, result[f])
                 except KeyError:
-                    log.info('Field not found in query results {} Skipping ...'.format(f))
-
+                    log.info(
+                        "Field not found in query results {} Skipping ...".format(f)
+                    )
 
         return new_pkt
 
 
 class SQLiteBackend(GenericBackend):
-    _backend = 'sqlite3'
+    _backend = "sqlite3"
     _conn = None
 
     def __init__(self):
-        ''''''
+        """"""
         super(SQLiteBackend, self).__init__()
 
     def connect(self, **kwargs):
-        ''' Connect to a SQLite instance
+        """Connect to a SQLite instance
         If the database doesn't exist it is created first via :func:`create`.
 
         **Configuration Parameters**
@@ -730,9 +649,9 @@ class SQLiteBackend(GenericBackend):
           The database name of file to "connect" to. Passed as either
           the config key **database.dbname** or the kwargs argument
           **database**. Defaults to **ait.db**.
-        '''
+        """
 
-        dbname = kwargs.get('database', ait.config.get('database.dbname', 'ait.db'))
+        dbname = kwargs.get("database", ait.config.get("database.dbname", "ait.db"))
         db_exists = os.path.isfile(dbname)
 
         self._conn = self._backend.connect(dbname)
@@ -740,48 +659,51 @@ class SQLiteBackend(GenericBackend):
             self.create()
 
     def create(self, **kwargs):
-        ''' Create packet tables in the connected database
+        """Create packet tables in the connected database
 
         **Configuration Parameters**
 
         tlmdict
             The :class:`ait.core.tlm.TlmDict` instance to use. Defaults to
             the currently configured telemetry dictionary.
-        '''
-        tlmdict = kwargs.get('tlmdict', tlm.getDefaultDict())
-        for name, defn in tlmdict.items():
+        """
+        tlmdict = kwargs.get("tlmdict", tlm.getDefaultDict())
+        for _name, defn in tlmdict.items():
             self._create_table(defn)
 
     def _create_table(self, packet_defn):
-        ''' Creates a database table for the given PacketDefinition
+        """Creates a database table for the given PacketDefinition
         Automatically adds a self-filling time column
 
         Arguments
             packet_defn
                 The :class:`ait.core.tlm.PacketDefinition` instance for which a table entry
                 should be made.
-        '''
-        time_def = 'time DATETIME DEFAULT(STRFTIME(\'%Y-%m-%dT%H:%M:%fZ\', \'NOW\')), '
-        sql  = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (packet_defn.name, time_def + 'PKTDATA BLOB NOT NULL')
+        """
+        time_def = "time DATETIME DEFAULT(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'NOW')), "
+        sql = 'CREATE TABLE IF NOT EXISTS "%s" (%s)' % (
+            packet_defn.name,
+            time_def + "PKTDATA BLOB NOT NULL",
+        )
 
         self._conn.execute(sql)
         self._conn.commit()
 
     def insert(self, packet, **kwargs):
-        ''' Insert a packet into the database
+        """Insert a packet into the database
 
         Arguments
             packet
                 The :class:`ait.core.tlm.Packet` instance to insert into
                 the database
 
-        '''
+        """
         sql = f'INSERT INTO "{packet._defn.name}" (PKTDATA) VALUES (?)'
         self._conn.execute(sql, (sqlite3.Binary(packet._data),))
         self._conn.commit()
 
     def _query(self, query, **kwargs):
-        ''' Query the database and return results
+        """Query the database and return results
 
         Queries the SQLite instance and returns raw results.
 
@@ -795,11 +717,11 @@ class SQLiteBackend(GenericBackend):
         Raises:
             Any sqlite3.OperationalError or other sqlite-specific exceptions
             raised from the driver during execution of the query.
-        '''
+        """
         return self._conn.execute(query)
 
     def query(self, query, **kwargs):
-        '''Query the database and return results
+        """Query the database and return results
 
         Queries the SQLite instance and returns the raw results object.
         API documentation for Python's SQLite3 interface provides format
@@ -812,16 +734,16 @@ class SQLiteBackend(GenericBackend):
         Returns:
             An :class:`AITDBResult` with the database query results set in
             **results** or errors recorded in **errors**.
-        '''
+        """
         try:
             results = self._query(query, **kwargs)
             return AITDBResult(query=query, results=results)
         except self._backend.OperationalError as e:
-            log.error(f'query_time_range failed with exception: {e}')
+            log.error(f"query_time_range failed with exception: {e}")
             return AITDBResult(query=query, errors=[str(e)])
 
     def query_packets(self, packets=None, start_time=None, end_time=None, **kwargs):
-        '''Query the database for packet types over a time range.
+        """Query the database for packet types over a time range.
 
         Query the database for packet types over a time range. By default, all packet
         types will be queried from the start of the GPS time epoch to current time.
@@ -863,7 +785,7 @@ class SQLiteBackend(GenericBackend):
         Raises:
             ValueError: If a provided packet type name cannot be located in the
                 telemetry dictionary.
-        '''
+        """
         if packets is not None:
             tlm_dict = tlm.getDefaultDict()
             for name in packets:
@@ -886,7 +808,7 @@ class SQLiteBackend(GenericBackend):
         else:
             etime = dt.datetime.utcnow().strftime(dmc.RFC3339_Format)
 
-        yield_packet_time = kwargs.pop('yield_packet_time', False)
+        yield_packet_time = kwargs.pop("yield_packet_time", False)
 
         results = []
         errs = []
@@ -898,19 +820,20 @@ class SQLiteBackend(GenericBackend):
             try:
                 results.append((pkt, self._query(query_string)))
             except self._backend.OperationalError as e:
-                log.error(f'query_time_range failed with exception: {e}')
+                log.error(f"query_time_range failed with exception: {e}")
                 errs.append(str(e))
-
 
         def sqlite_results_gen(results, **kwargs):
             from ait.core import dmc
 
-            for packets in itertools.zip_longest(*[r[1] for r in results], fillvalue=None):
+            for packets in itertools.zip_longest(
+                *[r[1] for r in results], fillvalue=None
+            ):
                 pkt_conv = [
                     (
                         # strptime throws away timezone, so re-enforce UTC
-                        dmc.rfc3339StrToDatetime(d[0]),
-                        SQLiteBackend.create_packet_from_result(results[i][0], d[1])
+                        dmc.rfc3339_str_to_datetime(d[0]),
+                        SQLiteBackend.create_packet_from_result(results[i][0], d[1]),
                     )
                     for i, d in enumerate(packets)
                     if d is not None
@@ -925,23 +848,26 @@ class SQLiteBackend(GenericBackend):
                         yield pkt
 
         return AITDBResult(
-            query='; '.join(query),
+            query="; ".join(query),
             packets=sqlite_results_gen(results, **kwargs),
-            errors=errs if len(errs) > 0 else None
+            errors=errs if len(errs) > 0 else None,
         )
 
     def close(self, **kwargs):
-        ''' Close the database connection. '''
+        """Close the database connection."""
         if self._conn:
             self._conn.close()
 
     @classmethod
-    def create_packet_from_result(self, packet_name, data):
+    def create_packet_from_result(cls, packet_name, data):
         try:
             pkt_defn = tlm.getDefaultDict()[packet_name]
         except KeyError:
-            log.error('Unknown packet name {}. Unable to unpack SQLite result'.format(packet_name))
+            log.error(
+                "Unknown packet name {}. Unable to unpack SQLite result".format(
+                    packet_name
+                )
+            )
             return None
 
-        pkt = tlm.Packet(pkt_defn)
         return tlm.Packet(pkt_defn, data=data)

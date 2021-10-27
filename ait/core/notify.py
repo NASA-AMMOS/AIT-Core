@@ -20,9 +20,9 @@ from ait.core import log
 
 
 def trigger_notification(trigger, msg):
-    ''''''
-    email_triggers = ait.config.get('notifications.email.triggers', [])
-    text_triggers = ait.config.get('notifications.text.triggers', [])
+    """"""
+    email_triggers = ait.config.get("notifications.email.triggers", [])
+    text_triggers = ait.config.get("notifications.text.triggers", [])
 
     if trigger in email_triggers:
         send_email_alert(msg)
@@ -30,52 +30,55 @@ def trigger_notification(trigger, msg):
     if trigger in text_triggers:
         send_text_alert(msg)
 
+
 def send_email_alert(msg, recipients=None):
-    ''''''
+    """"""
     if not recipients:
-        recipients = ait.config.get('notifications.email.recipients', [])
+        recipients = ait.config.get("notifications.email.recipients", [])
 
     _send_email(msg, recipients)
+
 
 def send_text_alert(msg, recipients=None):
-    ''''''
+    """"""
     if not recipients:
-        recipients = ait.config.get('notifications.text.recipients', [])
+        recipients = ait.config.get("notifications.text.recipients", [])
 
     _send_email(msg, recipients)
 
+
 def _send_email(message, recipients):
-    ''''''
+    """"""
     if type(recipients) != list:
         recipients = [recipients]
 
     if len(recipients) == 0 or any([i is None for i in recipients]):
         m = (
-            'Email recipient list error. Unable to send email. '
-            'Recipient list length: {} Recipients: {}'
-        ).format(len(recipients), ', '.join(recipients))
+            "Email recipient list error. Unable to send email. "
+            "Recipient list length: {} Recipients: {}"
+        ).format(len(recipients), ", ".join(recipients))
         log.error(m)
         return
 
-    server = ait.config.get('notifications.smtp.server', None)
-    port = ait.config.get('notifications.smtp.port', None)
-    un = ait.config.get('notifications.smtp.username', None)
-    pw = ait.config.get('notifications.smtp.password', None)
+    server = ait.config.get("notifications.smtp.server", None)
+    port = ait.config.get("notifications.smtp.port", None)
+    un = ait.config.get("notifications.smtp.username", None)
+    pw = ait.config.get("notifications.smtp.password", None)
 
     # if server is None or port is None or un is None or pw is None:
     if server is None or port is None:
-        log.error('Email SMTP connection parameter error. Please check config.')
+        log.error("Email SMTP connection parameter error. Please check config.")
         return
 
-    subject = ait.config.get('notifications.smtp.subject', 'AIT Notification')
+    subject = ait.config.get("notifications.smtp.subject", "AIT Notification")
 
     # From address must have a valid @server, otherwise texts will not works
-    fromaddr = ait.config.get('notifications.smtp.from', 'ait-notify@%s' % server)
+    fromaddr = ait.config.get("notifications.smtp.from", "ait-notify@%s" % server)
 
     msg = MIMEText(message)
-    msg['Subject'] = subject
-    msg['To'] = ', '.join(recipients)
-    msg['From'] = fromaddr
+    msg["Subject"] = subject
+    msg["To"] = ", ".join(recipients)
+    msg["From"] = fromaddr
 
     try:
         if un is None or pw is None:
@@ -88,7 +91,7 @@ def _send_email(message, recipients):
             s.login(un, pw)
             s.sendmail(fromaddr, recipients, msg.as_string())
             s.quit()
-        log.info('Email notification sent')
+        log.info("Email notification sent")
     except smtplib.SMTPException as e:
-        log.error('Failed to send email notification.')
+        log.error("Failed to send email notification.")
         log.error(e)

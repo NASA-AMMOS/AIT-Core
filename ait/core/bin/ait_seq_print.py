@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 usage: ait-seq-print ait_seq_SSS_NNN_desc.bin
 
 Prints the given binary relative time command sequence to standard
@@ -23,7 +23,7 @@ output as text.
 Examples:
 
   $ ait-seq-print seq/ait_seq_gps_001_reset.bin
-'''
+"""
 
 import os
 import argparse
@@ -35,37 +35,36 @@ def main():
     log.begin()
 
     parser = argparse.ArgumentParser(
-        description = __doc__,
-        formatter_class = argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     # Add required command line argument
-    parser.add_argument('filename',
-        nargs='+',
-        metavar='</path/to/seq>',
-        help='encoded sequence file(s)')
+    parser.add_argument(
+        "filename", nargs="+", metavar="</path/to/seq>", help="encoded sequence file(s)"
+    )
 
     # Get command line arguments
     args = parser.parse_args()
     for fname in args.filename:
-        filename  = os.path.abspath(fname)
+        filename = os.path.abspath(fname)
         if not os.path.isfile(filename):
-            raise Exception('File not found: %s ' % filename)
+            raise Exception("File not found: %s " % filename)
 
         extension = os.path.splitext(filename)[1]
 
-        if extension.lower() != '.bin':
+        if extension.lower() != ".bin":
             log.warn("Filename '%s' does not have a '.bin' extension", filename)
 
         # Parse the filename for the applicable information
-        parts = os.path.basename(filename).split('_')
-        desc = os.path.splitext(parts[-1])[0]
+        parts = os.path.basename(filename).split("_")
         seqid = parts[-2]
-        subsys = parts[-3]
 
         try:
             int(seqid)
         except ValueError:
-            raise Exception('Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__))
+            raise Exception(
+                'Invalid filename "%s": . %s' % (os.path.basename(filename), __doc__)
+            )
 
     sequence = seq.createSeq(filename, id=seqid)
 
@@ -78,5 +77,5 @@ def main():
     log.end()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

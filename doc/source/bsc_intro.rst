@@ -35,7 +35,7 @@ The ``manager_server`` settings are used to control where the RESTful endpoint w
 Handler Configuration
 ---------------------
 
-The handler configuration section allows you to set up one or more handlers to be run when BSC is initialized. 
+The handler configuration section allows you to set up one or more handlers to be run when BSC is initialized.
 
 .. code-block:: yaml
 
@@ -51,11 +51,11 @@ The handler configuration section allows you to set up one or more handlers to b
 
 You only need to provide a few of the available configuration options and BSC will handle the remaining options.
 
-name: 
+name:
     A unique name for the capture handler.
 
 conn_type:
-    The type of connection that the handler should make to the specified address. This can be one of **udp**, **tcp**, or **ethernet** for reading raw ethernet frames. 
+    The type of connection that the handler should make to the specified address. This can be one of **udp**, **tcp**, or **ethernet** for reading raw ethernet frames.
 
 address:
     The address to which the handler should attempt to connect and monitor. The value for *conn_type* affects the format that you'll specify here. For a **upd** handler the address will be of the form ``['', <port number]``. For a **tcp** handler the address will be of the form ``[<host>, <port>]``. For an **ethernet** handler the address will be of the form ``[<ethernet interface name>, <protocol number]``.
@@ -92,7 +92,7 @@ REST API
 The BSC service provides REST services for starting, stopping, and manipulating capture handlers.
 
 .. http:get:: /
-   
+
    Returns a JSON object containing the configuration information for all active capture handlers. The configuration is grouped by address.
 
    **Example Request**:

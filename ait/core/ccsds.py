@@ -34,15 +34,15 @@ class CcsdsDefinition(json.SlotSerializer, object):
     block within a YAML ``!Command`` or ``!Packet`` definition.
     """
 
-    __slots__ = 'version', 'type', 'secondary', 'apid', 'seqflags', 'length'
+    __slots__ = "version", "type", "secondary", "apid", "seqflags", "length"
 
     def __init__(self, *args, **kwargs):
-        self.version   = kwargs.get('version'  , 0)
-        self.type      = kwargs.get('type'     , 0)
-        self.secondary = kwargs.get('secondary', None)
-        self.apid      = kwargs.get('apid'     , 0)
-        self.seqflags  = kwargs.get('seqflags' , 3)  # No segmentation
-        self.length    = kwargs.get('length'   , 0)
+        self.version = kwargs.get("version", 0)
+        self.type = kwargs.get("type", 0)
+        self.secondary = kwargs.get("secondary", None)
+        self.apid = kwargs.get("apid", 0)
+        self.seqflags = kwargs.get("seqflags", 3)  # No segmentation
+        self.length = kwargs.get("length", 0)
 
     def __repr__(self):
         return util.toRepr(self)
@@ -67,56 +67,29 @@ class CcsdsHeader(tlm.Packet):
     # a particular type of packet.
 
     Definition = tlm.PacketDefinition(
-        name   = 'CCSDS_Header',
-        fields = [
+        name="CCSDS_Header",
+        fields=[
+            tlm.FieldDefinition(name="version", bytes=0, type="U8", mask=0xE0),
+            tlm.FieldDefinition(name="type", bytes=0, type="U8", mask=0x10),
+            tlm.FieldDefinition(name="shflag", bytes=0, type="U8", mask=0x08),
+            tlm.FieldDefinition(name="apid", bytes=[0, 1], type="MSB_U16", mask=0x07FF),
             tlm.FieldDefinition(
-                name  = 'version',
-                bytes = 0,
-                type  = 'U8',
-                mask  = 0xE0
+                name="seqflags",
+                bytes=2,
+                type="U8",
+                mask=0xC0,
+                enum={
+                    0: "Continuation Segment",
+                    1: "First Segment",
+                    2: "Last Segment",
+                    3: "Unsegmented",
+                },
             ),
             tlm.FieldDefinition(
-                name  = 'type',
-                bytes = 0,
-                type  = 'U8',
-                mask  = 0x10
+                name="seqcount", bytes=[2, 3], type="MSB_U16", mask=0x3FFF
             ),
-            tlm.FieldDefinition(
-                name  = 'shflag',
-                bytes = 0,
-                type  = 'U8',
-                mask  = 0x08
-            ),
-            tlm.FieldDefinition(
-                name  = 'apid',
-                bytes = [0, 1],
-                type  = 'MSB_U16',
-                mask  = 0x07FF
-            ),
-            tlm.FieldDefinition(
-                name  = 'seqflags',
-                bytes = 2,
-                type  = 'U8',
-                mask  = 0xC0,
-                enum  = {
-                    0: 'Continuation Segment',
-                    1: 'First Segment',
-                    2: 'Last Segment',
-                    3: 'Unsegmented',
-                }
-            ),
-            tlm.FieldDefinition(
-                name  = 'seqcount',
-                bytes = [2, 3],
-                type  = 'MSB_U16',
-                mask  = 0x3FFF
-            ),
-            tlm.FieldDefinition(
-                name  = 'length',
-                bytes = [4, 5],
-                type  = 'MSB_U16'
-            )
-        ]
+            tlm.FieldDefinition(name="length", bytes=[4, 5], type="MSB_U16"),
+        ],
     )
 
     def __init__(self, data=None):

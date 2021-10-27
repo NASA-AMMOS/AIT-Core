@@ -1,6 +1,4 @@
-import sys
-
-from .broker import *
-from .server import *
-from .plugin import Plugin
-from .handler import Handler
+from .broker import *  # noqa
+from .server import *  # noqa
+from .plugin import Plugin  # noqa
+from .handler import Handler  # noqa

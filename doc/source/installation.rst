@@ -55,7 +55,7 @@ library so you can limit raw socket access on machines to specific users. **Raws
 is not needed for BSC to function, however if you need this additional functionality
 you will have to manually install the dependency with:
 
-.. code-block:: bash 
+.. code-block:: bash
 
     $ pip install rawsocket
 
@@ -64,7 +64,7 @@ Environment Configuration
 
 AIT uses two environment variables for configuration.
 
-**AIT_ROOT** is used for project wide pathing. If you don't set this AIT will attempt to do a good job of it for you. If you want to be safe you should set it to the project root where you checked out the code.  
+**AIT_ROOT** is used for project wide pathing. If you don't set this AIT will attempt to do a good job of it for you. If you want to be safe you should set it to the project root where you checked out the code.
 
 **AIT_CONFIG** is used for locating the project's YAML configuration file. This environment variable should contain a full path to a valid **config.yaml** file. If you don't set this AIT will fail to initialize properly and will notify you that your configuration is invalid. If you wanted to set this to some example configuration that comes packaged with AIT you could set this to:
 
@@ -76,7 +76,7 @@ We recommend that you set this in your **postactivate** file from **virtualenvwr
 
 .. code-block:: bash
 
-   if [ $VIRTUAL_ENV == "$HOME/.virtualenvs/ait" ] 
+   if [ $VIRTUAL_ENV == "$HOME/.virtualenvs/ait" ]
    then
       export AIT_ROOT=/path/to/ait-core
       export AIT_CONFIG=/path/to/ait-core/config/config.yaml

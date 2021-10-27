@@ -69,42 +69,46 @@ import yaml
 from io import IOBase
 
 import ait
-from ait.core import json, tlm, util
+from ait.core import json, util
 
-class Thresholds (json.SlotSerializer, object):
-    def __init__ (self, **kwargs):
+
+class Thresholds(json.SlotSerializer, object):
+    def __init__(self, **kwargs):
         self._thresholds = kwargs
 
-
-    def __getattr__ (self, name):
+    def __getattr__(self, name):
         if name in self._thresholds:
             return self._thresholds[name]
         else:
             raise AttributeError("Limit has no such threshold '%s'" % name)
 
-
-    def __getstate__ (self):
+    def __getstate__(self):
         return self.__dict__
 
+    def __repr__(self):
+        kwargs = ["%s=%s" % item for item in self._thresholds.items()]
+        return "Thresholds(%s)" % ", ".join(kwargs)
 
-    def __repr__ (self):
-        kwargs = [ '%s=%s' % item for item in self._thresholds.items() ]
-        return 'Thresholds(%s)' % ', '.join(kwargs)
-
-
-    def __setstate__ (self, state):
+    def __setstate__(self, state):
         self.__dict__ = state
 
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self._thresholds
 
 
-
-class LimitDefinition (json.SlotSerializer, object):
+class LimitDefinition(json.SlotSerializer, object):
     """LimitDefinition"""
 
-    __slots__ = [ 'desc', 'lower', 'source', 'units', 'upper', 'value',
-                    'when', 'persist' ]
+    __slots__ = [
+        "desc",
+        "lower",
+        "source",
+        "units",
+        "upper",
+        "value",
+        "when",
+        "persist",
+    ]
 
     def __init__(self, *args, **kwargs):
         """Creates a new LimitDefinition."""
@@ -112,7 +116,7 @@ class LimitDefinition (json.SlotSerializer, object):
             name = slot[1:] if slot.startswith("_") else slot
             setattr(self, name, kwargs.get(name, None))
 
-        for name in 'lower', 'upper', 'value':
+        for name in "lower", "upper", "value":
             thresholds = getattr(self, name)
 
             if type(thresholds) is dict:
@@ -121,18 +125,18 @@ class LimitDefinition (json.SlotSerializer, object):
     def __repr__(self):
         return util.toRepr(self)
 
-    def error (self, value, units=None):
+    def error(self, value, units=None):
         if self.units and self.units != units:
             value = self.convert(value, units, self.units)
 
         check = False
-        if self.lower and hasattr(self.lower, 'error'):
+        if self.lower and hasattr(self.lower, "error"):
             check = check or value < self.lower.error
 
-        if self.upper and hasattr(self.upper, 'error'):
+        if self.upper and hasattr(self.upper, "error"):
             check = check or value > self.upper.error
 
-        if self.value and hasattr(self.value, 'error'):
+        if self.value and hasattr(self.value, "error"):
             if isinstance(self.value.error, list):
                 check = check or value in self.value.error
             else:
@@ -140,18 +144,18 @@ class LimitDefinition (json.SlotSerializer, object):
 
         return check
 
-    def warn (self, value, units=None):
+    def warn(self, value, units=None):
         if self.units and self.units != units:
             value = self.convert(value, units, self.units)
 
         check = False
-        if self.lower and hasattr(self.lower, 'warn'):
+        if self.lower and hasattr(self.lower, "warn"):
             check = check or value < self.lower.warn
 
-        if self.upper and hasattr(self.upper, 'warn'):
+        if self.upper and hasattr(self.upper, "warn"):
             check = check or value > self.upper.warn
 
-        if self.value and hasattr(self.value, 'warn'):
+        if self.value and hasattr(self.value, "warn"):
             if isinstance(self.value.warn, list):
                 check = check or value in self.value.warn
             else:
@@ -164,8 +168,8 @@ class LimitDefinition (json.SlotSerializer, object):
 
 
 class LimitsDict(dict):
-    """LimitsDict
-    """
+    """LimitsDict"""
+
     def __init__(self, *args, **kwargs):
         """Creates a new Limits Dictionary from the given limits
         dictionary filename or YAML string.
@@ -193,10 +197,10 @@ class LimitsDict(dict):
         if self.filename is None:
             if os.path.isfile(content):
                 self.filename = content
-                stream        = open(self.filename, 'rb')
+                stream = open(self.filename, "rb")
             else:
-                stream        = content
-            
+                stream = content
+
             limits = yaml.load(stream, Loader=yaml.Loader)
 
             for lmt in limits:
@@ -205,27 +209,27 @@ class LimitsDict(dict):
             if isinstance(stream, IOBase):
                 stream.close()
 
-    def toJSON(self):
-        return { name: defn.toJSON() for name, defn in self.items() }
+    def toJSON(self):  # noqa
+        return {name: defn.toJSON() for name, defn in self.items()}
 
 
-def getDefaultDict(reload=False):
-    return util.getDefaultDict(__name__, 'limits', LimitsDict, reload)
+def getDefaultDict(reload=False):  # noqa
+    return util.getDefaultDict(__name__, "limits", LimitsDict, reload)
 
 
-def getDefaultSchema():
-    return pkg_resources.resource_filename('ait.core', 'data/limits_schema.json')
+def getDefaultSchema():  # noqa
+    return pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
 
 
-def getDefaultDictFilename():
+def getDefaultDictFilename():  # noqa
     return ait.config.limits.filename
 
 
-def YAMLCtor_LimitDefinition(loader, node):
+def YAMLCtor_LimitDefinition(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
-    return createLimitDefinition(**fields)
+    return createLimitDefinition(**fields)  # noqa
 
 
-yaml.add_constructor('!Limit', YAMLCtor_LimitDefinition)
+yaml.add_constructor("!Limit", YAMLCtor_LimitDefinition)
 
 util.__init_extensions__(__name__, globals())

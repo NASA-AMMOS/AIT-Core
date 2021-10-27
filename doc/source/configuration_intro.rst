@@ -156,4 +156,3 @@ YAML Idiosyncrasies
 -------------------
 
 While YAML is generally very user-friendly, every tool has its rough edges. The AIT team has done its best to help you avoid these where possible. However, it may still be worth investigating potential roadblocks as you use YAML more. There is an excellent resource that the developers at SaltStack have put together on `YAML idosyncrasies <https://docs.saltstack.com/en/latest/topics/troubleshooting/yaml_idiosyncrasies.html>`_ that is worth reading. It should help you avoid any potential problems in your YAML configuration.
-

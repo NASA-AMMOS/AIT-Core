@@ -14,9 +14,9 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Provides a command line script for running pcap library functions.
-'''
+"""
 
 import argparse
 import datetime
@@ -24,57 +24,57 @@ import os
 
 from ait.core import dmc, log, pcap, util
 
+
 def main():
     ap = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     arguments = {
-        '--query': {
-            'action'  : 'store_true',
-            'help'    : ('Creates a new file containing the data from one or '
-                         'more given pcap files in a given time range. If no '
-                         'output file name is given, the new file name will '
-                         'be the name of the first file with the time frame '
-                         'appended to the name.')
+        "--query": {
+            "action": "store_true",
+            "help": (
+                "Creates a new file containing the data from one or "
+                "more given pcap files in a given time range. If no "
+                "output file name is given, the new file name will "
+                "be the name of the first file with the time frame "
+                "appended to the name."
+            ),
         },
-
-        '--times': {
-            'action'  : 'store_true',
-            'help'    : 'Lists time ranges available in pcap file(s)'
+        "--times": {
+            "action": "store_true",
+            "help": "Lists time ranges available in pcap file(s)",
         },
-
-        '--stime': {
-            'default' : dmc.GPS_Epoch.strftime(dmc.ISO_8601_Format),
-            'help'    : ('Starting time for desired telemetry range in '
-                         'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
-                         '1980-01-06T00:00:00Z)')
+        "--stime": {
+            "default": dmc.GPS_Epoch.strftime(dmc.ISO_8601_Format),
+            "help": (
+                "Starting time for desired telemetry range in "
+                'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
+                "1980-01-06T00:00:00Z)"
+            ),
         },
-
-        '--etime': {
-            'default' : datetime.datetime.now().strftime(dmc.ISO_8601_Format),
-            'help'    : ('Ending time for desired telemetry range in '
-                         'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
-                         'the current time; example: 2018-05-23T18:54:31Z)')
+        "--etime": {
+            "default": datetime.datetime.now().strftime(dmc.ISO_8601_Format),
+            "help": (
+                "Ending time for desired telemetry range in "
+                'ISO 8601 Format "YYYY-MM-DDThh:mm:ssZ" (default: '
+                "the current time; example: 2018-05-23T18:54:31Z)"
+            ),
         },
-
-        '--output': {
-            'default' : None,
-            'help'    : 'The name of the output file to be generated'
+        "--output": {
+            "default": None,
+            "help": "The name of the output file to be generated",
         },
-
-        '--tol': {
-            'type'    : int,
-            'default' : 2,
-            'help'    : 'Number of seconds allowed between time ranges'
+        "--tol": {
+            "type": int,
+            "default": 2,
+            "help": "Number of seconds allowed between time ranges",
         },
-
-        'file': {
-            'nargs': '+',
-            'metavar': '</path/to/pcap>',
-            'help': 'File or directory path containing .pcap file(s)',
-        }
+        "file": {
+            "nargs": "+",
+            "metavar": "</path/to/pcap>",
+            "help": "File or directory path containing .pcap file(s)",
+        },
     }
 
     for name, params in arguments.items():
@@ -85,7 +85,7 @@ def main():
     pcapfiles = []
     for p in args.file:
         if os.path.isdir(p):
-            pcapfiles.extend(util.listAllFiles(p, 'pcap', True))
+            pcapfiles.extend(util.listAllFiles(p, "pcap", True))
         elif os.path.isfile(p):
             pcapfiles.append(p)
         else:
@@ -100,8 +100,6 @@ def main():
         etime = args.etime
         output = args.output
 
-
-
         try:
             # Convert start time to datetime object
             starttime = datetime.datetime.strptime(stime, dmc.ISO_8601_Format)
@@ -113,7 +111,9 @@ def main():
             ap.print_help()
             print()
             print()
-            raise ValueError("Start and end time must be formatted as YYYY-MM-DDThh:mm:ssZ")
+            raise ValueError(
+                "Start and end time must be formatted as YYYY-MM-DDThh:mm:ssZ"
+            )
 
         pcap.query(starttime, endtime, output, *pcapfiles)
 
@@ -123,16 +123,16 @@ def main():
 
         if len(times) == 1:
             for start, stop in list(times.values())[0]:
-                print('%s - %s' % (start, stop))
+                print("%s - %s" % (start, stop))
         else:
             for filename in sorted(times.keys()):
-                basename = os.path.basename(filename)
                 for start, stop in times[filename]:
-                    print('%s: %s - %s' % (filename, start, stop))
+                    print("%s: %s - %s" % (filename, start, stop))
     else:
         ap.print_help()
 
     log.end()
 
-if __name__ == '__main__':
-  main()
+
+if __name__ == "__main__":
+    main()

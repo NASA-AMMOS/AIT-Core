@@ -28,28 +28,26 @@ import random
 import struct
 import sys
 import time
-import urllib
 import webbrowser
 
 import gevent
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
+
+gevent.monkey.patch_all()
 import geventwebsocket
 
 import bottle
-import copy
 import importlib
-import datetime
 
 import ait.core
-from ait.core import api, dtype, log, tlm, db
+from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
-
 
 
 class AITOpenMctPlugin(Plugin):
     """This is the implementation of the AIT plugin for interaction with
-     OpenMCT framework.  Telemetry dispatched from AIT server/broker
-     is passed along to OpenMct in the expected format.
+    OpenMCT framework.  Telemetry dispatched from AIT server/broker
+    is passed along to OpenMct in the expected format.
     """
 
     DEFAULT_PORT = 8082
@@ -57,9 +55,14 @@ class AITOpenMctPlugin(Plugin):
     DEFAULT_DEBUG_MAX_LEN = 512
     DEFAULT_DATABASE_ENABLED = False
 
-
-    def __init__(self, inputs, outputs, zmq_args=None,
-                 datastore='ait.core.db.InfluxDBBackend', **kwargs):
+    def __init__(
+        self,
+        inputs,
+        outputs,
+        zmq_args=None,
+        datastore="ait.core.db.InfluxDBBackend",
+        **kwargs
+    ):
         """
         Params:
             inputs:     names of inbound streams plugin receives data from
@@ -76,7 +79,7 @@ class AITOpenMctPlugin(Plugin):
 
         super(AITOpenMctPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
 
-        log.info('Running AIT OpenMCT Plugin')
+        log.info("Running AIT OpenMCT Plugin")
 
         self._datastore = datastore
 
@@ -90,7 +93,7 @@ class AITOpenMctPlugin(Plugin):
         self._databaseEnabled = AITOpenMctPlugin.DEFAULT_DATABASE_ENABLED
 
         # Check for AIT config overrides
-        self._checkConfig()
+        self._check_config()
 
         # Setup server state
         self._app = bottle.Bottle()
@@ -112,7 +115,7 @@ class AITOpenMctPlugin(Plugin):
 
         gevent.spawn(self.init)
 
-    def _checkConfig(self):
+    def _check_config(self):
         """Check AIT configuration for override values"""
 
         # Check if debug flag was included
@@ -120,7 +123,13 @@ class AITOpenMctPlugin(Plugin):
             if isinstance(self.debug_enabled, bool):
                 self._debugEnabled = self.debug_enabled
             elif isinstance(self.debug_enabled, str):
-                self._debugEnabled = self.debug_enabled in ['true', '1', 'TRUE', 'enabled', 'ENABLED']
+                self._debugEnabled = self.debug_enabled in [
+                    "true",
+                    "1",
+                    "TRUE",
+                    "enabled",
+                    "ENABLED",
+                ]
             self.dbg_message("Debug flag = " + str(self._debugEnabled))
 
         # Check if port is assigned
@@ -136,9 +145,14 @@ class AITOpenMctPlugin(Plugin):
             if isinstance(self.database_enabled, bool):
                 self._databaseEnabled = self.database_enabled
             elif isinstance(self.database_enabled, str):
-                self._databaseEnabled = self.database_enabled in ['true', '1', 'TRUE', 'enabled', 'ENABLED']
+                self._databaseEnabled = self.database_enabled in [
+                    "true",
+                    "1",
+                    "TRUE",
+                    "enabled",
+                    "ENABLED",
+                ]
             self.dbg_message("Database flag = " + str(self._databaseEnabled))
-
 
     def load_database(self, **kwargs):
         """
@@ -156,29 +170,30 @@ class AITOpenMctPlugin(Plugin):
         if self._databaseEnabled:
 
             # Perform sanity check that database config exists somewhere
-            db_cfg = ait.config.get('database', kwargs.get('database', None))
+            db_cfg = ait.config.get("database", kwargs.get("database", None))
             if not db_cfg:
-                log.error('[OpenMCT] Plugin configured to use database but no database configuration was found')
-                log.warn('Disabling historical queries.')
+                log.error(
+                    "[OpenMCT] Plugin configured to use database but no database configuration was found"
+                )
+                log.warn("Disabling historical queries.")
             else:
                 try:
-                    db_mod, db_cls = self._datastore.rsplit('.', 1)
+                    db_mod, db_cls = self._datastore.rsplit(".", 1)
                     dbconn = getattr(importlib.import_module(db_mod), db_cls)()
                     dbconn.connect(**kwargs)
                 except Exception as ex:
-                    log.error('Error connecting to database: {}'.format(ex))
-                    log.warn('Disabling historical queries.')
+                    log.error("Error connecting to database: {}".format(ex))
+                    log.warn("Disabling historical queries.")
         else:
             msg = (
-                '[OpenMCT Database Configuration]'
-                'This plugin is not configured with a database enabled. '
-                'Historical telemetry queries '
-                'will be disabled from this server endpoint.'
+                "[OpenMCT Database Configuration]"
+                "This plugin is not configured with a database enabled. "
+                "Historical telemetry queries "
+                "will be disabled from this server endpoint."
             )
             log.warn(msg)
 
         return dbconn
-
 
     def process(self, input_data, topic=None):
         """Process received input message
@@ -194,28 +209,30 @@ class AITOpenMctPlugin(Plugin):
         """
         processed = False
 
-        if hasattr(self, 'telem_stream_names'):
+        if hasattr(self, "telem_stream_names"):
             if topic in self.telem_stream_names:
                 self._process_telem_msg(input_data)
                 processed = True
 
         if not processed:
-            if 'telem_stream' in topic:
+            if "telem_stream" in topic:
                 self._process_telem_msg(input_data)
                 processed = True
 
         if not processed:
-            raise ValueError('Topic of received message not recognized as telem stream.')
+            raise ValueError(
+                "Topic of received message not recognized as telem stream."
+            )
 
     def _process_telem_msg(self, input_data):
 
-        #Use pickle to recover message
+        # Use pickle to recover message
         msg = pickle.loads(input_data)
 
         uid = int(msg[0])
         packet = msg[1]
 
-        #Package as a tuple, then add to queue
+        # Package as a tuple, then add to queue
         tlm_entry = (uid, packet)
         self._tlmQueue.append(tlm_entry)
 
@@ -224,8 +241,8 @@ class AITOpenMctPlugin(Plugin):
     def dbg_message(self, msg):
         if self._debugEnabled:
             max_len = self.DEFAULT_DEBUG_MAX_LEN
-            max_msg = (msg[:max_len] + '...') if len(msg) > max_len else msg
-            log.info('AitOpenMctPlugin: ' + max_msg)
+            max_msg = (msg[:max_len] + "...") if len(msg) > max_len else msg
+            log.info("AitOpenMctPlugin: " + max_msg)
 
     @staticmethod
     def datetime_jsonifier(obj):
@@ -235,10 +252,9 @@ class AITOpenMctPlugin(Plugin):
         else:
             return None
 
-
     @staticmethod
     def get_browser_name(browser):
-        return getattr(browser, 'name', getattr(browser, '_name', '(none)'))
+        return getattr(browser, "name", getattr(browser, "_name", "(none)"))
 
     def _get_tlm_packet_def(self, uid):
         """Return packet definition based on packet unique id"""
@@ -249,8 +265,11 @@ class AITOpenMctPlugin(Plugin):
         """Initialize the web-server state"""
 
         self._route()
-        wsgi_server = gevent.pywsgi.WSGIServer(('0.0.0.0', self._servicePort), self._app,
-                      handler_class = geventwebsocket.handler.WebSocketHandler)
+        wsgi_server = gevent.pywsgi.WSGIServer(
+            ("0.0.0.0", self._servicePort),
+            self._app,
+            handler_class=geventwebsocket.handler.WebSocketHandler,
+        )
 
         self._servers.append(wsgi_server)
 
@@ -265,23 +284,22 @@ class AITOpenMctPlugin(Plugin):
     def start_browser(self, url, name=None):
         browser = None
 
-        if name is not None and name.lower() == 'none':
-            log.info('Will not start any browser since --browser=none')
+        if name is not None and name.lower() == "none":
+            log.info("Will not start any browser since --browser=none")
             return
 
         try:
             browser = webbrowser.get(name)
         except webbrowser.Error:
-            old     = name or 'default'
-            msg     = 'Could not find browser: %s.  Will use: %s.'
+            msg = "Could not find browser: %s.  Will use: %s."
             browser = webbrowser.get()
             log.warn(msg, name, self.getBrowserName(browser))
 
         if type(browser) is webbrowser.GenericBrowser:
-            msg = 'Will not start text-based browser: %s.'
+            msg = "Will not start text-based browser: %s."
             log.info(msg % self.getBrowserName(browser))
         elif browser is not None:
-            log.info('Starting browser: %s' % self.getBrowserName(browser))
+            log.info("Starting browser: %s" % self.getBrowserName(browser))
             browser.open_new(url)
 
     def create_mct_pkt_id(self, ait_pkt_id, ait_field_id):
@@ -294,13 +312,12 @@ class AITOpenMctPlugin(Plugin):
         gevent.wait()
 
     @staticmethod
-    def create_uid_pkt_map(aitDict):
+    def create_uid_pkt_map(ait_dict):
         """Creates a dictionary from packet def UID to package definition"""
         uid_map = dict()
-        for k, v in aitDict.items():
+        for _k, v in ait_dict.items():
             uid_map[v.uid] = v
         return uid_map
-
 
     def format_tlmpkt_for_openmct(self, ait_pkt):
         """Formats an AIT telemetry packet instance as an
@@ -308,17 +325,15 @@ class AITOpenMctPlugin(Plugin):
 
         mct_dict = dict()
         ait_pkt_def = ait_pkt._defn
-        ait_pkt_id  = ait_pkt_def.name
+        ait_pkt_id = ait_pkt_def.name
 
         mct_pkt_value_dict = dict()
 
-        mct_dict['packet'] = ait_pkt_id
-        mct_dict['data'] = mct_pkt_value_dict
+        mct_dict["packet"] = ait_pkt_id
+        mct_dict["data"] = mct_pkt_value_dict
 
         ait_pkt_fieldmap = ait_pkt_def.fieldmap
         for ait_field_id in ait_pkt_fieldmap:
-            ait_field_def = ait_pkt_fieldmap[ait_field_id]
-            tlm_pt_id = ait_field_id
             tlm_pt_value = getattr(ait_pkt, ait_field_id)
             mct_pkt_value_dict[ait_field_id] = tlm_pt_value
 
@@ -329,9 +344,9 @@ class AITOpenMctPlugin(Plugin):
         OpenMCT telemetry dictionary"""
 
         mct_dict = dict()
-        mct_dict['name'] = 'AIT Telemetry'
-        mct_dict['key'] = 'ait_telemetry_dictionary'
-        mct_dict['measurements'] = []
+        mct_dict["name"] = "AIT Telemetry"
+        mct_dict["key"] = "ait_telemetry_dictionary"
+        mct_dict["measurements"] = []
 
         for ait_pkt_id in ait_tlm_dict:
             ait_pkt_def = ait_tlm_dict[ait_pkt_id]
@@ -340,60 +355,50 @@ class AITOpenMctPlugin(Plugin):
                 ait_field_def = ait_pkt_fieldmap[ait_field_id]
 
                 mct_field_dict = dict()
-                #mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
-                mct_field_dict['key'] = self.create_mct_pkt_id(ait_pkt_id, ait_field_id)
+                # mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
+                mct_field_dict["key"] = self.create_mct_pkt_id(ait_pkt_id, ait_field_id)
 
-                mct_field_dict['name'] = ait_field_def.name
-                mct_field_dict['name'] = ait_pkt_id + ":" + ait_field_def.name
+                mct_field_dict["name"] = ait_field_def.name
+                mct_field_dict["name"] = ait_pkt_id + ":" + ait_field_def.name
 
                 mct_field_value_list = []
 
                 mct_field_val_range = self.create_mct_fieldmap(ait_field_def)
 
                 mct_field_val_domain = {
-                        "key": "utc",
-                        "source": "timestamp",
-                        "name": "Timestamp",
-                        "format": "utc",
-                        "hints": {
-                            "domain": 1
-                        }
-                    }
+                    "key": "utc",
+                    "source": "timestamp",
+                    "name": "Timestamp",
+                    "format": "utc",
+                    "hints": {"domain": 1},
+                }
 
                 mct_field_value_list.append(mct_field_val_range)
                 mct_field_value_list.append(mct_field_val_domain)
 
-                mct_field_dict['values'] = mct_field_value_list
+                mct_field_dict["values"] = mct_field_value_list
 
-                mct_dict['measurements'].append(mct_field_dict)
+                mct_dict["measurements"].append(mct_field_dict)
 
         return mct_dict
 
     def create_mct_fieldmap(self, ait_pkt_fld_def):
         """Constructs an OpenMCT field declaration struct from an AIT packet definition"""
-        mct_field_map = {
-            "key": "value",
-            "name": "Value",
-            "hints": {
-                "range": 1
-            }
-        }
+        mct_field_map = {"key": "value", "name": "Value", "hints": {"range": 1}}
 
         # Handle units
-        if hasattr(ait_pkt_fld_def, 'units'):
-            if ait_pkt_fld_def.units is not None :
-                mct_field_map['units'] = ait_pkt_fld_def.units
+        if hasattr(ait_pkt_fld_def, "units"):
+            if ait_pkt_fld_def.units is not None:
+                mct_field_map["units"] = ait_pkt_fld_def.units
 
         # Type and min/max
         # Borrowed code from AIT dtype to infer info form type-NAME
-        if hasattr(ait_pkt_fld_def, 'type') :
+        if hasattr(ait_pkt_fld_def, "type"):
             if ait_pkt_fld_def.type is not None:
                 ttype = ait_pkt_fld_def.type
 
                 typename = ttype.name
 
-                tformat = dtype.PrimitiveTypeFormats.get(typename, None)
-                tendian = None
                 tfloat = False
                 tmin = None
                 tmax = None
@@ -402,19 +407,15 @@ class AITOpenMctPlugin(Plugin):
                 tnbits = 0
 
                 if typename.startswith("LSB_") or typename.startswith("MSB_"):
-                    tendian = typename[0:3]
                     tsigned = typename[4] != "U"
                     tfloat = typename[4] == "F" or typename[4] == "D"
                     tnbits = int(typename[-2:])
                 elif typename.startswith("S"):
-                    tformat = typename[1:] + "s"
                     tnbits = int(typename[1:]) * 8
                     tstring = True
                 else:
                     tsigned = typename[0] != "U"
                     tnbits = int(typename[-1:])
-
-                tnbytes = tnbits / 8
 
                 if tfloat:
                     tmax = +sys.float_info.max
@@ -426,33 +427,33 @@ class AITOpenMctPlugin(Plugin):
                     tmax = 2 ** tnbits - 1
                     tmin = 0
 
-                if not tmin is None:
-                    mct_field_map['min'] = tmin
-                if not tmax is None:
-                    mct_field_map['max'] = tmax
+                if tmin is not None:
+                    mct_field_map["min"] = tmin
+                if tmax is not None:
+                    mct_field_map["max"] = tmax
 
                 if tfloat:
-                    mct_field_map['format'] = 'float'
+                    mct_field_map["format"] = "float"
                 elif tstring:
-                    mct_field_map['format'] = 'string'
+                    mct_field_map["format"] = "string"
                 else:
-                    mct_field_map['format'] = 'integer'
+                    mct_field_map["format"] = "integer"
 
-                ## TODO - handle array types?
+                # TODO - handle array types?
 
         # Handle enumerations
-        if hasattr(ait_pkt_fld_def, 'enum'):
+        if hasattr(ait_pkt_fld_def, "enum"):
             if ait_pkt_fld_def.enum is not None:
-                del mct_field_map['min']
-                del mct_field_map['max']
-                mct_field_map['format'] = 'enum'
+                del mct_field_map["min"]
+                del mct_field_map["max"]
+                mct_field_map["format"] = "enum"
                 mct_enum_array = []
                 enum_dict = ait_pkt_fld_def.enum
-                for eNumber in enum_dict:
-                    eName = enum_dict.get(eNumber)
-                    enum_entry = { "string": eName, "value": eNumber }
+                for e_number in enum_dict:
+                    e_name = enum_dict.get(e_number)
+                    enum_entry = {"string": e_name, "value": e_number}
                     mct_enum_array.append(enum_entry)
-                mct_field_map['enumerations'] = mct_enum_array
+                mct_field_map["enumerations"] = mct_enum_array
 
         return mct_field_map
 
@@ -462,11 +463,11 @@ class AITOpenMctPlugin(Plugin):
     def _cors_headers_hook(self):
         """After-request hook to set CORS response headers."""
         headers = bottle.response.headers
-        headers['Access-Control-Allow-Origin'] = '*'
-        headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-        headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
-
-
+        headers["Access-Control-Allow-Origin"] = "*"
+        headers["Access-Control-Allow-Methods"] = "PUT, GET, POST, DELETE, OPTIONS"
+        headers[
+            "Access-Control-Allow-Headers"
+        ] = "Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token"
 
     def get_tlm_dict_json(self):
         """Returns the OpenMCT-formatted dictionary"""
@@ -478,17 +479,22 @@ class AITOpenMctPlugin(Plugin):
 
     def get_realtime_tlm(self):
         """Handles realtime packet dispatch via websocket layers"""
-        pad = bytearray(1)
-        websocket = bottle.request.environ.get('wsgi.websocket')
+        websocket = bottle.request.environ.get("wsgi.websocket")
 
         if not websocket:
-            bottle.abort(400, 'Expected WebSocket request.')
+            bottle.abort(400, "Expected WebSocket request.")
 
         empty_map = dict()  # default empty object for probing websocket connection
 
         req_env = bottle.request.environ
-        client_ip = req_env.get('HTTP_X_FORWARDED_FOR') or req_env.get('REMOTE_ADDR') or "(unknown)"
-        self.dbg_message('Creating a new web-socket session with client IP '+client_ip)
+        client_ip = (
+            req_env.get("HTTP_X_FORWARDED_FOR")
+            or req_env.get("REMOTE_ADDR")
+            or "(unknown)"
+        )
+        self.dbg_message(
+            "Creating a new web-socket session with client IP " + client_ip
+        )
 
         try:
             while not websocket.closed:
@@ -499,15 +505,18 @@ class AITOpenMctPlugin(Plugin):
                     if not pkt_defn:
                         continue
 
-                    pkt_name = pkt_defn.name
-
                     ait_pkt = ait.core.tlm.Packet(pkt_defn, data=data)
 
                     openmct_pkt = self.format_tlmpkt_for_openmct(ait_pkt)
 
-                    openmct_pkt_jsonstr = json.dumps(openmct_pkt, default=self.datetime_jsonifier)
+                    openmct_pkt_jsonstr = json.dumps(
+                        openmct_pkt, default=self.datetime_jsonifier
+                    )
 
-                    self.dbg_message("Sending realtime telemtry websocket msg: "+openmct_pkt_jsonstr)
+                    self.dbg_message(
+                        "Sending realtime telemtry websocket msg: "
+                        + openmct_pkt_jsonstr
+                    )
 
                     websocket.send(openmct_pkt_jsonstr)
 
@@ -522,10 +531,15 @@ class AITOpenMctPlugin(Plugin):
                     if not websocket.closed:
                         websocket.send(json.dumps(empty_map))
 
-            self.dbg_message('Web-socket session closed with client IP '+client_ip)
+            self.dbg_message("Web-socket session closed with client IP " + client_ip)
 
         except geventwebsocket.WebSocketError as wser:
-            log.warn('Web-socket session had an error with client IP '+client_ip+': '+str(wser))
+            log.warn(
+                "Web-socket session had an error with client IP "
+                + client_ip
+                + ": "
+                + str(wser)
+            )
 
     def get_historical_tlm(self, mct_pkt_id):
         """
@@ -534,28 +548,35 @@ class AITOpenMctPlugin(Plugin):
         :return: JSON string representing list of result dicts
         """
         start_time_ms = float(bottle.request.query.start)
-        end_time_ms   = float(bottle.request.query.end)
+        end_time_ms = float(bottle.request.query.end)
 
         # Set the content type of response for OpenMct to know its JSON
-        bottle.response.content_type = 'application/json'
+        bottle.response.content_type = "application/json"
 
+        self.dbg_message(
+            "Received request for historical tlm: Ids={} Start={} End={}".format(
+                mct_pkt_id, str(start_time_ms), str(end_time_ms)
+            )
+        )
 
-        self.dbg_message("Received request for historical tlm: Ids={} Start={} End={}".format(
-                                            mct_pkt_id, str(start_time_ms), str(end_time_ms)))
-
-        ## The tutorial indicated that this could be a comma-separated list of ids...
-        ## If its a single, then this will create a list with one entry
+        # The tutorial indicated that this could be a comma-separated list of ids...
+        # If its a single, then this will create a list with one entry
         mct_pkt_id_list = mct_pkt_id.split(",")
 
-        results = self.get_historical_tlm_for_range(mct_pkt_id_list, start_time_ms, end_time_ms)
+        results = self.get_historical_tlm_for_range(
+            mct_pkt_id_list, start_time_ms, end_time_ms
+        )
 
         # Dump results to JSON string
         json_result = json.dumps(results)
 
-        self.dbg_message("Result for historical tlm ( {} - {} ): {}".format(str(start_time_ms), str(end_time_ms), json_result))
+        self.dbg_message(
+            "Result for historical tlm ( {} - {} ): {}".format(
+                str(start_time_ms), str(end_time_ms), json_result
+            )
+        )
 
         return json_result
-
 
     def get_historical_tlm_for_range(self, mct_pkt_ids, start_epoch_ms, end_epoch_ms):
         """
@@ -567,50 +588,44 @@ class AITOpenMctPlugin(Plugin):
         :return: List of result dicts, where each entry contains {timestamp, id, value}.
         """
 
-        ## List of dicts, where each dict entry is {timestamp: time, id: mct_field_id, value: field_value}
+        # List of dicts, where each dict entry is {timestamp: time, id: mct_field_id, value: field_value}
         result_list = []
 
-        ## If no database, then return empty result
+        # If no database, then return empty result
         if not self._database:
             return result_list
 
-        ## Convert epoch timestamps to datetime objects
-        start_datetime = datetime.datetime.fromtimestamp(start_epoch_ms / 1000.0)
-        end_datetime   = datetime.datetime.fromtimestamp(end_epoch_ms   / 1000.0)
-
-
-
-        ## Collect fields that share the same AIT packet (for more efficient queries)
-        ait_pkt_fields_dict = {}  ##Dict of pkt_id to list of field ids
+        # Collect fields that share the same AIT packet (for more efficient queries)
+        ait_pkt_fields_dict = {}  # Dict of pkt_id to list of field ids
         for mct_pkt_id_entry in mct_pkt_ids:
-            ait_pkt_id,ait_field_name =  self.parse_mct_pkt_id(mct_pkt_id_entry)
+            ait_pkt_id, ait_field_name = self.parse_mct_pkt_id(mct_pkt_id_entry)
 
-            ## Add new list if this is the first time we see AIT pkt id
+            # Add new list if this is the first time we see AIT pkt id
             if ait_pkt_id not in ait_pkt_fields_dict:
                 ait_pkt_fields_dict[ait_pkt_id] = []
 
             field_list = ait_pkt_fields_dict[ait_pkt_id]
             field_list.append(ait_field_name)
 
-        ## For each requested AIT packet definition, perform a query
+        # For each requested AIT packet definition, perform a query
         for ait_pkt_id in ait_pkt_fields_dict:
             ait_pkt_field_names = ait_pkt_fields_dict[ait_pkt_id]
             cur_result_list = self.get_historical_tlm_for_packet_fields(
-                                        ait_pkt_id, ait_pkt_field_names,
-                                        start_epoch_ms, end_epoch_ms)
+                ait_pkt_id, ait_pkt_field_names, start_epoch_ms, end_epoch_ms
+            )
 
-            ## Add result if non-null and non-empty
+            # Add result if non-null and non-empty
             if cur_result_list:
                 result_list.extend(cur_result_list)
 
-        ##Sort all results based on timestamp
-        result_list.sort(key=lambda x: x['timestamp'])
+        # Sort all results based on timestamp
+        result_list.sort(key=lambda x: x["timestamp"])
 
         return result_list
 
-
-
-    def get_historical_tlm_for_packet_fields(self, ait_pkt_id, ait_field_names, start_millis, end_millis):
+    def get_historical_tlm_for_packet_fields(
+        self, ait_pkt_id, ait_field_names, start_millis, end_millis
+    ):
         """
         Perform a historical query for a particular AIT packet type
         :param ait_pkt_id: AIT Packet definition Id
@@ -633,7 +648,7 @@ class AITOpenMctPlugin(Plugin):
         # Build field types list from tlm dictionary for packing data
         field_formats = []
 
-        ## Collect the field type information (prolly dont need dtype)
+        # Collect the field type information (prolly dont need dtype)
         for i in range(len(ait_field_defs)):
             field_def = ait_field_defs[i]
             # if no request-list or current field is in request list
@@ -642,22 +657,23 @@ class AITOpenMctPlugin(Plugin):
                 field_type = str(field_def.type).split("'")[1]
                 field_formats.append(dtype.get(field_type).format)
 
-
-
         # A list with single entry of pkt id
-        packetIds = [ait_pkt_id]
+        packet_ids = [ait_pkt_id]
 
         # Convert unix timestamp to UTC datetime for time range
         start_timestamp_secs = start_millis / 1000.0
-        start_date = datetime.datetime.fromtimestamp(start_timestamp_secs,
-                                                     tz=datetime.timezone.utc)
+        start_date = datetime.datetime.fromtimestamp(
+            start_timestamp_secs, tz=datetime.timezone.utc
+        )
         end_timestamp_secs = end_millis / 1000.0
-        end_date = datetime.datetime.fromtimestamp(end_timestamp_secs,
-                                                   tz=datetime.timezone.utc)
+        end_date = datetime.datetime.fromtimestamp(
+            end_timestamp_secs, tz=datetime.timezone.utc
+        )
 
-        query_args_str = 'Packets = {}; Start = {}; End = {}'.format(
-                            packetIds, start_date, end_date)
-        self.dbg_message('Query args : {}'.format(query_args_str))
+        query_args_str = "Packets = {}; Start = {}; End = {}".format(
+            packet_ids, start_date, end_date
+        )
+        self.dbg_message("Query args : {}".format(query_args_str))
 
         # default response is empty
         res_pkts = list()
@@ -665,28 +681,36 @@ class AITOpenMctPlugin(Plugin):
         # Query packet and time range from database
         try:
             if self._database:
-                ait_db_result = self._database.query_packets(packets=packetIds,
-                                                             start_time=start_date,
-                                                             end_time=end_date,
-                                                             yield_packet_time=True)
+                ait_db_result = self._database.query_packets(
+                    packets=packet_ids,
+                    start_time=start_date,
+                    end_time=end_date,
+                    yield_packet_time=True,
+                )
 
                 if ait_db_result.errors is not None:
-                    log.error('[OpenMCT] Database query for packets ' +
-                              str(packetIds) + ' resulted in errors: ')
+                    log.error(
+                        "[OpenMCT] Database query for packets "
+                        + str(packet_ids)
+                        + " resulted in errors: "
+                    )
                     for db_err in ait_db_result.errors:
-                        log.error('[OpenMCT] Error: ' + str(db_err))
+                        log.error("[OpenMCT] Error: " + str(db_err))
                 elif ait_db_result.has_packets:
                     res_pkts = list(ait_db_result.get_packets())
 
                 # Debug result size
-                self.dbg_message('Number of results for query {} : {}'.format(query_args_str, str(len(res_pkts))))
-
+                self.dbg_message(
+                    "Number of results for query {} : {}".format(
+                        query_args_str, str(len(res_pkts))
+                    )
+                )
 
         except Exception as e:
-            log.error('[OpenMCT] Database query failed.  Error: '+str(e))
+            log.error("[OpenMCT] Database query failed.  Error: " + str(e))
             return None
 
-        for cur_pkt_time,cur_pkt in res_pkts:
+        for cur_pkt_time, cur_pkt in res_pkts:
 
             # Convert datetime to Javascript timestamp (in milliseconds)
             cur_timestamp_sec = datetime.datetime.timestamp(cur_pkt_time)
@@ -694,9 +718,9 @@ class AITOpenMctPlugin(Plugin):
 
             # Add a record for each requested field for this timestamp
             for cur_field_name in field_names:
-                record = { 'timestamp': unix_timestamp_msec }
-                record['id'] = self.create_mct_pkt_id(ait_pkt_id, cur_field_name)
-                record['value'] = getattr(cur_pkt, cur_field_name)
+                record = {"timestamp": unix_timestamp_msec}
+                record["id"] = self.create_mct_pkt_id(ait_pkt_id, cur_field_name)
+                record["value"] = getattr(cur_pkt, cur_field_name)
                 result_list.append(record)
 
         return result_list
@@ -725,9 +749,14 @@ class AITOpenMctPlugin(Plugin):
         pkt_def_uid = ait_pkt_defn.uid
         pkt_size_bytes = ait_pkt_defn.nbytes
 
-        #if self._debugMimicRepeat:
-        repeatStr = " REPEATED " if self._debugMimicRepeat else " a single "
-        info_msg = "Received request to mimic"+repeatStr+"telemetry packet for " + ait_pkt_defn.name
+        # if self._debugMimicRepeat:
+        repeat_str = " REPEATED " if self._debugMimicRepeat else " a single "
+        info_msg = (
+            "Received request to mimic"
+            + repeat_str
+            + "telemetry packet for "
+            + ait_pkt_defn.name
+        )
         self.dbg_message(info_msg)
 
         # Create a binary array of size filled with 0
@@ -739,16 +768,26 @@ class AITOpenMctPlugin(Plugin):
 
             # Special handling for simply integer based packet, others will
             # have all 0 zero
-            if ait_pkt_defn.name == '1553_HS_Packet':
-                hs_packet = struct.Struct('>hhhhh')
-                randomNum = random.randint(1,100)
-                dummy_data = hs_packet.pack(randomNum,randomNum,randomNum,randomNum,randomNum)
+            if ait_pkt_defn.name == "1553_HS_Packet":
+                hs_packet = struct.Struct(">hhhhh")
+                random_num = random.randint(1, 100)
+                dummy_data = hs_packet.pack(
+                    random_num, random_num, random_num, random_num, random_num
+                )
 
             msg_serial = pickle.dumps((pkt_def_uid, dummy_data), 2)
-            msg_str_fmt = '{}'.format(msg_serial)  #Lesson learned: AIT ZMQClient formats to string before emitting message
+            msg_str_fmt = "{}".format(
+                msg_serial
+            )  # Lesson learned: AIT ZMQClient formats to string before emitting message
             self._process_telem_msg(msg_str_fmt)
 
-            info_msg = "AIT OpenMct Plugin submitted mimicked telemetry for " + ait_pkt_defn.name + " (" + str(datetime.datetime.now()) + ")"
+            info_msg = (
+                "AIT OpenMct Plugin submitted mimicked telemetry for "
+                + ait_pkt_defn.name
+                + " ("
+                + str(datetime.datetime.now())
+                + ")"
+            )
             self.dbg_message(info_msg)
 
             # sleep if mimic on
@@ -762,7 +801,6 @@ class AITOpenMctPlugin(Plugin):
         # Return last status message as result to client
         return info_msg
 
-
     # ---------------------------------------------------------------------
     # Routing rules
 
@@ -770,26 +808,27 @@ class AITOpenMctPlugin(Plugin):
         """Performs the Bottle app routing"""
 
         # Returns OpenMCT formatted tlm dict
-        self._app.route('/tlm/dict',     callback=self.get_tlm_dict_json)
+        self._app.route("/tlm/dict", callback=self.get_tlm_dict_json)
 
         # Returns AIT formatted tlm dict
-        self._app.route('/tlm/dict/raw', callback=self.get_tlm_dict_raw_json)
+        self._app.route("/tlm/dict/raw", callback=self.get_tlm_dict_raw_json)
 
         # Estasblished websocket for realtime tlm packets
-        self._app.route('/tlm/realtime', callback=self.get_realtime_tlm)
+        self._app.route("/tlm/realtime", callback=self.get_realtime_tlm)
 
         # Http: tlm query for a given time range
-        self._app.route('/tlm/history/<mct_pkt_id>', callback=self.get_historical_tlm)
+        self._app.route("/tlm/history/<mct_pkt_id>", callback=self.get_historical_tlm)
 
         # Enable CORS via headers
-        self._app.add_hook('after_request', self._cors_headers_hook)
+        self._app.add_hook("after_request", self._cors_headers_hook)
 
         # Debugging routes
-        if (self._debugEnabled):
-            self._app.route('/tlm/debug/sim/<ait_tlm_pkt_name>', callback=self.mimic_tlm)
+        if self._debugEnabled:
+            self._app.route(
+                "/tlm/debug/sim/<ait_tlm_pkt_name>", callback=self.mimic_tlm
+            )
 
         # self._App.route('/<pathname:path>', callback=self.get_static_file)
-
 
         # Was in the original impl, but not sure we need it.  Don't want to lose
         # it completely tho, just in case.
@@ -797,6 +836,6 @@ class AITOpenMctPlugin(Plugin):
         #     bottle.response.content_type  = 'text/event-stream'
         #     bottle.response.cache_control = 'no-cache'
         #
-        #def __setResponseToJSON():
+        # def __setResponseToJSON():
         #    bottle.response.content_type  = 'application/json'
         #    bottle.response.cache_control = 'no-cache'

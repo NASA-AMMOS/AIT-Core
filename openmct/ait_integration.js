@@ -198,11 +198,11 @@ function AITIntegration(config) {
             namespace: 'taxonomy',
             key: 'spacecraft'
         });
-    
+
         openmct.objects.addProvider('taxonomy', objectProvider);
-    
+
         openmct.composition.addProvider(compositionProvider);
-    
+
         openmct.types.addType('telemetry', {
             name: 'Telemetry Point',
             description: 'Spacecraft Telemetry point',
@@ -225,14 +225,14 @@ function AITHistoricalTelemetryPlugin() {
                 let histUrlRoot = 'http://' + ait_host + ':' + ait_port + '/tlm/history/'
                 let histUrl = histUrlRoot + domainObject.identifier.key +
                     '?start=' + options.start + '&end=' + options.end;
-    
+
                 return http.get(histUrl)
                     .then(function (resp) {
                         return resp.data
                     });
             }
         };
-    
+
         openmct.telemetry.addProvider(provider);
     }
 }

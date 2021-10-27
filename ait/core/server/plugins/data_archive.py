@@ -17,14 +17,19 @@ import pickle
 import importlib
 
 import gevent
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
 
-import ait.core
+gevent.monkey.patch_all()
+
+import ait.core  # noqa
 from ait.core import log, tlm
 from ait.core.server.plugin import Plugin
 
+
 class DataArchive(Plugin):
-    def __init__(self, inputs, outputs, datastore='ait.core.db.InfluxDBBackend', **kwargs):
+    def __init__(
+        self, inputs, outputs, datastore="ait.core.db.InfluxDBBackend", **kwargs
+    ):
         """
         Attempts to connect to database backend. Plugin will not be created if
         connection fails.
@@ -47,21 +52,24 @@ class DataArchive(Plugin):
 
         self.datastore = datastore
         self.packet_dict = defaultdict(dict)
-        for k, v in tlm.getDefaultDict().items():
+        for _k, v in tlm.getDefaultDict().items():
             self.packet_dict[v.uid] = v
 
         try:
-            mod, cls = self.datastore.rsplit('.', 1)
+            mod, cls = self.datastore.rsplit(".", 1)
             self.dbconn = getattr(importlib.import_module(mod), cls)()
             self.dbconn.connect(**kwargs)
-            log.info('Starting telemetry data archiving')
+            log.info("Starting telemetry data archiving")
         except ImportError as e:
             log.error("Could not import specified datastore {}".format(self.datastore))
-            raise(e)
+            raise (e)
         except Exception as e:
-            log.error("Unable to connect to {} backend. Disabling data archive."
-                        .format(self.datastore))
-            raise(e)
+            log.error(
+                "Unable to connect to {} backend. Disabling data archive.".format(
+                    self.datastore
+                )
+            )
+            raise (e)
 
     def process(self, input_data, topic=None, **kwargs):
         """
@@ -81,5 +89,4 @@ class DataArchive(Plugin):
             decoded = tlm.Packet(defn, data=bytearray(pkt))
             self.dbconn.insert(decoded, **kwargs)
         except Exception as e:
-            log.error('Data archival failed with error: {}.'.format(e))
-
+            log.error("Data archival failed with error: {}.".format(e))

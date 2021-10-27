@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Usage:
     ait-create-dirs [options]
 
@@ -113,7 +113,7 @@ Description:
         /oco3/int/2016/2016-299/type_b
 
 
-'''
+"""
 
 import os
 import errno
@@ -125,8 +125,8 @@ import ait
 from ait.core import dmc, log
 
 
-def createDirStruct(paths, verbose=True):
-    '''Loops ait.config._datapaths from AIT_CONFIG and creates a directory.
+def create_dir_struct(paths, verbose=True):
+    """Loops ait.config._datapaths from AIT_CONFIG and creates a directory.
 
     Replaces year and doy with the respective year and day-of-year.
     If neither are given as arguments, current UTC day and year are used.
@@ -139,15 +139,15 @@ def createDirStruct(paths, verbose=True):
         datetime:
             UTC Datetime string in ISO 8601 Format YYYY-MM-DDTHH:mm:ssZ
 
-    '''
-    for k, path in paths.items():
+    """
+    for _k, path in paths.items():
         p = None
         try:
-            pathlist = path if type(path) is list else [ path ]
+            pathlist = path if type(path) is list else [path]
             for p in pathlist:
                 os.makedirs(p)
                 if verbose:
-                    log.info('Creating directory: ' + p)
+                    log.info("Creating directory: " + p)
         except OSError as e:
             if e.errno == errno.EEXIST and os.path.isdir(p):
                 pass
@@ -156,16 +156,17 @@ def createDirStruct(paths, verbose=True):
 
     return True
 
+
 def main():
     argparser = argparse.ArgumentParser(
-        description = """
+        description="""
     AIT Create Directories Script
 
     Based on the data paths specified in the AIT_CONFIG, this software creates
     daily directories for the GDS based on the paths and any applicable variable
     substitution.
 """,
-        epilog = """
+        epilog="""
     Create directories based on some set of variables in a separate YAML config
 
         $ ait-create-dirs -c vars.yaml
@@ -174,25 +175,27 @@ def main():
 
         $ ait-create-dirs -d 2016-01-01T00:00:00Z
 """,
-        formatter_class = argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     argparser.add_argument(
-        '-d', '--date',
-        metavar = '<YYYY-MM-DDTHH:mm:ssZ>',
-        type    = str,
-        help    = 'Create directory structure using this' +
-                    'ISO 8610 datetime for strftime replacement' +
-                    'in directory path. Default: TODAY'
+        "-d",
+        "--date",
+        metavar="<YYYY-MM-DDTHH:mm:ssZ>",
+        type=str,
+        help="Create directory structure using this"
+        + "ISO 8610 datetime for strftime replacement"
+        + "in directory path. Default: TODAY",
     )
 
     argparser.add_argument(
-        '-t', '--timedelta',
-        metavar = '<days>',
-        type    = int,
-        help    = 'Number of days in the future you would like '+
-                    'to create a directory.' +
-                    'Default: 0'
+        "-t",
+        "--timedelta",
+        metavar="<days>",
+        type=int,
+        help="Number of days in the future you would like "
+        + "to create a directory."
+        + "Default: 0",
     )
 
     options = argparser.parse_args()
@@ -202,32 +205,34 @@ def main():
     retcode = 0
 
     try:
-        pathvars = { }
+        pathvars = {}
 
         if options.date:
             ait.config._datetime = time.strptime(options.date, dmc.ISO_8601_Format)
 
         if options.timedelta:
-            ait.config._datetime = time.strptime(dmc.getUTCDatetimeDOY(days=options.timedelta),
-                dmc.DOY_Format)
+            ait.config._datetime = time.strptime(
+                dmc.getUTCDatetimeDOY(days=options.timedelta), dmc.DOY_Format
+            )
 
-        pathvars['year'] = ait.config._datetime.tm_year
-        pathvars['doy'] = '%03d' % ait.config._datetime.tm_yday
-        
+        pathvars["year"] = ait.config._datetime.tm_year
+        pathvars["doy"] = "%03d" % ait.config._datetime.tm_yday
+
         # Add the updated path variables for the date
-        ait.config.addPathVariables(pathvars)
+        ait.config.add_path_variables(pathvars)
 
         ait.config.reload()
 
         # Create the directory
-        retcode = createDirStruct(ait.config._datapaths)
+        retcode = create_dir_struct(ait.config._datapaths)
 
     except Exception as e:
         print(e)
-        log.error('AIT Create Directories error: %s' % traceback.format_exc())
+        log.error("AIT Create Directories error: %s" % traceback.format_exc())
 
     log.end()
     return retcode
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

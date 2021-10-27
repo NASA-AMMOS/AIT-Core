@@ -63,7 +63,6 @@ tuples, for succinctness:
     >>> print("\\n".join(messages))
     error: value '65536' out of range [0, 65535].
     error: float '1e+06' cannot be represented as an integer.
-
 """
 
 import datetime
@@ -71,7 +70,9 @@ import struct
 import sys
 import re
 
-from ait.core import cmd, dmc, log, util
+from typing import Dict, Any
+
+from ait.core import cmd, dmc, log
 
 
 # PrimitiveTypes
@@ -90,7 +91,7 @@ PrimitiveTypes = None
 # ait.core.dtype.get(typename).  (Populated below based on
 # information in PrimitiveTypeFormats).
 #
-PrimitiveTypeMap = {}
+PrimitiveTypeMap: Dict[str, Any] = {}
 
 
 # PrimitiveTypeFormats
@@ -101,25 +102,26 @@ PrimitiveTypeMap = {}
 #   https://docs.python.org/2/library/struct.html#format-characters
 #
 PrimitiveTypeFormats = {
-    "I8"     :  "b" ,
-    "U8"     :  "B" ,
-    "LSB_I16":  "<h",
-    "MSB_I16":  ">h",
-    "LSB_U16":  "<H",
-    "MSB_U16":  ">H",
-    "LSB_I32":  "<i",
-    "MSB_I32":  ">i",
-    "LSB_U32":  "<I",
-    "MSB_U32":  ">I",
-    "LSB_I64":  "<q",
-    "MSB_I64":  ">q",
-    "LSB_U64":  "<Q",
-    "MSB_U64":  ">Q",
-    "LSB_F32":  "<f",
-    "MSB_F32":  ">f",
-    "LSB_D64":  "<d",
-    "MSB_D64":  ">d"
+    "I8": "b",
+    "U8": "B",
+    "LSB_I16": "<h",
+    "MSB_I16": ">h",
+    "LSB_U16": "<H",
+    "MSB_U16": ">H",
+    "LSB_I32": "<i",
+    "MSB_I32": ">i",
+    "LSB_U32": "<I",
+    "MSB_U32": ">I",
+    "LSB_I64": "<q",
+    "MSB_I64": ">q",
+    "LSB_U64": "<Q",
+    "MSB_U64": ">Q",
+    "LSB_F32": "<f",
+    "MSB_F32": ">f",
+    "LSB_D64": "<d",
+    "MSB_D64": ">d",
 }
+
 
 class PrimitiveType(object):
     """PrimitiveType
@@ -139,27 +141,27 @@ class PrimitiveType(object):
         Creates a new PrimitiveType based on the given typename
         (e.g. 'MSB_U16' for a big endian, 16 bit short integer).
         """
-        self._name   = name
+        self._name = name
         self._format = PrimitiveTypeFormats.get(name, None)
         self._endian = None
-        self._float  = False
-        self._min    = None
-        self._max    = None
+        self._float = False
+        self._min = None
+        self._max = None
         self._signed = False
         self._string = False
 
         if self.name.startswith("LSB_") or self.name.startswith("MSB_"):
             self._endian = self.name[0:3]
             self._signed = self.name[4] != "U"
-            self._float  = self.name[4] == "F" or self.name[4] == "D"
-            self._nbits  = int(self.name[-2:])
+            self._float = self.name[4] == "F" or self.name[4] == "D"
+            self._nbits = int(self.name[-2:])
         elif self.name.startswith("S"):
             self._format = self.name[1:] + "s"
-            self._nbits  = int(self.name[1:]) * 8
+            self._nbits = int(self.name[1:]) * 8
             self._string = True
         else:
             self._signed = self.name[0] != "U"
-            self._nbits  = int(self.name[-1:])
+            self._nbits = int(self.name[-1:])
 
         self._nbytes = int(self._nbits / 8)
 
@@ -167,13 +169,13 @@ class PrimitiveType(object):
             self._max = +sys.float_info.max
             self._min = -sys.float_info.max
         elif self.signed:
-            self._max =  2 ** (self.nbits - 1)
-            self._min = -1 *  (self.max - 1)
+            self._max = 2 ** (self.nbits - 1)
+            self._min = -1 * (self.max - 1)
         elif not self.string:
             self._max = 2 ** self.nbits - 1
             self._min = 0
 
-    def __eq__ (self, other):
+    def __eq__(self, other):
         return isinstance(other, PrimitiveType) and self._name == other._name
 
     def __repr__(self):
@@ -236,7 +238,7 @@ class PrimitiveType(object):
         Encodes the given value to a bytearray according to this
         PrimitiveType definition.
         """
-        if re.sub(r'\W+', '', self.format).lower() in ('b', 'i', 'l', 'q'):
+        if re.sub(r"\W+", "", self.format).lower() in ("b", "i", "l", "q"):
             fvalue = int(value)
         elif self._string:
             fvalue = value.encode()
@@ -258,8 +260,7 @@ class PrimitiveType(object):
         """
         return struct.unpack(self.format, memoryview(bytestring))[0]
 
-
-    def toJSON(self):
+    def toJSON(self):  # noqa
         return self.name
 
     def validate(self, value, messages=None, prefix=None):
@@ -275,9 +276,8 @@ class PrimitiveType(object):
             if messages is not None:
                 if prefix is not None:
                     tok = msg.split()
-                    msg = prefix + ' ' + tok[0].lower() + " " + " ".join(tok[1:])
+                    msg = prefix + " " + tok[0].lower() + " " + " ".join(tok[1:])
                 messages.append(msg)
-
 
         if self.string:
             if isinstance(value, str):
@@ -300,56 +300,54 @@ class PrimitiveType(object):
 
         return valid
 
+
 #
 # Populate the PrimitiveTypeMap based on the types in
 # PrimitiveTypeFormats.
 #
-PrimitiveTypeMap.update(
-    (t, PrimitiveType(t)) for t in PrimitiveTypeFormats.keys()
-)
+PrimitiveTypeMap.update((t, PrimitiveType(t)) for t in PrimitiveTypeFormats.keys())
 
 PrimitiveTypes = sorted(PrimitiveTypeMap.keys())
 
 
 class ArrayType(object):
-    __slots__ = [ '_nelems', '_type' ]
+    __slots__ = ["_nelems", "_type"]
 
-    def __init__(self, elemType, nelems):
-        """Creates a new ArrayType of nelems, each of type elemType."""
-        if isinstance(elemType, str):
-            elemType = get(elemType)
+    def __init__(self, elem_type, nelems):
+        """Creates a new ArrayType of nelems, each of type elem_type."""
+        if isinstance(elem_type, str):
+            elem_type = get(elem_type)
 
         if not isinstance(nelems, int):
-            raise TypeError('ArrayType(..., nelems) must be an integer')
+            raise TypeError("ArrayType(..., nelems) must be an integer")
 
-        self._type   = elemType
+        self._type = elem_type
         self._nelems = nelems
-
 
     def __eq__(self, other):
         """Returns True if two ArrayTypes are equivalent, False otherwise."""
-        return (isinstance(other, ArrayType) and
-                self.type == other.type and self.nelems == other.nelems)
-
+        return (
+            isinstance(other, ArrayType)
+            and self.type == other.type
+            and self.nelems == other.nelems
+        )
 
     def __repr__(self):
         return "%s('%s')" % (self.__class__.__name__, self.name)
 
-
-    def _assertIndex(self, index):
+    def _assert_index(self, index):
         """Raise TypeError or IndexError if index is not an integer or out of
         range for the number of elements in this array, respectively.
         """
         if not isinstance(index, int):
-            raise TypeError('list indices must be integers')
+            raise TypeError("list indices must be integers")
         if index < 0 or index >= self.nelems:
-            raise IndexError('list index out of range')
-
+            raise IndexError("list index out of range")
 
     @property
     def name(self):
         """Name of this ArrayType."""
-        return '%s[%d]' % (self.type.name, self.nelems)
+        return "%s[%d]" % (self.type.name, self.nelems)
 
     @property
     def nbits(self):
@@ -371,7 +369,6 @@ class ArrayType(object):
         """Type of array elements."""
         return self._type
 
-
     def decode(self, bytes, index=None, raw=False):
         """decode(bytes[[, index], raw=False]) -> value1, ..., valueN
 
@@ -386,30 +383,28 @@ class ArrayType(object):
             index = slice(0, self.nelems)
 
         if isinstance(index, slice):
-            step    = 1 if index.step is None else index.step
+            step = 1 if index.step is None else index.step
             indices = range(index.start, index.stop, step)
-            result  = [ self.decodeElem(bytes, n, raw) for n in indices ]
+            result = [self.decode_elem(bytes, n, raw) for n in indices]
         else:
-            result = self.decodeElem(bytes, index, raw)
+            result = self.decode_elem(bytes, index, raw)
 
         return result
 
-
-    def decodeElem(self, bytes, index, raw=False):
+    def decode_elem(self, bytes, index, raw=False):
         """Decodes a single element at array[index] from a sequence bytes
         that contain data for the entire array.
         """
-        self._assertIndex(index)
+        self._assert_index(index)
         start = int(index * self.type.nbytes)
-        stop  = int(start + self.type.nbytes)
+        stop = int(start + self.type.nbytes)
 
         if stop > len(bytes):
-            msg =  'Decoding %s[%d] requires %d bytes, '
-            msg += 'but the ArrayType.decode() method received only %d bytes.'
+            msg = "Decoding %s[%d] requires %d bytes, "
+            msg += "but the ArrayType.decode() method received only %d bytes."
             raise IndexError(msg % (self.type.name, index, stop, len(bytes)))
 
-        return self.type.decode( bytes[start:stop], raw )
-
+        return self.type.decode(bytes[start:stop], raw)
 
     def encode(self, *args):
         """encode(value1[, ...]) -> bytes
@@ -418,14 +413,13 @@ class ArrayType(object):
         Array's underlying element type
         """
         if len(args) != self.nelems:
-            msg = 'ArrayType %s encode() requires %d values, but received %d.'
+            msg = "ArrayType %s encode() requires %d values, but received %d."
             raise ValueError(msg % (self.name, self.nelems, len(args)))
 
         return bytearray().join(self.type.encode(arg) for arg in args)
 
-
     @staticmethod
-    def parse (name):
+    def parse(name):
         """parse(name) -> [typename | None, nelems | None]
 
         Parses an ArrayType name to return the element type name and
@@ -439,19 +433,19 @@ class ArrayType(object):
         None is returned.
         """
         parts = [None, None]
-        start = name.find('[')
+        start = name.find("[")
 
         if start != -1:
-            stop = name.find(']', start)
+            stop = name.find("]", start)
             if stop != -1:
                 try:
                     parts[0] = name[:start]
-                    parts[1] = int(name[start + 1:stop])
+                    parts[1] = int(name[start + 1 : stop])
                     if parts[1] <= 0:
                         raise ValueError
                 except ValueError:
-                    msg  = 'ArrayType specification: "%s" must have an '
-                    msg += 'integer greater than zero in square brackets.'
+                    msg = 'ArrayType specification: "%s" must have an '
+                    msg += "integer greater than zero in square brackets."
                     raise ValueError(msg % name)
 
         return parts
@@ -463,13 +457,14 @@ class CmdType(PrimitiveType):
     This type is used to take a two byte opcode and return the
     corresponding Command Definition (:class:`CmdDefn`).
     """
+
     BASEPDT = "MSB_U16"
 
     def __init__(self):
         super(CmdType, self).__init__(self.BASEPDT)
 
-        self._pdt     = self.name
-        self._name    = 'CMD16'
+        self._pdt = self.name
+        self._name = "CMD16"
         self._cmddict = None
 
     @property
@@ -518,7 +513,7 @@ class CmdType(PrimitiveType):
         elif opcode in self.cmddict.opcodes:
             result = self.cmddict.opcodes[opcode]
         else:
-            raise ValueError('Unrecognized command opcode: %d' % opcode)
+            raise ValueError("Unrecognized command opcode: %d" % opcode)
 
         return result
 
@@ -530,13 +525,14 @@ class EVRType(PrimitiveType):
     (EVR) code and return the corresponding EVR Definition
     (:class:`EVRDefn`).
     """
+
     BASEPDT = "MSB_U16"
 
     def __init__(self):
         super(EVRType, self).__init__(self.BASEPDT)
 
-        self._pdt  = self.name
-        self._name = 'EVR16'
+        self._pdt = self.name
+        self._name = "EVR16"
         self._evrs = None
 
     @property
@@ -549,6 +545,7 @@ class EVRType(PrimitiveType):
         """Getter EVRs dictionary"""
         if self._evrs is None:
             import ait.core.evr as evr
+
             self._evrs = evr.getDefaultDict()
 
         return self._evrs
@@ -582,7 +579,7 @@ class EVRType(PrimitiveType):
         itself will be returned instead of the EVR Definition
         (:class:`EVRDefn`).
         """
-        code   = super(EVRType, self).decode(bytes)
+        code = super(EVRType, self).decode(bytes)
         result = None
 
         if raw:
@@ -591,7 +588,7 @@ class EVRType(PrimitiveType):
             result = self.evrs.codes[code]
         else:
             result = code
-            log.warn('Unrecognized EVR code: %d' % code)
+            log.warn("Unrecognized EVR code: %d" % code)
 
         return result
 
@@ -604,11 +601,12 @@ class Time8Type(PrimitiveType):
     octet is equal to 1/256 seconds (or 2^-8), approximately 4 msec.
     See SSP 41175-02H for more details on the CCSDS headers.
     """
-    def __init__(self):
-        super(Time8Type, self).__init__('U8')
 
-        self._pdt  = self.name
-        self._name = 'TIME8'
+    def __init__(self):
+        super(Time8Type, self).__init__("U8")
+
+        self._pdt = self.name
+        self._name = "TIME8"
 
     @property
     def pdt(self):
@@ -647,11 +645,12 @@ class Time32Type(PrimitiveType):
     This four byte time represents the elapsed time in seconds since
     the GPS epoch.
     """
-    def __init__(self):
-        super(Time32Type, self).__init__('MSB_U32')
 
-        self._pdt  = self.name
-        self._name = 'TIME32'
+    def __init__(self):
+        super(Time32Type, self).__init__("MSB_U32")
+
+        self._pdt = self.name
+        self._name = "TIME32"
 
     @property
     def pdt(self):
@@ -665,9 +664,9 @@ class Time32Type(PrimitiveType):
         ComplexType definition.
         """
         if not isinstance(value, datetime.datetime):
-            raise TypeError('encode() argument must be a Python datetime')
+            raise TypeError("encode() argument must be a Python datetime")
 
-        return super(Time32Type, self).encode( dmc.toGPSSeconds(value) )
+        return super(Time32Type, self).encode(dmc.to_gps_seconds(value))
 
     def decode(self, bytes, raw=False):
         """decode(bytearray, raw=False) -> value
@@ -680,8 +679,7 @@ class Time32Type(PrimitiveType):
         number of seconds will be returned instead.
         """
         sec = super(Time32Type, self).decode(bytes)
-        return sec if raw else dmc.toLocalTime(sec)
-
+        return sec if raw else dmc.to_local_time(sec)
 
 
 class Time40Type(PrimitiveType):
@@ -691,11 +689,12 @@ class Time40Type(PrimitiveType):
     byte of (1 / 256) subseconds, representing the elapsed time since
     the GPS epoch.
     """
-    def __init__(self):
-        super(Time40Type, self).__init__('MSB_U32')
 
-        self._pdt  = self.name
-        self._name = 'TIME40'
+    def __init__(self):
+        super(Time40Type, self).__init__("MSB_U32")
+
+        self._pdt = self.name
+        self._name = "TIME40"
         self._nbits = 40
         self._nbytes = 5
 
@@ -711,10 +710,10 @@ class Time40Type(PrimitiveType):
         ComplexType definition.
         """
         if not isinstance(value, datetime.datetime):
-            raise TypeError('encode() argument must be a Python datetime')
+            raise TypeError("encode() argument must be a Python datetime")
 
         coarse = Time32Type().encode(value)
-        fine   = Time8Type() .encode(value.microsecond / 1e6)
+        fine = Time8Type().encode(value.microsecond / 1e6)
 
         return coarse + fine
 
@@ -730,7 +729,7 @@ class Time40Type(PrimitiveType):
         number instead.
         """
         coarse = Time32Type().decode(bytes[:4], raw)
-        fine   = Time8Type() .decode(bytes[4:])
+        fine = Time8Type().decode(bytes[4:])
 
         if not raw:
             fine = datetime.timedelta(microseconds=fine * 1e6)
@@ -745,11 +744,12 @@ class Time64Type(PrimitiveType):
     bytes of nanoseconds, representing the elapsed time since the GPS
     epoch.
     """
-    def __init__(self):
-        super(Time64Type, self).__init__('MSB_U64')
 
-        self._pdt  = self.name
-        self._name = 'TIME64'
+    def __init__(self):
+        super(Time64Type, self).__init__("MSB_U64")
+
+        self._pdt = self.name
+        self._name = "TIME64"
 
     @property
     def pdt(self):
@@ -763,10 +763,10 @@ class Time64Type(PrimitiveType):
         ComplexType definition.
         """
         if not isinstance(value, datetime.datetime):
-            raise TypeError('encode() argument must be a Python datetime')
+            raise TypeError("encode() argument must be a Python datetime")
 
         coarse = Time32Type().encode(value)
-        fine   = get('MSB_U32').encode(value.microsecond * 1e3)
+        fine = get("MSB_U32").encode(value.microsecond * 1e3)
 
         return coarse + fine
 
@@ -782,8 +782,8 @@ class Time64Type(PrimitiveType):
         seconds and nanoseconds will be returned as a floating-point
         number instead.
         """
-        coarse = Time32Type()  .decode(bytes[:4], raw)
-        fine   = get('MSB_U32').decode(bytes[4:])
+        coarse = Time32Type().decode(bytes[:4], raw)
+        fine = get("MSB_U32").decode(bytes[4:])
 
         if raw:
             fine /= 1e9
@@ -798,40 +798,31 @@ class Time64Type(PrimitiveType):
 # Maps typenames to Complex Types.  Use ait.core.dtype.get(typename).
 #
 ComplexTypeMap = {
-    'CMD16' : CmdType(),
-    'EVR16' : EVRType(),
-    'TIME8' : Time8Type(),
-    'TIME32': Time32Type(),
-    'TIME40': Time40Type(),
-    'TIME64': Time64Type()
+    "CMD16": CmdType(),
+    "EVR16": EVRType(),
+    "TIME8": Time8Type(),
+    "TIME32": Time32Type(),
+    "TIME40": Time40Type(),
+    "TIME64": Time64Type(),
 }
 
 
-def getPDT(typename):
-    """get(typename) -> PrimitiveType
-
-    Returns the PrimitiveType for typename or None.
-    """
+def get_pdt(typename):
+    """Returns the PrimitiveType for typename or None."""
     if typename not in PrimitiveTypeMap and typename.startswith("S"):
         PrimitiveTypeMap[typename] = PrimitiveType(typename)
 
     return PrimitiveTypeMap.get(typename, None)
 
 
-def getCDT(typename):
-    """getCDT(typename) -> ComplexType
-
-    Returns the ComplexType for typename or None.
-    """
+def get_cdt(typename):
+    """Returns the ComplexType for typename or None."""
     return ComplexTypeMap.get(typename, None)
 
 
 def get(typename):
-    """get(typename) -> PrimitiveType or ComplexType
-
-    Returns the PrimitiveType or ComplexType for typename or None.
-    """
-    dt = getPDT(typename) or getCDT(typename)
+    """Returns the PrimitiveType or ComplexType for typename or None."""
+    dt = get_pdt(typename) or get_cdt(typename)
 
     if dt is None:
         pdt, nelems = ArrayType.parse(typename)

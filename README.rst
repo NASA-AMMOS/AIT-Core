@@ -5,7 +5,7 @@ The AMMOS Instrument Toolkit (Formerly the Bespoke Links to Instruments
 for Surface and Space (BLISS)) is a Python-based software suite
 developed to handle Ground Data System (GDS), Electronic Ground Support
 Equipment (EGSE), commanding, telemetry uplink/downlink, and sequencing
-for instrument and CubeSat Missions. It is a generalization and expansion 
+for instrument and CubeSat Missions. It is a generalization and expansion
 of tools developed for a number of ISS
 missions.
 
@@ -39,7 +39,7 @@ Guide <https://github.com/NASA-AMMOS/AIT-Core/wiki/Contributing>`__.
 |docs|
 
 .. |travis| image:: https://travis-ci.com/NASA-AMMOS/AIT-Core.svg?branch=master
-    :target: https://travis-ci.com/NASA-AMMOS/AIT-Core 
+    :target: https://travis-ci.com/NASA-AMMOS/AIT-Core
 
 .. |docs| image:: https://readthedocs.org/projects/ait-core/badge/?version=master
     :alt: Documentation Status

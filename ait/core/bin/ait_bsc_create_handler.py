@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Usage:
     ait-bsc-create-handler [options] <name> <loc> <port> <conn_type>
 
@@ -34,41 +34,48 @@ Usage:
 --file-name-pattern=<fnp> The file pattern for the log file name. This can
                           include handler metadata values as well as strftime
                           format characters [default: %Y-%m-%d-%H-%M-%S-{name}.pcap]
-'''
+"""
 
 import argparse
 import requests
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     # Add required command line arguments
-    parser.add_argument('name')
-    parser.add_argument('loc')
-    parser.add_argument('port', type=int)
-    parser.add_argument('conn_type')
+    parser.add_argument("name")
+    parser.add_argument("loc")
+    parser.add_argument("port", type=int)
+    parser.add_argument("conn_type")
 
     # Add optional command line arguments
-    parser.add_argument('--service-host', default='localhost')
-    parser.add_argument('--service-port', type=int, default=8080)
-    parser.add_argument('--rotate-log', type=lambda x: x in ['True', 'true'], default=True)
-    parser.add_argument('--rotate-log-index', choices=['year','month','day','hour','minutes','second'], default='day')
-    parser.add_argument('--rotate-log-delta', type=int, default=1)
-    parser.add_argument('--file-name-pattern', default='\%Y-\%m-\%d-\%H-\%M-\%S-{name}.pcap')
+    parser.add_argument("--service-host", default="localhost")
+    parser.add_argument("--service-port", type=int, default=8080)
+    parser.add_argument(
+        "--rotate-log", type=lambda x: x in ["True", "true"], default=True
+    )
+    parser.add_argument(
+        "--rotate-log-index",
+        choices=["year", "month", "day", "hour", "minutes", "second"],
+        default="day",
+    )
+    parser.add_argument("--rotate-log-delta", type=int, default=1)
+    parser.add_argument(
+        "--file-name-pattern", default="%Y-%m-%d-%H-%M-%S-{name}.pcap"
+    )
 
     # Get command line arguments
     args = vars(parser.parse_args())
 
-    host = args['service_host']
-    port = args['service_port']
-    handler_name = args['name']
+    host = args["service_host"]
+    port = args["service_port"]
+    handler_name = args["name"]
 
-    requests.post(
-        'http://{}:{}/{}/start'.format(host, port, handler_name),
-        data=args
-    )
+    requests.post("http://{}:{}/{}/start".format(host, port, handler_name), data=args)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

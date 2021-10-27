@@ -14,9 +14,7 @@
 import argparse
 import os.path
 import sys
-import zlib
 
-from ait.core import dtype
 from ait.core import log
 from ait.core import table
 
@@ -61,7 +59,7 @@ def main():
         encoded += bytearray(tbldefn.size - enc_len)
     elif enc_len > tbldefn.size:
         log.error(
-            f"Encoded {tbldefn.name} table with {num_entries} entires is too large. "
+            f"Encoded {tbldefn.name} table is too large. "
             f"Expected size: {tbldefn.size} bytes. Encoded size: {enc_len} bytes."
             "Please remove some entires from the table."
         )

@@ -16,7 +16,7 @@ Let's create a new class that overrides the default command encoding behavior. F
 .. code::
 
     from ait.core import cmd, log
-    
+
     class NewCmd(cmd.Cmd):
         def encode(self):
             log.info('We are encoding this command from our custom extension')

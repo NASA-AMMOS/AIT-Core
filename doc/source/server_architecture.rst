@@ -1,7 +1,7 @@
 AIT Server Introduction
 ========================
 
-The core of AIT is a "server", :mod:`ait.core.server`, which manages the processing of telemetry, logging, and command messages. The server manages relationships between the following components: 
+The core of AIT is a "server", :mod:`ait.core.server`, which manages the processing of telemetry, logging, and command messages. The server manages relationships between the following components:
 
 * **Inbound streams**   - Inbound streams manage incoming data being received by AIT. For example, telemetry messages coming into a port.
 * **Outbound streams**   - Outbound streams manage outgoing data being published by AIT. For example, command messages being published to a port.
@@ -20,19 +20,19 @@ Data will generally flow through the components as follows:
 
 Plugins
 ^^^^^^^
-* Plugins can have any number of inbound streams as inputs and any number of outbound streams as outputs. 
+* Plugins can have any number of inbound streams as inputs and any number of outbound streams as outputs.
 * A plugin **name** is required, and should be formatted like **<package>.<module>.<ClassName>**. The server will use this to import and instantiate the plugin.
 * Plugins can have any other arguments you would like. These arguments will be made class attributes when the plugin is instantiated.
 * If you would like to add a plugin, it must inherit from :mod:`ait.core.server.plugin.Plugin` and implement the abstract `process` method which is called whenever the plugin receives a message from any of its inbound streams.
 
-Example configuration: 
+Example configuration:
 
 .. code-block:: none
 
     plugins:
         - plugin:
             name: ait.gui.AITGUIPlugin
-            inputs: 
+            inputs:
                 - log_stream
                 - telem_stream
             outputs:
@@ -67,12 +67,12 @@ Example configuration:
     inbound-streams:
         - stream:
             name: log_stream
-            input: 
+            input:
                 - 3077
 
         - stream:
             name: telem_port_in_stream
-            input: 
+            input:
                 - 3076
             handlers:
                 - my_custom_handlers.TestbedTelemHandler
@@ -102,7 +102,7 @@ Example configuration:
             input:
                 - command_testbed_stream
                 - command_flightlike_stream
-            output: 
+            output:
                 - 3075
 
 
@@ -110,7 +110,7 @@ Handlers
 ^^^^^^^^
 * A handler **name** is required, and should be formatted like **<package>.<module>.<ClassName>**. The server will use this to import and instantiate the handler.
 * Handlers can have any other arguments you would like. These arguments will be made class attributes when the handler is instantiated.
-* If you would like to create a custom handler, it must inherit from :mod:`ait.core.server.Handler` and implement the `handle` method which is called whenever the stream it is subscribed to receives a message. 
+* If you would like to create a custom handler, it must inherit from :mod:`ait.core.server.Handler` and implement the `handle` method which is called whenever the stream it is subscribed to receives a message.
 
 See example configuration :ref:`above <Stream_config>`.
 
@@ -127,7 +127,7 @@ Here is an example of how the **server** portion of **config.yaml** should look:
         plugins:
             - plugin:
                 name: ait.gui.AITGUIPlugin
-                inputs: 
+                inputs:
                     - log_stream
                     - telem_testbed_stream
                 outputs:
@@ -139,12 +139,12 @@ Here is an example of how the **server** portion of **config.yaml** should look:
         inbound-streams:
             - stream:
                 name: log_stream
-                input: 
+                input:
                     - 3077
 
             - stream:
                 name: telem_port_in_stream
-                input: 
+                input:
                     - 3076
                 handlers:
                     - my_custom_handlers.TestbedTelemHandler
@@ -172,5 +172,5 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                 input:
                     - command_testbed_stream
                     - command_flightlike_stream
-                output: 
+                output:
                     - 3075

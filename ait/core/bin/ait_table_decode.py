@@ -32,7 +32,11 @@ def main():
 
     parser.add_argument("in_file", help="Input file path")
     parser.add_argument("--out_file", default=None, help="Output file path")
-    parser.add_argument("--raw", action="store_true", help="Decode columns into raw values without enumerations")
+    parser.add_argument(
+        "--raw",
+        action="store_true",
+        help="Decode columns into raw values without enumerations",
+    )
 
     args = parser.parse_args()
 
@@ -45,7 +49,7 @@ def main():
 
     # Extract the table upload type (byte 0) from the binary so we can
     # locate the table definition that we need.
-    uptype = int.from_bytes(file_in.read(1), byteorder='big')
+    uptype = int.from_bytes(file_in.read(1), byteorder="big")
     file_in.seek(0)
     fswtabdict = table.getDefaultFSWTabDict()
     pos_defn = [map[0] for map in fswtabdict.items() if map[1].uptype == uptype]

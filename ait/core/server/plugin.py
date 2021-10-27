@@ -1,10 +1,13 @@
 from abc import ABCMeta, abstractmethod
 
 import gevent
-import gevent.monkey; gevent.monkey.patch_all()
+import gevent.monkey
 
-import ait.core
+gevent.monkey.patch_all()
+
+import ait.core  # noqa
 from .client import ZMQInputClient
+
 
 class Plugin(ZMQInputClient):
     """
@@ -14,7 +17,7 @@ class Plugin(ZMQInputClient):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
+    def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
         """
         Params:
             inputs:     names of inbound streams plugin receives data from
@@ -31,13 +34,16 @@ class Plugin(ZMQInputClient):
         self.inputs = inputs
         self.outputs = outputs
 
+        if zmq_args is None:
+            zmq_args = {}
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
         super(Plugin, self).__init__(**zmq_args)
 
     def __repr__(self):
-        return '<Plugin name={}>'.format(self.name)
+        return "<Plugin name={}>".format(self.name)
 
     @abstractmethod
     def process(self, input_data, topic=None):
