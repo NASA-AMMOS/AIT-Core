@@ -84,11 +84,6 @@ default:
             max_entity_id_length: 8
             max_transaction_id_length: 8
 
-    extensions:
-        ait.core.cmd.Cmd: ait.core.newCmd.NewCmd
-        ait.core.table.FSWTabDict: ait.core.newTable.NewFSWTabDict
-
-
     logging:
         name: ait
         hostname: yourCustomHostForLogging
@@ -172,3 +167,7 @@ default:
                 output: 3075
                 command_subscriber: True
 
+
+    extensions:
+        ait.core.cmd.Cmd: ait.core.newCmd.NewCmd
+        ait.core.table.FSWTabDict: ait.core.newTable.NewFSWTabDict

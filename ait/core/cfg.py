@@ -40,13 +40,15 @@ DEFAULT_PATH_VARS = {
 PATH_KEYS = 'directory', 'file', 'filename', 'path', 'pathname'
 
 def expandConfigPaths (config, prefix=None, datetime=None, pathvars=None, parameter_key='', *keys):
-    """Updates all relative configuration paths in dictionary config,
+    """
+    Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
     If keys is omitted, it defaults to 'directory', 'file',
     'filename', 'path', 'pathname'.
 
     See util.expandPath().
+
     """
     if len(keys) == 0:
         keys = PATH_KEYS
@@ -117,7 +119,6 @@ def replaceVariables(path, datetime=None, pathvars=None):
                 # get the list of possible variable values
                 value_list = v if type(v) is list else [ v ]
 
-
                 # create temp_list for now
                 temp_list = []
 
@@ -168,11 +169,7 @@ def loadYAML (filename=None, data=None):
         if filename:
             data = open(filename, 'rt')
 
-            print(f"DATA: {data}")
-
         config = yaml.load(data, Loader=yaml.Loader)
-
-        print(f"CONFIG: {config}")
 
         if isinstance(data, IOBase):
             data.close()
@@ -193,12 +190,10 @@ def merge (d, o):
     return d
 
 
-
 class AitConfigError(Exception):
     """Raised when a AIT configuration parameter is present, but
     is in some way incorrect."""
     pass
-
 
 
 class AitConfigMissing(Exception):
@@ -211,9 +206,9 @@ class AitConfigMissing(Exception):
         self.param = param
 
 
-
 class AitConfig (object):
-    """AitConfig
+    """
+    AitConfig
 
     A AitConfig object holds configuration parameters read from a
     YAML configuration file.  The YAML data structure has three levels
@@ -222,6 +217,7 @@ class AitConfig (object):
 
     NOTE: The platform string is Python's sys.platform, i.e. 'linux2',
     'darwin', 'win32'.
+
     """
     _ROOT_DIR = os.path.abspath(os.environ.get('AIT_ROOT', os.getcwd()))
 
@@ -337,12 +333,13 @@ class AitConfig (object):
         return paths
 
     def reload (self, filename=None, data=None):
-        """Reloads the a AIT configuration.
-
+        """
+        Reloads the a AIT configuration.
         The AIT configuration is automatically loaded when the AIT
         package is first imported.  To replace the configuration, call
         reload() (defaults to the current config.filename) or
         reload(new_filename).
+
         """
         if data is None and filename is None:
             filename = self._filename
@@ -367,7 +364,6 @@ class AitConfig (object):
 
         else:
             self._config = { }
-
 
     def get (self, name, default=None):
         """Returns the attribute value *AitConfig.name* or *default*
@@ -396,7 +392,6 @@ class AitConfig (object):
                 return default
 
         return config[tail] if tail in config else default
-
 
     def getDefaultFilename(self):
         if 'AIT_CONFIG' in os.environ:

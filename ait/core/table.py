@@ -11,6 +11,7 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
+
 import datetime
 import hashlib
 import io
@@ -29,7 +30,8 @@ class FSWColDefn(object):
     """FSWColDefn - Argument Definition
 
     Argument Definitions encapsulate all information required to define
-    a single column.  
+    a single column.
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -205,6 +207,7 @@ class FSWTabDefn(object):
     single column.  This includes the column name, its opcode,
     subsystem, description and a list of argument definitions.  Name and
     opcode are required.  All others are optional.
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -373,6 +376,7 @@ class FSWTabDefn(object):
         Raises:
             ValueError: When an EOFError is encountered while decoding any column
                 but the first or if any column decode returns None.
+
         """
 
         row = []
@@ -404,6 +408,7 @@ class FSWTabDict(dict):
 
     Table Dictionaries provide a Python dictionary (i.e. hashtable)
     interface mapping Tables names to Column Definitions.
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -427,7 +432,7 @@ class FSWTabDict(dict):
         tab = None
         defn = self.get(name, None)
         if defn:
-            tab = FSWTab(defn, *args)
+            tab = createFSWTab(defn, *args)
         return tab
 
     def load(self, filename):
@@ -461,7 +466,7 @@ class FSWTabDictCache(object):
     def load(self):
         if self.fswtabdict is None:
             if self.dirty():
-                self.fswtabdict = FSWTabDict(self.filename)
+                self.fswtabdict = createFSWTabDict(self.filename)
                 self.update()
             else:
                 with open(self.pcklname, "rb") as stream:
@@ -497,14 +502,14 @@ def getDefaultDict():  # noqa: N802
 
 def YAMLCtor_FSWColDefn(loader, node):  # noqa: N802
     fields = loader.construct_mapping(node, deep=True)
-    return FSWColDefn(**fields)
+    return createFSWColDefn(**fields)
 
 
 def YAMLCtor_FSWTabDefn(loader, node):
     fields = loader.construct_mapping(node, deep=True)
     fields['fswheaderdefns'] = fields.pop('header', None)
     fields['coldefns'] = fields.pop('columns', None)
-    return FSWTabDefn(**fields)
+    return createFSWTabDefn(**fields)
 
 
 def encode_to_file(tbl_type, in_path, out_path):
@@ -542,7 +547,5 @@ def decode_to_file(tbl_type, in_path, out_path):
 
 yaml.add_constructor("!FSWTable", YAMLCtor_FSWTabDefn)
 yaml.add_constructor("!FSWColumn", YAMLCtor_FSWColDefn)
-
-print(f'__name__: {__name__}')
 
 util.__init_extensions__(__name__, globals())
