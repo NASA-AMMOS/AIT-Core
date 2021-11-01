@@ -395,7 +395,7 @@ class InfluxDBBackend(GenericBackend):
             db_res = self._query(query)
             return AITDBResult(query=query, results=db_res)
         except self._backend.exceptions.InfluxDBClientError as e:
-            log.error(f"query_time_range failed with exception: {e}")
+            log.error(f'query failed with exception: {e}')
             return AITDBResult(query=query, errors=[str(e)])
 
     def query_packets(self, packets=None, start_time=None, end_time=None, **kwargs):
@@ -739,7 +739,7 @@ class SQLiteBackend(GenericBackend):
             results = self._query(query, **kwargs)
             return AITDBResult(query=query, results=results)
         except self._backend.OperationalError as e:
-            log.error(f"query_time_range failed with exception: {e}")
+            log.error(f'query failed with exception: {e}')
             return AITDBResult(query=query, errors=[str(e)])
 
     def query_packets(self, packets=None, start_time=None, end_time=None, **kwargs):
