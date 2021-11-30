@@ -34,10 +34,10 @@ Install the **ait.core** package and its dependencies:
 
 .. code-block:: bash
 
-    $ pip install .
+    $ poetry install .
 
 From PyPi
-^^^^^^^^^^^^^^^
+^^^^^^^^^
 
 You can also install AIT Core directly from PyPi if you don't want to keep a local copy of the code.
 
@@ -140,7 +140,7 @@ Navigate back to the directory where you checked out the code and run the follow
    $ git pull
    $ git tag
    $ git checkout <Most recent version number output by the previous command>
-   $ pip install . --upgrade
+   $ poetry update
 
 Installed from PyPi
 ^^^^^^^^^^^^^^^^^^^
