@@ -92,7 +92,7 @@ def main():
         fields = [flddefn.name for flddefn in defn.fields]
     else:
         # Parse the fields file into a list
-        with open(args.fields, "rb") as stream:
+        with open(args.fields, "r") as stream:
             fields = [fldname.strip() for fldname in stream.readlines()]
 
     not_found = False
