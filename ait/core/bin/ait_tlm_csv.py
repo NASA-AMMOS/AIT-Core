@@ -1,5 +1,47 @@
 #!/usr/bin/env python
 
+# Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
+# Bespoke Link to Instruments and Small Satellites (BLISS)
+#
+# Copyright 2018, by the California Institute of Technology. ALL RIGHTS
+# RESERVED. United States Government Sponsorship acknowledged. Any
+# commercial use must be negotiated with the Office of Technology Transfer
+# at the California Institute of Technology.
+#
+# This software may be subject to U.S. export control laws. By accepting
+# this software, the user agrees to comply with all applicable U.S. export
+# laws and regulations. User has the responsibility to obtain export licenses,
+# or other export authority as may be required before exporting such
+# information to foreign countries or providing access to foreign persons.
+
+
+"""
+Usage: ait-tlm-csv [options] <pcap-filename>
+
+Reads the telemetry contained in the given pcap file and writes it in a csv file.
+
+  -h, --help            show this help message and exit
+  --all                 output all fields/values
+  --csv </path/to/output/csv>
+                        Output as CSV with filename
+  --fields </path/to/fields/file>
+                        path to the file containing all fields to query, separated by newline.
+  --packet PACKET       field names to query, separated by space
+  --time_field TIME_FIELD
+                        Time field to use for time range comparisons. Ground receipt time will be used if nothing is
+                        specified.
+  --stime STIME         Datetime in file to start collecting the data values. Defaults to beginning of pcap. Expected
+                        format: YYYY-MM-DDThh:mm:ssZ
+  --etime ETIME         Datetime in file to end collecting the data values. Defaults to end of pcap. Expected format:
+                        YYYY-MM-DDThh:mm:ssZ
+
+Examples:
+
+  $ ait-tlm-csv --packet 1553_HS_Packet --all --csv './ait-tlm-csv-output.csv' \
+                ./ait-tlm-csv-input.pcap
+"""
+
+
 import argparse
 import csv
 import sys
@@ -29,7 +71,7 @@ def main():
     parser.add_argument(
         "--fields",
         metavar="</path/to/fields/file>",
-        help="file containing all fields to query, separated by newline.",
+        help="path to the file containing all fields to query, separated by newline.",
     )
 
     parser.add_argument(
@@ -92,7 +134,7 @@ def main():
         fields = [flddefn.name for flddefn in defn.fields]
     else:
         # Parse the fields file into a list
-        with open(args.fields, "rb") as stream:
+        with open(args.fields, "r") as stream:
             fields = [fldname.strip() for fldname in stream.readlines()]
 
     not_found = False
