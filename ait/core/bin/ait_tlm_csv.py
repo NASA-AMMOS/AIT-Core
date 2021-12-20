@@ -33,7 +33,7 @@ def main():
     )
 
     parser.add_argument(
-        "--packet", required=True, help="field names to query, separated by space"
+        "--packet", required=True, help="Packet name from telemetry dictionary specified in config file."
     )
 
     parser.add_argument(
