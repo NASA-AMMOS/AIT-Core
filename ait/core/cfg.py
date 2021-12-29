@@ -355,7 +355,15 @@ class AitConfig(object):
 
         if self._config is not None:
             keys = "default", self._platform, self._hostname
+
+            extensions_map = None
+            if 'extensions' in self._config:
+                extensions_map = self._config['extensions']
+
             self._config = flatten(self._config, *keys)
+
+            if extensions_map:
+                self._config['extensions'] = extensions_map
 
             # on reload, if pathvars have not been set, we want to start
             # with the defaults, add the platform and hostname, and
