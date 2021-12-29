@@ -293,3 +293,20 @@ def test_AitConfig():
 
         config.reload()
         assert_AitConfig(config, path, filename)
+
+def test_extensions():
+    extendee = 'ait.core.cmd.Cmd'
+    extendor = 'tests.ait.core.test_cfg.TestCmd'
+    cfg_yml = YAML()
+
+    cfg_yml += f"""extensions:
+        {extendee}: {extendor}"""
+
+    config = cfg.AitConfig(data=cfg_yml)
+    extensions = config.get('extensions', False)
+    assert extensions
+    assert extendee in extensions
+    assert extensions.get(extendee) == extendor
+
+class TestCmd():
+    pass

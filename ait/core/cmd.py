@@ -551,9 +551,13 @@ def YAMLCtor_include(loader, node):  # noqa
     return data
 
 
+def init_ext():
+    util.__init_extensions__(__name__, globals())
+
+
 yaml.add_constructor("!include", YAMLCtor_include)
 yaml.add_constructor("!Command", YAMLCtor_CmdDefn)
 yaml.add_constructor("!Argument", YAMLCtor_ArgDefn)
 yaml.add_constructor("!Fixed", YAMLCtor_ArgDefn)
 
-util.__init_extensions__(__name__, globals())
+init_ext()
