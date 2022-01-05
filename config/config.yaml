@@ -130,19 +130,19 @@ default:
 
     data:
         '1553':
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/1553
         bad:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/bad
         lehx:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/downlink/lehx
         planning:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/planning
         sdos:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/sdos
         uplink:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/uplink
         ats:
-            path: /gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
+            path: ../gds/${phase}/data/${hostname}/%Y/%Y-%j/ats
 
     server:
         plugins: []
