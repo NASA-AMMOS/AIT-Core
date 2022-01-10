@@ -241,7 +241,13 @@ class Cmd(object):
         52050J, Section 3.2.3.4).  This leaves 53 words (106 bytes) for
         the command itself.
         """
-        opcode = struct.pack(">H", self.defn.opcode)
+        try:
+            opcode = struct.pack(">H", self.defn.opcode)
+        except struct.error:
+            msg = f"The opcode: {hex(self.defn.opcode)} for command {self.name} "
+            msg += "does not fit in an unsigned int. Check your Cmd Dictionary."
+            raise ValueError(msg)
+
         offset = len(opcode)
         size = max(offset + self.defn.argsize, pad)
         encoded = bytearray(size)
