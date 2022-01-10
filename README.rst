@@ -35,8 +35,7 @@ All project communication happens via mailing lists. Discussions related to deve
 
 Dev Installation
 ----------------
-As always, we encourage you to install AIT into a virtual environment of your choosing when you set up your development environment. AIT uses `poetry` for package management. As such, you can
-Before setting up your development environment you will need the following installed and ready to use:
+As always, we encourage you to install AIT into a virtual environment of your choosing when you set up your development environment. AIT uses `poetry` for package management. Before setting up your development environment you will need the following installed and ready to use:
 
 - A virtual environment "manager" of your choosing with a configured and activated virtual environment. Since AIT uses `poetry` you can consider leveraging its `environment management <https://python-poetry.org/docs/managing-environments/>`__ functionality as well.
 - `pyenv <https://github.com/pyenv/pyenv>`__ so you can easily install different Python versions
