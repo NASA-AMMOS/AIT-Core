@@ -32,7 +32,8 @@ class ZMQClient(object):
         # open PUB socket & connect to broker
         self.pub = self.context.socket(zmq.PUB)
         self.pub.connect(zmq_proxy_xsub_url.replace("*", "localhost"))
-
+        if 'listener' in kwargs and isinstance(kwargs['listener'], int) :
+            kwargs['listener'] = "127.0.0.1:"+str(kwargs['listener'])
         # calls gevent.Greenlet or gs.DatagramServer __init__
         super(ZMQClient, self).__init__(**kwargs)
 
