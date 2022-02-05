@@ -84,4 +84,4 @@
       bytes: [0,15]
 
 # below is example of including additional command dictionary file
-- !include core_set_op_mode.yaml
+# - !include core_set_op_mode.yaml
