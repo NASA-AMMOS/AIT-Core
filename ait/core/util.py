@@ -127,11 +127,11 @@ class ObjectCache(object):
             if self.dirty:
                 self._dict = self._loader(self.filename)
                 self.cache()
-                print('FILES MODIFIED - MAKE NEW PICKLE CACHE')
+                ait.log.debug('FILES MODIFIED - MAKE NEW PICKLE CACHE')
             else:
                 with open(self.cachename, "rb") as stream:
                     self._dict = pickle.load(stream)
-                    print('LOAD PICKLE CACHE.')
+                    ait.log.debug('LOAD PICKLE CACHE.')
 
         return self._dict
 
