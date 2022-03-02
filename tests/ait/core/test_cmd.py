@@ -16,8 +16,10 @@ gevent.monkey.patch_all()
 
 import struct
 import ait
-from ait.core import cmd, dtype
+from ait.core import cmd, dtype, cfg, tlm
 import importlib
+
+import pytest
 
 
 CMDDICT_TEST = """
@@ -140,22 +142,26 @@ def testGetDefaultDict():
     assert cmddict is not None
     assert isinstance(cmddict, cmd.CmdDict)
 
-def testGetDefaultDictWithExtension():
-    # Test with no CmdDict extension
+def testGetDefaultDictWithExtension(testGetDefaultDictWithExtension_setup_teardown):
     cd = cmd.getDefaultDict()
-    assert type(cd) == ait.core.cmd.CmdDict
+    assert type(cd) == TestCmdDict
 
-    # Test with CmdDict extension
+@pytest.fixture
+def testGetDefaultDictWithExtension_setup_teardown():
     cfg_yml = '''
 default:
     extensions:
         ait.core.cmd.CmdDict: tests.ait.core.test_cmd.TestCmdDict
     '''
-    ait.config.reload(filename=None, data=cfg_yml)
-    setattr(cmd, 'DefaultDict',None)  # Reset DefaultDict being cached from first call above
-    importlib.reload(cmd)             # Recreate createCmdDict method
-    cd = cmd.getDefaultDict()
-    assert type(cd) == TestCmdDict
+    saved_config = ait.config
+    ait.config = cfg.AitConfig(data=cfg_yml)
+    setattr(cmd, 'DefaultDict', None)  # Reset DefaultDict being cached
+    importlib.reload(cmd)              # Recreate createCmdDict method
+    yield
+    ait.config = saved_config
+    setattr(cmd, 'DefaultDict', None)  # Reset DefaultDict being cached
+    importlib.reload(cmd)              # Recreate createCmdDict method
+    importlib.reload(tlm)              # Also reload tlm default schema
 
 
 class TestCmdDict(cmd.CmdDict):
