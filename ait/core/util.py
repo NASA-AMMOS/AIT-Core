@@ -96,9 +96,11 @@ class ObjectCache(object):
 
         # If no pickle cache exists return True to make a new one.
         if not os.path.exists(cache_name):
+            ait.log.debug(f'No pickle cache exists, make a new one')
             return True
         # Has the yaml config file has been modified since the creation of the pickle cache
         if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
+            ait.log.debug(f'{yaml_file_name} modified - make a new pickle cash')
             return True
         # Get the directory of the yaml config file to be parsed
         dir_name = os.path.dirname(yaml_file_name)
@@ -114,6 +116,7 @@ class ObjectCache(object):
             except RecursionError as e:   # TODO Python 3.7 does not catch this error.
                 print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
                       f'back and forth to one another thought the "!include" statements.')
+        ait.log.debug('Load pickle binary.')
         return False
 
     def load(self):
@@ -127,11 +130,9 @@ class ObjectCache(object):
             if self.dirty:
                 self._dict = self._loader(self.filename)
                 self.cache()
-                ait.log.debug('FILES MODIFIED - MAKE NEW PICKLE CACHE')
             else:
                 with open(self.cachename, "rb") as stream:
                     self._dict = pickle.load(stream)
-                    ait.log.debug('LOAD PICKLE CACHE.')
 
         return self._dict
 
