@@ -644,13 +644,26 @@ class TestSQLiteBackend(unittest.TestCase):
         pkt_defn = tlmdict["Packet1"]
         pkt = tlm.Packet(pkt_defn, bytearray(range(pkt_defn.nbytes)))
 
-        # We can't fully test this call given the modification to the packet
-        # data on insert. Better than nothing I suppose.
+        # Note: we can't fully test this call given the modification to
+        # the packet data on insert. Better than nothing I suppose.
+
+        # Test without time
         sqlbackend.insert(pkt)
         assert (
             'INSERT INTO "Packet1" (PKTDATA) VALUES (?)'
             in sqlbackend._conn.execute.call_args[0]
         )
+
+        sqlbackend._conn.reset_mock()
+
+        # Test with time
+        now = dt.datetime.utcnow()
+        sqlbackend.insert(pkt, time=now)
+        assert (
+            'INSERT INTO "Packet1" (PKTDATA, time) VALUES (?, ?)'
+            in sqlbackend._conn.execute.call_args[0]
+        )
+        assert (now.strftime(dmc.RFC3339_Format) == sqlbackend._conn.execute.call_args[0][1][1])
 
         os.remove(self.test_yaml_file)
 

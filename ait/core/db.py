@@ -188,7 +188,7 @@ class GenericBackend(object):
         pass
 
     @abstractmethod
-    def insert(self, packet, **kwargs):
+    def insert(self, packet, time=None, **kwargs):
         """Insert a record into the database."""
         pass
 
@@ -689,7 +689,7 @@ class SQLiteBackend(GenericBackend):
         self._conn.execute(sql)
         self._conn.commit()
 
-    def insert(self, packet, **kwargs):
+    def insert(self, packet, time=None, **kwargs):
         """Insert a packet into the database
 
         Arguments
@@ -698,8 +698,17 @@ class SQLiteBackend(GenericBackend):
                 the database
 
         """
-        sql = f'INSERT INTO "{packet._defn.name}" (PKTDATA) VALUES (?)'
-        self._conn.execute(sql, (sqlite3.Binary(packet._data),))
+        if isinstance(time, dt.datetime):
+            time = time.strftime(dmc.RFC3339_Format)
+
+        sql = f'INSERT INTO "{packet._defn.name}" (PKTDATA, time) VALUES (?, ?)' \
+            if time \
+            else f'INSERT INTO "{packet._defn.name}" (PKTDATA) VALUES (?)'
+        values = (sqlite3.Binary(packet._data), time) \
+            if time \
+            else (sqlite3.Binary(packet._data))
+
+        self._conn.execute(sql, (sqlite3.Binary(packet._data), time))
         self._conn.commit()
 
     def _query(self, query, **kwargs):
