@@ -406,7 +406,7 @@ class ArrayType(object):
 
         return self.type.decode(bytes[start:stop], raw)
 
-    def encode(self, args):
+    def encode(self, *args):
         """encode(value1[, ...]) -> bytes
 
         Encodes the given values to a sequence of bytes according to this

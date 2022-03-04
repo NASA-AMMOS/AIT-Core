@@ -500,7 +500,9 @@ def getDefaultCmdDict(reload=False):  # noqa
 
 
 def getDefaultDict(reload=False):  # noqa
-    return util.getDefaultDict(__name__, "cmddict", CmdDict, reload)
+    create_cmd_dict_func = globals().get('createCmdDict', None)
+    loader = create_cmd_dict_func if create_cmd_dict_func else CmdDict
+    return util.getDefaultDict(__name__, "cmddict", loader, reload)
 
 
 def getDefaultDictFilename():  # noqa
