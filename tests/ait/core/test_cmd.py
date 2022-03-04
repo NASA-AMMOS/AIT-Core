@@ -12,12 +12,14 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 import gevent.monkey
-
 gevent.monkey.patch_all()
 
 import struct
+import ait
+from ait.core import cmd, dtype, cfg, tlm
+import importlib
 
-from ait.core import cmd, dtype
+import pytest
 
 
 CMDDICT_TEST = """
@@ -139,3 +141,29 @@ def testGetDefaultDict():
 
     assert cmddict is not None
     assert isinstance(cmddict, cmd.CmdDict)
+
+def testGetDefaultDictWithExtension(testGetDefaultDictWithExtension_setup_teardown):
+    cd = cmd.getDefaultDict()
+    assert type(cd) == TestCmdDict
+
+@pytest.fixture
+def testGetDefaultDictWithExtension_setup_teardown():
+    cfg_yml = '''
+default:
+    extensions:
+        ait.core.cmd.CmdDict: tests.ait.core.test_cmd.TestCmdDict
+    '''
+    saved_config = ait.config
+    ait.config = cfg.AitConfig(data=cfg_yml)
+    setattr(cmd, 'DefaultDict', None)  # Reset DefaultDict being cached
+    importlib.reload(cmd)              # Recreate createCmdDict method
+    yield
+    ait.config = saved_config
+    setattr(cmd, 'DefaultDict', None)  # Reset DefaultDict being cached
+    importlib.reload(cmd)              # Recreate createCmdDict method
+    importlib.reload(tlm)              # Also reload tlm default schema
+
+
+class TestCmdDict(cmd.CmdDict):
+    def __init__(self, *args, **kwargs):
+        super(TestCmdDict, self).__init__(*args, **kwargs)
