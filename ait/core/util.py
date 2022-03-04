@@ -100,7 +100,6 @@ class ObjectCache(object):
             return True
         # Has the yaml config file has been modified since the creation of the pickle cache
         if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
-            ait.log.debug(f'{yaml_file_name} modified - make a new pickle cash')
             return True
         # Get the directory of the yaml config file to be parsed
         dir_name = os.path.dirname(yaml_file_name)
@@ -116,7 +115,6 @@ class ObjectCache(object):
             except RecursionError as e:   # TODO Python 3.7 does not catch this error.
                 print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
                       f'back and forth to one another thought the "!include" statements.')
-        ait.log.debug('Load pickle binary.')
         return False
 
     def load(self):
