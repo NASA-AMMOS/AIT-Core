@@ -708,7 +708,7 @@ class SQLiteBackend(GenericBackend):
             if time \
             else (sqlite3.Binary(packet._data))
 
-        self._conn.execute(sql, (sqlite3.Binary(packet._data), time))
+        self._conn.execute(sql, values)
         self._conn.commit()
 
     def _query(self, query, **kwargs):
