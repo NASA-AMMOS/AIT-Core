@@ -119,9 +119,13 @@ class ArgDefn(json.SlotSerializer, object):
         """Encodes the given value according to this AIT Argument
         Definition.
         """
+        if not self.type:
+            return bytearray()
+
         if type(value) == str and self.enum and value in self.enum:
             value = self.enum[value]
-        return self.type.encode(value) if self.type else bytearray()
+        return self.type.encode(*value) if type(value) in [tuple, list] else self.type.encode(value)
+
 
     def slice(self, offset=0):
         """Returns a Python slice object (e.g. for array indexing) indicating
