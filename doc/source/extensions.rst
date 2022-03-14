@@ -16,7 +16,7 @@ Let's create a new class that overrides the default command encoding behavior. F
 .. code::
 
     from ait.core import cmd, log
-    
+
     class NewCmd(cmd.Cmd):
         def encode(self):
             log.info('We are encoding this command from our custom extension')
@@ -51,4 +51,4 @@ Looks like it's working as we expect!
 What else can we extend?
 ------------------------
 
-AIT lets you add extensions for any class found in the `core.cmd <https://ait-core.readthedocs.io/en/latest/ait.core.cmd.html>`_, `core.tlm <https://ait-core.readthedocs.io/en/latest/ait.core.tlm.html>`_, `core.evr <https://ait-core.readthedocs.io/en/latest/ait.core.evr.html>`_, and `core.limits <https://ait-core.readthedocs.io/en/latest/ait.core.limits.html>`_ modules.
+AIT lets you add extensions for any class found in the `core.cmd <https://ait-core.readthedocs.io/en/latest/ait.core.cmd.html>`_, `core.tlm <https://ait-core.readthedocs.io/en/latest/ait.core.tlm.html>`_, `core.evr <https://ait-core.readthedocs.io/en/latest/ait.core.evr.html>`_, `core.limits <https://ait-core.readthedocs.io/en/latest/ait.core.limits.html>`_, and `core.seq <https://ait-core.readthedocs.io/en/latest/ait.core.seq.html>`_ modules.

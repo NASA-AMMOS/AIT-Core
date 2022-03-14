@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 usage:  ait-seq-encode mission_seq_SSS_desc_NNN.txt
 where:
         SSS  = subsystem
@@ -26,7 +26,7 @@ Encodes the given relative time command sequence to binary.
 Examples:
 
   $ ait-seq-encode seq/ait_seq_gps_reset_001.txt
-'''
+"""
 
 import os
 import sys
@@ -39,40 +39,41 @@ def main():
     log.begin()
 
     try:
-        defaults      = { }
         parser = argparse.ArgumentParser(
-            description = __doc__,
-            formatter_class = argparse.RawDescriptionHelpFormatter)
+            description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        )
 
         # Add required command line arguments
-        parser.add_argument('filename',
-            nargs='+',
-            metavar='</path/to/seq>',
-            help='File or collection of sequence file(s)')
+        parser.add_argument(
+            "filename",
+            nargs="+",
+            metavar="</path/to/seq>",
+            help="File or collection of sequence file(s)",
+        )
 
         # Add optional command line arguments
         args = parser.parse_args()
 
         for fname in args.filename:
-            filename  = os.path.abspath(fname)
+            filename = os.path.abspath(fname)
             if not os.path.isfile(filename):
-                raise Exception(f'File not found: {filename}')
+                raise Exception(f"File not found: {filename}")
 
             extension = os.path.splitext(filename)[1]
 
-            if extension.lower() != '.txt':
+            if extension.lower() != ".txt":
                 log.warn(f"Filename '{filename}' does not have a '.txt' extension")
 
             # Parse the filename for the applicable information
-            parts = os.path.basename(filename).split('_')
+            parts = os.path.basename(filename).split("_")
             seqid = os.path.splitext(parts[-1])[0]
-            desc = parts[-2]
-            subsys = parts[-3]
 
             try:
                 seqid = int(seqid)
             except ValueError:
-                raise Exception('Invalid filename "{os.path.basename(filename)}": . {__doc__}')
+                raise Exception(
+                    'Invalid filename "{os.path.basename(filename)}": . {__doc__}'
+                )
 
             sequence = seq.createSeq(filename, id=seqid)
 
@@ -81,7 +82,7 @@ def main():
                     log.error(msg)
             else:
                 binpath = sequence.binpath
-                seqid   = sequence.seqid
+                seqid = sequence.seqid
 
                 log.info(f"Writing {binpath} (seqid=0x{seqid:04X}).")
                 sequence.writeBinary()
@@ -96,5 +97,5 @@ def main():
     sys.exit(exit)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

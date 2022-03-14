@@ -21,10 +21,7 @@ Inserts telemetry into a database from one or more PCAP files.
 
 import argparse
 import os
-import sys
-import socket
 import struct
-import time
 
 import ait
 from ait.core import db, log, tlm, pcap
@@ -32,47 +29,45 @@ from ait.core import db, log, tlm, pcap
 
 def main():
     tlmdict = tlm.getDefaultDict()
-    pnames  = list(tlmdict.keys())
-    ap      = argparse.ArgumentParser(
-        description     = __doc__,
-        formatter_class = argparse.ArgumentDefaultsHelpFormatter
+    pnames = list(tlmdict.keys())
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     arguments = {
-        '--packet': {
-            'type'    : str,
-            'choices' : pnames,
-            'default' : pnames[0] if len(pnames) > 0 else None,
-            'help'    : 'Type of packets (!Packet name in tlm.yaml) in file',
-            'required': len(pnames) > 1,
+        "--packet": {
+            "type": str,
+            "choices": pnames,
+            "default": pnames[0] if len(pnames) > 0 else None,
+            "help": "Type of packets (!Packet name in tlm.yaml) in file",
+            "required": len(pnames) > 1,
         },
-
-        '--database': {
-            'default' : ait.config.get('database.dbname'),
-            'help'    : ('Name of database in which to insert packets (may '
-                         'also be specified in config.yaml database.name)'),
-            'required': ait.config.get('database.dbname') is None
+        "--database": {
+            "default": ait.config.get("database.dbname"),
+            "help": (
+                "Name of database in which to insert packets (may "
+                "also be specified in config.yaml database.name)"
+            ),
+            "required": ait.config.get("database.dbname") is None,
         },
-
-        '--backend': {
-            'default': 'sqlite',
-            'choices': ['sqlite', 'influx'],
-            'action' : 'store',
-            'help'   : ('Name of database in which to insert packets (may '
-                         'also be specified in config.yaml database.name)')
+        "--backend": {
+            "default": "sqlite",
+            "choices": ["sqlite", "influx"],
+            "action": "store",
+            "help": (
+                "Name of database in which to insert packets (may "
+                "also be specified in config.yaml database.name)"
+            ),
         },
-
-        '--use-current-time': {
-            'action': 'store_true',
-            'help'  : ('Use current time stamps when insert packets instead '
-                       'of ground receipt time (or the time written in the '
-                       'PCAP header).')
+        "--use-current-time": {
+            "action": "store_true",
+            "help": (
+                "Use current time stamps when insert packets instead "
+                "of ground receipt time (or the time written in the "
+                "PCAP header)."
+            ),
         },
-
-        'file': {
-            'nargs': '+',
-            'help' : 'File(s) containing telemetry packets'
-        }
+        "file": {"nargs": "+", "help": "File(s) containing telemetry packets"},
     }
 
     for name, params in arguments.items():
@@ -84,22 +79,23 @@ def main():
 
     try:
         npackets = 0
-        dbconn   = None
-        defn     = tlm.getDefaultDict()[args.packet]
-        nbytes   = defn.nbytes
+        dbconn = None
+        defn = tlm.getDefaultDict()[args.packet]
 
-        if args.backend == 'sqlite':
+        if args.backend == "sqlite":
             dbconn = db.SQLiteBackend()
-        elif args.backend == 'influx':
+        elif args.backend == "influx":
             dbconn = db.InfluxDBBackend()
 
-        if args.backend == 'sqlite' and (args.database == ':memory:' or not os.path.exists(args.database)):
+        if args.backend == "sqlite" and (
+            args.database == ":memory:" or not os.path.exists(args.database)
+        ):
             dbconn.create(database=args.database)
         else:
             dbconn.connect(database=args.database)
 
         for filename in args.file:
-            log.info('Processing %s' % filename)
+            log.info("Processing %s" % filename)
             with pcap.open(filename) as stream:
                 for header, pkt_data in stream:
 
@@ -116,7 +112,7 @@ def main():
                         log.error("Unable to unpack data into packet. Skipping ...")
 
     except KeyboardInterrupt:
-        log.info('Received Ctrl-C.  Stopping database insert.')
+        log.info("Received Ctrl-C.  Stopping database insert.")
 
     except IOError as e:
         log.error(str(e))
@@ -125,10 +121,10 @@ def main():
         dbconn.close()
 
     values = npackets, args.packet, args.database
-    log.info('Inserted %d %s packets into database %s.' % values)
+    log.info("Inserted %d %s packets into database %s." % values)
 
     log.end()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

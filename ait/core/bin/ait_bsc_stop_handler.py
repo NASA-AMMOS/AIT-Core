@@ -14,7 +14,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 Usage:
     ait-bsc-stop-handler [options] <name>
 
@@ -22,7 +22,7 @@ Usage:
                       [default: localhost]
 --service-port=<port> The port for the BSC REST service connection
                       [default: 8080]
-'''
+"""
 
 import requests
 import argparse
@@ -30,25 +30,26 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
     # Add required command line arguments
-    parser.add_argument('name')
+    parser.add_argument("name")
 
     # Add optional command line arguments
-    parser.add_argument('--service-host', default='localhost')
-    parser.add_argument('--service-port', type=int, default=8080)
+    parser.add_argument("--service-host", default="localhost")
+    parser.add_argument("--service-port", type=int, default=8080)
 
     # Get command line arguments
     args = vars(parser.parse_args())
 
-    host = args['service_host']
-    port = args['service_port']
+    host = args["service_host"]
+    port = args["service_port"]
 
-    handler_name = args['name']
+    handler_name = args["name"]
 
-    requests.delete('http://{}:{}/{}/stop'.format(host, port, handler_name))
+    requests.delete("http://{}:{}/{}/stop".format(host, port, handler_name))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

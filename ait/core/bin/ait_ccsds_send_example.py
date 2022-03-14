@@ -6,11 +6,11 @@ import time
 from ait.core import log
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-hs_packet = struct.Struct('>BBBBBBBBBBBBBBBB')
-data = bytearray(b'\x02\xE7\x40\x00\x00\x0B\x00\x00\x00\x01\x01\x71\x0C\x41\x00\x01')
+hs_packet = struct.Struct(">BBBBBBBBBBBBBBBB")
+data = bytearray(b"\x02\xE7\x40\x00\x00\x0B\x00\x00\x00\x01\x01\x71\x0C\x41\x00\x01")
 
-'''
-## CCSDS Packet ##
+"""
+# CCSDS Packet #
 version:                        000
 type:                           0
 secondary header flag:          0
@@ -31,21 +31,20 @@ version_id                      0001
 format_id                       000001
 <unknown>                       00000000
 frame_id                        00000001
-'''
+"""
 
 buf = hs_packet.pack(*data)
 
-host = 'localhost'
+host = "localhost"
 port = 3076
 
 
 def main():
     while True:
         s.sendto(buf, (host, port))
-        log.info('Sent telemetry (%d bytes) to %s:%d'
-                    % (hs_packet.size, host, port))
+        log.info("Sent telemetry (%d bytes) to %s:%d" % (hs_packet.size, host, port))
         time.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

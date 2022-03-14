@@ -36,7 +36,7 @@
         units:    amperes
 
   derivations:
-    - !Derivation 
+    - !Derivation
       name: Volt_Diff
       desc: Difference between Voltage_A and Voltage_B
       equation: Difference(Voltage_A, Voltage_B)
@@ -95,4 +95,3 @@
       value: 0x89ABCDEF
 
 - !include ccsds_header.yaml
-

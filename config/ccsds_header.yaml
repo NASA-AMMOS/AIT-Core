@@ -71,9 +71,9 @@
       name: time_coarse
       desc: |
         The Time Code is made up of a preamble field (P-field) and a time
-        field (T-field). For ISS, as allowed by the CCSDS Recommendation, 
+        field (T-field). For ISS, as allowed by the CCSDS Recommendation,
         the P-field is implicitly conveyed (it is not present with the
-        T-field). ISS time is referenced to GPS Time (midnight 5-6 January 
+        T-field). ISS time is referenced to GPS Time (midnight 5-6 January
         1980). The T-field consists of 4 octets of coarse time and 1 octet of
         fine time. These octets are a set of binary counters, cascaded with
         the adjacent counters. The value represents the elapsed time since

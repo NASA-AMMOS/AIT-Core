@@ -2,7 +2,7 @@ import ait.core.log
 from .client import ZMQInputClient, PortInputClient, PortOutputClient
 
 
-class Stream(object):
+class Stream():
     """
     This is the base Stream class that all streams will inherit from.
     It calls its handlers to execute on all input messages sequentially,
@@ -10,7 +10,7 @@ class Stream(object):
     types were specified.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}, **kwargs):
+    def __init__(self, name, inputs, handlers, zmq_args=None, **kwargs):
         """
         Params:
             name:       string name of stream (should be unique)
@@ -31,26 +31,30 @@ class Stream(object):
                         provided input and output types
         """
         self.name = name
-        self.inputs = inputs if inputs is not None else [ ]
+        self.inputs = inputs if inputs is not None else []
         self.handlers = handlers
 
+        if zmq_args is None:
+            zmq_args = {}
+
         if not self.valid_workflow():
-            raise ValueError('Sequential workflow inputs and outputs ' +
-                             'are not compatible. Workflow is invalid.')
+            raise ValueError(
+                "Sequential workflow inputs and outputs "
+                + "are not compatible. Workflow is invalid."
+            )
 
         # This calls __init__ on subclass of ZMQClient
-        if 'output' in kwargs:
-            super(Stream, self).__init__(input=self.inputs,
-                                         output=kwargs['output'],
-                                         **zmq_args)
+        if "output" in kwargs:
+            super(Stream, self).__init__(
+                input=self.inputs, output=kwargs["output"], **zmq_args
+            )
         else:
-            super(Stream, self).__init__(input=self.inputs,
-                                         **zmq_args)
+            super(Stream, self).__init__(input=self.inputs, **zmq_args)
 
     def __repr__(self):
-        return '<{} name={}>'.format(
-                    str(type(self)).split('.')[-1].split('\'')[0],
-                    self.name)
+        return "<{} name={}>".format(
+            str(type(self)).split(".")[-1].split("'")[0], self.name
+        )
 
     def process(self, input_data, topic=None):
         """
@@ -69,7 +73,10 @@ class Stream(object):
             if output:
                 input_data = output
             else:
-                msg = type(handler).__name__ + " returned no data and caused the handling process to end."
+                msg = (
+                    type(handler).__name__
+                    + " returned no data and caused the handling process to end."
+                )
                 ait.core.log.info(msg)
                 return
 
@@ -85,8 +92,7 @@ class Stream(object):
         for ix, handler in enumerate(self.handlers[:-1]):
             next_input_type = self.handlers[ix + 1].input_type
 
-            if (handler.output_type is not None and
-                    next_input_type is not None):
+            if handler.output_type is not None and next_input_type is not None:
                 if handler.output_type != next_input_type:
                     return False
 
@@ -98,7 +104,7 @@ class PortInputStream(Stream, PortInputClient):
     This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}):
+    def __init__(self, name, inputs, handlers, zmq_args=None):
         super(PortInputStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
@@ -108,7 +114,7 @@ class ZMQStream(Stream, ZMQInputClient):
     to a ZMQ socket.
     """
 
-    def __init__(self, name, inputs, handlers, zmq_args={}):
+    def __init__(self, name, inputs, handlers, zmq_args=None):
         super(ZMQStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
@@ -118,5 +124,7 @@ class PortOutputStream(Stream, PortOutputClient):
     publishes to a UDP port.
     """
 
-    def __init__(self, name, inputs, output, handlers, zmq_args={}):
-        super(PortOutputStream, self).__init__(name, inputs, handlers, zmq_args, output=output)
+    def __init__(self, name, inputs, output, handlers, zmq_args=None):
+        super(PortOutputStream, self).__init__(
+            name, inputs, handlers, zmq_args, output=output
+        )

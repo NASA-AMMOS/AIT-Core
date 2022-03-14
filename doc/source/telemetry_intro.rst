@@ -231,7 +231,7 @@ type:
     A **string** specifying the data type for the section of the packet in which this field is located. You can see all the valid primitive types that will be accepted here by looking at ``ait.dtype.PrimitiveTypes``. You can see examples of how *type* is used in the `Example Telemetry Packet Definition`_ section.
 
     .. note::
-    
+
        64-bit integer types are supported by AIT's core libraries but these will not function as expected in the monitoring UI due to limitations with JavaScript and its internal representation of numbers. This does not affect complex types like ``Time64``. It is recommended that you split 64-bit integer fields into separates bytes / words if you plan to display that entire field in the GUI. If you have questions or need help with a work-around for this limitation please reach out to the development team.
 
 units (optional):

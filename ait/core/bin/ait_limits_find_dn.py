@@ -13,7 +13,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
-'''
+"""
 ait-limits-find-dn
 
 Extract the DN-equivalent value for EU limit trip thresholds
@@ -38,7 +38,7 @@ example value limit:
         warn:
           - TABLE_FOO
           - TABLE_BAR
-'''
+"""
 
 from ait.core import limits
 from ait.core import log
@@ -46,9 +46,9 @@ from ait.core import tlm
 
 
 def main():
-    DNLimits = {}
-    EULimits = {}
-    EUValues = {}
+    dn_limits = {}
+    eu_limits = {}
+    eu_values = {}
 
     ld = limits.getDefaultDict()
     td = tlm.getDefaultDict()
@@ -73,7 +73,6 @@ def main():
 
     for source in sorted(ld.keys(), key=lambda x: x.split(".")[1]):
         log.info(f"Processing {source}")
-        limit = ld[source]
         pkt_name, name = source.split(".")
 
         # Don't support limits specifying individual values. This is usually
@@ -83,29 +82,29 @@ def main():
             log.warn(f'Skipping unsupported "value" limit {source}')
             continue
 
-        DNLimits.setdefault(name, [None, None, None, None])
-        EULimits.setdefault(name, [None, None, None, None])
-        EUValues.setdefault(name, [None, None, None, None])
+        dn_limits.setdefault(name, [None, None, None, None])
+        eu_limits.setdefault(name, [None, None, None, None])
+        eu_values.setdefault(name, [None, None, None, None])
 
         if ld[source].lower is not None:
             try:
-                EULimits[name][0] = ld[source].lower.error
+                eu_limits[name][0] = ld[source].lower.error
             except AttributeError:
                 pass
 
             try:
-                EULimits[name][1] = ld[source].lower.warn
+                eu_limits[name][1] = ld[source].lower.warn
             except AttributeError:
                 pass
 
         if ld[source].upper is not None:
             try:
-                EULimits[name][2] = ld[source].upper.warn
+                eu_limits[name][2] = ld[source].upper.warn
             except AttributeError:
                 pass
 
             try:
-                EULimits[name][3] = ld[source].upper.error
+                eu_limits[name][3] = ld[source].upper.error
             except AttributeError:
                 pass
 
@@ -126,23 +125,23 @@ def main():
         for dn, eu in values:
             for n in range(4):
                 if (
-                    EULimits[name][n] is not None
-                    and DNLimits[name][n] is None
-                    and eu > EULimits[name][n]
+                    eu_limits[name][n] is not None
+                    and dn_limits[name][n] is None
+                    and eu > eu_limits[name][n]
                 ):
                     value = dn - 1 if dn > 0 else 0
-                    DNLimits[name][n] = value
+                    dn_limits[name][n] = value
 
                     setattr(packet, name, value)
-                    EUValues[name][n] = getattr(packet, name)
+                    eu_values[name][n] = getattr(packet, name)
 
-            if all(DNLimits[name][n] is not None for n in range(4)):
+            if all(dn_limits[name][n] is not None for n in range(4)):
                 break
 
         values = [source]
-        values.extend(map(str, EULimits[name]))
-        values.extend(map(str, DNLimits[name]))
-        values.extend(map(str, EUValues[name]))
+        values.extend(map(str, eu_limits[name]))
+        values.extend(map(str, dn_limits[name]))
+        values.extend(map(str, eu_values[name]))
         all_vals.append(values)
 
     s = [[str(e) for e in row] for row in all_vals]
@@ -151,5 +150,6 @@ def main():
     table = [fmt.format(*row) for row in s]
     print("\n".join(table))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

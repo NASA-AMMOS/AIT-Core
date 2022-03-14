@@ -64,6 +64,12 @@ ait-tlm-simulate
    :start-after: '''
    :end-before: '''
 
+ait-tlm-csv
+^^^^^^^^^^^
+.. literalinclude:: ../../ait/core/bin/ait_tlm_csv.py
+   :start-after: '''
+   :end-before: '''
+
 ____
 
 Command Utilities
