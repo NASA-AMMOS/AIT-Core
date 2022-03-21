@@ -310,7 +310,7 @@ function AITRealtimeTelemetryPlugin() {
         //attach to listener map declared above
         let listener = realtimeListeners;
 
-        connectRealtime();
+        web_socket = connectRealtime();
 
         let provider = {
             supportsSubscribe: function (domainObject) {
@@ -318,10 +318,12 @@ function AITRealtimeTelemetryPlugin() {
             },
             subscribe: function (domainObject, callback) {
                 debugMsg("Adding realtime subscriber for key "+domainObject.identifier.key);
+                web_socket.send('subscribe ' + domainObject.identifier.key);
                 listener[domainObject.identifier.key] = callback;
                 return function unsubscribe() {
                     debugMsg("Removing realtime subscriber for key "+domainObject.identifier.key);
                     delete listener[domainObject.identifier.key];
+                    web_socket.send('unsubscribe ' + domainObject.identifier.key);
                 };
             }
         };
