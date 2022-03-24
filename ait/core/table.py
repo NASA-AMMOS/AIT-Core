@@ -433,7 +433,7 @@ class FSWTabDict(dict):
         tab = None
         defn = self.get(name, None)
         if defn:
-            tab = FSWTab(defn, *args)
+            tab = createFSWTab(defn, *args)
         return tab
 
     def load(self, filename):
@@ -467,7 +467,7 @@ class FSWTabDictCache(object):
     def load(self):
         if self.fswtabdict is None:
             if self.dirty():
-                self.fswtabdict = FSWTabDict(self.filename)
+                self.fswtabdict = createFSWTabDict(self.filename)
                 self.update()
             else:
                 with open(self.pcklname, "rb") as stream:
@@ -503,14 +503,14 @@ def getDefaultDict():  # noqa: N802
 
 def YAMLCtor_FSWColDefn(loader, node):  # noqa: N802
     fields = loader.construct_mapping(node, deep=True)
-    return FSWColDefn(**fields)
+    return createFSWColDefn(**fields)
 
 
 def YAMLCtor_FSWTabDefn(loader, node):  # noqa: N802
     fields = loader.construct_mapping(node, deep=True)
     fields["fswheaderdefns"] = fields.pop("header", None)
     fields["coldefns"] = fields.pop("columns", None)
-    return FSWTabDefn(**fields)
+    return createFSWTabDefn(**fields)
 
 
 def encode_to_file(tbl_type, in_path, out_path):
