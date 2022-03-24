@@ -127,6 +127,7 @@ class ObjectCache(object):
         pickled cache file, whichever was modified most recently.
 
         """
+
         if self._dict is None:
             if self.dirty:
                 self._dict = self._loader(self.filename)
