@@ -113,7 +113,7 @@ class ObjectCache(object):
                             os.path.join(dir_name, line.strip().split(" ")[2]), cache_name)
                         if check:
                             return True
-            except RecursionError as e:  # TODO Python 3.7 does not catch this error.
+            except RecursionError as e:   # TODO Python 3.7 does not catch this error.
                 print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
                       f'back and forth to one another thought the "!include" statements.')
         log.debug('Load pickle binary.')
