@@ -47,32 +47,70 @@ from ait.core.server.plugin import Plugin
 
 
 class ManagedWebSocket():
-    idCounter = 0  # to assign unique ids
-    PACKET_ID_WILDCARD = "*"
-    '''
+    """
     A data structure to maintain state for OpenMCT websockets
-    '''
+    """
+    idCounter = 0  # to assign unique ids
+
+    PACKET_ID_WILDCARD = "*"
+
 
     def __init__(self, web_socket, client_ip=None):
         self.web_socket = web_socket
         self.client_ip = client_ip
-        self.subscribed_set = set()
+        self._subscribed_dict = dict() #Dict from packetId to list of fieldIds
         self.is_closed = False
         self.is_error = False
-        self.id = ManagedWebSocket.generate_id()
+        self.id = ManagedWebSocket._generate_id()
 
     @staticmethod
-    def generate_id():
+    def _generate_id():
         tmp_id = f"{ManagedWebSocket.idCounter}/{id(gevent.getcurrent())}"
         ManagedWebSocket.idCounter += 1
         return tmp_id
 
+    def subscribe_field(self, openmct_field_id):
+        """
+        Adds a subscription to an OpenMCT field
+        :param openmct_field_id: OpenMCT Field id
+        """
+        pkt_id, fld_id = DictUtils.parse_mct_pkt_id(openmct_field_id)
+        if pkt_id and fld_id:
+            # If packet id is not in dict, add it with empty set as value
+            if pkt_id not in self._subscribed_dict.keys():
+                self._subscribed_dict[pkt_id] = set()
+            field_set = self._subscribed_dict.get(pkt_id, None)
+            if field_set is not None: # Unnecessary, but paranoid
+                field_set.add(fld_id)
+
+    def unsubscribe_field(self, openmct_field_id):
+        """
+        Removes a subscription to an OpenMCT field
+        :param openmct_field_id: OpenMCT Field id
+        """
+        pkt_id, fld_id = DictUtils.parse_mct_pkt_id(openmct_field_id)
+        if pkt_id and fld_id:
+            field_set = self._subscribed_dict.get(pkt_id, None)
+            if field_set:
+                field_set.remove(fld_id)
+                #If there are no more fields, then remove packet id
+                if len(field_set) == 0:
+                    self._subscribed_dict.pop(pkt_id)
+
     @property
     def is_alive(self):
-        self.check_state()
+        """
+        Returns True if web-socket is active, False otherwise
+        :return: Managed web-socket state
+        """
+        self._check_state()
         return not self.is_closed
 
-    def check_state(self):
+    def _check_state(self):
+        """
+        Checks internal flags as well as state of underlying websocket
+        to see if this instance can be considered closed
+        """
         if not self.is_closed:
             if self.is_error:
                 self.is_closed = True
@@ -80,21 +118,54 @@ class ManagedWebSocket():
                 self.is_closed = True
 
     def set_error(self):
+        """
+        Sets error flag
+        """
         self.is_error = True
 
     def accepts_packet(self, pkt_id):
         """
         Returns True if pkt_id is considered subscribed to by this websocket
-        At this point, we are looking if the AIT packet name is found amongst
-        the specific packet_name.field_name subscription entries.
         If pkt_id is PACKET_ID_WILDCARD, it will be automatically accepted
-        TODO: At some point pkt_id should be the full field...?
         :param pkt_id: AIT Packet name
         :return: True if packet id is accepted, False otherwise
         """
-        return pkt_id == ManagedWebSocket.PACKET_ID_WILDCARD or \
-            any(pkt_id == DictUtils.parse_mct_pkt_id(sub_id)[0]
-                for sub_id in self.subscribed_set)
+        if pkt_id == ManagedWebSocket.PACKET_ID_WILDCARD:
+            return True
+        field_set = self._subscribed_dict.get(pkt_id, None)
+        if field_set:  # Should be true if set is non-empty
+            return True
+        return False
+
+    def create_subscribed_packet(self, omc_packet):
+        """
+        Returns a modified OpenMCT packet that contains only fields
+        for which the web-socket is subscribed
+        :param omc_packet: Full OpenMCT packet with all fields
+        :return: New modified packet if any match in fields, else None
+        """
+        packet_id = omc_packet['packet']
+        if not self.accepts_packet(packet_id):
+            return None
+
+        # Grab the original field data dict
+        orig_fld_dict = omc_packet['data']
+        if not orig_fld_dict:
+            return None
+
+        sub_pkt = None
+
+        # Get set of fields of the packet to which session is subscribed
+        field_set = self._subscribed_dict.get(packet_id, None)
+
+        # Filter the original field value dict to only fields session is subscribed to
+        if field_set:
+            filt_fld_dict = { k: v for k, v in orig_fld_dict.items() if k in field_set}
+            # If filtered dict is non-empty, then build new packet for return
+            if filt_fld_dict:
+                sub_pkt = {'packet': packet_id, 'data': filt_fld_dict}
+
+        return sub_pkt
 
 
 class DictUtils(object):
@@ -109,7 +180,10 @@ class DictUtils(object):
 
     @staticmethod
     def parse_mct_pkt_id(mct_pkt_id):
-        return mct_pkt_id.split(".")
+        if "." in mct_pkt_id:
+            return mct_pkt_id.split(".")
+        else:
+            return None, None
 
     @staticmethod
     def create_uid_pkt_map(ait_dict):
@@ -930,6 +1004,7 @@ class AITOpenMctPlugin(Plugin):
             self.dbg_message(f"Polling Telemetry queue...")
             ait_pkt = self._tlmQueue.popleft(timeout=self.DEFAULT_TELEM_QUEUE_TIMEOUT_SECS)
             openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
+            self.dbg_message(f"Broadcasting {openmct_pkt} to managed web-sockets...")
             self.broadcast_packet(openmct_pkt)
             return True
 
@@ -954,11 +1029,10 @@ class AITOpenMctPlugin(Plugin):
         """
         pkt_emitted_by_any = False
         openmct_pkt_id = openmct_pkt["packet"]
-        openmct_pkt_jsonstr = json.dumps(openmct_pkt,
-                                         default=self.datetime_jsonifier)
+
         for mws in self._socket_set:
-            pkt_emitted_by_cur = self.send_socket_pkt_mesg(mws, openmct_pkt_id,
-                                                           openmct_pkt_jsonstr)
+            pkt_emitted_by_cur = self.send_socket_pkt_mesg(mws,
+                                      openmct_pkt_id, openmct_pkt)
             pkt_emitted_by_any = pkt_emitted_by_cur or pkt_emitted_by_any
         return pkt_emitted_by_any
 
@@ -971,23 +1045,28 @@ class AITOpenMctPlugin(Plugin):
         for mws in self._socket_set:
             self.managed_web_socket_send(mws, message)
 
-    # Right now we broadcast entire packet it any subscribed id's include that packet
-    # TODO: refactor to send only parts of telemetry packet per subscribed ids?
-    def send_socket_pkt_mesg(self, mws, pkt_id, message):
+    def send_socket_pkt_mesg(self, mws, pkt_id, mct_pkt):
         """
         Attempts to send socket message if managed web-socket is alive
         and accepts the message by inspecting the pkt_id value
         :param mws: Managed web-socket
         :param pkt_id: Packet ID associated with message
-        :param message: Message to be sent
+        :param mct_pkt: OpenMCT telem packet
         :return: True if message sent to web-socket, False otherwise
         """
         if mws.is_alive and mws.accepts_packet(pkt_id):
-            self.dbg_message(f"Sending realtime telemetry web-socket msg to websocket {mws.id}: {message}")
-            self.managed_web_socket_send(mws, message)
-            return True
-        else:
-            return False
+            #Collect only fields the subscription cares about
+            subscribed_pkt = mws.create_subscribed_packet(mct_pkt)
+            # If that new packet still has fields, stringify and send
+            if subscribed_pkt:
+                pkt_mesg = json.dumps(subscribed_pkt,
+                                default=self.datetime_jsonifier)
+                self.dbg_message("Sending realtime telemetry web-socket msg "
+                                 f"to websocket {mws.id}: {pkt_mesg}")
+                self.managed_web_socket_send(mws, pkt_mesg)
+                return True
+
+        return False
 
     # ---------------------------------------------------------------------
 
@@ -1002,8 +1081,8 @@ class AITOpenMctPlugin(Plugin):
         try:
             with Timeout(AITOpenMctPlugin.DEFAULT_WS_RECV_TIMEOUT_SECS, False) as timeout:
                 message = mws.web_socket.receive()
-        except geventwebsocket.WebSocketError as wser:
-            log.warn(f"Web-socket session had an error with client IP {mws.client_ip}: {wser}")
+        except geventwebsocket.WebSocketError as wserr:
+            log.warn(f"Error while reading from web-socket {mws.id}; Error: {wserr}")
             mws.set_error()
         return message
 
@@ -1017,8 +1096,8 @@ class AITOpenMctPlugin(Plugin):
         if mws.is_alive:
             try:
                 mws.web_socket.send(message)
-            except geventwebsocket.WebSocketError as wser:
-                log.warn(f"Web-socket session had an error with client IP {mws.client_ip}: {wser}")
+            except geventwebsocket.WebSocketError as wserr:
+                log.warn(f"Error while writing to web-socket {mws.id}; Message:'{message}'; Error: {wserr}")
                 mws.set_error()
 
     # ---------------------------------------------------------------------
@@ -1082,10 +1161,10 @@ class AITOpenMctPlugin(Plugin):
             mws.is_closed = True
         elif directive == 'subscribe' and len(msg_parts) > 1:
             self.dbg_message(f"Subscribing websocket {mws.id} to: {msg_parts[1]}")
-            mws.subscribed_set.add(msg_parts[1])
+            mws.subscribe_field(msg_parts[1])
         elif directive == 'unsubscribe':
             self.dbg_message(f"Unsubscribing websocket {mws.id} from: {msg_parts[1]}")
-            mws.subscribed_set.remove(msg_parts[1])
+            mws.unsubscribe_field(msg_parts[1])
         else:
             self.dbg_message(f"Unrecognized web-socket message: {message}")
 

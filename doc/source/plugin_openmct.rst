@@ -1,15 +1,15 @@
 AIT OpenMCT Plugin
 ========================
 
-The 'openmct' directory (AIT-Core/openmct/) contains files needed by your
-OpenMCT installation that will expose AIT realtime and historical telemetry
+The *openmct* directory (AIT-Core/openmct/) contains files needed to expose AIT realtime and historical telemetry
 endpoints to the OpenMCT framework.
 
-There is a two step process:
+This is a two step process:
 
 * Activate the OpenMCT plugin within the AIT server configuration.  This step creates the data source from which OpenMCT will pull data.
 
-* Integrate AIT extensions in OpenMCT.  This step installs Javascript extensions into the OpenMCT framework that will access the AIT OpenMCT plugin service.
+* Deploy web-server with AIT-OpenMCT integration.  This step sets up a Node web-server for the OpenMCT framework that will access the AIT OpenMCT plugin service.
+
 
 
 .. _Ait_openmct_plugin:
@@ -20,8 +20,8 @@ Activating the OpenMCT Plugin
 Update your AIT configuration file :ref:`config.yaml <Config_Intro>` to add the AITOpenMctPlugin in the 'server:plugins:' section.
 
 .. _Ait_openmct_port:
-The plugin's 'service_port' value defaults to 8082, but can be overridden in the configuration.  If something other than the default is used, you will also need to include this in
-the OpenMCT frameworks's setup configuration.
+
+The plugin's 'service_port' value defaults to 8082, but can be overridden in the configuration.  If something other than the default is used, you will also need to include this in the OpenMCT frameworks's setup configuration.
 
 Currently, the server is assumed to run on 'localhost'.
 
@@ -74,48 +74,71 @@ Integrating with OpenMCT Framework
 ----------------------------------
 
 **Note:**
-At this time, the AIT-Integration is capatible with OpenMCT  v0.14.0.  Setup step 1 will address this.
+Earlier versions of the AIT-OpenMCT integration required explicit
+installation of OpenMCT, and adding AIT extensions to that deployment.
+This has since been simplified where OpenMCT is now treated as a dependency.
 
 **Note:**
-The AIT extension requires 'http.js', a library that was included in the OpenMCT Tutorial (Apache License, Version 2.0).
-The source location of this file is: https://github.com/nasa/openmct-tutorial/tree/completed/lib/http.js
+The AIT extension requires 'http.js', a library that was
+included in the OpenMCT Tutorial (Apache License, Version 2.0).
+The source location of this file is:
+https://github.com/nasa/openmct-tutorial/tree/completed/lib/http.js
+It is currently included with our example OpenMCT server.
 
 
-Setup
-^^^^^
+Server Setup
+^^^^^^^^^^^^^^
 
-1. Install OpenMCT (https://nasa.github.io/openmct/getting-started/)
+While treating OpenMCT as a dependency, a Node web-server capable of running
+the OpenMCT service is still needed.  AIT provides a basic example
+server which fulfills this need (based on the OpenMCT tutorial).
+See `AIT-Core/openmct/example-server
+<https://github.com/NASA-AMMOS/AIT-Core/tree/master/openmct/example-server>`_.
 
-To ensure you get the capatible version of the software, after performing the git-clone step, you will need to checkout the v0.14.0 version.
+The example server includes:
+
+* *package.json* - with all dependencies, including OpenMCT; and service launcher.
+
+* *server.js* - entry point for the web-server that will host OpenMCT service.
+
+* *index.html* - sets up OpenMCT and AIT extensions.
+
+* *lib/http.js* - modified library required by the integration.
+
+* *ait_integration.js* - symlink to AIT-OpenMct service integration.
+
+
+**Setup steps:**
+
+Are steps assume you will be setting up the web-server in a directory identified by $OPENMCT_DIR
+
+1. Copy *example-server* to a directory referenced by *$OPENMCT_DIR*
 
 .. code-block:: none
 
-    git clone https://github.com/nasa/openmct.git   #Download OpenMCT
-    git checkout v0.14.0                            #Checkout required version
-    npm install                                     #Install dependencies
+    cp -RL ./example-server $OPENMCT_DIR  #Recursive copy, resolve symlinks to real files
 
 
-We will assume that OpenMCT is installed in a directory referenced
-by the environment variable ${OPENMCT_DIR}
-
-
-2. Copy the downloaded 'http.js' library file to your OpenMCT installation:
+2) Install service dependencies (including OpenMCT) via NPM and package.json:
 
 .. code-block:: none
 
-    mkdir ${OPENMCT_DIR}/lib
-    cp http.js ${OPENMCT_DIR}/lib/
+    cd $OPENMCT_DIR
+    npm install
 
 
-3. Copy the 'ait_integration.js' file to your OpenMCT installation:
+**Running steps:**
+
+The web-server can be launched via Node-NPM:
 
 .. code-block:: none
 
-    cp ait_integration.js ${OPENMCT_DIR}
+     npm start
 
+Notes on the OpenMCT Extensions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-4. Edit the existing OpenMCT 'index.html' file to include references to the 'http.js' and 'ait_integration.js' (prior
-to the script tag that initializes OpenMCT):
+The index.html includes the import of the required Javascript files:
 
 .. code-block:: none
 
@@ -123,16 +146,17 @@ to the script tag that initializes OpenMCT):
         <script src="ait_integration.js"></script>
 
 
-5. Install AIT extensions to the openmct framework (prior to the openmct.start() function call).  Value of 'port' should match the value used in the :ref:`previous section<Ait_openmct_plugin>`.
+...as well as the OpenMCT installation of the AIT integration and data endpoints:
 
 .. code-block:: none
 
-        openmct.install(AITIntegration({
-                host: 'localhost',
-                port : 8082 }));
-        openmct.install(AITHistoricalTelemetryPlugin());
-        openmct.install(AITRealtimeTelemetryPlugin());
+         openmct.install(AITIntegration({
+                 host: 'localhost',
+                 port : 8082 }));
+         openmct.install(AITHistoricalTelemetryPlugin());
+         openmct.install(AITRealtimeTelemetryPlugin());
 
+**Note:** If you change the AIT-OpenMCT plugin's *service_port* in your AIT config, the same value should be used for the *port* above.
 
 
 

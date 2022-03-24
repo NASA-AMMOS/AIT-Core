@@ -1,8 +1,7 @@
-This directory contains files needed by your OpenMCT installation that
-will expose AIT realtime and historical telemetry endpoints to the
-OpenMCT framework.
+This directory contains files needed to expose AIT realtime and historical
+telemetry endpoints to the OpenMCT framework.
 
-Learn more about OpenMCT by visiting: https://nasa.github.io/openmct/
+You can learn more about OpenMCT by visiting: https://nasa.github.io/openmct/
 
 ------------------------
 

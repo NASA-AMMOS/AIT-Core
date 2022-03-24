@@ -1,7 +1,7 @@
 {
-  "name": "openmct-basic-server",
+  "name": "ait-openmct-basic-server",
   "version": "0.0.1",
-  "description": "Basic server for Open MCT",
+  "description": "AIT Web-Server for Open MCT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

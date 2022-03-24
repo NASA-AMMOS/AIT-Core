@@ -19,14 +19,14 @@
         openmct.time.timeSystem('utc');
         openmct.install(openmct.plugins.Espresso());
 
-        <!-- AIT OpenMCT Extensions added here -->
+        //AIT OpenMCT Extensions added here:
         openmct.install(AITIntegration({
                         host: 'localhost',
                         port : 8082,
-                        debug: 'true'}));
+                        debug: 'false'}));
         openmct.install(AITHistoricalTelemetryPlugin());
         openmct.install(AITRealtimeTelemetryPlugin());
-        <!-- End of AIT Extensions -->
+        // :End of AIT Extensions
 
         openmct.start();
     </script>
