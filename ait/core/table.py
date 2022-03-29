@@ -452,30 +452,26 @@ class FSWTabDictCache(object):
             filename = ait.config.get("table.filename")
 
         self.filename = filename
-        self.pcklname = os.path.splitext(filename)[0] + ".pkl"
+        self.cachename = os.path.splitext(filename)[0] + ".pkl"
         self.fswtabdict = None
 
+    @property
     def dirty(self):
-        return not os.path.exists(self.pcklname) or os.path.getmtime(
-            self.filename
-        ) > os.path.getmtime(self.pcklname)
+        """True if the pickle cache needs to be regenerated, False to use current pickle binary"""
+        return util.check_yaml_timestamps(self.filename, self.cachename)
 
     def load(self):
         if self.fswtabdict is None:
-            if self.dirty():
+            if self.dirty:
                 self.fswtabdict = FSWTabDict(self.filename)
-                self.update()
+                util.update_cache(self.filename, self.cachename, self.fswtabdict)
+                log.info(f'Loaded new pickle file: {self.cachename}')
             else:
-                with open(self.pcklname, "rb") as stream:
+                with open(self.cachename, "rb") as stream:
                     self.fswtabdict = pickle.load(stream)
+                log.info(f'Current pickle file loaded: {self.cachename.split("/")[-1]}')
 
         return self.fswtabdict
-
-    def update(self):
-        msg = "Saving updates from more recent '%s' to '%s'"
-        log.info(msg, self.filename, self.pcklname)
-        with open(self.pcklname, "wb") as output:
-            pickle.dump(self.fswtabdict, output, -1)
 
 
 _DefaultFSWTabDictCache = FSWTabDictCache()
@@ -483,6 +479,7 @@ _DefaultFSWTabDictCache = FSWTabDictCache()
 
 def getDefaultFSWTabDict():  # noqa: N802
     fswtabdict = None
+    filename = None
     try:
         filename = _DefaultFSWTabDictCache.filename
         fswtabdict = _DefaultFSWTabDictCache.load()
