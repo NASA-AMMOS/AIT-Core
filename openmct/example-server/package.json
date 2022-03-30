@@ -1,0 +1,25 @@
+{
+  "name": "ait-openmct-basic-server",
+  "version": "0.0.1",
+  "description": "AIT Web-Server for Open MCT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nasa/openmct-tutorial.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NASA-AMMOS/AIT-Core/issues"
+  },
+  "homepage": "https://github.com/NASA-AMMOS/AIT-Core/issues",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-ws": "^4.0.0",
+    "openmct": "latest",
+    "ws": "^6.1.2"
+  }
+}

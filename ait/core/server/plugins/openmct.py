@@ -35,6 +35,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 import geventwebsocket
+from gevent import sleep as gsleep, Timeout, Greenlet
 
 import bottle
 import importlib
@@ -44,272 +45,145 @@ from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
 
 
-class AITOpenMctPlugin(Plugin):
-    """This is the implementation of the AIT plugin for interaction with
-    OpenMCT framework.  Telemetry dispatched from AIT server/broker
-    is passed along to OpenMct in the expected format.
+
+class ManagedWebSocket():
     """
+    A data structure to maintain state for OpenMCT websockets
+    """
+    idCounter = 0  # to assign unique ids
 
-    DEFAULT_PORT = 8082
-    DEFAULT_DEBUG = False
-    DEFAULT_DEBUG_MAX_LEN = 512
-    DEFAULT_DATABASE_ENABLED = False
+    PACKET_ID_WILDCARD = "*"
 
-    def __init__(
-        self,
-        inputs,
-        outputs,
-        zmq_args=None,
-        datastore="ait.core.db.InfluxDBBackend",
-        **kwargs
-    ):
-        """
-        Params:
-            inputs:     names of inbound streams plugin receives data from
-            outputs:    names of outbound streams plugin sends its data to
-            zmq_args:   dict containing the follow keys:
-                            zmq_context
-                            zmq_proxy_xsub_url
-                            zmq_proxy_xpub_url
-                        Defaults to empty dict. Default values
-                        assigned during instantiation of parent class.
-            datastore:   path to database backend to use
-            **kwargs:   (optional) Dependent on requirements of child class.
-        """
 
-        super(AITOpenMctPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
-
-        log.info("Running AIT OpenMCT Plugin")
-
-        self._datastore = datastore
-
-        # Initialize state fields
-        # Debug state fields
-        self._debugEnabled = AITOpenMctPlugin.DEFAULT_DEBUG
-        self._debugMimicRepeat = False
-        # Port value for the server
-        self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
-        # Flag indicating if we should create a database connection for historical queries
-        self._databaseEnabled = AITOpenMctPlugin.DEFAULT_DATABASE_ENABLED
-
-        # Check for AIT config overrides
-        self._check_config()
-
-        # Setup server state
-        self._app = bottle.Bottle()
-        self._servers = []
-
-        # Queues for AIT events events
-        self._tlmQueue = api.GeventDeque(maxlen=100)
-        self._logQueue = api.GeventDeque(maxlen=100)
-
-        # Load AIT tlm dict and create OpenMCT format of it
-        self._aitTlmDict = tlm.getDefaultDict()
-        self._mctTlmDict = self.format_tlmdict_for_openmct(self._aitTlmDict)
-
-        # Create lookup from packet-uid to packet def
-        self._uidToPktDefMap = self.create_uid_pkt_map(self._aitTlmDict)
-
-        # Attempt to initialize database, None if no DB
-        self._database = self.load_database(**kwargs)
-
-        gevent.spawn(self.init)
-
-    def _check_config(self):
-        """Check AIT configuration for override values"""
-
-        # Check if debug flag was included
-        if hasattr(self, "debug_enabled"):
-            if isinstance(self.debug_enabled, bool):
-                self._debugEnabled = self.debug_enabled
-            elif isinstance(self.debug_enabled, str):
-                self._debugEnabled = self.debug_enabled in [
-                    "true",
-                    "1",
-                    "TRUE",
-                    "enabled",
-                    "ENABLED",
-                ]
-            self.dbg_message("Debug flag = " + str(self._debugEnabled))
-
-        # Check if port is assigned
-        if hasattr(self, "service_port"):
-            try:
-                self._servicePort = int(self.service_port)
-            except ValueError:
-                self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
-            self.dbg_message("Service Port = " + str(self._servicePort))
-
-        # Check if database flag was included
-        if hasattr(self, "database_enabled"):
-            if isinstance(self.database_enabled, bool):
-                self._databaseEnabled = self.database_enabled
-            elif isinstance(self.database_enabled, str):
-                self._databaseEnabled = self.database_enabled in [
-                    "true",
-                    "1",
-                    "TRUE",
-                    "enabled",
-                    "ENABLED",
-                ]
-            self.dbg_message("Database flag = " + str(self._databaseEnabled))
-
-    def load_database(self, **kwargs):
-        """
-        If necessary database configuration is available, this method
-        will create, connect and return a database connection.  If
-        configuration is not available, then None is returned.
-
-        :return: Database instance or None
-        """
-        """Connect to database"""
-
-        # Initialize return value to None
-        dbconn = None
-
-        if self._databaseEnabled:
-
-            # Perform sanity check that database config exists somewhere
-            db_cfg = ait.config.get("database", kwargs.get("database", None))
-            if not db_cfg:
-                log.error(
-                    "[OpenMCT] Plugin configured to use database but no database configuration was found"
-                )
-                log.warn("Disabling historical queries.")
-            else:
-                try:
-                    db_mod, db_cls = self._datastore.rsplit(".", 1)
-                    dbconn = getattr(importlib.import_module(db_mod), db_cls)()
-                    dbconn.connect(**kwargs)
-                except Exception as ex:
-                    log.error("Error connecting to database: {}".format(ex))
-                    log.warn("Disabling historical queries.")
-        else:
-            msg = (
-                "[OpenMCT Database Configuration]"
-                "This plugin is not configured with a database enabled. "
-                "Historical telemetry queries "
-                "will be disabled from this server endpoint."
-            )
-            log.warn(msg)
-
-        return dbconn
-
-    def process(self, input_data, topic=None):
-        """Process received input message
-
-        Received messaged is expected to be a tuple of the form produced
-        by AITPacketHandler.
-
-        Handle telem messages based on topic
-        Look for topic in list of telem stream names first
-        If those lists don't exist or topic is not in them, try matching text
-        in topic name to "telem_stream"
-
-        """
-        processed = False
-
-        if hasattr(self, "telem_stream_names"):
-            if topic in self.telem_stream_names:
-                self._process_telem_msg(input_data)
-                processed = True
-
-        if not processed:
-            if "telem_stream" in topic:
-                self._process_telem_msg(input_data)
-                processed = True
-
-        if not processed:
-            raise ValueError(
-                "Topic of received message not recognized as telem stream."
-            )
-
-    def _process_telem_msg(self, input_data):
-
-        # Use pickle to recover message
-        msg = pickle.loads(input_data)
-
-        uid = int(msg[0])
-        packet = msg[1]
-
-        # Package as a tuple, then add to queue
-        tlm_entry = (uid, packet)
-        self._tlmQueue.append(tlm_entry)
-
-    # We report our special debug messages on the 'Info' log level
-    # so we dont have to turn on DEBUG logging globally
-    def dbg_message(self, msg):
-        if self._debugEnabled:
-            max_len = self.DEFAULT_DEBUG_MAX_LEN
-            max_msg = (msg[:max_len] + "...") if len(msg) > max_len else msg
-            log.info("AitOpenMctPlugin: " + max_msg)
+    def __init__(self, web_socket, client_ip=None):
+        self.web_socket = web_socket
+        self.client_ip = client_ip
+        self._subscribed_dict = dict() #Dict from packetId to list of fieldIds
+        self.is_closed = False
+        self.is_error = False
+        self.id = ManagedWebSocket._generate_id()
 
     @staticmethod
-    def datetime_jsonifier(obj):
-        """Required for JSONifying datetime objects"""
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-        else:
+    def _generate_id():
+        tmp_id = f"{ManagedWebSocket.idCounter}/{id(gevent.getcurrent())}"
+        ManagedWebSocket.idCounter += 1
+        return tmp_id
+
+    def subscribe_field(self, openmct_field_id):
+        """
+        Adds a subscription to an OpenMCT field
+        :param openmct_field_id: OpenMCT Field id
+        """
+        pkt_id, fld_id = DictUtils.parse_mct_pkt_id(openmct_field_id)
+        if pkt_id and fld_id:
+            # If packet id is not in dict, add it with empty set as value
+            if pkt_id not in self._subscribed_dict.keys():
+                self._subscribed_dict[pkt_id] = set()
+            field_set = self._subscribed_dict.get(pkt_id, None)
+            if field_set is not None: # Unnecessary, but paranoid
+                field_set.add(fld_id)
+
+    def unsubscribe_field(self, openmct_field_id):
+        """
+        Removes a subscription to an OpenMCT field
+        :param openmct_field_id: OpenMCT Field id
+        """
+        pkt_id, fld_id = DictUtils.parse_mct_pkt_id(openmct_field_id)
+        if pkt_id and fld_id:
+            field_set = self._subscribed_dict.get(pkt_id, None)
+            if field_set:
+                field_set.remove(fld_id)
+                #If there are no more fields, then remove packet id
+                if len(field_set) == 0:
+                    self._subscribed_dict.pop(pkt_id)
+
+    @property
+    def is_alive(self):
+        """
+        Returns True if web-socket is active, False otherwise
+        :return: Managed web-socket state
+        """
+        self._check_state()
+        return not self.is_closed
+
+    def _check_state(self):
+        """
+        Checks internal flags as well as state of underlying websocket
+        to see if this instance can be considered closed
+        """
+        if not self.is_closed:
+            if self.is_error:
+                self.is_closed = True
+            elif self.web_socket and self.web_socket.closed:
+                self.is_closed = True
+
+    def set_error(self):
+        """
+        Sets error flag
+        """
+        self.is_error = True
+
+    def accepts_packet(self, pkt_id):
+        """
+        Returns True if pkt_id is considered subscribed to by this websocket
+        If pkt_id is PACKET_ID_WILDCARD, it will be automatically accepted
+        :param pkt_id: AIT Packet name
+        :return: True if packet id is accepted, False otherwise
+        """
+        if pkt_id == ManagedWebSocket.PACKET_ID_WILDCARD:
+            return True
+        field_set = self._subscribed_dict.get(pkt_id, None)
+        if field_set:  # Should be true if set is non-empty
+            return True
+        return False
+
+    def create_subscribed_packet(self, omc_packet):
+        """
+        Returns a modified OpenMCT packet that contains only fields
+        for which the web-socket is subscribed
+        :param omc_packet: Full OpenMCT packet with all fields
+        :return: New modified packet if any match in fields, else None
+        """
+        packet_id = omc_packet['packet']
+        if not self.accepts_packet(packet_id):
             return None
 
+        # Grab the original field data dict
+        orig_fld_dict = omc_packet['data']
+        if not orig_fld_dict:
+            return None
+
+        sub_pkt = None
+
+        # Get set of fields of the packet to which session is subscribed
+        field_set = self._subscribed_dict.get(packet_id, None)
+
+        # Filter the original field value dict to only fields session is subscribed to
+        if field_set:
+            filt_fld_dict = { k: v for k, v in orig_fld_dict.items() if k in field_set}
+            # If filtered dict is non-empty, then build new packet for return
+            if filt_fld_dict:
+                sub_pkt = {'packet': packet_id, 'data': filt_fld_dict}
+
+        return sub_pkt
+
+
+class DictUtils(object):
+    """
+    Encapsulates dictionary utilities, primarily for translating between
+    AIT and OpenMCT dictionaries and packets
+    """
+
     @staticmethod
-    def get_browser_name(browser):
-        return getattr(browser, "name", getattr(browser, "_name", "(none)"))
-
-    def _get_tlm_packet_def(self, uid):
-        """Return packet definition based on packet unique id"""
-        pkt_defn = self._uidToPktDefMap[uid]
-        return pkt_defn
-
-    def init(self):
-        """Initialize the web-server state"""
-
-        self._route()
-        wsgi_server = gevent.pywsgi.WSGIServer(
-            ("0.0.0.0", self._servicePort),
-            self._app,
-            handler_class=geventwebsocket.handler.WebSocketHandler,
-        )
-
-        self._servers.append(wsgi_server)
-
-        for s in self._servers:
-            s.start()
-
-    def cleanup(self):
-        """Clean-up the webservers"""
-        for s in self._servers:
-            s.stop()
-
-    def start_browser(self, url, name=None):
-        browser = None
-
-        if name is not None and name.lower() == "none":
-            log.info("Will not start any browser since --browser=none")
-            return
-
-        try:
-            browser = webbrowser.get(name)
-        except webbrowser.Error:
-            msg = "Could not find browser: %s.  Will use: %s."
-            browser = webbrowser.get()
-            log.warn(msg, name, self.getBrowserName(browser))
-
-        if type(browser) is webbrowser.GenericBrowser:
-            msg = "Will not start text-based browser: %s."
-            log.info(msg % self.getBrowserName(browser))
-        elif browser is not None:
-            log.info("Starting browser: %s" % self.getBrowserName(browser))
-            browser.open_new(url)
-
-    def create_mct_pkt_id(self, ait_pkt_id, ait_field_id):
+    def create_mct_pkt_id(ait_pkt_id, ait_field_id):
         return ait_pkt_id + "." + ait_field_id
 
-    def parse_mct_pkt_id(self, mct_pkt_id):
-        return mct_pkt_id.split(".")
-
-    def wait(self):
-        gevent.wait()
+    @staticmethod
+    def parse_mct_pkt_id(mct_pkt_id):
+        if "." in mct_pkt_id:
+            return mct_pkt_id.split(".")
+        else:
+            return None, None
 
     @staticmethod
     def create_uid_pkt_map(ait_dict):
@@ -319,7 +193,8 @@ class AITOpenMctPlugin(Plugin):
             uid_map[v.uid] = v
         return uid_map
 
-    def format_tlmpkt_for_openmct(self, ait_pkt):
+    @staticmethod
+    def format_tlmpkt_for_openmct(ait_pkt):
         """Formats an AIT telemetry packet instance as an
         OpenMCT telemetry packet structure"""
 
@@ -339,7 +214,8 @@ class AITOpenMctPlugin(Plugin):
 
         return mct_dict
 
-    def format_tlmdict_for_openmct(self, ait_tlm_dict):
+    @staticmethod
+    def format_tlmdict_for_openmct(ait_tlm_dict):
         """Formats the AIT telemetry dictionary as an
         OpenMCT telemetry dictionary"""
 
@@ -356,14 +232,14 @@ class AITOpenMctPlugin(Plugin):
 
                 mct_field_dict = dict()
                 # mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
-                mct_field_dict["key"] = self.create_mct_pkt_id(ait_pkt_id, ait_field_id)
+                mct_field_dict["key"] = DictUtils.create_mct_pkt_id(ait_pkt_id, ait_field_id)
 
                 mct_field_dict["name"] = ait_field_def.name
                 mct_field_dict["name"] = ait_pkt_id + ":" + ait_field_def.name
 
                 mct_field_value_list = []
 
-                mct_field_val_range = self.create_mct_fieldmap(ait_field_def)
+                mct_field_val_range = DictUtils.create_mct_fieldmap(ait_field_def)
 
                 mct_field_val_domain = {
                     "key": "utc",
@@ -382,7 +258,8 @@ class AITOpenMctPlugin(Plugin):
 
         return mct_dict
 
-    def create_mct_fieldmap(self, ait_pkt_fld_def):
+    @staticmethod
+    def create_mct_fieldmap(ait_pkt_fld_def):
         """Constructs an OpenMCT field declaration struct from an AIT packet definition"""
         mct_field_map = {"key": "value", "name": "Value", "hints": {"range": 1}}
 
@@ -439,7 +316,7 @@ class AITOpenMctPlugin(Plugin):
                 else:
                     mct_field_map["format"] = "integer"
 
-                # TODO - handle array types?
+                # array types not supported
 
         # Handle enumerations
         if hasattr(ait_pkt_fld_def, "enum"):
@@ -456,6 +333,268 @@ class AITOpenMctPlugin(Plugin):
                 mct_field_map["enumerations"] = mct_enum_array
 
         return mct_field_map
+
+
+class AITOpenMctPlugin(Plugin):
+    """This is the implementation of the AIT plugin for interaction with
+    OpenMCT framework.  Telemetry dispatched from AIT server/broker
+    is passed along to OpenMct in the expected format.
+    """
+
+    DEFAULT_PORT = 8082
+    DEFAULT_DEBUG = False
+    DEFAULT_DEBUG_MAX_LEN = 512
+    DEFAULT_DATABASE_ENABLED = False
+
+    DEFAULT_WS_RECV_TIMEOUT_SECS = 0.1
+    DEFAULT_TELEM_QUEUE_TIMEOUT_SECS = 10
+
+    DEFAULT_TELEM_CHECK_SLEEP_SECS = 2
+    DEFAULT_WEBSOCKET_CHECK_SLEEP_SECS = 2
+
+    DEFAULT_WS_EMPTY_MESSAGE = json.dumps(dict())  #Empty Json string
+
+    def __init__(
+        self,
+        inputs,
+        outputs,
+        zmq_args=None,
+        datastore="ait.core.db.InfluxDBBackend",
+        **kwargs
+    ):
+        """
+        Params:
+            inputs:     names of inbound streams plugin receives data from
+            outputs:    names of outbound streams plugin sends its data to
+            zmq_args:   dict containing the follow keys:
+                            zmq_context
+                            zmq_proxy_xsub_url
+                            zmq_proxy_xpub_url
+                        Defaults to empty dict. Default values
+                        assigned during instantiation of parent class.
+            datastore:   path to database backend to use
+            **kwargs:   (optional) Dependent on requirements of child class.
+        """
+
+        super(AITOpenMctPlugin, self).__init__(inputs, outputs, zmq_args, **kwargs)
+
+        log.info("Running AIT OpenMCT Plugin")
+
+        self._datastore = datastore
+
+        # Initialize state fields
+        # Debug state fields
+        self._debugEnabled = AITOpenMctPlugin.DEFAULT_DEBUG
+        self._debugMimicRepeat = False
+        # Port value for the server
+        self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
+        # Flag indicating if we should create a database connection for historical queries
+        self._databaseEnabled = AITOpenMctPlugin.DEFAULT_DATABASE_ENABLED
+
+        # Check for AIT config overrides
+        self._check_config()
+
+        # Setup server state
+        self._app = bottle.Bottle()
+        self._servers = []
+
+        # Queues for AIT events events
+        self._tlmQueue = api.GeventDeque(maxlen=100)
+
+        # Load AIT tlm dict and create OpenMCT format of it
+        self._aitTlmDict = tlm.getDefaultDict()
+        self._mctTlmDict = DictUtils.format_tlmdict_for_openmct(self._aitTlmDict)
+
+        # Create lookup from packet-uid to packet def
+        self._uidToPktDefMap = DictUtils.create_uid_pkt_map(self._aitTlmDict)
+
+        # Attempt to initialize database, None if no DB
+        self._database = self.load_database(**kwargs)
+
+        # Maintains a set of active websocket structs
+        self._socket_set = set()
+
+        # Spawn greenlets to poll telemetry
+        self.tlm_poll_greenlet = Greenlet.spawn(self.poll_telemetry_periodically)
+
+        gevent.spawn(self.init)
+
+    def _check_config(self):
+        """Check AIT configuration for override values"""
+
+        # Check if debug flag was included
+        if hasattr(self, "debug_enabled"):
+            if isinstance(self.debug_enabled, bool):
+                self._debugEnabled = self.debug_enabled
+            elif isinstance(self.debug_enabled, str):
+                self._debugEnabled = self.debug_enabled.upper() == "TRUE"
+            self.dbg_message("Debug flag = " + str(self._debugEnabled))
+
+        # Check if port is assigned
+        if hasattr(self, "service_port"):
+            try:
+                self._servicePort = int(self.service_port)
+            except ValueError:
+                self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
+            self.dbg_message("Service Port = " + str(self._servicePort))
+
+        # Check if database flag was included
+        if hasattr(self, "database_enabled"):
+            if isinstance(self.database_enabled, bool):
+                self._databaseEnabled = self.database_enabled
+            elif isinstance(self.database_enabled, str):
+                self._databaseEnabled = self.database_enabled.upper() == "TRUE"
+            self.dbg_message("Database flag = " + str(self._databaseEnabled))
+
+    def load_database(self, **kwargs):
+        """
+        If necessary database configuration is available, this method
+        will create, connect and return a database connection.  If
+        configuration is not available, then None is returned.
+
+        :return: Database instance or None
+        """
+        """Connect to database"""
+
+        # Initialize return value to None
+        dbconn = None
+
+        if self._databaseEnabled:
+
+            # Perform sanity check that database config exists somewhere
+            db_cfg = ait.config.get("database", kwargs.get("database", None))
+            if not db_cfg:
+                log.error(
+                    "[OpenMCT] Plugin configured to use database but "
+                    "no database configuration was found"
+                )
+                log.warn("Disabling historical queries.")
+            else:
+                try:
+                    db_mod, db_cls = self._datastore.rsplit(".", 1)
+                    dbconn = getattr(importlib.import_module(db_mod), db_cls)()
+                    dbconn.connect(**kwargs)
+                except Exception as ex:
+                    self.error = log.error(f"Error connecting to database: {ex}")
+                    log.warn("Disabling historical queries.")
+        else:
+            msg = (
+                "[OpenMCT Database Configuration]"
+                "This plugin is not configured with a database enabled. "
+                "Historical telemetry queries "
+                "will be disabled from this server endpoint."
+            )
+            log.warn(msg)
+
+        return dbconn
+
+    def process(self, input_data, topic=None):
+        """
+        Process received input message.
+
+        This plugin should be configured to only receive telemetry.
+
+        Received messaged is expected to be a tuple of the form produced
+        by AITPacketHandler.
+        """
+        processed = False
+
+        try:
+            pkl_load = pickle.loads(input_data)
+            pkt_id, pkt_data = int(pkl_load[0]), pkl_load[1]
+            packet_def = self._get_tlm_packet_def(pkt_id)
+            if packet_def:
+                packet_def = self._uidToPktDefMap[pkt_id]
+                tlm_packet = tlm.Packet(packet_def, data=bytearray(pkt_data))
+                self._process_telem_msg(tlm_packet)
+                processed = True
+            else:
+                log.error("OpenMCT Plugin received telemetry message with unknown "
+                          f"packet id {pkt_id}.  Skipping input...")
+        except Exception as e:
+            log.error(f"OpenMCT Plugin: {e}")
+            log.error("OpenMCT Plugin received input_data that it is unable to "
+                      "process. Skipping input ...")
+
+        return processed
+
+    def _process_telem_msg(self, tlm_packet):
+        """
+        Places tlm_packet in telem queue
+        """
+        self._tlmQueue.append(tlm_packet)
+
+    # We report our special debug messages on the 'Info' log level
+    # so we dont have to turn on DEBUG logging globally
+    def dbg_message(self, msg):
+        if self._debugEnabled:
+            max_len = self.DEFAULT_DEBUG_MAX_LEN
+            max_msg = (msg[:max_len] + "...") if len(msg) > max_len else msg
+            log.info("AitOpenMctPlugin: " + max_msg)
+
+    @staticmethod
+    def datetime_jsonifier(obj):
+        """Required for JSONifying datetime objects"""
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        else:
+            return None
+
+    @staticmethod
+    def get_browser_name(browser):
+        return getattr(browser, "name", getattr(browser, "_name", "(none)"))
+
+    def _get_tlm_packet_def(self, uid):
+        """Return packet definition based on packet unique id"""
+        if uid in self._uidToPktDefMap.keys():
+            return self._uidToPktDefMap[uid]
+        else:
+            return None
+
+    def init(self):
+        """Initialize the web-server state"""
+
+        self._route()
+        wsgi_server = gevent.pywsgi.WSGIServer(
+            ("0.0.0.0", self._servicePort),
+            self._app,
+            handler_class=geventwebsocket.handler.WebSocketHandler,
+        )
+
+        self._servers.append(wsgi_server)
+
+        for s in self._servers:
+            s.start()
+
+    def cleanup(self):
+        """Clean-up the webservers"""
+        for s in self._servers:
+            s.stop()
+
+    def start_browser(self, url, name=None):
+        browser = None
+
+        if name is not None and name.lower() == "none":
+            log.info("Will not start any browser since --browser=none")
+            return
+
+        try:
+            browser = webbrowser.get(name)
+        except webbrowser.Error:
+            msg = "Could not find browser: %s.  Will use: %s."
+            browser = webbrowser.get()
+            log.warn(msg, name, self.getBrowserName(browser))
+
+        if type(browser) is webbrowser.GenericBrowser:
+            msg = "Will not start text-based browser: %s."
+            log.info(msg % self.getBrowserName(browser))
+        elif browser is not None:
+            log.info("Starting browser: %s" % self.getBrowserName(browser))
+            browser.open_new(url)
+
+    def wait(self):
+        gevent.wait()
+
 
     # ---------------------------------------------------------------------
     # Section of methods to which bottle requests will be routed
@@ -477,7 +616,7 @@ class AITOpenMctPlugin(Plugin):
         """Returns the AIT-formatted dictionary"""
         return json.dumps(self._aitTlmDict.toJSON())
 
-    def get_realtime_tlm(self):
+    def get_realtime_tlm_original_dumb(self):
         """Handles realtime packet dispatch via websocket layers"""
         websocket = bottle.request.environ.get("wsgi.websocket")
 
@@ -498,23 +637,32 @@ class AITOpenMctPlugin(Plugin):
 
         try:
             while not websocket.closed:
+
+                message = None
+                with Timeout(3, False) as timeout:
+                    message = websocket.receive()
+                if message:
+                    self.dbg_message("Received websocket message: "+message)
+                else:
+                    self.dbg_message("Received NO websocket message")
+
                 try:
                     self.dbg_message("Polling Telemtry queue...")
-                    uid, data = self._tlmQueue.popleft(timeout=30)
+                    uid, data = self._tlmQueue.popleft(timeout=3)
                     pkt_defn = self._get_tlm_packet_def(uid)
                     if not pkt_defn:
                         continue
 
                     ait_pkt = ait.core.tlm.Packet(pkt_defn, data=data)
 
-                    openmct_pkt = self.format_tlmpkt_for_openmct(ait_pkt)
+                    packet_id,openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
 
                     openmct_pkt_jsonstr = json.dumps(
                         openmct_pkt, default=self.datetime_jsonifier
                     )
 
                     self.dbg_message(
-                        "Sending realtime telemtry websocket msg: "
+                        "Sending realtime telemetry websocket msg: "
                         + openmct_pkt_jsonstr
                     )
 
@@ -541,6 +689,51 @@ class AITOpenMctPlugin(Plugin):
                 + str(wser)
             )
 
+
+    def get_realtime_tlm(self):
+        """Handles realtime packet dispatch via websocket layers"""
+        websocket = bottle.request.environ.get("wsgi.websocket")
+
+        if not websocket:
+            bottle.abort(400, "Expected WebSocket request.")
+            return
+
+        req_env = bottle.request.environ
+        client_ip = (
+            req_env.get("HTTP_X_FORWARDED_FOR")
+            or req_env.get("REMOTE_ADDR")
+            or "(unknown)"
+        )
+
+        if websocket and not websocket.closed:
+            mws = ManagedWebSocket(websocket, client_ip)
+            self.manage_web_socket(mws)
+
+    def manage_web_socket(self, mws):
+        """
+        Adds mws instance to managed set (for receiving telemetry),
+        and then continuously checks web socket for new messages, which
+        may affect its state.
+        When web-socket is considered closed, it is removed from the
+        managed set and this method returns
+        :param mws: Managed web-socket instance
+        """
+        self.dbg_message(f"Adding record for new web-socket ID:{mws.id} with IP: {mws.client_ip}")
+        self._socket_set.add(mws)
+
+        while mws.is_alive:
+            self.dbg_message(f"Polling web-socket record ID {mws.id} ")
+            msg_processed = self.poll_websocket(mws)
+            if not msg_processed:
+                # If no message received, then sleep a lil
+                gsleep(AITOpenMctPlugin.DEFAULT_WEBSOCKET_CHECK_SLEEP_SECS)
+
+        # Web-socket is considered closed, so remove from set and return
+        rem_msg_state = 'err' if mws.is_error else 'closed'
+        self.dbg_message(f"Removing {rem_msg_state} web-socket record ID {mws.id}")
+        self._socket_set.remove(mws)
+
+
     def get_historical_tlm(self, mct_pkt_id):
         """
         Handling of historical queries.  Time range is retrieved from bottle request query.
@@ -553,11 +746,9 @@ class AITOpenMctPlugin(Plugin):
         # Set the content type of response for OpenMct to know its JSON
         bottle.response.content_type = "application/json"
 
-        self.dbg_message(
-            "Received request for historical tlm: Ids={} Start={} End={}".format(
-                mct_pkt_id, str(start_time_ms), str(end_time_ms)
-            )
-        )
+        self.dbg_message("Received request for historical tlm: "
+                         f"Ids={mct_pkt_id} Start={start_time_ms} End={end_time_ms}")
+
 
         # The tutorial indicated that this could be a comma-separated list of ids...
         # If its a single, then this will create a list with one entry
@@ -570,11 +761,8 @@ class AITOpenMctPlugin(Plugin):
         # Dump results to JSON string
         json_result = json.dumps(results)
 
-        self.dbg_message(
-            "Result for historical tlm ( {} - {} ): {}".format(
-                str(start_time_ms), str(end_time_ms), json_result
-            )
-        )
+        self.dbg_message(f"Result for historical tlm ( {start_time_ms} "
+                         f"- {end_time_ms} ): {json_result}")
 
         return json_result
 
@@ -598,7 +786,7 @@ class AITOpenMctPlugin(Plugin):
         # Collect fields that share the same AIT packet (for more efficient queries)
         ait_pkt_fields_dict = {}  # Dict of pkt_id to list of field ids
         for mct_pkt_id_entry in mct_pkt_ids:
-            ait_pkt_id, ait_field_name = self.parse_mct_pkt_id(mct_pkt_id_entry)
+            ait_pkt_id, ait_field_name = DictUtils.parse_mct_pkt_id(mct_pkt_id_entry)
 
             # Add new list if this is the first time we see AIT pkt id
             if ait_pkt_id not in ait_pkt_fields_dict:
@@ -670,10 +858,9 @@ class AITOpenMctPlugin(Plugin):
             end_timestamp_secs, tz=datetime.timezone.utc
         )
 
-        query_args_str = "Packets = {}; Start = {}; End = {}".format(
-            packet_ids, start_date, end_date
-        )
-        self.dbg_message("Query args : {}".format(query_args_str))
+        query_args_str = f"Packets = {packet_ids}; Start = {start_date};" \
+                         f" End = {end_date}"
+        self.dbg_message(f"Query args : {query_args_str}")
 
         # default response is empty
         res_pkts = list()
@@ -700,11 +887,8 @@ class AITOpenMctPlugin(Plugin):
                     res_pkts = list(ait_db_result.get_packets())
 
                 # Debug result size
-                self.dbg_message(
-                    "Number of results for query {} : {}".format(
-                        query_args_str, str(len(res_pkts))
-                    )
-                )
+                self.dbg_message(f"Number of results for query "
+                                 f"{query_args_str} : {len(res_pkts)}")
 
         except Exception as e:
             log.error("[OpenMCT] Database query failed.  Error: " + str(e))
@@ -719,7 +903,7 @@ class AITOpenMctPlugin(Plugin):
             # Add a record for each requested field for this timestamp
             for cur_field_name in field_names:
                 record = {"timestamp": unix_timestamp_msec}
-                record["id"] = self.create_mct_pkt_id(ait_pkt_id, cur_field_name)
+                record["id"] = DictUtils.create_mct_pkt_id(ait_pkt_id, cur_field_name)
                 record["value"] = getattr(cur_pkt, cur_field_name)
                 result_list.append(record)
 
@@ -775,24 +959,21 @@ class AITOpenMctPlugin(Plugin):
                     random_num, random_num, random_num, random_num, random_num
                 )
 
-            msg_serial = pickle.dumps((pkt_def_uid, dummy_data), 2)
-            msg_str_fmt = "{}".format(
-                msg_serial
-            )  # Lesson learned: AIT ZMQClient formats to string before emitting message
-            self._process_telem_msg(msg_str_fmt)
+            tlm_pkt = tlm.Packet(ait_pkt_defn, data=bytearray(dummy_data))
+            self._process_telem_msg(tlm_pkt)
 
             info_msg = (
-                "AIT OpenMct Plugin submitted mimicked telemetry for "
+                f"AIT OpenMct Plugin submitted mimicked telemetry for "
                 + ait_pkt_defn.name
                 + " ("
                 + str(datetime.datetime.now())
-                + ")"
+                + f") to telem queue"
             )
             self.dbg_message(info_msg)
 
             # sleep if mimic on
             if self._debugMimicRepeat:
-                time.sleep(5)
+                gsleep(5)
 
             # either it was immediate or we woke up, check break condition
             if not self._debugMimicRepeat:
@@ -800,6 +981,192 @@ class AITOpenMctPlugin(Plugin):
 
         # Return last status message as result to client
         return info_msg
+
+    # ---------------------------------------------------------------------
+
+    ##Greelet-invoked functions
+
+    def poll_telemetry_periodically(self):
+        while True:
+            real_tlm_emitted = self.poll_telemetry()
+            if not real_tlm_emitted:
+                gsleep(AITOpenMctPlugin.DEFAULT_TELEM_CHECK_SLEEP_SECS)
+
+    def poll_telemetry(self):
+        """
+        Polls the telemetry queue for next available telem entry.
+        If found, it is broadcast to all of the managed web-sockets,
+        where they decide if they are interested in the telemetry.
+        If nothing on queue, then empty probe messag is sent.
+        :return: True if real telemetry emitted, False otherwise.
+        """
+        try:
+            self.dbg_message(f"Polling Telemetry queue...")
+            ait_pkt = self._tlmQueue.popleft(timeout=self.DEFAULT_TELEM_QUEUE_TIMEOUT_SECS)
+            openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
+            self.dbg_message(f"Broadcasting {openmct_pkt} to managed web-sockets...")
+            self.broadcast_packet(openmct_pkt)
+            return True
+
+        except IndexError:
+            # If no telemetry has been received by the server
+            # after timeout seconds, "probe" the client
+            # websocket connection to make sure it's still
+            # active and if so, keep it alive.  This is
+            # accomplished by sending an empty JSON object.
+            self.dbg_message("Telemetry queue is empty.")
+            self.broadcast_message(self.DEFAULT_WS_EMPTY_MESSAGE)
+            return False
+
+    def broadcast_packet(self, openmct_pkt):
+        """
+        Attempt to broadcast OpenMCT packet to web-socket clients,
+        the managed web-socket themselves determine if the Packet will
+        be emitted.
+        :param openmct_pkt: Instance of OpenMCT packet to be emitted
+        :return: True if packet was emitted by at least one web-socket,
+                 False otherwise.
+        """
+        pkt_emitted_by_any = False
+        openmct_pkt_id = openmct_pkt["packet"]
+
+        for mws in self._socket_set:
+            pkt_emitted_by_cur = self.send_socket_pkt_mesg(mws,
+                                      openmct_pkt_id, openmct_pkt)
+            pkt_emitted_by_any = pkt_emitted_by_cur or pkt_emitted_by_any
+        return pkt_emitted_by_any
+
+    def broadcast_message(self, message):
+        """
+        Broadcast OpenMCT packet to web-socket clients
+        :param openmct_pkt: Instance of OpenMCT packet to be emitted
+        :return:
+        """
+        for mws in self._socket_set:
+            self.managed_web_socket_send(mws, message)
+
+    def send_socket_pkt_mesg(self, mws, pkt_id, mct_pkt):
+        """
+        Attempts to send socket message if managed web-socket is alive
+        and accepts the message by inspecting the pkt_id value
+        :param mws: Managed web-socket
+        :param pkt_id: Packet ID associated with message
+        :param mct_pkt: OpenMCT telem packet
+        :return: True if message sent to web-socket, False otherwise
+        """
+        if mws.is_alive and mws.accepts_packet(pkt_id):
+            #Collect only fields the subscription cares about
+            subscribed_pkt = mws.create_subscribed_packet(mct_pkt)
+            # If that new packet still has fields, stringify and send
+            if subscribed_pkt:
+                pkt_mesg = json.dumps(subscribed_pkt,
+                                default=self.datetime_jsonifier)
+                self.dbg_message("Sending realtime telemetry web-socket msg "
+                                 f"to websocket {mws.id}: {pkt_mesg}")
+                self.managed_web_socket_send(mws, pkt_mesg)
+                return True
+
+        return False
+
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def managed_web_socket_recv(mws):
+        '''
+        Attempts to read message from the websocket with timeout.
+        :param mws: Managed web-socket instance
+        :return: Message retrieved from underlying-websocket, or None
+        '''
+        message = None
+        try:
+            with Timeout(AITOpenMctPlugin.DEFAULT_WS_RECV_TIMEOUT_SECS, False) as timeout:
+                message = mws.web_socket.receive()
+        except geventwebsocket.WebSocketError as wserr:
+            log.warn(f"Error while reading from web-socket {mws.id}; Error: {wserr}")
+            mws.set_error()
+        return message
+
+    @staticmethod
+    def managed_web_socket_send(mws, message):
+        '''
+        Sends message to underlying web-socket
+        :param mws: Managed web-socket instance
+        :param message: Message to be sent
+        '''
+        if mws.is_alive:
+            try:
+                mws.web_socket.send(message)
+            except geventwebsocket.WebSocketError as wserr:
+                log.warn(f"Error while writing to web-socket {mws.id}; Message:'{message}'; Error: {wserr}")
+                mws.set_error()
+
+    # ---------------------------------------------------------------------
+
+    def poll_websocket_periodically_while_alive(self, mws):
+        while mws.is_alive:
+            gsleep(self.DEFAULT_WEBSOCKET_CHECK_SLEEP_SECS)
+            self.poll_websocket(mws)
+
+    def poll_websockets(self):
+        """
+        Polls set of maintained web-sockets to test for:
+            - web-socket is considered closed, in which case its removed from internal set;
+            - web-socket has message available that affects its state.
+        """
+        removal_set = set()
+
+        if len(self._socket_set) == 0:
+            self.dbg_message("No websockets to poll")
+        else:
+            for mws in self._socket_set:
+                if mws.is_alive:
+                    self.poll_websocket(mws)
+                else:
+                    removal_set.add(mws)
+
+        # Remove the closed/error entries from our set
+        if len(removal_set) > 0:
+            for rip_mws in removal_set:
+                rem_msg = f"Removing closed web-socket record ID {rip_mws.id}"
+                if mws.is_error:
+                    rem_msg = f"Removing err web-socket record ID {rip_mws.id}"
+                self.dbg_message(rem_msg)
+                self._socket_set.remove(rip_mws)
+
+    def poll_websocket(self, mws):
+        """
+        Polls instance of web-socket for message
+        :return True if message was processed, False otherwise
+        """
+        # attempt to read message from websocket and process
+        if mws.is_alive:
+            message = self.managed_web_socket_recv(mws)
+            if message:
+                self.process_websocket_mesg(mws, message)
+                return True
+            else:
+                return False
+
+    def process_websocket_mesg(self, mws, message):
+        """
+        Processes message received from a web-socket.
+        Handles the following directives: close, subscribe, unsubscribe
+        :param mws: Managed web-socket instance associated with message
+        :param message: Web-socket message
+        """
+        msg_parts = message.split(" ", 1)
+        directive = msg_parts[0]
+        if directive == 'close':
+            self.dbg_message(f"Received 'close' message.  Marking web-socket ID {mws.id} as closed")
+            mws.is_closed = True
+        elif directive == 'subscribe' and len(msg_parts) > 1:
+            self.dbg_message(f"Subscribing websocket {mws.id} to: {msg_parts[1]}")
+            mws.subscribe_field(msg_parts[1])
+        elif directive == 'unsubscribe':
+            self.dbg_message(f"Unsubscribing websocket {mws.id} from: {msg_parts[1]}")
+            mws.unsubscribe_field(msg_parts[1])
+        else:
+            self.dbg_message(f"Unrecognized web-socket message: {message}")
 
     # ---------------------------------------------------------------------
     # Routing rules
