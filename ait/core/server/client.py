@@ -37,11 +37,13 @@ class ZMQClient(object):
         # calls gevent.Greenlet or gs.DatagramServer __init__
         super(ZMQClient, self).__init__(**kwargs)
 
-    def publish(self, msg):
+    def publish(self, msg, topic=None):
         """
         Publishes input message with client name as topic.
         """
-        msg = utils.encode_message(self.name, msg)
+        if not topic:
+            topic = self.name
+        msg = utils.encode_message(topic, msg)
         if msg is None:
             log.error(f"{self} unable to encode msg {msg} for send.")
             return
