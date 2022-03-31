@@ -55,6 +55,9 @@ sphinxcontrib-httpdomain = '*'
 tox                      = '>= 3.8'
 twine                    = '^3.4.2'
 
+[tool.poetry.extras]
+docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
+
 [tool.poetry.scripts]
 ait-bsc                = 'ait.core.bin.ait_bsc:main'
 ait-bsc-create-handler = 'ait.core.bin.ait_bsc_create_handler:main'
