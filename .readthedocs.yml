@@ -9,6 +9,5 @@ python:
   install:
     - method: pip
       path: .
-  extra_requirements:
-    - docs
-    - tests
+      extra_requirements:
+        - docs
