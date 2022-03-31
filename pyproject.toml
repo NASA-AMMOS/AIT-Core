@@ -56,7 +56,7 @@ tox                      = '>= 3.8'
 twine                    = '^3.4.2'
 
 [tool.poetry.extras]
-docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-bibtex"]
+docs = ["sphinx", "sphinx-rtd-theme", "sphinxcontrib-httpdomain"]
 
 [tool.poetry.scripts]
 ait-bsc                = 'ait.core.bin.ait_bsc:main'
