@@ -43,7 +43,8 @@ PATH_KEYS = "directory", "file", "filename", "path", "pathname"
 def expand_config_paths(
     config, prefix=None, datetime=None, pathvars=None, parameter_key="", *keys
 ):
-    """Updates all relative configuration paths in dictionary config,
+    """
+    Updates all relative configuration paths in dictionary config,
     which contain a key in keys, by prepending prefix.
 
     If keys is omitted, it defaults to 'directory', 'file',
@@ -377,7 +378,6 @@ class AitConfig(object):
                 self._datetime,
                 merge(self._config, self._pathvars),
             )
-
         else:
             self._config = {}
 

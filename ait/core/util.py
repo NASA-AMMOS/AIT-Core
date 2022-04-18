@@ -120,10 +120,12 @@ class ObjectCache(object):
         return False
 
     def load(self):
-        """Loads the Python object
+        """
+        Loads the Python object
 
         Loads the Python object, either via loader(filename) or the
         pickled cache file, whichever was modified most recently.
+
         """
 
         if self._dict is None:
@@ -165,6 +167,7 @@ def __init_extensions__(modname, modsyms):  # noqa
     :func:`createCmd()`) it will now create a ``FooCmd`` object
     instead.  Note: ``FooCmd`` should adhere to the same interface as
     :class:`ait.core.cmd.Cmd` (and probably inherit from it).
+
     """
 
     def createFunc(cls, extname):  # noqa
@@ -176,6 +179,7 @@ def __init_extensions__(modname, modsyms):  # noqa
         returned ``createXXX()`` is called, it attempts to lookup and
         load the class.  Thereafter, the loaded class is cached for
         subsequent calls.
+
         """
 
         def create(*args, **kwargs):
@@ -187,6 +191,7 @@ def __init_extensions__(modname, modsyms):  # noqa
                     if module is None:
                         raise ImportError("No module named %d" % modname)
                     create.cls = getattr(module, clsname)
+
                 if create.cls is None:
                     raise ImportError("No class named %s" % extname)
             return create.cls(*args, **kwargs)
@@ -197,11 +202,11 @@ def __init_extensions__(modname, modsyms):  # noqa
     extensions = ait.config.get("extensions", None)
 
     for clsname, cls in modsyms.copy().items():
+
         if not isinstance(cls, type):
             continue
 
         extname = None
-
         if extensions:
             extname = extensions.get(modname + "." + clsname, None)
 
@@ -217,12 +222,12 @@ def __load_functions__(symtbl):  # noqa
     """Loads all Python functions from the module specified in the
     ``functions`` configuration parameter (in config.yaml) into the given
     symbol table (Python dictionary).
+
     """
     modname = ait.config.get("functions", None)
 
     if modname:
         module = pydoc.locate(modname)
-
         if module is None:
             msg = "No module named %d (from config.yaml functions: parameter)"
             raise ImportError(msg % modname)
@@ -236,6 +241,7 @@ def __load_functions__(symtbl):  # noqa
 def crc32File(filename, skip=0):  # noqa
     """Computes the CRC-32 of the contents of filename, optionally
     skipping a certain number of bytes at the beginning of the file.
+
     """
     with open(filename, "rb") as stream:
         _ = stream.read(skip)
@@ -264,14 +270,15 @@ def setDictDefaults(d, defaults):  # noqa
 
 
 def getDefaultDict(modname, config_key, loader, reload=False, filename=None):  # noqa
-    """Returns default AIT dictonary for modname
+    """Returns default AIT dictionary for modname
 
-    This helper function encapulates the core logic necessary to
+    This helper function encapsulates the core logic necessary to
     (re)load, cache (via util.ObjectCache), and return the default
     dictionary.  For example, in ait.core.cmd:
 
     def getDefaultDict(reload=False):
         return ait.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
+
     """
     module = sys.modules[modname]
     default = getattr(module, "DefaultDict", None)
@@ -331,6 +338,7 @@ def toFloat(str, default=None):  # noqa
     >>> f = toFloat("Foo")
     >>> assert f is None
     """
+
     value = default
 
     try:
@@ -365,6 +373,7 @@ def toNumber(str, default=None):  # noqa
     >>> n = toNumber("Foo")
     >>> assert n is None
     """
+
     value = default
 
     try:
@@ -386,6 +395,7 @@ def toNumberOrStr(str):  # noqa
 
     Converts the given string to a numeric value, if possible. Otherwise
     returns the input string
+
     """
     return toNumber(str, str)
 
@@ -437,6 +447,7 @@ def expandPath(pathname, prefix=None):  # noqa
     """Return pathname as an absolute path, either expanded by the users
     home directory ("~") or with prefix prepended.
     """
+
     if prefix is None:
         prefix = ""
 
@@ -454,6 +465,7 @@ def listAllFiles(directory, suffix=None, abspath=False):  # noqa
     """Returns the list of all files within the input directory and
     all subdirectories.
     """
+
     files = []
 
     directory = expandPath(directory)

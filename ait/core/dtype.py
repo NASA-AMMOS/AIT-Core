@@ -74,7 +74,6 @@ from typing import Dict, Any
 
 from ait.core import cmd, dmc, log
 
-
 # PrimitiveTypes
 #
 # Lists PrimitiveType names.  Passing these names to get() will return

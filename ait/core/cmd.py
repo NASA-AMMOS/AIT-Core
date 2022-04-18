@@ -17,6 +17,7 @@ AIT Commands
 
 The ait.core.cmd module provides commands and command dictionaries.
 Dictionaries contain command and argument definitions.
+
 """
 
 import os
@@ -43,6 +44,7 @@ class ArgDefn(json.SlotSerializer, object):
 
     A fixed argument (fixed=True) defines a fixed bit pattern in that
     argument's byte position(s).
+
     """
 
     __slots__ = [
@@ -104,8 +106,10 @@ class ArgDefn(json.SlotSerializer, object):
         return self.slice().start % 2 * 8
 
     def decode(self, bytes):
-        """Decodes the given bytes according to this AIT Argument
+        """
+        Decodes the given bytes according to this AIT Argument
         Definition.
+
         """
         value = self.type.decode(bytes)
         if self._enum is not None:
@@ -116,8 +120,10 @@ class ArgDefn(json.SlotSerializer, object):
         return value
 
     def encode(self, value):
-        """Encodes the given value according to this AIT Argument
+        """
+        Encodes the given value according to this AIT Argument
         Definition.
+
         """
         if not self.type:
             return bytearray()
@@ -128,10 +134,12 @@ class ArgDefn(json.SlotSerializer, object):
 
 
     def slice(self, offset=0):
-        """Returns a Python slice object (e.g. for array indexing) indicating
+        """
+        Returns a Python slice object (e.g. for array indexing) indicating
         the start and stop byte position of this Command argument.  The
         start and stop positions may be translated by the optional byte
         offset.
+
         """
         if type(self.bytes) is int:
             start = self.bytes
@@ -143,9 +151,11 @@ class ArgDefn(json.SlotSerializer, object):
         return slice(start + offset, stop + offset)
 
     def validate(self, value, messages=None):
-        """Returns True if the given Argument value is valid, False otherwise.
+        """
+        Returns True if the given Argument value is valid, False otherwise.
         Validation error messages are appended to an optional messages
         array.
+
         """
         valid = True
         primitive = value
@@ -176,15 +186,19 @@ class ArgDefn(json.SlotSerializer, object):
 
 
 class Cmd(object):
-    """Cmd - Command
+    """
+    Cmd - Command
 
     Commands reference their Command Definition and may contain arguments.
+
     """
 
     def __init__(self, defn, *args, **kwargs):
-        """Creates a new AIT Command based on the given command
+        """
+        Creates a new AIT Command based on the given command
         definition and command arguments.  A Command may be created
         with either positional or keyword arguments, but not both.
+
         """
         self.defn = defn
 
@@ -234,7 +248,8 @@ class Cmd(object):
         return self.defn.argdefns
 
     def encode(self, pad=106):
-        """Encodes this AIT command to binary.
+        """
+        Encodes this AIT command to binary.
 
         If pad is specified, it indicates the maximum size of the encoded
         command in bytes.  If the encoded command is less than pad, the
@@ -244,6 +259,7 @@ class Cmd(object):
         (128 bytes) with 11 words (22 bytes) of CCSDS overhead (SSP
         52050J, Section 3.2.3.4).  This leaves 53 words (106 bytes) for
         the command itself.
+
         """
         try:
             opcode = struct.pack(">H", self.defn.opcode)
@@ -272,20 +288,24 @@ class Cmd(object):
         return encoded
 
     def validate(self, messages=None):
-        """Returns True if the given Command is valid, False otherwise.
+        """
+        Returns True if the given Command is valid, False otherwise.
         Validation error messages are appended to an optional messages
         array.
+
         """
         return self.defn.validate(self, messages)
 
 
 class CmdDefn(json.SlotSerializer, object):
-    """CmdDefn - Command Definition
+    """
+    mdDefn - Command Definition
 
     Command Definitions encapsulate all information required to define a
     single command.  This includes the command name, its opcode,
     subsystem, description and a list of argument definitions.  Name and
     opcode are required.  All others are optional.
+
     """
 
     __slots__ = ("name", "_opcode", "subsystem", "ccsds", "title", "desc", "argdefns")
@@ -308,27 +328,31 @@ class CmdDefn(json.SlotSerializer, object):
         return util.toRepr(self)
 
     @property
-    def args(self):
-        """The argument definitions to this command (excludes fixed
+    def args (self):
+        """
+        The argument definitions to this command (excludes fixed
         arguments).
         """
         return filter(lambda a: not a.fixed, self.argdefns)
 
     @property
     def nargs(self):
-        """The number of arguments to this command (excludes fixed
+        """
+        The number of arguments to this command (excludes fixed
         arguments).
         """
         return len(list(self.args))
 
     @property
     def nbytes(self):
-        """The number of bytes required to encode this command.
+        """
+        The number of bytes required to encode this command.
 
         Encoded commands are comprised of a two byte opcode, followed by a
         one byte size, and then the command argument bytes.  The size
         indicates the number of bytes required to represent command
         arguments.
+
         """
         return len(self.opcode) + 1 + sum(arg.nbytes for arg in self.argdefns)
 
@@ -449,8 +473,10 @@ class CmdDict(dict):
 
         return createCmd(defn, *args, **kwargs)  # noqa
 
+
     def decode(self, bytes):
-        """Decodes the given bytes according to this AIT Command
+        """
+        Decodes the given bytes according to this AIT Command
         Definition.
         """
         opcode = struct.unpack(">H", bytes[0:2])[0]
@@ -499,7 +525,7 @@ class CmdDict(dict):
         return {name: defn.toJSON() for name, defn in self.items()}
 
 
-def getDefaultCmdDict(reload=False):  # noqa
+def getDefaultCmdDict(reload=False):
     return getDefaultDict(reload=reload)
 
 
@@ -552,6 +578,15 @@ def YAMLCtor_CmdDefn(loader, node):  # noqa
     fields = loader.construct_mapping(node, deep=True)
     fields["argdefns"] = fields.pop("arguments", None)
     return createCmdDefn(**fields)  # noqa
+
+
+def YAMLCtor_include(loader, node):
+    # Get the path out of the yaml file
+    name = os.path.join(os.path.dirname(loader.name), node.value)
+    data = None
+    with open(name,'r') as f:
+        data = yaml.load(f)
+    return data
 
 
 def YAMLCtor_include(loader, node):  # noqa
