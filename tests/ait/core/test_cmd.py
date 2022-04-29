@@ -37,8 +37,16 @@ CMDDICT_TEST = """
       type:  U8
       bytes: 2
       enum:
-        0: DISABLED
-        1: ENABLED
+        0:   DISABLED
+        1:   ENABLED
+- !Command
+  name:      TEST_ARRAY_CMD
+  opcode:    0x0043
+  arguments:
+    - !Argument
+      name:  array_sequence
+      type:  MSB_U16[2]
+      bytes: [0, 1, 2, 3]
 """
 
 
@@ -92,15 +100,25 @@ def testArgDefnDecode():
 
 def testArgDefnEncode():
     name = "SEQ_ENABLE_DISABLE"
-    defn = cmd.CmdDict(CMDDICT_TEST)[name]
+    cmd_dict = cmd.CmdDict(CMDDICT_TEST)
+    defn = cmd_dict[name]
 
+    # Test encode single simple value
     arg = defn.argdefns[0]
     assert arg.encode(1234) == struct.pack(">H", 1234)
 
+    # Test encode enumeration
     arg = defn.argdefns[1]
     assert arg.encode("DISABLED") == struct.pack(">B", 0)
     assert arg.encode("ENABLED") == struct.pack(">B", 1)
     assert arg.encode(2) == struct.pack(">B", 2)
+
+    name = "TEST_ARRAY_CMD"
+    defn = cmd_dict[name]
+
+    # Test encode array type
+    arg = defn.argdefns[0]
+    assert arg.encode(1234, 5678) == struct.pack(">HH", 1234, 5678)
 
 
 def testArgDefnValidate():
@@ -136,15 +154,23 @@ def testCmdDefn():
     assert defn.nargs == 2
 
 
+def testCreateCmd():
+    name = "TEST_ARRAY_CMD"
+    test_cmd = cmd.CmdDict(CMDDICT_TEST).create(name, (1234, 5678))
+    assert test_cmd.args[0] == (1234, 5678)
+
+
 def testGetDefaultDict():
     cmddict = cmd.getDefaultDict()
 
     assert cmddict is not None
     assert isinstance(cmddict, cmd.CmdDict)
 
+
 def testGetDefaultDictWithExtension(testGetDefaultDictWithExtension_setup_teardown):
     cd = cmd.getDefaultDict()
     assert type(cd) == TestCmdDict
+
 
 @pytest.fixture
 def testGetDefaultDictWithExtension_setup_teardown():
