@@ -96,7 +96,7 @@ class ObjectCache(object):
 
         # If no pickle cache exists return True to make a new one.
         if not os.path.exists(cache_name):
-            log.debug(f'No pickle cache exists, make a new one')
+            log.debug('No pickle cache exists, make a new one')
             return True
         # Has the yaml config file has been modified since the creation of the pickle cache
         if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):

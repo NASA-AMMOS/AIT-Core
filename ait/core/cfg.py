@@ -333,12 +333,13 @@ class AitConfig(object):
             for k in data:
                 paths[k] = data[k]["path"]
 
-            data = self._config.get("dsn",{}).get("cfdp",{}).get("datasink",{})
+            data = self._config.get("dsn", {}).get("cfdp", {}).get("datasink", {})
             for k in data:
                 paths[k] = data[k]["path"]
 
-            data = self._config.get("dsn",{}).get("cfdp",{})
-            if data: paths["mib"] = data["mib"]["path"]
+            data = self._config.get("dsn", {}).get("cfdp", {})
+            if data:
+                paths["mib"] = data["mib"]["path"]
 
         except KeyError as e:
             raise AitConfigMissing(str(e))

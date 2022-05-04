@@ -27,7 +27,6 @@ import json
 import random
 import struct
 import sys
-import time
 import webbrowser
 
 import gevent
@@ -45,7 +44,6 @@ from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
 
 
-
 class ManagedWebSocket():
     """
     A data structure to maintain state for OpenMCT websockets
@@ -54,11 +52,10 @@ class ManagedWebSocket():
 
     PACKET_ID_WILDCARD = "*"
 
-
     def __init__(self, web_socket, client_ip=None):
         self.web_socket = web_socket
         self.client_ip = client_ip
-        self._subscribed_dict = dict() #Dict from packetId to list of fieldIds
+        self._subscribed_dict = dict()  # Dict from packetId to list of fieldIds
         self.is_closed = False
         self.is_error = False
         self.id = ManagedWebSocket._generate_id()
@@ -80,7 +77,7 @@ class ManagedWebSocket():
             if pkt_id not in self._subscribed_dict.keys():
                 self._subscribed_dict[pkt_id] = set()
             field_set = self._subscribed_dict.get(pkt_id, None)
-            if field_set is not None: # Unnecessary, but paranoid
+            if field_set is not None:  # Unnecessary, but paranoid
                 field_set.add(fld_id)
 
     def unsubscribe_field(self, openmct_field_id):
@@ -93,7 +90,7 @@ class ManagedWebSocket():
             field_set = self._subscribed_dict.get(pkt_id, None)
             if field_set:
                 field_set.remove(fld_id)
-                #If there are no more fields, then remove packet id
+                # If there are no more fields, then remove packet id
                 if len(field_set) == 0:
                     self._subscribed_dict.pop(pkt_id)
 
@@ -160,7 +157,7 @@ class ManagedWebSocket():
 
         # Filter the original field value dict to only fields session is subscribed to
         if field_set:
-            filt_fld_dict = { k: v for k, v in orig_fld_dict.items() if k in field_set}
+            filt_fld_dict = {k: v for k, v in orig_fld_dict.items() if k in field_set}
             # If filtered dict is non-empty, then build new packet for return
             if filt_fld_dict:
                 sub_pkt = {'packet': packet_id, 'data': filt_fld_dict}
@@ -352,7 +349,7 @@ class AITOpenMctPlugin(Plugin):
     DEFAULT_TELEM_CHECK_SLEEP_SECS = 2
     DEFAULT_WEBSOCKET_CHECK_SLEEP_SECS = 2
 
-    DEFAULT_WS_EMPTY_MESSAGE = json.dumps(dict())  #Empty Json string
+    DEFAULT_WS_EMPTY_MESSAGE = json.dumps(dict())  # Empty Json string
 
     def __init__(
         self,
@@ -595,7 +592,6 @@ class AITOpenMctPlugin(Plugin):
     def wait(self):
         gevent.wait()
 
-
     # ---------------------------------------------------------------------
     # Section of methods to which bottle requests will be routed
 
@@ -639,7 +635,7 @@ class AITOpenMctPlugin(Plugin):
             while not websocket.closed:
 
                 message = None
-                with Timeout(3, False) as timeout:
+                with Timeout(3, False):
                     message = websocket.receive()
                 if message:
                     self.dbg_message("Received websocket message: "+message)
@@ -655,7 +651,7 @@ class AITOpenMctPlugin(Plugin):
 
                     ait_pkt = ait.core.tlm.Packet(pkt_defn, data=data)
 
-                    packet_id,openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
+                    packet_id, openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
 
                     openmct_pkt_jsonstr = json.dumps(
                         openmct_pkt, default=self.datetime_jsonifier
@@ -688,7 +684,6 @@ class AITOpenMctPlugin(Plugin):
                 + ": "
                 + str(wser)
             )
-
 
     def get_realtime_tlm(self):
         """Handles realtime packet dispatch via websocket layers"""
@@ -733,7 +728,6 @@ class AITOpenMctPlugin(Plugin):
         self.dbg_message(f"Removing {rem_msg_state} web-socket record ID {mws.id}")
         self._socket_set.remove(mws)
 
-
     def get_historical_tlm(self, mct_pkt_id):
         """
         Handling of historical queries.  Time range is retrieved from bottle request query.
@@ -748,7 +742,6 @@ class AITOpenMctPlugin(Plugin):
 
         self.dbg_message("Received request for historical tlm: "
                          f"Ids={mct_pkt_id} Start={start_time_ms} End={end_time_ms}")
-
 
         # The tutorial indicated that this could be a comma-separated list of ids...
         # If its a single, then this will create a list with one entry
@@ -930,7 +923,6 @@ class AITOpenMctPlugin(Plugin):
             ait_pkt_defn = tlm.getDefaultDict().values()[0]
 
         # Create the expected message format
-        pkt_def_uid = ait_pkt_defn.uid
         pkt_size_bytes = ait_pkt_defn.nbytes
 
         # if self._debugMimicRepeat:
@@ -963,11 +955,11 @@ class AITOpenMctPlugin(Plugin):
             self._process_telem_msg(tlm_pkt)
 
             info_msg = (
-                f"AIT OpenMct Plugin submitted mimicked telemetry for "
+                "AIT OpenMct Plugin submitted mimicked telemetry for "
                 + ait_pkt_defn.name
                 + " ("
                 + str(datetime.datetime.now())
-                + f") to telem queue"
+                + ") to telem queue"
             )
             self.dbg_message(info_msg)
 
@@ -984,7 +976,7 @@ class AITOpenMctPlugin(Plugin):
 
     # ---------------------------------------------------------------------
 
-    ##Greelet-invoked functions
+    # Greelet-invoked functions
 
     def poll_telemetry_periodically(self):
         while True:
@@ -1001,7 +993,7 @@ class AITOpenMctPlugin(Plugin):
         :return: True if real telemetry emitted, False otherwise.
         """
         try:
-            self.dbg_message(f"Polling Telemetry queue...")
+            self.dbg_message("Polling Telemetry queue...")
             ait_pkt = self._tlmQueue.popleft(timeout=self.DEFAULT_TELEM_QUEUE_TIMEOUT_SECS)
             openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
             self.dbg_message(f"Broadcasting {openmct_pkt} to managed web-sockets...")
@@ -1032,7 +1024,7 @@ class AITOpenMctPlugin(Plugin):
 
         for mws in self._socket_set:
             pkt_emitted_by_cur = self.send_socket_pkt_mesg(mws,
-                                      openmct_pkt_id, openmct_pkt)
+                                                           openmct_pkt_id, openmct_pkt)
             pkt_emitted_by_any = pkt_emitted_by_cur or pkt_emitted_by_any
         return pkt_emitted_by_any
 
@@ -1055,12 +1047,12 @@ class AITOpenMctPlugin(Plugin):
         :return: True if message sent to web-socket, False otherwise
         """
         if mws.is_alive and mws.accepts_packet(pkt_id):
-            #Collect only fields the subscription cares about
+            # Collect only fields the subscription cares about
             subscribed_pkt = mws.create_subscribed_packet(mct_pkt)
             # If that new packet still has fields, stringify and send
             if subscribed_pkt:
                 pkt_mesg = json.dumps(subscribed_pkt,
-                                default=self.datetime_jsonifier)
+                                      default=self.datetime_jsonifier)
                 self.dbg_message("Sending realtime telemetry web-socket msg "
                                  f"to websocket {mws.id}: {pkt_mesg}")
                 self.managed_web_socket_send(mws, pkt_mesg)
@@ -1079,7 +1071,7 @@ class AITOpenMctPlugin(Plugin):
         '''
         message = None
         try:
-            with Timeout(AITOpenMctPlugin.DEFAULT_WS_RECV_TIMEOUT_SECS, False) as timeout:
+            with Timeout(AITOpenMctPlugin.DEFAULT_WS_RECV_TIMEOUT_SECS, False):
                 message = mws.web_socket.receive()
         except geventwebsocket.WebSocketError as wserr:
             log.warn(f"Error while reading from web-socket {mws.id}; Error: {wserr}")
