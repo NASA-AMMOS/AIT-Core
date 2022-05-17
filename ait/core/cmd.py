@@ -126,7 +126,6 @@ class ArgDefn(json.SlotSerializer, object):
             value = self.enum[value]
         return self.type.encode(*value) if type(value) in [tuple, list] else self.type.encode(value)
 
-
     def slice(self, offset=0):
         """Returns a Python slice object (e.g. for array indexing) indicating
         the start and stop byte position of this Command argument.  The
