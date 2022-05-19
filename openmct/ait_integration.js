@@ -48,24 +48,42 @@
  *  3) Point your browser to localhost:8080
  */
 
-//DEFAULTS
+
+
+//-----
+//Constants
+
+let OBJ_NAMESPACE = "ait-ns";
+let OBJ_ROOT = "tlm-dict";
+let OBJ_NS_ROOT = OBJ_NAMESPACE+":"+OBJ_ROOT;
+
+//-----
+//Defaults
+
 // AIT connection settings
 const AIT_HOST_DEFAULT = 'localhost';
 const AIT_PORT_DEFAULT = 8082;
 //Debug
 const DEBUG_ENABLED_DEFAULT = false;
+//Full-Field names  (field names contain packet)
+const FULL_FIELD_NAMES_DEFAULT = false;
 
+//-----
 // State variables for connections, debug, ws-reconnect
+
 let ait_host  = AIT_HOST_DEFAULT;
 let ait_post  = AIT_PORT_DEFAULT;
 let ait_debug = DEBUG_ENABLED_DEFAULT;
 
+//controls if field names are full (with packet) or not
+let full_field_names = FULL_FIELD_NAMES_DEFAULT;
+
+// Web-socket reconnection settings
 let ws_reconnect_enabled = true;
 let ws_reconnect_wait_millis = 10000;
 
 // Keep a reference to our promise for tlmdict
 let tlmdictPromise = null;
-
 
 //---------------------------------------------
 
@@ -92,6 +110,8 @@ function debugMsg(msg) {
         console.log("OpenMct/AIT: "+msg);
 }
 
+//---------------------------------------------
+
 
 //---------------------------------------------
 
@@ -99,10 +119,11 @@ function debugMsg(msg) {
 //for AIT
 function AITIntegration(config) {
 
-
+    //set values to default
     ait_host  = AIT_HOST_DEFAULT;
     ait_post  = AIT_PORT_DEFAULT;
     ait_debug = DEBUG_ENABLED_DEFAULT;
+    full_field_names = FULL_FIELD_NAMES_DEFAULT;
 
     //check for configuration overrides
     if (config != null)
@@ -122,90 +143,160 @@ function AITIntegration(config) {
             ait_port = (Number.isInteger(config.port)) ? config.port :
                        (parseInt(config.port) || AIT_PORT_DEFAULT);
         }
+        if (config.hasOwnProperty('full_field_names'))
+        {
+            full_field_names = (config.full_field_names === "true");
+        }
     }
 
     //You will only see these if DEBUG was enabled
-    debugMsg("AIT Debug set to: "+ait_debug);
-    debugMsg("AIT Host  set to: "+ait_host);
-    debugMsg("AIT Port  set to: "+ait_port);
+    debugMsg("AIT Debug   set to: "+ait_debug);
+    debugMsg("AIT Host    set to: "+ait_host);
+    debugMsg("AIT Port    set to: "+ait_port);
+    debugMsg("Full-Fields set to: "+full_field_names);
 
     tlmdictPromise  = getDictionary(ait_host, ait_port);
 
+    //AIT Object Provider
     let objectProvider = {
         get: function (identifier) {
 
             return tlmdictPromise.then(function (dictionary) {
-                if (identifier.key === 'spacecraft') {
-                    return {
+
+                const id_key = identifier.key.toString();
+                let rval = null;
+
+                if (identifier.key === OBJ_ROOT) {
+
+                    //Identifier is Root.
+                    //Provide information about the root
+                    rval =  {
                         identifier: identifier,
                         name: dictionary.name,
                         type: 'folder',
                         location: 'ROOT'
                     };
-                } else {
-                    let measurement = dictionary.measurements.filter(function (m) {
-                        return m.key === identifier.key;
-                    })[0];
-                    return {
+                } else if (!id_key.includes(".") ) {
+
+                    //Identifier is packet
+                    //Provide information about the packet (which contains fields)
+                    rval = {
                         identifier: identifier,
-                        name: measurement.name,
-                        type: 'telemetry',
-                        telemetry: {
-                            values: measurement.values
-                        },
-                        location: 'taxonomy:spacecraft'
+                        name: identifier.key,
+                        type: 'folder',
+                        location: OBJ_NS_ROOT
                     };
+                } else {
+
+                    //Identifier is packet-field
+                    //Provide information about the packet-field
+                    let measurement = dictionary.measurements.find(function (m) {
+                                                 return m.key === identifier.key;});
+                    if (measurement != null) {
+                        const pkt_fld_array = id_key.split(".");
+                        const packet_name = pkt_fld_array[0];
+                        const field_name = pkt_fld_array[1];
+
+                        // Include full field name (pkt.fld) or just name (fld)
+                        const name_value = full_field_names ? measurement.name : field_name;
+
+                        rval = {
+                            identifier: identifier,
+                            name: name_value,
+                            type: 'telemetry',
+                            telemetry: {
+                                values: measurement.values
+                            },
+                            location: OBJ_NS_ROOT
+                        };
+                    } else {
+                        console.warn("AIT-objectProvider received unknown " +
+                                     "measurement key: "+id_key)
+                        return null;
+                    }
                 }
+
+                return rval;
             });
         }
     };
 
+    //Composition provides a tree structure, where each packet is a folder
+    //containing packet fields telemetry.
+    //TODO: Consider another layer for subsystem or other?
     let compositionProvider = {
         appliesTo: function (domainObject) {
-            return domainObject.identifier.namespace === 'taxonomy' &&
-                   domainObject.type === 'folder';
+
+            let id_key = domainObject.identifier.key.toString();
+            //This applies to our namespace, for folder types,
+            //but not when key includes '.' (so packets ok, fields not ok)
+            return domainObject.identifier.namespace === OBJ_NAMESPACE &&
+                   domainObject.type === 'folder' &&
+                   !id_key.includes(".");
         },
         load: function (domainObject) {
-            return tlmdictPromise
-                .then(function (dictionary) {
-                    return dictionary.measurements.map(function (m) {
+
+            let id_key = domainObject.identifier.key.toString();
+
+            if (id_key === OBJ_ROOT) {
+                return tlmdictPromise.then(function (dictionary) {
+
+                    //Top level, so collect all of the Packet names (no fields)
+
+                    //create array of unique packet names (by examining all field names)
+                    let keySet = new Set(dictionary.measurements.map(item =>
+                                         item.key.substr(0,
+                                              item.key.indexOf("."))));
+                    let keyArr = [...keySet];
+
+                    //return array of packet-name structs
+                    let rval = keyArr.map(function (key) {
                         return {
-                            namespace: 'taxonomy',
+                            namespace: OBJ_NAMESPACE,
+                            key: key
+                        };
+                    });
+                    return rval;
+                });
+            } else  {
+                return tlmdictPromise.then(function (dictionary) {
+
+                    //Collect all fields that are part of the packet identified
+                    //by id_key
+                    let pkt_fields = dictionary.measurements.filter(function(m) {
+                                                return m.key.startsWith(id_key)});
+
+                    //return array of field structs
+                    let rval = pkt_fields.map(function (m) {
+                        return {
+                            namespace: OBJ_NAMESPACE,
                             key: m.key
                         };
                     });
+                    return rval;
                 });
-        } //,
-        // loadHeirarchy: function (domainObject) {
-        //     return tlmdictPromise
-        //         .then(function (dictionary) {
-        //             domainObject.identifier.key
-        //             function checkParent(age) {
-        //                 return age >= 18;
-        //             }
-        //             return dictionary.measurements.map(function (m) {
-        //                 return {
-        //                     namespace: 'taxonomy',
-        //                     key: m.key
-        //                 };
-        //             });
-        //         });
-        // }
+            }
+        }
     };
 
     return function install(openmct) {
+
+        //Add AIT Root
         openmct.objects.addRoot({
-            namespace: 'taxonomy',
-            key: 'spacecraft'
+            namespace: OBJ_NAMESPACE,
+            key: OBJ_ROOT
         });
 
-        openmct.objects.addProvider('taxonomy', objectProvider);
+        //Add Provider for AIT Objects
+        openmct.objects.addProvider(OBJ_NAMESPACE, objectProvider);
 
+        //Add Provider to handle tree structure of telem fields
         openmct.composition.addProvider(compositionProvider);
 
+        //Add telemetry type for AIT fields
         openmct.types.addType('telemetry', {
             name: 'Telemetry Point',
-            description: 'Spacecraft Telemetry point',
+            description: 'AIT Telemetry point',
             cssClass: 'icon-telemetry'
         });
     };
@@ -214,6 +305,7 @@ function AITIntegration(config) {
 //---------------------------------------------
 
 //Historical telemetry
+//TODO: support the other OpenMCT historical query parameters
 function AITHistoricalTelemetryPlugin() {
 
     return function install (openmct) {
@@ -222,13 +314,13 @@ function AITHistoricalTelemetryPlugin() {
                 return domainObject.type === 'telemetry';
             },
             request: function (domainObject, options) {
-                let histUrlRoot = 'http://' + ait_host + ':' + ait_port + '/tlm/history/'
+                let histUrlRoot = 'http://' + ait_host + ':' + ait_port + '/tlm/history/';
                 let histUrl = histUrlRoot + domainObject.identifier.key +
                     '?start=' + options.start + '&end=' + options.end;
 
                 return http.get(histUrl)
                     .then(function (resp) {
-                        return resp.data
+                        return resp.data;
                     });
             }
         };
@@ -264,7 +356,7 @@ let connectRealtime = function()
             return;
         }
 
-        let msg_json = JSON.parse(event.data)
+        let msg_json = JSON.parse(event.data);
 
         //Check that JSON object contains telemetry info
         if (msg_json.hasOwnProperty('packet') &&
