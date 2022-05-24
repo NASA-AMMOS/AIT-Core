@@ -35,7 +35,8 @@ from ait.core import log
 
 class ObjectCache(object):
     def __init__(self, filename, loader):
-        """Creates a new ObjectCache
+        """
+        Creates a new ObjectCache
 
         Caches the Python object returned by loader(filename), using
         Python's pickle object serialization mechanism.  An ObjectCache
@@ -59,81 +60,31 @@ class ObjectCache(object):
 
     @property
     def dirty(self):
-        """True if the pickle cache needs to be updated, False to use pickle binary"""
-        return self.check_yaml_timestamps(self.filename, self.cachename)
+        """True if the pickle cache needs to be regenerated, False to use current pickle binary"""
+        return check_yaml_timestamps(self.filename, self.cachename)
 
     @property
     def filename(self):
         """The filename to cache via loader(filename)"""
         return self._filename
 
-    def cache(self):
-        """Caches the result of loader(filename) to cachename."""
-        msg = 'Saving updates from more recent "%s" to "%s"'
-        log.info(msg, self.filename, self.cachename)
-        with open(self.cachename, "wb") as output:
-            pickle.dump(self._dict, output, -1)
-
-    def check_yaml_timestamps(self, yaml_file_name, cache_name):
-        """
-        Checks YAML configuration file timestamp and any 'included' YAML configuration file
-        timestamps against the pickle cache file.
-        The term 'dirty' means that a yaml file has a more recent timestamp than the pickle
-        cache file.  If a file is found to be dirty the response will indicate that a new
-        pickle cache file must be generated.  As soon as one file is found to be 'dirty'
-        the flag indicating 'dirty' will be returned.  If a file_name is found to be 'clean'
-        the pickle binary will be loaded.
-
-        param yaml_file_name: str
-            Name of the yaml configuration file to be tested
-        param cache_name: str
-            Filename with path to the cached pickle file for this config file.
-
-        return: boolean
-            True/False indicating 'dirty' (update pickle cache)
-
-        """
-
-        # If no pickle cache exists return True to make a new one.
-        if not os.path.exists(cache_name):
-            log.debug('No pickle cache exists, make a new one')
-            return True
-        # Has the yaml config file has been modified since the creation of the pickle cache
-        if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
-            log.debug(f'{yaml_file_name} modified - make a new pickle cash')
-            return True
-        # Get the directory of the yaml config file to be parsed
-        dir_name = os.path.dirname(yaml_file_name)
-        # Open the yaml config file to look for '!includes' to be tested on the next iteration
-        with open(yaml_file_name, "r") as file:
-            try:
-                for line in file:
-                    if not line.strip().startswith("#") and "!include" in line:
-                        check = self.check_yaml_timestamps(
-                            os.path.join(dir_name, line.strip().split(" ")[2]), cache_name)
-                        if check:
-                            return True
-            except RecursionError as e:   # TODO Python 3.7 does not catch this error.
-                print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
-                      f'back and forth to one another thought the "!include" statements.')
-        log.debug('Load pickle binary.')
-        return False
-
     def load(self):
-        """Loads the Python object
+        """
+        Loads the Python object
 
-        Loads the Python object, either via loader(filename) or the
+        Loads the Python object, either via loader (filename) or the
         pickled cache file, whichever was modified most recently.
         """
 
         if self._dict is None:
             if self.dirty:
                 self._dict = self._loader(self.filename)
-                self.cache()
+                update_cache(self.filename, self.cachename, self._dict)
+                log.info(f'Loaded new pickle file: {self.cachename}')
             else:
                 with open(self.cachename, "rb") as stream:
                     self._dict = pickle.load(stream)
-
+                log.info(f'Current pickle file loaded: {self.cachename.split("/")[-1]}')
         return self._dict
 
 
@@ -145,8 +96,77 @@ else:
     timer = time.time
 
 
+def check_yaml_timestamps(yaml_file_name, cache_name):
+    """
+    Checks YAML configuration file timestamp and any 'included' YAML configuration file's
+    timestamp against the pickle cache file timestamp.
+    The term 'dirty' means that a yaml config file has a more recent timestamp than the
+    pickle cache file.  If a pickle cache file is found to be 'dirty' (return true) the
+    pickle cache file is not up-to-date, and a new pickle cache file must be generated.
+    If the cache file in not 'dirty' (return false) the existing pickle binary will
+    be loaded.
+
+    param: yaml_file_name: str
+        Name of the yaml configuration file to be tested
+    param: cache_name: str
+        Filename with path to the cached pickle file for this config file.
+
+    return: boolean
+        True:
+            Indicates 'dirty' pickle cache: i.e. the file is not current, generate new binary
+        False
+            Load current cache file
+
+    """
+    # If no pickle cache exists return True to make a new one.
+    if not os.path.exists(cache_name):
+        log.debug(f'No pickle cache exists, make a new one')
+        return True
+    # Has the yaml config file has been modified since the creation of the pickle cache
+    if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
+        log.info(f'{yaml_file_name} modified - make a new binary pickle cache file.')
+        return True
+    # Get the directory of the yaml config file to be parsed
+    dir_name = os.path.dirname(yaml_file_name)
+    # Open the yaml config file to look for '!includes' to be tested on the next iteration
+    with open(yaml_file_name, "r") as file:
+        try:
+            for line in file:
+                if not line.strip().startswith("#") and "!include" in line:
+                    check = check_yaml_timestamps(
+                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_name)
+                    if check:
+                        return True
+        except RecursionError as e:   # TODO Python 3.7 does not catch this error.
+            print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                  f'back and forth to one another thought the "!include" statements.')
+    return False
+
+
+def update_cache(yaml_file_name, cache_file_name, object_to_serialize):
+    """
+    Caches the result of loader (yaml_file_name) to pickle binary (cache_file_name), if
+    the yaml config file has been modified since the last pickle cache was created, i.e.
+    (the binary pickle cache is declared to be 'dirty' in 'check_yaml_timestamps()').
+
+    param: yaml_file_name: str
+        Name of the yaml configuration file to be serialized ('pickled')
+    param: cache_file_name: str
+        File name with path to the new serialized cached pickle file for this config file.:
+    param: object_to_serialize: object
+        Object to serialize ('pickle') e.g. instance of 'ait.core.cmd.CmdDict'
+
+    """
+
+    msg = f'Saving updates from more recent {yaml_file_name} to {cache_file_name}.'
+    log.info(msg)
+    with open(cache_file_name, "wb") as output:
+        pickle.dump(object_to_serialize, output, -1)
+
+
 def __init_extensions__(modname, modsyms):  # noqa
-    """Initializes a module (given its name and :func:`globals()` symbol
+    """
+    Initializes a module (given its name and :func:`globals()` symbol
     table) for AIT extensions.
 
     For every Python class defined in the given module, a
@@ -168,7 +188,8 @@ def __init_extensions__(modname, modsyms):  # noqa
     """
 
     def createFunc(cls, extname):  # noqa
-        """Creates and returns a new ``createXXX()`` function to instantiate
+        """
+        Creates and returns a new ``createXXX()`` function to instantiate
         either the given class by class object (*cls*) or extension
         class name (*extname*).
 
@@ -214,7 +235,8 @@ def __init_extensions__(modname, modsyms):  # noqa
 
 
 def __load_functions__(symtbl):  # noqa
-    """Loads all Python functions from the module specified in the
+    """
+    Loads all Python functions from the module specified in the
     ``functions`` configuration parameter (in config.yaml) into the given
     symbol table (Python dictionary).
     """
@@ -234,7 +256,8 @@ def __load_functions__(symtbl):  # noqa
 
 
 def crc32File(filename, skip=0):  # noqa
-    """Computes the CRC-32 of the contents of filename, optionally
+    """
+    Computes the CRC-32 of the contents of filename, optionally
     skipping a certain number of bytes at the beginning of the file.
     """
     with open(filename, "rb") as stream:
@@ -250,7 +273,8 @@ def endianSwapU16(bytes):  # noqa
 
 
 def setDictDefaults(d, defaults):  # noqa
-    """Sets all defaults for the given dictionary to those contained in a
+    """
+    Sets all defaults for the given dictionary to those contained in a
     second defaults dictionary.  This convenience method calls:
 
       d.setdefault(key, value)
@@ -264,7 +288,8 @@ def setDictDefaults(d, defaults):  # noqa
 
 
 def getDefaultDict(modname, config_key, loader, reload=False, filename=None):  # noqa
-    """Returns default AIT dictonary for modname
+    """
+    Returns default AIT dictonary for modname
 
     This helper function encapulates the core logic necessary to
     (re)load, cache (via util.ObjectCache), and return the default
@@ -311,7 +336,8 @@ def toBCD(n):  # noqa
 
 
 def toFloat(str, default=None):  # noqa
-    """toFloat(str[, default]) -> float | default
+    """
+    toFloat(str[, default]) -> float | default
 
     Converts the given string to a floating-point value.  If the
     string could not be converted, default (None) is returned.
@@ -342,7 +368,8 @@ def toFloat(str, default=None):  # noqa
 
 
 def toNumber(str, default=None):  # noqa
-    """toNumber(str[, default]) -> integer | float | default
+    """
+    toNumber(str[, default]) -> integer | float | default
 
     Converts the given string to a numeric value.  The string may be a
     hexadecimal, integer, or floating number.  If string could not be
@@ -486,3 +513,4 @@ class YAMLError(Exception):
         self.message = arg
 
         log.error(self.message)
+

@@ -91,7 +91,8 @@ class FalseWaitError(Exception):
 
     @property
     def msg(self):
-        s = 'FalseWaitError: "False" boolean passed as argument to wait. Ensure wait condition args are surounded by lambda or " "'
+        s = 'FalseWaitError: "False" boolean passed as argument to wait. Ensure wait ' \
+            'condition args are surrounded by lambda or " "'
 
         if self._msg:
             s += ": " + self._msg
@@ -115,7 +116,7 @@ class CmdAPI:
         self._cmddict = cmddict
         self._verbose = verbose
 
-        # Setup the destination of our commands and arguments based on destination
+        # Set up the destination of our commands and arguments based on destination
         # information.
         if udp_dest:
             # Convert partial info to full tuple
