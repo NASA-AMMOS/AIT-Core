@@ -16,9 +16,10 @@ import hashlib
 import io
 import os
 import pickle
+import yaml
 
 import ait
-import yaml
+
 from ait.core import dmc
 from ait.core import dtype
 from ait.core import log
