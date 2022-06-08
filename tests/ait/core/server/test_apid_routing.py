@@ -1,63 +1,27 @@
 import unittest
-import warnings
-import tempfile
+
 from unittest.mock import patch
 from ait.core import log
 from ait.core.server.plugins.apid_routing import APIDRouter
+from ait.core.util import TestFile
 
-class TestFile:
-    """TestFile
 
-    TestFile is a Python Context Manager for quickly creating test
-    data files that delete when a test completes, either successfully
-    or unsuccessfully.
-
-    Example:
-
-        with TestFile(data) as filename:
-            # filename (likely something like '/var/tmp/tmp.1.uNqbVJ') now
-            # contains data.
-            assert load(filename)
-
-    Whether the above assert passes or throws AssertionError, filename
-    will be deleted.
-    """
-
-    def __init__(self, data):
-        """Creates a new TestFile and writes data to a temporary file."""
-        self._filename = None
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self._tfile = tempfile.NamedTemporaryFile(mode="wt")
-            self._filename = self._tfile.name
-
-        with open(self._filename, "wt") as output:
-            output.write(data)
-
-    def __enter__(self):
-        """Enter the runtime context and return filename."""
-        return self._filename
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the runtime context and delete filename."""
-        self._tfile.close()
-        self._filename = None
-
-class test_packet:
+class TestPacket:
     def __init__(self, apid=0):
         self.apid = apid
+
 
 def create_test_dict(number_of_packets = 150):
     test_dict = {}
     for i in range(1, number_of_packets+1):
         packet_name = f"Packet_{i}"
-        test_dict[packet_name] = test_packet(apid = i)
+        test_dict[packet_name] = TestPacket(apid = i)
     return test_dict
+
 
 class TestPacketRouting(unittest.TestCase):
     def routing_table_yaml():
-        '''
+        """
         # Call this function to return the yaml string below
 
         output_topics:
@@ -71,11 +35,12 @@ class TestPacketRouting(unittest.TestCase):
                     - 9
                 - exclude:
                     - 6
-        '''
+        """
 
         pass
-    
-    with TestFile(data=routing_table_yaml.__doc__) as filename:
+
+    test_file = TestFile(routing_table_yaml.__doc__, "wt")
+    with test_file as filename:
 
         def new_init(self, routing_table=None, default_topic=None):
             self.default_topic = default_topic
