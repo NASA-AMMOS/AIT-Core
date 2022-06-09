@@ -6,6 +6,7 @@ import yaml
 from ait.core.server.plugins import Plugin
 from ait.core import tlm, log
 
+
 class APIDRouter(Plugin):
     '''
     Routes CCSDS packets by APID according to a routing table defined by a yaml file.
@@ -20,7 +21,7 @@ class APIDRouter(Plugin):
         inputs:
             - AOS_to_CCSDS
         default_topic: default_ccsds_tlm_topic
-        routing_table: 
+        routing_table:
             path: packet_routing_table.yaml
 
     example routing table .yaml file:
@@ -75,7 +76,7 @@ class APIDRouter(Plugin):
         publishes incoming CCSDS packets to the routes specified in the routing table
 
         :param input_data: CCSDS packet as bytes
-        :type input_data: bytes, bytearray 
+        :type input_data: bytes, bytearray
         '''
         packet_apid = self.get_packet_apid(input_data)
         topics = self.routing_table_object[packet_apid]
@@ -170,7 +171,7 @@ class APIDRouter(Plugin):
         error = None
 
         for packet_name in tlm_dict:
-            packet_apid = tlm_dict[packet_name].apid #assuming apid is defined in dictionary
+            packet_apid = tlm_dict[packet_name].apid  # assuming apid is defined in dictionary
             routing_table[packet_apid] = [self.default_topic]
 
         if routing_table_path is None:
@@ -187,10 +188,10 @@ class APIDRouter(Plugin):
             return None
 
         for telem_stream_entry in yaml_file_as_dict["output_topics"]:
-            #telem_stream_entry is a dict with one entry
+            # telem_stream_entry is a dict with one entry
             for telem_stream_name in telem_stream_entry:
                 for value in telem_stream_entry[telem_stream_name]:
-                    if isinstance(value, int): #assume integer value is apid
+                    if isinstance(value, int):  # assume integer value is apid
                         apid = value
                         routing_table = self.add_topic_to_table(routing_table, apid, telem_stream_name)
                     elif isinstance(value, dict):
