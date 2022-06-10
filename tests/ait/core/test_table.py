@@ -73,8 +73,7 @@ class TestTableEncode(unittest.TestCase):
     def setUpClass(cls):
         # The TestFile class is in util.py uses tempfile.NamedTemporaryFile() to create
         # a temporary file that will be automatically deleted at the end of the tests
-        test_file = TestFile(test_table, "rt")
-        with test_file as file_name:
+        with TestFile(test_table, "rt") as file_name:
             cls.tabdict = table.FSWTabDict(file_name)
 
     def test_enum_encode(self):
@@ -170,8 +169,7 @@ class TestTableEncode(unittest.TestCase):
         4,5,6
         """
 
-        test_file = TestFile("test_table.txt", "w+")
-        with test_file as file_name:
+        with TestFile("test_table.txt", "w+") as file_name:
             with open(file_name, "w") as in_file:
                 assert in_file.write(table_data)
 
@@ -211,8 +209,7 @@ class TestTableEncode(unittest.TestCase):
 
         hdr_vals = [13, 12, 11]
 
-        test_file = TestFile("test_table.txt", "a+")
-        with test_file as temp_file_name:
+        with TestFile("test_table.txt", "a+") as temp_file_name:
             with open(temp_file_name, "w") as in_file:
                 assert in_file.write(table_data)
 
@@ -244,8 +241,7 @@ class TestTableEncode(unittest.TestCase):
 class TestTableDecode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        test_file = TestFile(test_table, "rt")
-        with test_file as file_name:
+        with TestFile(test_table, "rt") as file_name:
             cls.tabdict = table.FSWTabDict(file_name)
 
     def test_decode_binary(self):
@@ -278,8 +274,7 @@ class TestTableDecode(unittest.TestCase):
         table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
         encoded = defn.encode(text_in=table_data)
 
-        binary_test_file = TestFile("test_table_in.bin", "wb+")
-        with binary_test_file as temp_bin_file:
+        with TestFile("test_table_in.bin", "wb+") as temp_bin_file:
             with open(temp_bin_file, "wb") as out_file:
                 out_file.write(encoded)
 
@@ -307,8 +302,7 @@ class TestTableDecode(unittest.TestCase):
         table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
         encoded = defn.encode(text_in=table_data)
 
-        binary_test_file = TestFile("test_table_in.bin", "wb+")
-        with binary_test_file as temp_bin_file:
+        with TestFile("test_table_in.bin", "wb+") as temp_bin_file:
             with open(temp_bin_file, "wb") as out_file:
                 assert out_file.write(encoded)
 
@@ -362,8 +356,7 @@ class TestBadEnumHandling(unittest.TestCase):
                 4: TEST_ENUM_0
         """
 
-        test_file = TestFile("test_table_dupe_enum.yaml", "wt")
-        with test_file as temp_test_file:
+        with TestFile("test_table_dupe_enum.yaml", "wt") as temp_test_file:
             with open(temp_test_file, "w") as infile:
                 assert infile.write(test_table)
 
@@ -375,8 +368,7 @@ class TestBadEnumHandling(unittest.TestCase):
 class TestTableTimeHandling(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        test_file = TestFile("test_time_table.yaml", "wt")
-        with test_file as temp_test_file:
+        with TestFile("test_time_table.yaml", "wt") as temp_test_file:
             with open(temp_test_file, "w") as infile:
                 assert infile.write(
                     inspect.cleandoc(

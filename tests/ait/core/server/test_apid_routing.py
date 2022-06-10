@@ -39,9 +39,7 @@ class TestPacketRouting(unittest.TestCase):
 
         pass
 
-    test_file = TestFile(routing_table_yaml.__doc__, "wt")
-    with test_file as filename:
-
+    with TestFile(routing_table_yaml.__doc__, "wt") as filename:
         def new_init(self, routing_table=None, default_topic=None):
             self.default_topic = default_topic
 

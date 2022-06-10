@@ -32,8 +32,7 @@ TmpFilename = None
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    test_file = TestFile('', "wb")
-    with test_file as filename:
+    with TestFile('', "wb") as filename:
         TmpFilename = filename
 
 
