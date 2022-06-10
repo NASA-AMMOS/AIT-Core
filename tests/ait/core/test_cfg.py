@@ -16,7 +16,7 @@ import sys
 import time
 
 from ait.core import cfg
-from tests.ait.core import TestFile
+from ait.core.util import TestFile
 
 
 def YAML():
@@ -232,7 +232,7 @@ def test_flatten():
 
 
 def test_load_yaml():
-    with TestFile(data=YAML()) as filename:
+    with TestFile(YAML(), "w+") as filename:
         assert cfg.load_yaml(filename) == cfg.load_yaml(data=YAML())
 
 
@@ -287,9 +287,8 @@ def test_AitConfig():
     path = "bin/ait-orbits"
     assert_AitConfig(config, path)
 
-    with TestFile(data=YAML()) as filename:
+    with TestFile(YAML(), "w+") as filename:
         config = cfg.AitConfig(filename)
         assert_AitConfig(config, path, filename)
-
         config.reload()
         assert_AitConfig(config, path, filename)
