@@ -9,6 +9,9 @@ from typing import List, Any
 import ait.core
 import ait.core.server
 from ait.core import log
+from .config import ZmqConfig
+
+
 
 
 class Broker(gevent.Greenlet):
@@ -23,10 +26,12 @@ class Broker(gevent.Greenlet):
     servers: List[Any] = []
     plugins: List[Any] = []
 
+
+
     def __init__(self):
         self.context = zmq.Context()
-        self.XSUB_URL = ait.config.get("server.xsub", ait.SERVER_DEFAULT_XSUB_URL)
-        self.XPUB_URL = ait.config.get("server.xpub", ait.SERVER_DEFAULT_XPUB_URL)
+        self.XSUB_URL = ZmqConfig.get_xsub_url()
+        self.XPUB_URL = ZmqConfig.get_xpub_url()
 
         # Name of the topic associated with external commands
         self.command_topic = ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC)
