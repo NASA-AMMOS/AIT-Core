@@ -9,6 +9,7 @@ from typing import List, Any
 import ait.core
 import ait.core.server
 from ait.core import log
+from .config import ZmqConfig
 
 
 class Broker(gevent.Greenlet):
@@ -25,8 +26,8 @@ class Broker(gevent.Greenlet):
 
     def __init__(self):
         self.context = zmq.Context()
-        self.XSUB_URL = ait.config.get("server.xsub", ait.SERVER_DEFAULT_XSUB_URL)
-        self.XPUB_URL = ait.config.get("server.xpub", ait.SERVER_DEFAULT_XPUB_URL)
+        self.XSUB_URL = ZmqConfig.get_xsub_url()
+        self.XPUB_URL = ZmqConfig.get_xpub_url()
 
         # Name of the topic associated with external commands
         self.command_topic = ait.config.get("command.topic", ait.DEFAULT_CMD_TOPIC)
@@ -70,11 +71,11 @@ class Broker(gevent.Greenlet):
         for stream in self.inbound_streams + self.outbound_streams:
             for input_ in stream.inputs:
                 if not type(input_) is int and input_ is not None:
-                    self._subscribe(stream, input_)
+                    Broker.subscribe(stream, input_)
 
         for plugin in self.plugins:
             for input_ in plugin.inputs:
-                self._subscribe(plugin, input_)
+                Broker.subscribe(plugin, input_)
 
             for output in plugin.outputs:
                 # Find output stream instance
@@ -83,12 +84,11 @@ class Broker(gevent.Greenlet):
                 )
                 if subscriber is None:
                     log.warn(
-                        "The outbound stream {} does not "
+                        f"The outbound stream {output} does not "
                         "exist so will not receive messages "
-                        "from {}".format(output, plugin)
-                    )
+                        f"from {plugin}")
                 else:
-                    self._subscribe(subscriber, plugin.name)
+                    Broker.subscribe(subscriber, plugin.name)
 
         # Lastly setup the outputstream to receive commands
         self._subscribe_cmdr()
@@ -124,31 +124,68 @@ class Broker(gevent.Greenlet):
         cmd_stream = next(iter(cmd_streams), None)
 
         # Warn about multiple matches
-        if cmd_stream and len(cmd_streams) > 1:
+        if cmd_stream is not None and len(cmd_streams) > 1:
             log.warn(
-                "Multiple output streams found with {} field enabled, "
-                "{} was selected as the default.".format(
-                    cmd_sub_flag_field, cmd_stream.name
-                )
-            )
+                f"Multiple output streams found with {cmd_sub_flag_field} "
+                f"field enabled, {cmd_stream.name} was selected as the "
+                "default.")
 
         # No stream yet, so just grab the first output stream
-        if not cmd_stream:
+        if cmd_stream is None:
             cmd_stream = next((x for x in self.outbound_streams), None)
-            if cmd_stream:
-                log.warn(
-                    "No output stream was designated as the command subscriber, "
-                    "{} was selected as the default.".format(cmd_stream.name)
-                )
+            if cmd_stream is not None:
+                log.warn("No output stream was designated as the command "
+                         f"subscriber, {cmd_stream.name} was selected as "
+                         "the default.")
 
-        if cmd_stream:
-            self._subscribe(cmd_stream, self.command_topic)
+        if cmd_stream is not None:
+            Broker.subscribe(cmd_stream, self.command_topic)
         else:
             log.warn(
                 "No output stream was designated as the command subscriber. "
-                "Commands from other processes will not be dispatched by the server."
+                "Commands from other processes will not be dispatched by "
+                "the server."
             )
 
-    def _subscribe(self, subscriber, publisher):
-        log.info("Subscribing {} to topic {}".format(subscriber, publisher))
+    def subscribe_to_output(self, output_name, topic_name):
+        """
+        Performs a lookup for an output stream by name and if found,
+        subscribes it to the publisher topic name.  Otherwise a warning
+        is logged that output stream could not be found.
+
+        Params:
+            output_name: Subscriber/output name
+            topic_name: Publisher/topic name
+
+        Returns:
+            True if lookup and subscription were successful, False otherwise
+        """
+
+        # Search for output stream instance by name
+        subscriber = next(
+            (x for x in self.outbound_streams if
+             x.name == output_name), None
+        )
+        if subscriber is None:
+            log.warn(
+                f"The outbound stream {output_name} does not "
+                "exist so will not receive messages "
+                f"from {topic_name}")
+            return False
+        else:
+            # Finally, setup the output stream's subscription
+            # to the topic name
+            Broker.subscribe(subscriber, topic_name)
+            return True
+
+    @staticmethod
+    def subscribe(subscriber, publisher):
+        """
+        Sets subscriber's socket option to include the publisher as topic.
+
+        Args:
+            subscriber: ZMQInputClient with subscription socket
+            publisher: Object whose str() method returns its associated topic
+        """
+        log.info(f"Subscribing {subscriber} to topic {publisher}")
         subscriber.sub.setsockopt_string(zmq.SUBSCRIBE, str(publisher))

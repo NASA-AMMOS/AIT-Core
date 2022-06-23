@@ -282,10 +282,8 @@ class TestStreamCreation(object):
         server.plugins = [FakeStream(name="myname")]
         with pytest.raises(
             ValueError,
-            match=(
-                'Duplicate stream name "{}" encountered.'
-                " Stream names must be unique."
-            ).format("myname"),
+            match=("Duplicate stream name 'myname' encountered. "
+                   "Stream names must be unique."),
         ):
             server._get_stream_name(config)
 
@@ -295,9 +293,9 @@ class TestStreamCreation(object):
         with pytest.raises(
             ValueError,
             match=(
-                'Duplicate stream name "{}" encountered.'
+                "Duplicate stream name 'myname' encountered."
                 " Stream names must be unique."
-            ).format("myname"),
+            ),
         ):
             server._get_stream_name(config)
 
@@ -307,9 +305,9 @@ class TestStreamCreation(object):
         with pytest.raises(
             ValueError,
             match=(
-                'Duplicate stream name "{}" encountered.'
+                "Duplicate stream name 'myname' encountered."
                 " Stream names must be unique."
-            ).format("myname"),
+            ),
         ):
             server._get_stream_name(config)
 
@@ -531,20 +529,6 @@ class TestPluginCreation(object):
         log_warn_mock.assert_called_with(
             "No plugin outputs specified for ait.core.server.plugins.TelemetryLimitMonitor"
         )
-
-    def test_plugin_name_already_in_use(
-        self, server_stream_plugin_mock_mock, broker_mock
-    ):
-        """Tests that error raised if name already in use"""
-        server = Server()
-
-        server.plugins = [FakeStream(name="Plugin")]
-        config = {"name": "Plugin", "inputs": "some_inputs"}
-        with pytest.raises(
-            ValueError,
-            match='Plugin "Plugin" already loaded. Only one plugin of a given name is allowed',
-        ):
-            server._create_plugin(config)
 
     def test_plugin_doesnt_exist(self, server_stream_plugin_mock_mock, broker_mock):
         """Tests that error raised if plugin doesn't exist"""

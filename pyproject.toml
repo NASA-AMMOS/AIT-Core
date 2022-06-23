@@ -31,6 +31,8 @@ greenlet         = '0.4.16'
 gevent           = '1.4.0'
 gevent-websocket = '0.10.1'
 pyzmq            = '18.1.0'
+gipc             = "^1.1.0"
+setproctitle = "^1.2.3"
 
 [tool.poetry.dev-dependencies]
 black                    = '*'
