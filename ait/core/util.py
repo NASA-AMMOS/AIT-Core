@@ -518,6 +518,7 @@ class TestFile:
     Whether the above assert passes or throws AssertionError, filename
     will be deleted.
     """
+    __test__ = False
 
     def __init__(self, data, options):
         """

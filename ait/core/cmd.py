@@ -526,7 +526,8 @@ def getMaxCmdSize():  # noqa
 
 
 def handle_includes(defns):
-    """Recursive handling of includes for any input list of defns.
+    """
+    Recursive handling of includes for any input list of defns.
     The assumption here is that when an include is handled by the
     pyyaml reader, it adds them as a list, which is stands apart from the rest
     of the expected YAML definitions.
@@ -557,6 +558,8 @@ def YAMLCtor_include(loader, node):  # noqa
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
+    # DEBUG
+    log.debug(f'NAME of File: {name}')
     with open(name, "r") as f:
         data = yaml.load(f)
     return data

@@ -15,14 +15,13 @@
 
 import csv
 import os
+import pytest
 import struct
 
 from gevent import monkey
-import pytest
+monkey.patch_all()
 
 from ait.core import tlm
-
-monkey.patch_all()
 
 
 class TestTlmDictWriter(object):

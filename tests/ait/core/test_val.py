@@ -12,13 +12,11 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 import gevent.monkey
-
 gevent.monkey.patch_all()
 
 import os
 import pkg_resources
 import jsonschema
-import logging
 
 import pytest
 from unittest import mock
@@ -222,10 +220,8 @@ def dispmsgs(msgs):
 
 def cmdval(args):
     msgs = []
-
     validator = val.CmdValidator(*args)
     v = validator.validate(messages=msgs)
-
     return msgs, v
 
 
@@ -416,6 +412,10 @@ def testTlmValidator():
     )
 
     assert not v
+    # check this there are are 3 msgs
+    print(f'MESSAGE: {msgs}')
+    print(f'LEN: {len(msgs)}')
+
     assert len(msgs) == 1
     assert "Missing value for desc." in msgs[0]
 
