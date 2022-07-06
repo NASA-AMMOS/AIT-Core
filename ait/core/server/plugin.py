@@ -2,19 +2,15 @@ from abc import ABCMeta, abstractmethod
 
 import enum
 import copy
-
 from importlib import import_module
-
-import gevent
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
 from ait.core import log, cfg
 from .client import ZMQInputClient
 
+import gevent.monkey
+gevent.monkey.patch_all()
 
-class Type(enum.Enum):
+
+class PluginType(enum.Enum):
     """
     Enumeration for Plugin type: standard plugin (greenlet) or process-based
     """
@@ -22,7 +18,7 @@ class Type(enum.Enum):
     PROCESS = enum.auto()
 
     @classmethod
-    def value_of(cls, value, default):
+    def value_of(cls, str_value, default):
         """
         Class method that returns a Type enum based on string value.
         If value is None or does not match, then Type.GREENLET is returned
@@ -32,31 +28,32 @@ class Type(enum.Enum):
             value: Name associated with the enum
             default: Default value to be returned, can be None
 
-        Returns:  plugin.Type - Type enum instance
+        Returns:
+            plugin.Type - Type enum instance
         """
-        if value:
+        if str_value:
             for k, v in cls.__members__.items():
-                if k.lower() == value.lower():
+                if k.lower() == str_value.lower():
                     return v
         if default:
             return default
         else:
-            raise ValueError(f"'{cls.__name__}' enum not found for '{value}'")
+            raise ValueError(f"'{cls.__name__}' enum not found for '{str_value}'")
 
 
 class PluginConfig(object):
     """
-    Data-struct for plugin information.
+    Data-structure for plugin information.
     Would be useful if we allow multiple plugins to run in a common
     child-process
     """
 
-    def __init__(self, name, inputs=[], outputs=[], zmq_args=None, **kwargs):
+    def __init__(self, name, inputs=[], outputs=[], zmq_args={}, kwargs=None):
         """
         Constructor
 
         Params:
-            name:       Name of the Plugin class
+            name:       Name of the Plugin class (required)
             inputs:     names of inbound streams plugin receives data from
             outputs:    names of outbound streams plugin sends its data to
             zmq_args:   dict containing the follow keys:
@@ -73,37 +70,48 @@ class PluginConfig(object):
         self.name = name
         self.inputs = inputs
         self.outputs = outputs
-        self.zmq_args = zmq_args
-        self.kwargs = kwargs
+        self.zmq_args = zmq_args if zmq_args is not None else {}
+        self.kwargs = kwargs if kwargs is not None else {}
 
-    # TODO: do we really need these?
     def get_zmq_context(self):
-        return self.zmq_args.get('context', None)
+        """
+        Convenience method that gets value of the ZMQ context
+
+        Returns: ZMQ Context, possibly None
+        """
+        return self.zmq_args.get('zmq_context', None)
 
     def set_zmq_context(self, context):
-        self.zmq_args['context'] = context
+        """
+        Convenience method that gets value of the ZMQ context
+
+        Params:
+            context:    ZeroMQ Context, can be None
+        """
+        self.zmq_args['zmq_context'] = context
 
     @staticmethod
-    def build_from_config(config, zmq_args=None):
+    def build_from_ait_config(ait_plugin_config, zmq_args={}):
         """
         Static method that extracts information from AIT Plugin
         configuration and returns a newly instantiated
         PluginConfig object.
-        Required configuration that is missing will result in
+        Any required configuration that is missing will result in
         error.
 
         Params:
-            config: AIT configuration for a plugin
+            ait_plugin_config: AIT configuration section of a plugin
             zmq_args: ZMQ settings
 
-        Returns:  PluginConfig - New PluginConfig built from config
+        Returns:
+            PluginConfig - New PluginConfig built from config
 
         Raises:
-            ValueError:   if any of the required config values are missing
+            AitConfigMissing:  if any of the required config values are missing
         """
 
         # Make a copy of the config that we can manipulate
-        other_args = copy.deepcopy(config)
+        other_args = copy.deepcopy(ait_plugin_config)
 
         # Extract name and ensure it is defined
         name = other_args.pop("name", None)
@@ -134,7 +142,7 @@ class Plugin(ZMQInputClient):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
+    def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
         """
         Constructor
 
@@ -149,6 +157,7 @@ class Plugin(ZMQInputClient):
                         assigned during instantiation of parent class.
             **kwargs:   (optional) Dependent on requirements of child class.
         """
+
         self.name = type(self).__name__
         self.inputs = inputs
         self.outputs = outputs
@@ -181,26 +190,40 @@ class Plugin(ZMQInputClient):
     @staticmethod
     def create_plugin(plugin_config):
         """
-        Static utility method that instantiates extensions
-        of the Plugin class.
+        Static utility method that instantiates extensions of the Plugin class
 
         Params:
             plugin_config: Plugin configuration associated with Plugin instance
 
-        Returns:  Plugin - New Plugin extension
+        Returns:
+            Plugin - New Plugin extension
 
+        Raises:
+            ValueError:   if any of the required config values are missing
+                          or plugin class can not be imported/loaded
         """
         name = plugin_config.name
         module_name = name.rsplit(".", 1)[0]
         class_name = name.rsplit(".", 1)[-1]
 
         module = import_module(module_name)
+        if module is None:
+            log.error(f"Unable to locate plugin module '{module_name}'")
+            return None
+
         plugin_class = getattr(module, class_name)
-        instance = plugin_class(
+        if plugin_class is None:
+            log.error(f"Unable to locate plugin class '{name}'")
+            return None
+
+        plugin_instance = plugin_class(
             plugin_config.inputs,
             plugin_config.outputs,
             plugin_config.zmq_args,
-            plugin_config.other_args,
+            **plugin_config.kwargs
         )
 
-        return instance
+        if plugin_instance is None:
+            log.error(f"Unable to create plugin instance for '{name}'")
+
+        return plugin_instance
