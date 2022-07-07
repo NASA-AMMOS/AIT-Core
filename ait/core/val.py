@@ -374,20 +374,18 @@ class Validator(object):
         self._ymlfile = ymlfile
         self._schemafile = schemafile
         self._ymlproc = None
-
-        # Declare variables for testing schemas of nested yaml files
+        # Get the error handler ready, just in case
+        self.ehandler = ErrorHandler(ymlfile=self._ymlfile, schemafile=self._schemafile)
+        # Declare variables used for validating nested yaml files
         self.validate_list = []
         self.yml_dir = f"{ymlfile.rsplit('/', 1)[0]}/"
         self.yml_files_to_validate = self.get_included_files(ymlfile)
 
-        # Get the error handler ready, just in case
-        self.ehandler = ErrorHandler(ymlfile=self._ymlfile, schemafile=self._schemafile)
-
     def get_included_files(self, yml_file):
             """
-            Make a list of  yaml files to test against the schema.  The first member
-            of the list will be the full path to the yml file if it is part of the
-            file name.  The next element will the module yml file (e.g. cmd.yml),
+            Make a list of  yaml files to validate against the schema.  The first member
+            of the list will include the full path to the yaml file.
+            The next element will the module yml file (e.g. cmd.yml),
             followed by the names of any included files.
             The assumption is made that all the included yml files are
             found in the same directory as the module yml file.
@@ -400,12 +398,11 @@ class Validator(object):
             Returns
             -------
             self.validate_list: list
-                A list of all files that are required to be validated.
+                A set of all files that are to be validated.
 
             """
-
             # The first yaml file to validate will include a full path
-            # Any included yaml files will need to have the path added.
+            # Any included yaml files will have the path added.
             if '/' in yml_file:
                 self.validate_list.append(yml_file)
             else:
@@ -421,16 +418,30 @@ class Validator(object):
                             self.get_included_files(included_file_name)
                     # Check and flag multiple includes
                     if len(self.validate_list) != len(set(self.validate_list)):
-                        log.info(f'Validate: Duplicate config files in the include tree. {self.validate_list}')
+                        log.info(f'WARNING: Validate: Duplicate config files in the '
+                                 f'include tree. {self.validate_list}')
                     return set(self.validate_list)
             except RecursionError as e:
                 print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
-                      f'back and forth to one another thought the "!include" statements.')
+                      f'back and forth on one another through the "!include" statements.')
+
+    def validate_schema(self, messages=None):
+        """
+        Provides schema_val validation for objects that do not override
+        in domain-specific validator (evr.yaml, table.yaml, limits.yaml)
+
+        Returns
+        -------
+        valid boolean:
+            The result of the schema test (True(Pass)/False(Fail))
+        """
+        valid = self.schema_val(messages)
+        return valid
 
     def validate(self, ymldata=None, messages=None):
         """
-        Validates the Command Dictionary definitions
-        The method will validate module (e.g. tlm.yaml) and included yaml config files
+        Validates the Command or Telemetry Dictionary definitions
+        The method will validate module (cmd.yml or tlm.yaml) and included yaml config files
 
         Returns
         -------
@@ -439,7 +450,8 @@ class Validator(object):
 
         content_val boolean:
             Results of the schema test on config and included files
-            For a True, all the tested yaml files must pass the schema test
+                True - all the tested yaml files passed the schema test
+                False - one or more yaml files did not pass the schema test
 
         """
         content_val_list = []
@@ -456,14 +468,6 @@ class Validator(object):
             content_val = False
 
         return schema_val and content_val
-
-    # def validate(self, messages=None):
-    #     """
-    #     Provides schema_val validation for objects that do not override
-    #     in domain-specific validator
-    #     """
-    #     valid = self.schema_val(messages)
-    #     return valid
 
     def schema_val(self, messages=None):
         """Perform validation with processed YAML and Schema"""
@@ -515,7 +519,7 @@ class Validator(object):
         return valid
 
     def content_val(self, yaml_file, ymldata=None, messages=None):
-        """ temp"""
+        """Simple base content_val method - needed for unit tests"""
         self._ymlproc = YAMLProcessor(yaml_file, False)
 
 
@@ -549,7 +553,6 @@ class CmdValidator(Validator):
             rules = []
 
             # set the command rules
-            #
             # set uniqueness rule for command names
             rules.append(UniquenessRule("name", "Duplicate command name: %s", messages))
 
@@ -565,7 +568,6 @@ class CmdValidator(Validator):
                 argrules = []
 
                 # set rules for command arguments
-                #
                 # set uniqueness rule for opcodes
                 argrules.append(
                     UniquenessRule(
@@ -674,7 +676,6 @@ class TlmValidator(Validator):
             rules = []
 
             # set the packet rules
-            #
             # set uniqueness rule for packet names
             rules.append(UniquenessRule("name", "Duplicate packet name: %s", messages))
 
@@ -689,7 +690,6 @@ class TlmValidator(Validator):
                 fldrules = []
 
                 # set rules for telemetry fields
-                #
                 # set uniqueness rule for field name
                 fldrules.append(
                     UniquenessRule(

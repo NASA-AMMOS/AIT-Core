@@ -204,6 +204,13 @@ class TestErrorHandler:
         assert pretty_mock.called
         pretty_mock.assert_called_with(1, 3, error, messages)
 
+def validate_schema(args):
+    msgs = []
+
+    validator = val.Validator(*args)
+    v = validator.validate_schema(messages=msgs)
+    return msgs, v
+
 
 def validate(args):
     msgs = []
@@ -227,10 +234,8 @@ def cmdval(args):
 
 def tlmval(args):
     msgs = []
-
     validator = val.TlmValidator(*args)
     v = validator.validate(messages=msgs)
-
     return msgs, v
 
 
@@ -266,14 +271,14 @@ def testValidatorCmd():
     msgs = []
 
     # test successful validation
-    msgs, v = validate(
+    msgs, v = validate_schema(
         [os.path.join(DATA_PATH, "testValidCmd1.yaml"), cmd.getDefaultSchema()]
     )
     assert v
     assert len(msgs) == 0
 
     # test failed validation
-    msgs, v = validate(
+    msgs, v = validate_schema(
         [os.path.join(DATA_PATH, "testInvalidCmd1.yaml"), cmd.getDefaultSchema()]
     )
 
@@ -412,11 +417,8 @@ def testTlmValidator():
     )
 
     assert not v
-    # check this there are are 3 msgs
-    print(f'MESSAGE: {msgs}')
-    print(f'LEN: {len(msgs)}')
-
-    assert len(msgs) == 1
+    # Verify a new message has been added
+    assert len(msgs) == 3
     assert "Missing value for desc." in msgs[0]
 
 
@@ -440,7 +442,7 @@ def testEvrValidation():
     # Validation test of current telemetry dictionary
     yml = ait.config.evrdict.filename
     schema = os.path.join(os.path.dirname(yml), evr.getDefaultSchema())
-    msgs, v = validate([yml, schema])
+    msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -450,7 +452,7 @@ def testTableValidation():
     # Validation test of current table configuration
     yml = ait.config.table.filename
     schema = pkg_resources.resource_filename("ait.core", "data/table_schema.json")
-    msgs, v = validate([yml, schema])
+    msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
@@ -460,7 +462,7 @@ def testLimitsValidation():
     # Validation test of current table configuration
     yml = ait.config.limits.filename
     schema = pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
-    msgs, v = validate([yml, schema])
+    msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
     assert len(msgs) == 0
