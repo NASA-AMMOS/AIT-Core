@@ -12,8 +12,6 @@ from ait.core import log
 from .config import ZmqConfig
 
 
-
-
 class Broker(gevent.Greenlet):
     """
     This broker contains the ZeroMQ context and proxy that connects all
@@ -25,8 +23,6 @@ class Broker(gevent.Greenlet):
     outbound_streams: List[Any] = []
     servers: List[Any] = []
     plugins: List[Any] = []
-
-
 
     def __init__(self):
         self.context = zmq.Context()

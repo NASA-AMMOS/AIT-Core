@@ -1,6 +1,5 @@
 import ait.core
 import ait.core.server
-from ait.core import log
 
 
 class ZmqConfig:
@@ -14,4 +13,3 @@ class ZmqConfig:
     @staticmethod
     def get_xpub_url():
         return ait.config.get("server.xpub", ait.SERVER_DEFAULT_XPUB_URL)
-

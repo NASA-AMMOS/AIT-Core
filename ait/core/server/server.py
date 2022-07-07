@@ -1,9 +1,6 @@
-import zmq.green as zmq
-
 import gevent
 import gevent.monkey
 
-gevent.monkey.patch_all()
 from importlib import import_module
 import sys
 import traceback
@@ -16,6 +13,7 @@ from .plugin import PluginType, Plugin, PluginConfig
 from .process import PluginsProcess
 from ait.core import log, cfg
 
+gevent.monkey.patch_all()
 
 
 class Server(object):
@@ -46,8 +44,6 @@ class Server(object):
         self.broker.servers = self.servers
         self.broker.plugins = self.plugins
 
-
-
         # defining greenlets that need to be joined over
         self.greenlets = (
             [self.broker]
@@ -73,8 +69,6 @@ class Server(object):
 
         # Subscribe process-plugin output streams to plugin names
         self._subscribe_process_plugins_outputs()
-
-
 
         gevent.joinall(self.greenlets)
 
@@ -498,5 +492,3 @@ class Server(object):
                                                            zmq_args)
 
         return plugin_config
-
-

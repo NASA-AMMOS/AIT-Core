@@ -48,7 +48,7 @@ class PluginConfig(object):
     child-process
     """
 
-    def __init__(self, name, inputs=[], outputs=[], zmq_args={}, kwargs=None):
+    def __init__(self, name, inputs=None, outputs=None, zmq_args=None, kwargs=None):
         """
         Constructor
 
@@ -68,8 +68,8 @@ class PluginConfig(object):
             raise (cfg.AitConfigMissing("plugin name"))
 
         self.name = name
-        self.inputs = inputs
-        self.outputs = outputs
+        self.inputs = inputs if inputs is not None else []
+        self.outputs = outputs if outputs is not None else []
         self.zmq_args = zmq_args if zmq_args is not None else {}
         self.kwargs = kwargs if kwargs is not None else {}
 
@@ -91,7 +91,7 @@ class PluginConfig(object):
         self.zmq_args['zmq_context'] = context
 
     @staticmethod
-    def build_from_ait_config(ait_plugin_config, zmq_args={}):
+    def build_from_ait_config(ait_plugin_config, zmq_args=None):
         """
         Static method that extracts information from AIT Plugin
         configuration and returns a newly instantiated
@@ -109,6 +109,9 @@ class PluginConfig(object):
         Raises:
             AitConfigMissing:  if any of the required config values are missing
         """
+
+        if zmq_args is None:
+            zmq_args = {}
 
         # Make a copy of the config that we can manipulate
         other_args = copy.deepcopy(ait_plugin_config)
@@ -142,7 +145,7 @@ class Plugin(ZMQInputClient):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, inputs, outputs, zmq_args={}, **kwargs):
+    def __init__(self, inputs, outputs, zmq_args=None, **kwargs):
         """
         Constructor
 
@@ -185,7 +188,6 @@ class Plugin(ZMQInputClient):
             topic:       Name of stream that message was received from.
         """
         pass
-
 
     @staticmethod
     def create_plugin(plugin_config):
