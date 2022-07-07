@@ -48,7 +48,7 @@ class ManagedWebSocket():
     """
     A data structure to maintain state for OpenMCT websockets
     """
-    idCounter = 0  # to assign unique ids
+    id_counter = 0  # to assign unique ids
 
     PACKET_ID_WILDCARD = "*"
 
@@ -62,8 +62,8 @@ class ManagedWebSocket():
 
     @staticmethod
     def _generate_id():
-        tmp_id = f"{ManagedWebSocket.idCounter}/{id(gevent.getcurrent())}"
-        ManagedWebSocket.idCounter += 1
+        tmp_id = f"{ManagedWebSocket.id_counter}/{id(gevent.getcurrent())}"
+        ManagedWebSocket.id_counter += 1
         return tmp_id
 
     def subscribe_field(self, openmct_field_id):
