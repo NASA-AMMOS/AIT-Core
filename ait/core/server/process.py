@@ -146,7 +146,7 @@ class PluginsProcess(object):
         proc_context = zmq.Context()
 
         # Instantiate each of the Plugins, add to list
-        for index, p_info in enumerate(plugin_info_list):
+        for p_info in plugin_info_list:
             plugin_name = p_info.name
             try:
                 plugin = PluginsProcess.create_plugin(p_info, proc_context)
