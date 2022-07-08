@@ -82,9 +82,11 @@ class Server(object):
         of the output streams, which are all running in the original server
         process.
         """
+
         for plugin_process in self.plugin_processes:
-            for plugin_name in plugin_process.get_plugin_names():
-                for output_name in plugin_process.get_plugin_outputs(plugin_name):
+            plugin_outputs_dict = plugin_process.get_plugin_outputs()
+            for plugin_name in plugin_outputs_dict.keys():
+                for output_name in plugin_outputs_dict.get(plugin_name):
                     self.broker.subscribe_to_output(output_name, plugin_name)
 
     def _load_streams_and_plugins(self):
