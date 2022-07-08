@@ -73,6 +73,9 @@ class PluginConfig(object):
         self.zmq_args = zmq_args if zmq_args is not None else {}
         self.kwargs = kwargs if kwargs is not None else {}
 
+        self.inputs = [self.inputs] if isinstance(self.inputs, str) else self.inputs
+        self.outputs = [self.inputs] if isinstance(self.inputs, str) else self.outputs
+
     def get_zmq_context(self):
         """
         Convenience method that gets value of the ZMQ context
@@ -121,13 +124,13 @@ class PluginConfig(object):
         if name is None:
             raise (cfg.AitConfigMissing("plugin name"))
 
-        plugin_inputs = other_args.pop("inputs")
-        if not plugin_inputs:
+        plugin_inputs = other_args.pop("inputs", None)
+        if plugin_inputs is None:
             log.warn(f"No plugin inputs specified for {name}")
             plugin_inputs = []
 
-        subscribers = other_args.pop("outputs")
-        if not subscribers:
+        subscribers = other_args.pop("outputs", None)
+        if subscribers is None:
             log.warn(f"No plugin outputs specified for {name}")
             subscribers = []
 
@@ -219,9 +222,9 @@ class Plugin(ZMQInputClient):
             return None
 
         plugin_instance = plugin_class(
-            plugin_config.inputs,
-            plugin_config.outputs,
-            plugin_config.zmq_args,
+            inputs=plugin_config.inputs,
+            outputs=plugin_config.outputs,
+            zmq_args=plugin_config.zmq_args,
             **plugin_config.kwargs
         )
 
