@@ -76,6 +76,14 @@ class PluginConfig(object):
         self.inputs = [self.inputs] if isinstance(self.inputs, str) else self.inputs
         self.outputs = [self.inputs] if isinstance(self.inputs, str) else self.outputs
 
+    @property
+    def short_name(self):
+        """
+        Returns the classname portion of the fullname
+        Returns: Class name of plugin type
+        """
+        return self.name.rsplit(".", 1)[-1]
+
     def get_zmq_context(self):
         """
         Convenience method that gets value of the ZMQ context
