@@ -282,10 +282,8 @@ class TestStreamCreation(object):
         server.plugins = [FakeStream(name="myname")]
         with pytest.raises(
             ValueError,
-            match=(
-                'Duplicate stream name "{}" encountered.'
-                " Stream names must be unique."
-            ).format("myname"),
+            match=("Duplicate stream name 'myname' encountered. "
+                   "Stream names must be unique."),
         ):
             server._get_stream_name(config)
 
@@ -295,9 +293,9 @@ class TestStreamCreation(object):
         with pytest.raises(
             ValueError,
             match=(
-                'Duplicate stream name "{}" encountered.'
+                "Duplicate stream name 'myname' encountered."
                 " Stream names must be unique."
-            ).format("myname"),
+            ),
         ):
             server._get_stream_name(config)
 
@@ -307,9 +305,9 @@ class TestStreamCreation(object):
         with pytest.raises(
             ValueError,
             match=(
-                'Duplicate stream name "{}" encountered.'
+                "Duplicate stream name 'myname' encountered."
                 " Stream names must be unique."
-            ).format("myname"),
+            ),
         ):
             server._get_stream_name(config)
 
