@@ -49,31 +49,37 @@ class PluginsProcess(object):
         """
         return f"<PluginsProcess name={self._namespace}>"
 
-    def get_plugin_names(self):
+    def get_plugin_names(self, use_short_names=True):
         """
-        Returns a list of plugin names managed by instance
+        Returns a list of plugin names (short versions) managed by instance
         Returns: List of plugin names
         """
-        return [pi.name for pi in self._plugin_infos]
+        return [pi.short_name if use_short_names else pi.name
+                for pi in self._plugin_infos]
 
-    def get_plugin_outputs(self, plugin_name):
+    def get_plugin_outputs(self, use_short_names=True):
         """
-        Return list of output names associated with a plugin name
+        Return dict of plugin name to list of outputs, where outputs
+        will subscribe to the plugin.  The map keys represent either
+        the plugin's fullname or shortname, depending on the
+        value of use_short_names
 
         Args:
-            plugin_name: Name of the plugin
+            use_short_names: boolean
+                If true, plugin key will be short-name, otherwise full name
 
         Returns:
-            List of output names which should subscribe to plugin
+            Map of plugin names to list of outputs names which should subscribe to plugin
 
         """
-        plugin_info = next(
-            (pi for pi in self._plugin_infos if pi.name == plugin_name), None
-        )
-        if plugin_info is not None:
-            return plugin_info.outputs
-        else:
-            return []
+        plugin_dict = {}
+        for p_info in self._plugin_infos:
+            output_list = []
+            plugin_key = p_info.short_name if use_short_names else p_info.name
+            for plugin_output in p_info.outputs:
+                output_list.append(plugin_output)
+            plugin_dict[plugin_key] = output_list
+        return plugin_dict
 
     def add_plugin_info(self, plugin_info):
         """
