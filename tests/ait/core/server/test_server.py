@@ -530,20 +530,6 @@ class TestPluginCreation(object):
             "No plugin outputs specified for ait.core.server.plugins.TelemetryLimitMonitor"
         )
 
-    def test_plugin_name_already_in_use(
-        self, server_stream_plugin_mock_mock, broker_mock
-    ):
-        """Tests that error raised if name already in use"""
-        server = Server()
-
-        server.plugins = [FakeStream(name="Plugin")]
-        config = {"name": "Plugin", "inputs": "some_inputs"}
-        with pytest.raises(
-            ValueError,
-            match='Plugin "Plugin" already loaded. Only one plugin of a given name is allowed',
-        ):
-            server._create_plugin(config)
-
     def test_plugin_doesnt_exist(self, server_stream_plugin_mock_mock, broker_mock):
         """Tests that error raised if plugin doesn't exist"""
         server = Server()
