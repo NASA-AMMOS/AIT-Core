@@ -3,7 +3,7 @@ import zmq.green as zmq
 import copy
 import sys
 import gevent
-import gipc
+import gipc  # type: ignore
 
 from ait.core import log
 from .plugin import Plugin
