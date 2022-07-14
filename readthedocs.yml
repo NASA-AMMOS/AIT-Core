@@ -7,3 +7,5 @@ python:
     extra_requirements:
         - docs
         - tests
+    install:
+        - requirements: doc/requirements.txt
