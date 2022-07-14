@@ -11,6 +11,7 @@ Configuration
 Add the following template to the plugins block of your config.yaml and customize as necessary.
 
 .. code-block:: none
+
     - plugin:
       name: ait.core.server.plugins.PacketAccumulator.PacketAccumulator
       inputs:

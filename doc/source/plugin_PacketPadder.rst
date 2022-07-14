@@ -10,6 +10,7 @@ Configuration
 Add and customize the following template in your config.yaml
 
 .. code-block:: none
+
 	- plugin:
           name: ait.core.server.plugins.PacketPadder.PacketPadder
           inputs:
