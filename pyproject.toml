@@ -32,7 +32,6 @@ gevent           = '1.4.0'
 gevent-websocket = '0.10.1'
 pyzmq            = '18.1.0'
 sphinx = {version = "*", optional = true}
-sphinx.httpdomain = "*"
 
 [tool.poetry.dev-dependencies]
 black                    = '*'
