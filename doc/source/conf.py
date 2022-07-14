@@ -12,6 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import gevent
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import sys
 import os
 
@@ -39,7 +43,7 @@ sys.path.insert(0, os.path.abspath('../../bin/'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinxcontrib-httpdomain'
+    'sphinxcontrib.httpdomain'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
