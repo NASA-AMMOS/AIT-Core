@@ -11,17 +11,18 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-import gevent.monkey
+# gevent.monkey.patch_all()
 
-gevent.monkey.patch_all()
-
-import os
 import csv
+import os
 import struct
 
+from gevent import monkey
 import pytest
 
 from ait.core import tlm
+
+monkey.patch_all()
 
 
 class TestTlmDictWriter(object):

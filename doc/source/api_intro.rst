@@ -113,7 +113,7 @@ The API's Instrument interface provides users with an access point for monitorin
 
 The input streams that send messages to this topic can be configured via the **server.api-telemetry-streams** field. This field should be a list of input stream names which output their messages in the Packet-UID-annotated format that the built-in :class:`PacketHandler` / :class:`CCSDSPacketHandler` handlers use.
 
-.. code-block::
+.. code-block:: none
 
     server:
         api-telemetry-streams:

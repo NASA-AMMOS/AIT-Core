@@ -1,12 +1,11 @@
 import datetime as dt
 import inspect
-import os.path
-import tempfile
 import unittest
 
 import ait.core.dmc as dmc
 import ait.core.dtype as dtype
 from ait.core import table
+from ait.core.util import TestFile
 
 test_table = """
 - !FSWTable
@@ -72,12 +71,10 @@ test_table = """
 class TestTableEncode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.table_defn_path = os.path.join(tempfile.gettempdir(), "test_table.yaml")
-
-        with open(cls.table_defn_path, "w") as infile:
-            infile.write(test_table)
-
-        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+        # The TestFile class is in util.py uses tempfile.NamedTemporaryFile() to create
+        # a temporary file that will be automatically deleted at the end of the tests
+        with TestFile(test_table, "rt") as file_name:
+            cls.tabdict = table.FSWTabDict(file_name)
 
     def test_enum_encode(self):
         defn = self.tabdict["test_type"]
@@ -172,12 +169,12 @@ class TestTableEncode(unittest.TestCase):
         4,5,6
         """
 
-        tmp_table_input = os.path.join(tempfile.gettempdir(), "test_table.txt")
-        with open(tmp_table_input, "w") as in_file:
-            in_file.write(table_data)
+        with TestFile("test_table.txt", "w+") as file_name:
+            with open(file_name, "w") as in_file:
+                assert in_file.write(table_data)
 
-        with open(tmp_table_input, "r") as in_file:
-            encoded = defn.encode(file_in=in_file)
+            with open(file_name, "r") as in_file:
+                encoded = defn.encode(file_in=in_file)
 
         assert len(encoded) == 13
 
@@ -200,7 +197,7 @@ class TestTableEncode(unittest.TestCase):
         assert encoded[11] == 5
         assert encoded[12] == 6
 
-        os.remove(tmp_table_input)
+        self.assertRaises(StopIteration)
 
     def test_encode_file_with_hdr(self):
         defn = self.tabdict["test_type"]
@@ -212,14 +209,14 @@ class TestTableEncode(unittest.TestCase):
 
         hdr_vals = [13, 12, 11]
 
-        tmp_table_input = os.path.join(tempfile.gettempdir(), "test_table.txt")
-        with open(tmp_table_input, "w") as in_file:
-            in_file.write(table_data)
+        with TestFile("test_table.txt", "a+") as temp_file_name:
+            with open(temp_file_name, "w") as in_file:
+                assert in_file.write(table_data)
 
-        with open(tmp_table_input, "r") as in_file:
-            encoded = defn.encode(file_in=in_file, hdr_vals=hdr_vals)
+            with open(temp_file_name, "r") as in_file:
+                encoded = defn.encode(file_in=in_file, hdr_vals=hdr_vals)
 
-        assert len(encoded) == 13
+            assert len(encoded) == 13
 
         # Check header
         assert encoded[0] == 13
@@ -240,18 +237,12 @@ class TestTableEncode(unittest.TestCase):
         assert encoded[11] == 5
         assert encoded[12] == 6
 
-        os.remove(tmp_table_input)
-
 
 class TestTableDecode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.table_defn_path = os.path.join(tempfile.gettempdir(), "test_table.yaml")
-
-        with open(cls.table_defn_path, "w") as infile:
-            infile.write(test_table)
-
-        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+        with TestFile(test_table, "rt") as file_name:
+            cls.tabdict = table.FSWTabDict(file_name)
 
     def test_decode_binary(self):
         defn = self.tabdict["test_type"]
@@ -283,12 +274,12 @@ class TestTableDecode(unittest.TestCase):
         table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
         encoded = defn.encode(text_in=table_data)
 
-        bin_file = os.path.join(tempfile.gettempdir(), "test_table_in.bin")
-        with open(bin_file, "wb") as out_file:
-            out_file.write(encoded)
+        with TestFile("test_table_in.bin", "wb+") as temp_bin_file:
+            with open(temp_bin_file, "wb") as out_file:
+                out_file.write(encoded)
 
-        with open(bin_file, "rb") as out_file:
-            decoded = defn.decode(file_in=out_file)
+            with open(temp_bin_file, "rb") as out_file:
+                 decoded = defn.decode(file_in=out_file)
 
         # Check header
         assert decoded[0][0] == 13
@@ -311,12 +302,12 @@ class TestTableDecode(unittest.TestCase):
         table_data = ["13,12,11", "1,2,TEST_ENUM_3", "4,5,TEST_ENUM_0"]
         encoded = defn.encode(text_in=table_data)
 
-        bin_file = os.path.join(tempfile.gettempdir(), "test_table_in.bin")
-        with open(bin_file, "wb") as out_file:
-            out_file.write(encoded)
+        with TestFile("test_table_in.bin", "wb+") as temp_bin_file:
+            with open(temp_bin_file, "wb") as out_file:
+                assert out_file.write(encoded)
 
-        with open(bin_file, "rb") as out_file:
-            decoded = defn.decode(file_in=out_file, raw=True)
+            with open(temp_bin_file, "rb") as out_file:
+                decoded = defn.decode(file_in=out_file, raw=True)
 
         # Check header
         assert decoded[0][0] == 13
@@ -364,69 +355,63 @@ class TestBadEnumHandling(unittest.TestCase):
                 3: TEST_ENUM_3
                 4: TEST_ENUM_0
         """
-        table_defn_path = os.path.join(
-            tempfile.gettempdir(), "test_table_dupe_enum.yaml"
-        )
 
-        with open(table_defn_path, "w") as infile:
-            infile.write(test_table)
+        with TestFile("test_table_dupe_enum.yaml", "wt") as temp_test_file:
+            with open(temp_test_file, "w") as infile:
+                assert infile.write(test_table)
 
-        with self.assertLogs("ait", level="ERROR") as cm:
-            tabdict = table.FSWTabDict(table_defn_path)
-            assert len(cm.output) == 1
+            with self.assertLogs("ait", level="ERROR") as cm:
+                tabdict = table.FSWTabDict(temp_test_file)
+                assert len(cm.output) == 1
 
 
 class TestTableTimeHandling(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.table_defn_path = os.path.join(
-            tempfile.gettempdir(), "test_time_table.yaml"
-        )
-
-        with open(cls.table_defn_path, "w") as infile:
-            infile.write(
-                inspect.cleandoc(
+        with TestFile("test_time_table.yaml", "wt") as temp_test_file:
+            with open(temp_test_file, "w") as infile:
+                assert infile.write(
+                    inspect.cleandoc(
+                        """
+                    - !FSWTable
+                      name: test_type
+                      delimiter: ","
+                      header:
+                        - !FSWColumn
+                          name: MAGIC_NUM
+                          desc: The first column in our header
+                          type:  U8
+                          bytes: 0
+                        - !FSWColumn
+                          name: UPTYPE
+                          desc: The second column in our header
+                          type:  U8
+                          bytes: 1
+                        - !FSWColumn
+                          name: VERSION
+                          desc: The third column in our header
+                          type:  U8
+                          bytes: 2
+                      columns:
+                        - !FSWColumn
+                          name: COLUMN_ONE
+                          desc: First FSW Table Column
+                          type:  TIME64
+                          bytes: [0,7]
+                        - !FSWColumn
+                          name: COLUMN_TWO
+                          desc: Second FSW Table Column
+                          type:  TIME40
+                          bytes: [8,12]
+                        - !FSWColumn
+                          name: COLUMN_THREE
+                          desc: Third FSW Table Column
+                          type:  TIME32
+                          bytes: [13,16]
                     """
-                - !FSWTable
-                  name: test_type
-                  delimiter: ","
-                  header:
-                    - !FSWColumn
-                      name: MAGIC_NUM
-                      desc: The first column in our header
-                      type:  U8
-                      bytes: 0
-                    - !FSWColumn
-                      name: UPTYPE
-                      desc: The second column in our header
-                      type:  U8
-                      bytes: 1
-                    - !FSWColumn
-                      name: VERSION
-                      desc: The third column in our header
-                      type:  U8
-                      bytes: 2
-                  columns:
-                    - !FSWColumn
-                      name: COLUMN_ONE
-                      desc: First FSW Table Column
-                      type:  TIME64
-                      bytes: [0,7]
-                    - !FSWColumn
-                      name: COLUMN_TWO
-                      desc: Second FSW Table Column
-                      type:  TIME40
-                      bytes: [8,12]
-                    - !FSWColumn
-                      name: COLUMN_THREE
-                      desc: Third FSW Table Column
-                      type:  TIME32
-                      bytes: [13,16]
-                """
+                    )
                 )
-            )
-
-        cls.tabdict = table.FSWTabDict(cls.table_defn_path)
+            cls.tabdict = table.FSWTabDict(temp_test_file)
 
     def test_end_to_end_time_handling(self):
         defn = self.tabdict["test_type"]

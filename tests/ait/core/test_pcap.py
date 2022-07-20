@@ -11,29 +11,29 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-import gevent.monkey
-
-gevent.monkey.patch_all()
 
 import datetime
 import os
 import struct
-import time
 import warnings
 import time
-import tempfile
 
 from unittest import mock
 
+from gevent import monkey
+
 from ait.core import dmc, pcap
+from ait.core.util import TestFile
+
+monkey.patch_all()
 
 TmpFile = None
 TmpFilename = None
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    TmpFile = tempfile.NamedTemporaryFile(mode="wb")
-    TmpFilename = TmpFile.name
+    with TestFile('', "wb") as filename:
+        TmpFilename = filename
 
 
 def testPCapGlobalHeader():
