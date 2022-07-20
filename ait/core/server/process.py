@@ -4,6 +4,7 @@ import copy
 import sys
 import gevent
 import gipc  # type: ignore
+import setproctitle  # type: ignore
 
 from ait.core import log
 from .plugin import Plugin
@@ -132,6 +133,9 @@ class PluginsProcess(object):
             plugin_info_list: List of PluginConfig's
         """
 
+        # Update the plugin process title
+        PluginsProcess.update_process_name(namespace)
+
         # Load all plugins and return as list
         plugin_list = PluginsProcess.load_plugins(namespace, plugin_info_list)
 
@@ -231,6 +235,24 @@ class PluginsProcess(object):
 
         # Wait for Plugins to finish
         gevent.joinall(plugin_list)
+
+    @staticmethod
+    def update_process_name(namespace):
+        """
+        Renames the process title associated with current process.
+        Without this, process has the same title as original server.
+
+        Args:
+            namespace: AIT process namespace
+        """
+        plugin_proc_name = f"plugin-process.{namespace}"
+
+        updated_title = f"ait-server-{plugin_proc_name}"
+        orig_title = setproctitle.getproctitle()
+        if orig_title is not None:
+            updated_title = f"{orig_title} {plugin_proc_name}"
+
+        setproctitle.setproctitle(updated_title)
 
     def abort(self):
         """
