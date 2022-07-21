@@ -23,7 +23,7 @@ include = [
 
 [tool.poetry.dependencies]
 python           = '~3.7'
-bottle           = '0.12.17'
+bottle           = '0.12.20'
 jsonschema       = '3.0.2'
 pyyaml           = '5.1.2'
 requests         = '>= 2.22.0'
