@@ -1,6 +1,6 @@
-'''
+"""
 Implements a plugin which routes CCSDS packets by APID
-'''
+"""
 import os
 import yaml
 from ait.core.server.plugins import Plugin
@@ -8,7 +8,7 @@ from ait.core import tlm, log
 
 
 class APIDRouter(Plugin):
-    '''
+    """
     Routes CCSDS packets by APID according to a routing table defined by a yaml file.
     Arguments to the range operator are inclusive.
     (i.e. range[40,50] adds APIDs 40-50 inclusive to the topic, not 40-49)
@@ -56,7 +56,7 @@ class APIDRouter(Plugin):
             - range:
                 - 1
                 - 138
-    '''
+    """
     def __init__(self, inputs=None, outputs=None, zmq_args=None, routing_table=None, default_topic=None):
 
         super().__init__(inputs, outputs, zmq_args)
@@ -72,19 +72,19 @@ class APIDRouter(Plugin):
             log.error("Unable to load routing table .yaml file")
 
     def process(self, input_data):
-        '''
+        """
         publishes incoming CCSDS packets to the routes specified in the routing table
 
         :param input_data: CCSDS packet as bytes
         :type input_data: bytes, bytearray
-        '''
+        """
         packet_apid = self.get_packet_apid(input_data)
         topics = self.routing_table_object[packet_apid]
         for route in topics:
             self.publish(input_data, route)
 
     def get_packet_apid(self, packet):
-        '''
+        """
         Returns the APID (as integer) for a given packet (bytearray)
         Assumes that the APID is the last 11 bits of the first two bytes
 
@@ -92,13 +92,13 @@ class APIDRouter(Plugin):
         :type packet: bytes, bytearray
         :returns: packet APID
         :rtype: int
-        '''
+        """
         packet_apid_bits = bytearray(b1 & b2 for b1, b2 in zip(packet[0:2], bytearray(b'\x07\xff')))
         apid = int.from_bytes(packet_apid_bits, byteorder='big')
         return apid
 
     def add_topic_to_table(self, routing_table, apid, topic_name):
-        '''
+        """
         Returns an updated table with the topic_name added to the entry for the specified APID
 
         :param routing_table: routing table to be updated
@@ -109,14 +109,14 @@ class APIDRouter(Plugin):
         :type topic_name: string
         :returns: updated routing table
         :rtype: dict
-        '''
+        """
         temp_entry = routing_table[apid]
         temp_entry.append(topic_name)
         routing_table[apid] = temp_entry
         return routing_table
 
     def add_range_to_table(self, routing_table, range_array, topic_name):
-        '''
+        """
         Adds a range of APIDs to the routing table.
         The range_array argument is an array of form [beginning, end].
         This function is inclusive of all values.
@@ -130,7 +130,7 @@ class APIDRouter(Plugin):
         :type topic_name: string
         :returns: updated routing table
         :rtype: dict
-        '''
+        """
         beginning = range_array[0]
         end = range_array[1]
         for apid in range(beginning, end + 1):
@@ -138,7 +138,7 @@ class APIDRouter(Plugin):
         return routing_table
 
     def remove_from_table(self, routing_table, apid_array, topic_name):
-        '''
+        """
         Removes a topic name from all the APIDs in the apid_array argument.
 
         :param routing_table: routing table to be updated
@@ -149,7 +149,7 @@ class APIDRouter(Plugin):
         :type topic_name: string
         :returns: updated routing table
         :rtype: dict
-        '''
+        """
         for apid in apid_array:
             temp_entry = routing_table[apid]
             if topic_name in temp_entry:
@@ -158,7 +158,7 @@ class APIDRouter(Plugin):
         return routing_table
 
     def load_table_yaml(self, routing_table_path, tlm_dict):
-        '''
+        """
         Reads a .yaml file and returns a dictionary of format {apid1: [streams], apid2: [streams]}
 
         :param routing_table_path: path to yaml file containing routing table
@@ -166,7 +166,7 @@ class APIDRouter(Plugin):
         :type routing_table_path: string
         :returns: routing table
         :rtype: dict
-        '''
+        """
         routing_table = {}
         error = None
 

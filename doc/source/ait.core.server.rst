@@ -18,6 +18,7 @@ Submodules
    ait.core.server.client
    ait.core.server.handler
    ait.core.server.plugin
+   ait.core.server.process
    ait.core.server.server
    ait.core.server.stream
    ait.core.server.utils

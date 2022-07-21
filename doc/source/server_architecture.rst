@@ -24,6 +24,9 @@ Plugins
 * A plugin **name** is required, and should be formatted like **<package>.<module>.<ClassName>**. The server will use this to import and instantiate the plugin.
 * Plugins can have any other arguments you would like. These arguments will be made class attributes when the plugin is instantiated.
 * If you would like to add a plugin, it must inherit from :mod:`ait.core.server.plugin.Plugin` and implement the abstract `process` method which is called whenever the plugin receives a message from any of its inbound streams.
+* Plugins can be configured to run in separate processes.  The plugin configuration includes an optional attribute **process_id**.  When the attribute is assigned a value, the server will spawn a new process for the plugin.  If multiple plugins specify the same value, then they will all run together in that process.  By default, plugins run in the same process as the AIT Server.
+
+If you would like to add a plugin, it must inherit from :mod:`ait.core.server.plugin.Plugin` and implement the abstract `process` method which is called whenever the plugin receives a message from any of its inbound streams.
 
 Example configuration:
 
@@ -38,6 +41,19 @@ Example configuration:
             outputs:
                 - command_stream
             other_parameter: anything_you_need
+
+
+Example configuration segment utilizing the **process_id** attribute:
+
+.. code-block:: none
+
+    plugins:
+        - plugin:
+            name: ait.gui.AITGUIPlugin
+            process_id: ait_plugin_process_alpha
+            inputs:
+                ...
+
 
 AIT provides a number of default plugins. Check the `Plugins API documentation <./ait.core.server.plugins.html>`_ for available plugins.
 
