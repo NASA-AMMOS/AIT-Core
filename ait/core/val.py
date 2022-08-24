@@ -70,7 +70,7 @@ class YAMLProcessor(object):
             self.loaded = True
 
         except ScannerError as e:
-            msg = "YAML formattting error - '" + self.ymlfile + ": '" + str(e) + "'"
+            msg = "YAML formatting error - '" + self.ymlfile + ": '" + str(e) + "'"
             raise util.YAMLError(msg)
 
     def process(self, ymlfile):
@@ -422,7 +422,7 @@ class Validator(object):
                                  f'include tree. {self.validate_list}')
                     return set(self.validate_list)
             except RecursionError as e:
-                print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                log.info(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
                       f'back and forth on one another through the "!include" statements.')
 
     def validate_schema(self, messages=None):

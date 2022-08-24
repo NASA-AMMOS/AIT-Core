@@ -140,7 +140,7 @@ def check_yaml_timestamps(yaml_file_name, cache_name):
                     if check:
                         return True
         except RecursionError as e:
-            print(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+            log.info(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
                   f'back and forth on one another through the "!include" statements.')
     return False
 

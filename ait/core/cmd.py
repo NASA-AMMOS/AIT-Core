@@ -558,8 +558,6 @@ def YAMLCtor_include(loader, node):  # noqa
     # Get the path out of the yaml file
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
-    # DEBUG
-    log.debug(f'NAME of File: {name}')
     with open(name, "r") as f:
         data = yaml.load(f)
     return data
