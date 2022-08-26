@@ -1,7 +1,7 @@
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
-# Copyright 2015, by the California Institute of Technology. ALL RIGHTS
+# Copyright 2022, by the California Institute of Technology. ALL RIGHTS
 # RESERVED. United States Government Sponsorship acknowledged. Any
 # commercial use must be negotiated with the Office of Technology Transfer
 # at the California Institute of Technology.
@@ -20,6 +20,7 @@ files based on specified schema.
 """
 
 import json
+from os import path
 import yaml
 from yaml.scanner import ScannerError
 import re
@@ -35,12 +36,13 @@ class YAMLProcessor(object):
     __slots__ = ["ymlfile", "data", "loaded", "doclines", "_clean"]
 
     def __init__(self, ymlfile=None, clean=True):
-        """Creates a new YAML validator for the given schema and yaml file
+        """
+        Creates a new YAML validator for the given schema and yaml file
 
-        The schema file should validate against JSON Schema Draft 4
+        - The schema file should validate against JSON Schema Draft 4
         http://json-schema.org/latest/json-schema-core.html
 
-        The YAML file should validate against the schema file given
+        - The YAML file should validate against the schema file given
         """
         self.loaded = False
         self.data = []
@@ -65,10 +67,10 @@ class YAMLProcessor(object):
                 with open(self.ymlfile, "rb") as stream:
                     for data in yaml.load_all(stream, Loader=yaml.Loader):
                         self.data.append(data)
-
             self.loaded = True
+
         except ScannerError as e:
-            msg = "YAML formattting error - '" + self.ymlfile + ": '" + str(e) + "'"
+            msg = "YAML formatting error - '" + self.ymlfile + ": '" + str(e) + "'"
             raise util.YAMLError(msg)
 
     def process(self, ymlfile):
@@ -121,12 +123,13 @@ class SchemaProcessor(object):
     __slots__ = ["_schemafile", "data", "_proc_schema", "loaded"]
 
     def __init__(self, schemafile=None):
-        """Creates a new YAML validator for the given schema and yaml file
+        """
+        Creates a new YAML validator for the given schema and yaml file
 
-        The schema file should validate against JSON Schema Draft 4
+        - The schema file should validate against JSON Schema Draft 4
         http://json-schema.org/latest/json-schema-core.html
 
-        The YAML file should validate against the schema file given
+        - The YAML file should validate against the schema file given
         """
         self.data = {}
         self.loaded = False
@@ -135,12 +138,12 @@ class SchemaProcessor(object):
 
     @property
     def schemafile(self):
+
         return self._schemafile
 
     @schemafile.setter
     def schemafile(self, schemafile):
         self._schemafile = schemafile
-
         if schemafile is not None:
             self.load()
 
@@ -152,13 +155,7 @@ class SchemaProcessor(object):
         try:
             self.data = json.load(open(self._schemafile))
         except (IOError, ValueError) as e:
-            msg = (
-                "Could not load schema file '"
-                + self._schemafile
-                + "': '"
-                + str(e)
-                + "'"
-            )
+            msg = f"Could not load schema file {self._schemafile}: '{str(e)}'"
             raise jsonschema.SchemaError(msg)
 
         self.loaded = True
@@ -197,8 +194,10 @@ class ErrorHandler(object):
             self.pretty(1, start, error, messages)
 
     def pretty(self, start, end, e, messages=None):
-        """Pretties up the output error message so it is readable
-        and designates where the error came from"""
+        """
+        Pretties up the output error message, so it is readable
+        and designates where the error came from
+        """
 
         log.debug("Displaying document from lines '%i' to '%i'", start, end)
 
@@ -360,30 +359,118 @@ class ErrorHandler(object):
 
 class Validator(object):
 
-    __slots__ = ["_ymlfile", "_schemafile", "_ymlproc", "_schemaproc", "ehandler"]
+    __slots__ = ["_ymlfile", "_schemafile", "_ymlproc", "_schemaproc", "ehandler",
+                 "validate_list", "yml_dir", "yml_files_to_validate"]
 
     def __init__(self, ymlfile, schemafile):
-        """Creates a new YAML validator for the given schema and yaml file
+        """
+        Creates a new YAML validator for the given schema and yaml file
 
-        The schema file should validate against JSON Schema Draft 4
+        - The schema file should validate against JSON Schema Draft 4
         http://json-schema.org/latest/json-schema-core.html
 
-        The YAML file should validate against the schema file given
+        - The YAML file should validate against the schema file given
         """
         self._ymlfile = ymlfile
         self._schemafile = schemafile
-
+        self._ymlproc = None
         # Get the error handler ready, just in case
         self.ehandler = ErrorHandler(ymlfile=self._ymlfile, schemafile=self._schemafile)
+        # Declare variables used for validating nested yaml files
+        self.validate_list = []
+        self.yml_dir = f"{ymlfile.rsplit('/', 1)[0]}/"
+        self.yml_files_to_validate = self.get_included_files(ymlfile)
 
-    def validate(self, messages=None):
-        """Provides schema_val validation for objects that do not override
-        in domain-specific validator"""
+    def get_included_files(self, yml_file):
+            """
+            Make a list of  yaml files to validate against the schema.  The first member
+            of the list will include the full path to the yaml file.
+            The next element will the module yml file (e.g. cmd.yml),
+            followed by the names of any included files.
+            The assumption is made that all the included yml files are
+            found in the same directory as the module yml file.
+
+            Parameters
+            ----------
+            yml_file : str
+                The module yaml file to validate (cmd.yml or tlm.yml)
+
+            Returns
+            -------
+            self.validate_list: list
+                A set of all files that are to be validated.
+
+            """
+            # The first yaml file to validate will include a full path
+            # Any included yaml files will have the path added.
+            if '/' in yml_file:
+                self.validate_list.append(yml_file)
+            else:
+                yml_file = f'{self.yml_dir}/{yml_file}'
+
+            try:
+                with open(yml_file, "r") as yml_fh:
+                    for line in yml_fh:
+                        if not line.strip().startswith("#") and "!include" in line:
+                            included_file_name = line.split('!include ')[-1].strip()
+                            self.validate_list.append(f'{self.yml_dir}/{included_file_name}')
+                            # Look for includes within included file
+                            self.get_included_files(included_file_name)
+                    # Check and flag multiple includes
+                    if len(self.validate_list) != len(set(self.validate_list)):
+                        log.info(f'WARNING: Validate: Duplicate config files in the '
+                                 f'include tree. {self.validate_list}')
+                    return set(self.validate_list)
+            except RecursionError as e:
+                log.info(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                      f'back and forth on one another through the "!include" statements.')
+
+    def validate_schema(self, messages=None):
+        """
+        Provides schema_val validation for objects that do not override
+        in domain-specific validator (evr.yaml, table.yaml, limits.yaml)
+
+        Returns
+        -------
+        valid boolean:
+            The result of the schema test (True(Pass)/False(Fail))
+        """
         valid = self.schema_val(messages)
         return valid
 
+    def validate(self, ymldata=None, messages=None):
+        """
+        Validates the Command or Telemetry Dictionary definitions
+        The method will validate module (cmd.yml or tlm.yaml) and included yaml config files
+
+        Returns
+        -------
+        schema_val boolean:
+            The result of the schema test (True/False)
+
+        content_val boolean:
+            Results of the schema test on config and included files
+                True - all the tested yaml files passed the schema test
+                False - one or more yaml files did not pass the schema test
+
+        """
+        content_val_list = []
+        schema_val = self.schema_val(messages)
+
+        # Loop through the list of all the tested yaml files
+        for yaml_file in self.yml_files_to_validate:
+            log.info(f"Validating: {yaml_file}")
+            content_val_list.append(self.content_val(yaml_file, messages=messages))
+
+        if all(content_val_list):  # Test that all tested files returned True
+            content_val = True
+        else:
+            content_val = False
+
+        return schema_val and content_val
+
     def schema_val(self, messages=None):
-        "Perform validation with processed YAML and Schema"
+        """Perform validation with processed YAML and Schema"""
         self._ymlproc = YAMLProcessor(self._ymlfile)
         self._schemaproc = SchemaProcessor(self._schemafile)
         valid = True
@@ -400,7 +487,6 @@ class Validator(object):
             for docnum, data in enumerate(
                 yaml.load_all(self._ymlproc.data, Loader=yaml.Loader)
             ):
-
                 # Since YAML allows integer keys but JSON does not, we need to first
                 # dump the data as a JSON string to encode all of the potential integers
                 # as strings, and then read it back out into the YAML format. Kind of
@@ -414,9 +500,7 @@ class Validator(object):
                 # Display the error message
                 for error in v.iter_errors(data):
                     msg = (
-                        "Schema-based validation failed for YAML file '"
-                        + self._ymlfile
-                        + "'"
+                        f"Schema-based validation failed for YAML file ' {self._ymlfile} '"
                     )
                     self.ehandler.process(
                         docnum, self._ymlproc.doclines, error, messages
@@ -434,24 +518,22 @@ class Validator(object):
         log.debug("END: Schema-based validation complete for '%s'", self._ymlfile)
         return valid
 
+    def content_val(self, yaml_file, ymldata=None, messages=None):
+        """Simple base content_val method - needed for unit tests"""
+        self._ymlproc = YAMLProcessor(yaml_file, False)
+
 
 class CmdValidator(Validator):
     def __init__(self, ymlfile=None, schema=None):
         super(CmdValidator, self).__init__(ymlfile, schema)
 
-    def validate(self, ymldata=None, messages=None):
-        """Validates the Command Dictionary definitions"""
+    def content_val(self, yaml_file, ymldata=None, messages=None):
+        """
+        Validates the Command Dictionary to ensure the contents for each of the fields
+        meets specific criteria regarding the expected types, byte ranges, etc.
+        """
 
-        schema_val = self.schema_val(messages)
-        content_val = self.content_val(messages=messages)
-
-        return schema_val and content_val
-
-    def content_val(self, ymldata=None, messages=None):
-        """Validates the Command Dictionary to ensure the contents for each of the fields
-        meets specific criteria regarding the expected types, byte ranges, etc."""
-
-        self._ymlproc = YAMLProcessor(self._ymlfile, False)
+        self._ymlproc = YAMLProcessor(yaml_file, False)
 
         # Turn off the YAML Processor
         log.debug("BEGIN: Content-based validation of Command dictionary")
@@ -459,7 +541,6 @@ class CmdValidator(Validator):
             cmddict = ymldata
         else:
             cmddict = cmd.CmdDict(self._ymlfile)
-
         try:
             # instantiate the document number. this will increment in order to
             # track the line numbers and section where validation fails
@@ -472,7 +553,6 @@ class CmdValidator(Validator):
             rules = []
 
             # set the command rules
-            #
             # set uniqueness rule for command names
             rules.append(UniquenessRule("name", "Duplicate command name: %s", messages))
 
@@ -488,7 +568,6 @@ class CmdValidator(Validator):
                 argrules = []
 
                 # set rules for command arguments
-                #
                 # set uniqueness rule for opcodes
                 argrules.append(
                     UniquenessRule(
@@ -574,17 +653,13 @@ class TlmValidator(Validator):
     def __init__(self, ymlfile=None, schema=None):
         super(TlmValidator, self).__init__(ymlfile, schema)
 
-    def validate(self, ymldata=None, messages=None):
-        """Validates the Telemetry Dictionary definitions"""
-        schema_val = self.schema_val(messages)
-        if len(messages) == 0:
-            content_val = self.content_val(ymldata, messages)
+    def content_val(self, yaml_file, ymldata=None, messages=None):
+        """
+        Validates the Telemetry Dictionary to ensure the contents for each of the fields
+        meets specific criteria regarding the expected types, byte ranges, etc.
+        """
 
-        return schema_val and content_val
-
-    def content_val(self, ymldata=None, messages=None):
-        """Validates the Telemetry Dictionary to ensure the contents for each of the fields
-        meets specific criteria regarding the expected types, byte ranges, etc."""
+        self._ymlproc = YAMLProcessor(yaml_file, False)
 
         # Turn off the YAML Processor
         log.debug("BEGIN: Content-based validation of Telemetry dictionary")
@@ -601,7 +676,6 @@ class TlmValidator(Validator):
             rules = []
 
             # set the packet rules
-            #
             # set uniqueness rule for packet names
             rules.append(UniquenessRule("name", "Duplicate packet name: %s", messages))
 
@@ -616,7 +690,6 @@ class TlmValidator(Validator):
                 fldrules = []
 
                 # set rules for telemetry fields
-                #
                 # set uniqueness rule for field name
                 fldrules.append(
                     UniquenessRule(
@@ -701,17 +774,28 @@ class UniquenessRule(ValidationRule):
     """Checks the uniqueness of an attribute across YAML documents"""
 
     def __init__(self, attr, msg, messages=[]):  # noqa
-        """Takes in an attribute name, error message, and list of error
+        """
+        Takes in an attribute name, error message, and list of error
         messages to append to
         """
         super(UniquenessRule, self).__init__(attr, msg, messages)
         self.val_list = []
 
     def check(self, defn):
-        """Performs the uniqueness check against the value list
-        maintained in this rule objects
         """
+        Performs the uniqueness check against the value list
+        maintained in this rule objects
+
+        Parameters
+        __________
+        defn : class
+           Class containing attributes to check.
+              - e.g CmdDefn, ArgDef
+
+        """
+
         val = getattr(defn, self.attr)
+
         if val is not None and val in self.val_list:
             self.messages.append(self.msg % str(val))
             # TODO self.messages.append("TBD location message")
@@ -724,14 +808,15 @@ class TypeRule(ValidationRule):
     """Checks the object's type is an allowable types"""
 
     def __init__(self, attr, msg, messages=[]):  # noqa
-        """Takes in an attribute name, error message, and list of error
+        """
+        Takes in an attribute name, error message, and list of error
         messages to append to
         """
         super(TypeRule, self).__init__(attr, msg, messages)
 
     def check(self, defn):
-        """Performs isinstance check for the definitions data type.
-
+        """
+        Performs isinstance check for the definitions' data type.
         Assumes the defn has 'type' and 'name' attributes
         """
         allowed_types = dtype.PrimitiveType, dtype.ArrayType
@@ -745,7 +830,8 @@ class TypeSizeRule(ValidationRule):
     """Checks the object size matches the designated type"""
 
     def __init__(self, attr, msg, messages=[]):  # noqa
-        """Takes in an attribute name, error message, and list of error
+        """
+        Takes in an attribute name, error message, and list of error
         messages to append to
         """
         super(TypeSizeRule, self).__init__(attr, msg, messages)
@@ -777,14 +863,16 @@ class TypeSizeRule(ValidationRule):
 
 
 class EnumRule(ValidationRule):
-    """Checks all enumerated values do not contain boolean keys.
+    """
+    Checks all enumerated values do not contain boolean keys.
     The YAML standard has a set of allowable boolean strings that are
-    interpretted as boolean True/False unless explicitly quoted in the YAML
+    interpreted as boolean True/False unless explicitly quoted in the YAML
     file. The YAML boolean strings include (TRUE/FALSE/ON/OFF/YES/NO) .
     """
 
     def __init__(self, attr, msg, messages=[]):  # noqa
-        """Takes in an attribute name, error message, and list of error
+        """
+        Takes in an attribute name, error message, and list of error
         messages to append to
         """
         super(EnumRule, self).__init__(attr, msg, messages)
@@ -810,14 +898,16 @@ class ByteOrderRule(ValidationRule):
     """Checks the byte ordering based on the previous set stop byte/bit"""
 
     def __init__(self, attr, msg, messages=[]):  # noqa
-        """Takes in an attribute name, error message, and list of error
+        """
+        Takes in an attribute name, error message, and list of error
         messages to append to
         """
         super(ByteOrderRule, self).__init__(attr, msg, messages)
         self.prevstop = 0
 
     def check(self, defn, msg=None):
-        """Uses the definitions slice() method to determine its start/stop
+        """
+        Uses the definitions slice() method to determine its start/stop
         range.
         """
         # Check enum does not contain boolean keys

@@ -165,5 +165,7 @@ default:
 
 
 class TestCmdDict(cmd.CmdDict):
+    __test__ = False    # prevents pytest PytestCollectionWarning
+
     def __init__(self, *args, **kwargs):
         super(TestCmdDict, self).__init__(*args, **kwargs)
