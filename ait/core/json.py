@@ -19,7 +19,7 @@ The ait.core.json module provides JSON utilities and mixin classes
 for encoding and decoding between AIT data structures and JSON.
 """
 
-import collections
+import collections.abc
 from typing import List
 
 
@@ -77,9 +77,9 @@ def toJSON(obj):  # noqa
         result = obj.toJSON()
     elif isinstance(obj, (int, float, str)) or obj is None:
         result = obj
-    elif isinstance(obj, collections.Mapping):
+    elif isinstance(obj, collections.abc.Mapping):
         result = {toJSON(key): toJSON(obj[key]) for key in obj}
-    elif isinstance(obj, collections.Sequence):
+    elif isinstance(obj, collections.abc.Sequence):
         result = [toJSON(item) for item in obj]
     else:
         result = str(obj)

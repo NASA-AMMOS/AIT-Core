@@ -20,7 +20,7 @@ dictionaries.  Dictionaries contain packet, header, data, and field
 definitions.
 """
 
-import collections
+import collections.abc
 import os
 import pkg_resources
 import struct
@@ -101,7 +101,7 @@ class DNToEUConversion(json.SlotSerializer):
         return result
 
 
-class FieldList(collections.Sequence):
+class FieldList(collections.abc.Sequence):
     """FieldList
 
     FieldLists encapsulate a packet field array so that it behaves
@@ -120,7 +120,7 @@ class FieldList(collections.Sequence):
 
     def __eq__(self, other):
         return (
-            isinstance(other, collections.Sequence)
+            isinstance(other, collections.abc.Sequence)
             and len(self) == len(other)
             and all(self[n] == other[n] for n in range(len(self)))
         )
