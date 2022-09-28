@@ -54,15 +54,15 @@ class Server(object):
 
     def wait(self):
         """
-        Starts all greenlets and plugin-pocesses for concurrent processing.
+        Starts all greenlets and plugin-processes for concurrent processing.
         Joins over all greenlets that are not servers.
         """
-        # Start all of the greenlets managed by this process
+        # Start all greenlets managed by this process
         for greenlet in self.greenlets + self.servers:
             log.info(f"Starting {greenlet} greenlet...")
             greenlet.start()
 
-        # Start all of the separate plugin processes
+        # Start all separate plugin processes
         for plugin_process in self.plugin_processes:
             log.info(f"Spawning {plugin_process} process...")
             plugin_process.spawn_process()

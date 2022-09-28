@@ -55,7 +55,6 @@ class WordArray:
         """Returns the words in this wordarray at the given Python slice
         or word at the given integer index."""
         length = len(self)
-
         if isinstance(key, slice):
             return [self[n] for n in range(*key.indices(length))]
 
@@ -371,6 +370,7 @@ class FieldDefinition(json.SlotSerializer):
         Validation error messages are appended to an optional messages
         array.
         """
+
         valid = True
         primitive = value
 
@@ -520,7 +520,8 @@ class Packet:
         Validation error messages are appended to an optional messages
         array.
         """
-        return self._defn.validate(self, messages)
+
+        # return self._defn.validate(self, messages)
 
 
 class PacketContext:

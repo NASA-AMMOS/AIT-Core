@@ -1,8 +1,8 @@
-import zmq.green as zmq
 import gevent
-import gevent.monkey
+from gevent import monkey
+monkey.patch_all()
 
-gevent.monkey.patch_all()
+import zmq.green as zmq
 
 from typing import List, Any
 

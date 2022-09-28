@@ -42,10 +42,8 @@ class CCSDSPacketHandler(Handler):
         tlm_dict = tlm.getDefaultDict()
         for packet_name in self.packet_types.values():
             if packet_name not in tlm_dict.keys():
-                msg = "CCSDSPacketHandler: Packet name {} not present in telemetry dictionary.".format(
-                    packet_name
-                )
-                msg += " Available packet types are {}".format(tlm_dict.keys())
+                msg = f"CCSDSPacketHandler: Packet name {packet_name} not present in telemetry dictionary."
+                msg += f" Available packet types are {tlm_dict.keys()}"
                 raise ValueError(msg)
 
     def handle(self, input_data):
@@ -59,24 +57,20 @@ class CCSDSPacketHandler(Handler):
         # Check if packet length is at least 7 bytes
         primary_header_length = 6
         if len(input_data) < primary_header_length + 1:
-            ait.core.log.info(
+            ait.core.log.error(
                 "CCSDSPacketHandler: Received packet length is less than minimum of 7 bytes."
             )
             return
 
         # Extract APID from packet
-        packet_apid = str(bin(int(binascii.hexlify(input_data[0:2]), 16) & 0x07FF))[
-            2:
-        ].zfill(11)
+        packet_apid = str(bin(int(binascii.hexlify(input_data[0:2]), 16) & 0x07FF))[2:].zfill(11)
 
         # Check if packet_apid matches with an APID in the config
         config_apid = self.comp_apid(packet_apid)
         if not config_apid:
-            msg = "CCSDSPacketHandler: Packet APID {} not present in config.".format(
-                packet_apid
-            )
-            msg += " Available packet APIDs are {}".format(self.packet_types.keys())
-            ait.core.log.info(msg)
+            msg = f"CCSDSPacketHandler: Packet APID {packet_apid} not present in config."
+            msg += f" Available packet APIDs are {self.packet_types.keys()}"
+            ait.core.log.error(msg)
             return
 
         # Map APID to packet name in config to get UID from telemetry dictionary
@@ -87,7 +81,7 @@ class CCSDSPacketHandler(Handler):
         # Extract user data field from packet
         packet_data_length = int(binascii.hexlify(input_data[4:6]), 16) + 1
         if len(input_data) < primary_header_length + packet_data_length:
-            ait.core.log.info(
+            ait.core.log.error(
                 "CCSDSPacketHandler: Packet data length is less than stated length in packet primary header."
             )
             return

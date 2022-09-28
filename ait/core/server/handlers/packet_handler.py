@@ -19,27 +19,48 @@ class PacketHandler(Handler):
                            If packet is specified but not present in default tlm dict.
         """
         super(PacketHandler, self).__init__(input_type, output_type)
-        self.packet = kwargs.get("packet", None)
+        self.packet_type = kwargs.get("packet", None)
+        self.tlm_dict = tlm.getDefaultDict()
 
-        if not self.packet:
-            msg = 'PacketHandler: No packet name provided in handler config as key "packet"'
+        if not self.packet_type:
+            msg = f'PacketHandler: No packet type provided in handler config as key "packet"'
             raise ValueError(msg)
 
-        tlm_dict = tlm.getDefaultDict()
-        if self.packet not in tlm_dict:
-            msg = "PacketHandler: Packet name {} not present in telemetry dictionary".format(
-                self.packet
-            )
-            msg += " Available packet types are {}".format(tlm_dict.keys())
+        if self.packet_type not in self.tlm_dict:
+            msg = f"PacketHandler: Packet name '{self.packet_type}' not present in telemetry dictionary."
+            msg += f" Available packet types are {self.tlm_dict.keys()}"
             raise ValueError(msg)
 
-        self._pkt_defn = tlm_dict[self.packet]
+        self._pkt_defn = self.tlm_dict[self.packet_type]
 
-    def handle(self, input_data):
+    def get_packet_lengths(self):
+        """
+        Makes a dictionary of packet.name : number of bytes in the packet
+            e.g.  'Ethernet_HS_Packet': 37
+
+        Return:  dictionary
+
+        """
+        pkt_len_dict = {}
+        for i in self.tlm_dict.keys():
+            pkt_len_dict[i] = self.tlm_dict[i].nbytes
+
+        return pkt_len_dict
+
+    def handle(self, packet):
         """
         Params:
-            input_data:   message received by stream
+            packet:   message received by stream (packet)
         Returns:
             tuple of packet UID and message received by stream
         """
-        return pickle.dumps((self._pkt_defn.uid, input_data), 2)
+
+        # TODO validate the packet
+
+        defined_packet_lengths = self.get_packet_lengths()
+
+        if defined_packet_lengths[self.packet_type] != packet.nbytes:
+            msg = f"PacketHandler: Packet length of packet does not match packet definition."
+            raise ValueError(msg)
+
+        return pickle.dumps((self._pkt_defn.uid, packet), 2)
