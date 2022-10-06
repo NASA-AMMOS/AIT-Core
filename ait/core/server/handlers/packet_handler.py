@@ -55,7 +55,7 @@ class PacketHandler(Handler):
             tuple of packet UID and message received by stream
         """
 
-        # TODO validate the packet
+        # TODO validate the packet (if this is the place to do the validation)
 
         defined_packet_lengths = self.get_packet_lengths()
 
