@@ -19,33 +19,19 @@ class PacketHandler(Handler):
                            If packet is specified but not present in default tlm dict.
         """
         super(PacketHandler, self).__init__(input_type, output_type)
-        self.packet_type = kwargs.get("packet", None)
+        self.packet_name = kwargs.get("packet", None)
         self.tlm_dict = tlm.getDefaultDict()
 
-        if not self.packet_type:
+        if not self.packet_name:
             msg = f'PacketHandler: No packet type provided in handler config as key "packet"'
             raise ValueError(msg)
 
-        if self.packet_type not in self.tlm_dict:
-            msg = f"PacketHandler: Packet name '{self.packet_type}' not present in telemetry dictionary."
+        if self.packet_name not in self.tlm_dict:
+            msg = f"PacketHandler: Packet name '{self.packet_name}' not present in telemetry dictionary."
             msg += f" Available packet types are {self.tlm_dict.keys()}"
             raise ValueError(msg)
 
-        self._pkt_defn = self.tlm_dict[self.packet_type]
-
-    def get_packet_lengths(self):
-        """
-        Makes a dictionary of packet.name : number of bytes in the packet
-            e.g.  'Ethernet_HS_Packet': 37
-
-        Return:  dictionary
-
-        """
-        pkt_len_dict = {}
-        for i in self.tlm_dict.keys():
-            pkt_len_dict[i] = self.tlm_dict[i].nbytes
-
-        return pkt_len_dict
+        self._pkt_defn = self.tlm_dict[self.packet_name]
 
     def handle(self, packet):
         """
@@ -55,11 +41,7 @@ class PacketHandler(Handler):
             tuple of packet UID and message received by stream
         """
 
-        # TODO validate the packet (if this is the place to do the validation)
-
-        defined_packet_lengths = self.get_packet_lengths()
-
-        if defined_packet_lengths[self.packet_type] != packet.nbytes:
+        if self._pkt_defn.nbytes != packet.nbytes:
             msg = f"PacketHandler: Packet length of packet does not match packet definition."
             raise ValueError(msg)
 

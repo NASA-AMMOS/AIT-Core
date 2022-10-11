@@ -521,7 +521,7 @@ class Packet:
         array.
         """
 
-        # return self._defn.validate(self, messages)
+        return self._defn.validate(self, messages)
 
 
 class PacketContext:
