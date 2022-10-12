@@ -42,7 +42,7 @@ class PacketHandler(Handler):
         """
 
         if self._pkt_defn.nbytes != packet.nbytes:
-            msg = f"PacketHandler: Packet length of packet does not match packet definition."
+            msg = f"PacketHandler: Packet data length does not match packet definition."
             raise ValueError(msg)
 
         return pickle.dumps((self._pkt_defn.uid, packet), 2)
