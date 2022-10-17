@@ -97,7 +97,7 @@ class TestHandlerClassWith1553HSPacket(unittest.TestCase):
     tlm_dict = tlm.getDefaultDict()
     pkt_data = bytearray(b"\x02\xE7\x40\x00\x00\x00\x01\x02\x03\x04")
     pkt_1553 = tlm_dict['1553_HS_Packet']
-    handler = PacketHandler(packet_type="1553_HS_Packet")
+    handler = PacketHandler(packet="1553_HS_Packet")
 
     def test_word_array(self):
         packet = tlm.Packet(self.pkt_1553, self.pkt_data)
@@ -120,7 +120,7 @@ class TestHandlerClassWith1553HSPacket(unittest.TestCase):
 
     def test_packet_name_error_and_no_packet_type(self):
         with pytest.raises(ValueError):
-            PacketHandler(packet_type="")
+            PacketHandler(packet="")
 
 
 class TestHandlerClassWithEthernetHSPacket(unittest.TestCase):
@@ -128,7 +128,7 @@ class TestHandlerClassWithEthernetHSPacket(unittest.TestCase):
     pkt_data = bytearray(b"\x02\xE7\x40\x00\x00\x00\x01\x40\x00\x03\x02\xE7\x40\x00\x00\x00\x01\x40\x00\x03"
                          b"\x02\xE7\x40\x00\x00\x00\x01\x40\x00\x03\x02\xE7\x40\x00\x00\x00\x01")
     ethernet_pkt_def = tlm_dict['Ethernet_HS_Packet']
-    handler = PacketHandler(packet_type="Ethernet_HS_Packet")
+    handler = PacketHandler(packet="Ethernet_HS_Packet")
 
     def test_word_array(self):
         e_packet = tlm.Packet(self.ethernet_pkt_def, self.pkt_data)
@@ -151,7 +151,7 @@ class TestHandlerClassWithEthernetHSPacket(unittest.TestCase):
 
 
 class TestHandlerClassWithoutInputOutputTypes(object):
-    handler = PacketHandler(packet_type="Ethernet_HS_Packet")
+    handler = PacketHandler(packet="Ethernet_HS_Packet")
 
     def test_handler_default_params(self):
         assert self.handler.input_type is None
@@ -170,7 +170,7 @@ class TestHandlerClassWithoutInputOutputTypes(object):
 
 class TestHandlerClassWithInputOutputTypes(object):
     handler = PacketHandler(
-        packet_type='1553_HS_Packet',
+        packet='1553_HS_Packet',
         input_type="int",
         output_type="str",
     )
@@ -190,7 +190,7 @@ class TestHandlerClassWithInputOutputTypes(object):
 
 
 class TestHandlerClassWithoutInputOutputTypes(object):
-    handler = PacketHandler(packet_type="Ethernet_HS_Packet")
+    handler = PacketHandler(packet="Ethernet_HS_Packet")
 
     def test_ccsds_handler_default_params(self):
         assert self.handler.input_type is None

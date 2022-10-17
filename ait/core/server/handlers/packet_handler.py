@@ -20,18 +20,18 @@ class PacketHandler(Handler):
             output_type:  (optional) Specifies expected output type, used to
                                      validate handler workflow. Defaults to None
             **kwargs:
-                packet_type:   (required) Type of packet (e.g. '1553_HS_Packet', 'Ethernet_HS_Packet')
+                packet:   (required) Type of packet (e.g. '1553_HS_Packet', 'Ethernet_HS_Packet')
                                Present in default tlm dict.
         Raises:
             ValueError:    If packet type is not present in kwargs.
                            If packet is specified but not present in default tlm dict.
      """
         super(PacketHandler, self).__init__(input_type, output_type)
-        self.packet_type = kwargs.get("packet_type", None)
+        self.packet_type = kwargs.get("packet", None)
         self.tlm_dict = tlm.getDefaultDict()
 
         if not self.packet_type:
-            msg = f'PacketHandler: No packet type provided in handler config as key "packet_type"'
+            msg = f'PacketHandler: No packet type provided in handler config as key {self.packet_type}'
             raise ValueError(msg)
 
         if self.packet_type not in self.tlm_dict:
