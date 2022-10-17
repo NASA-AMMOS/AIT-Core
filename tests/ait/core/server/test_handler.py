@@ -122,6 +122,10 @@ class TestHandlerClassWith1553HSPacket(unittest.TestCase):
         with pytest.raises(ValueError):
             PacketHandler(packet="")
 
+    def test_handler_class_with_bad_packet_type(self):
+        with pytest.raises(ValueError):
+            PacketHandler(packet="Ethernet_Packet")
+
 
 class TestHandlerClassWithEthernetHSPacket(unittest.TestCase):
     tlm_dict = tlm.getDefaultDict()
