@@ -27,19 +27,19 @@ class PacketHandler(Handler):
                            If packet is specified but not present in default tlm dict.
      """
         super(PacketHandler, self).__init__(input_type, output_type)
-        self.packet_type = kwargs.get("packet", None)
+        self.packet_name = kwargs.get("packet", None)
         self.tlm_dict = tlm.getDefaultDict()
 
-        if not self.packet_type:
-            msg = f'PacketHandler: No packet type provided in handler config as key {self.packet_type}'
+        if not self.packet_name:
+            msg = f'PacketHandler: No packet type provided in handler config as key {self.packet_name}'
             raise ValueError(msg)
 
-        if self.packet_type not in self.tlm_dict:
-            msg = f"PacketHandler: Packet name '{self.packet_type}' not present in telemetry dictionary."
+        if self.packet_name not in self.tlm_dict:
+            msg = f"PacketHandler: Packet name '{self.packet_name}' not present in telemetry dictionary."
             msg += f" Available packet types are {self.tlm_dict.keys()}"
             raise ValueError(msg)
 
-        self._pkt_defn = self.tlm_dict[self.packet_type]
+        self._pkt_defn = self.tlm_dict[self.packet_name]
 
     def handle(self, input_data):
         """
