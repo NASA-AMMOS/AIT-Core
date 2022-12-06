@@ -23,6 +23,7 @@ import requests
 import zmq.green as zmq
 
 import collections
+import collections.abc
 import inspect
 import json
 import os
@@ -621,7 +622,7 @@ class Instrument(object):
         if packets is None:
             packets = list(tlmdict.keys())
         else:
-            if not isinstance(packets, collections.Iterable):
+            if not isinstance(packets, collections.abc.Iterable):
                 packets = [packets]
 
             cln_pkts = []
