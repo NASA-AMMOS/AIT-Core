@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -22,40 +22,40 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python           = '~3.10'
+python           = '>= 3.7 < 3.11'
 bottle           = '0.12.23'
 jsonschema       = '3.0.2'
 pyyaml           = '^5.1.2'
 requests         = '>= 2.22.0'
 greenlet         = '1.1.3'
-gevent           = '21.12.0'
+gevent           = '*'
 gevent-websocket = '0.10.1'
 pyzmq            = '24.0.0'
 gipc             = "^1.1.0"
 setproctitle = "^1.2.3"
 
 [tool.poetry.dev-dependencies]
-black                    = '*'
-flake8                   = '*'
-pyproject-flake8         = '^0.0.1-alpha.2'
-flake8-bugbear           = '*'
-pep8-naming              = '*'
-mypy                     = '*'
-types-PyYAML             = '*'
-types-requests           = '*'
-types-setuptools         = '*'
-pydocstyle               = '*'
-coverage                 = '*'
-pytest                   = '*'
-pytest-cov               = '*'
-pytest-watch             = '*'
-pytest-xdist             = '*'
-pre-commit               = '*'
-sphinx                   = '*'
-sphinx-rtd-theme         = '*'
-sphinxcontrib-httpdomain = '*'
-tox                      = '>= 3.8'
-twine                    = '^3.4.2'
+black                     = '*'
+flake8                    = '*'
+pyproject-flake8          = '^0.0.1-alpha.2'
+flake8-bugbear            = '*'
+pep8-naming               = '*'
+mypy                      = '*'
+types-PyYAML              = '*'
+types-requests            = '*'
+types-setuptools          = '*'
+pydocstyle                = '*'
+coverage                  = '*'
+pytest                    = '*'
+pytest-cov                = '*'
+pytest-watch              = '*'
+pytest-xdist              = '*'
+pre-commit                = '*'
+sphinx                    = '>= 4.2'
+sphinx-rtd-theme          = '*'
+sphinxcontrib-httpdomain  = '*'
+tox                       = '>= 3.8'
+twine                     = '^3.4.2'
 
 [tool.poetry.scripts]
 ait-bsc                = 'ait.core.bin.ait_bsc:main'

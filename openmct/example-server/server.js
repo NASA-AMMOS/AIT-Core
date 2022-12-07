@@ -21,4 +21,3 @@ var port = process.env.PORT || 8080
 app.listen(port, function () {
     console.log('Open MCT hosted at http://localhost:' + port);
 });
-

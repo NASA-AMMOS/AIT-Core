@@ -56,15 +56,15 @@ class TestPacketRouting(unittest.TestCase):
 
     def test_routing_table(self):
         test_routing_table_dict = {
-            1: ['test_default_topic', 'telem_topic_1'], 
-            2: ['test_default_topic', 'telem_topic_2'], 
-            3: ['test_default_topic'], 
-            4: ['test_default_topic', 'telem_topic_2'], 
-            5: ['test_default_topic', 'telem_topic_2'], 
-            6: ['test_default_topic'], 
-            7: ['test_default_topic', 'telem_topic_1', 'telem_topic_2'], 
-            8: ['test_default_topic', 'telem_topic_2'], 
-            9: ['test_default_topic', 'telem_topic_2'], 
+            1: ['test_default_topic', 'telem_topic_1'],
+            2: ['test_default_topic', 'telem_topic_2'],
+            3: ['test_default_topic'],
+            4: ['test_default_topic', 'telem_topic_2'],
+            5: ['test_default_topic', 'telem_topic_2'],
+            6: ['test_default_topic'],
+            7: ['test_default_topic', 'telem_topic_1', 'telem_topic_2'],
+            8: ['test_default_topic', 'telem_topic_2'],
+            9: ['test_default_topic', 'telem_topic_2'],
             10: ['test_default_topic']
             }
         self.assertEqual(self.router_plugin_instance.routing_table_object, test_routing_table_dict)
