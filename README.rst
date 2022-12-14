@@ -38,6 +38,7 @@ Dev Installation
 As always, we encourage you to install AIT into a virtual environment of your choosing when you set up your development environment. AIT uses `poetry` for package management. Before setting up your development environment you will need the following installed and ready to use:
 
 - A virtual environment "manager" of your choosing with a configured and activated virtual environment. Since AIT uses `poetry` you can consider leveraging its `environment management <https://python-poetry.org/docs/managing-environments/>`__ functionality as well.
+    - Using `poetry shell` is also very convenient for development testing and simplifying environment management. You should make sure to install the package into the shell to get access to the development dependencies as well. It's recommended that you use `poetry shell` when running the tox builds because other virtual environment managers will often prevent tox from accessing `pyenv`-installed Python versions.
 - `pyenv <https://github.com/pyenv/pyenv>`__ so you can easily install different Python versions
 - `poetry <https://python-poetry.org/docs/#installation>`__ installed either to your specific virtual environment or system-wide, whichever you prefer.
 
@@ -49,24 +50,36 @@ As with a normal installation you will need to point `AIT_CONFIG` at the primary
 
     export AIT_CONFIG=/path/to/ait-core/config/config.yaml
 
-Finally, you should configure `pre-commit` by running the following. This will install our pre-commit and pre-push hooks::
+You should configure `pre-commit` by running the following. This will install our pre-commit and pre-push hooks::
 
     pre-commit install && pre-commit install -t pre-push
 
+Finally, you should install the different Python versions that the project supports so they're accessible to `tox`. Using `pyenv` is the easiest way to accomplish this::
+
+    pyenv install
+
 Dev Tools
 ---------
-Tests
-~~~~~
 
-Use `pytest` to run the test suite::
-
-    pytest
-
-Use `tox` to run a thorough build of the toolkit that checks test execution across different Python versions (in the future), verifies the docs build, runs the linting pipeline, and checks that the repo packages cleanly::
+Tox
+~~~
+Use `tox` to run a thorough build of the toolkit that checks test execution across different Python versions, verifies the docs build, runs the linting pipeline, and checks that the repo packages cleanly. Make sure you run `tox` in Poetry's `shell` without another virtual environment active to avoid problems with `tox` finding different python versions for the tests. You can run all of the development tools with::
 
     tox
 
 You can see the available `tox` test environments by passing `-l` and execute a specific one by passing its name to `-e`. Run `tox -h` for more info.
+
+Tests
+~~~~~
+
+Use `pytest` to manually run the test suite::
+
+    pytest
+
+Or via `tox` for a specific python version::
+
+    tox -e py310
+
 
 Code Checks
 ~~~~~~~~~~~
@@ -76,6 +89,10 @@ We run ``black``, ``flake8``, ``mypy``, and a few other minor checkers on the co
 
 Individual calls to the tools are configured in ``.pre-commit-config.yaml``. If you'd like to run a specific tool on its own you can see how we call them there.
 
+You can run all the linting tools with tox as well::
+
+    tox -e lint
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -84,7 +101,9 @@ AIT uses Sphinx to build its documentation. You can build the documentation with
 
     poetry run build_sphinx
 
-To view the documentation, open ``doc/build/html/index.html`` in a web browser.
+To view the documentation, open ``doc/build/html/index.html`` in a web browser. If you just want to check that the docs build is working you can use tox::
+
+    tox -e docs
 
 If you need to update the auto-generated documentation you can run the following command to rebuild all of the package documentation::
 

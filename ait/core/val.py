@@ -20,7 +20,6 @@ files based on specified schema.
 """
 
 import json
-from os import path
 import yaml
 from yaml.scanner import ScannerError
 import re
@@ -382,48 +381,50 @@ class Validator(object):
         self.yml_files_to_validate = self.get_included_files(ymlfile)
 
     def get_included_files(self, yml_file):
-            """
-            Make a list of  yaml files to validate against the schema.  The first member
-            of the list will include the full path to the yaml file.
-            The next element will the module yml file (e.g. cmd.yml),
-            followed by the names of any included files.
-            The assumption is made that all the included yml files are
-            found in the same directory as the module yml file.
+        """
+        Make a list of  yaml files to validate against the schema.  The first member
+        of the list will include the full path to the yaml file.
+        The next element will the module yml file (e.g. cmd.yml),
+        followed by the names of any included files.
+        The assumption is made that all the included yml files are
+        found in the same directory as the module yml file.
 
-            Parameters
-            ----------
-            yml_file : str
-                The module yaml file to validate (cmd.yml or tlm.yml)
+        Parameters
+        ----------
+        yml_file : str
+            The module yaml file to validate (cmd.yml or tlm.yml)
 
-            Returns
-            -------
-            self.validate_list: list
-                A set of all files that are to be validated.
+        Returns
+        -------
+        self.validate_list: list
+            A set of all files that are to be validated.
 
-            """
-            # The first yaml file to validate will include a full path
-            # Any included yaml files will have the path added.
-            if '/' in yml_file:
-                self.validate_list.append(yml_file)
-            else:
-                yml_file = f'{self.yml_dir}/{yml_file}'
+        """
+        # The first yaml file to validate will include a full path
+        # Any included yaml files will have the path added.
+        if '/' in yml_file:
+            self.validate_list.append(yml_file)
+        else:
+            yml_file = f'{self.yml_dir}/{yml_file}'
 
-            try:
-                with open(yml_file, "r") as yml_fh:
-                    for line in yml_fh:
-                        if not line.strip().startswith("#") and "!include" in line:
-                            included_file_name = line.split('!include ')[-1].strip()
-                            self.validate_list.append(f'{self.yml_dir}/{included_file_name}')
-                            # Look for includes within included file
-                            self.get_included_files(included_file_name)
-                    # Check and flag multiple includes
-                    if len(self.validate_list) != len(set(self.validate_list)):
-                        log.info(f'WARNING: Validate: Duplicate config files in the '
-                                 f'include tree. {self.validate_list}')
-                    return set(self.validate_list)
-            except RecursionError as e:
-                log.info(f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
-                      f'back and forth on one another through the "!include" statements.')
+        try:
+            with open(yml_file, "r") as yml_fh:
+                for line in yml_fh:
+                    if not line.strip().startswith("#") and "!include" in line:
+                        included_file_name = line.split('!include ')[-1].strip()
+                        self.validate_list.append(f'{self.yml_dir}/{included_file_name}')
+                        # Look for includes within included file
+                        self.get_included_files(included_file_name)
+                # Check and flag multiple includes
+                if len(self.validate_list) != len(set(self.validate_list)):
+                    log.info(f'WARNING: Validate: Duplicate config files in the '
+                             f'include tree. {self.validate_list}')
+                return set(self.validate_list)
+        except RecursionError as e:
+            log.info(
+                f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                'back and forth on one another through the "!include" statements.'
+            )
 
     def validate_schema(self, messages=None):
         """
