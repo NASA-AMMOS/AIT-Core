@@ -819,7 +819,7 @@ class CustomTypes:
     custom type should inherit from CustomTypes, implement `get()` so their
     types can be exposed, and configure AIT's extensions to use their class.
 
-    Custom classes must inherit from PrimitiveType. For examples of "custom" 
+    Custom classes must inherit from PrimitiveType. For examples of "custom"
     types look at the implementation of the `ComplexTypeMap` classes. All of
     these build on top of PrimitiveType in some way.
     '''
@@ -847,7 +847,11 @@ def get_cdt(typename):
 
 
 def get(typename):
-    """Returns the PrimitiveType or ComplexType for typename or None."""
+    """Returns the type for typename or None.
+
+    `get()` checks primitive types, then complex types, and finally custom
+    user defined types (via CustomTypes extension) for the typename.
+    """
     dt = get_pdt(typename) or get_cdt(typename) or USER_DEFN_TYPES.get(typename)
 
     if dt is None:
@@ -862,4 +866,4 @@ util.__init_extensions__(__name__, globals())
 
 # Note, this must be defined after the `util.__init_extensions__` call in order
 # for the magical createXXX function to exist.
-USER_DEFN_TYPES = createCustomTypes()
+USER_DEFN_TYPES = createCustomTypes()  # type: ignore[name-defined] # noqa: F821
