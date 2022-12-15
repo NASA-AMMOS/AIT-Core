@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    ait.core.bin.ait_bsc
    ait.core.bin.ait_bsc_create_handler
