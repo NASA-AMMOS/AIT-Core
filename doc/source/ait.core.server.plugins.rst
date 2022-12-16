@@ -10,6 +10,7 @@ Submodules
    ait.core.server.plugins.limit_monitor
    ait.core.server.plugins.openmct
    ait.core.server.plugins.apid_routing
+   ait.core.server.plugins.apid_sequence_count
 
 Module contents
 ---------------
