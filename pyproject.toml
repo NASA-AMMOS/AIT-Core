@@ -54,7 +54,7 @@ pre-commit                = '*'
 sphinx                    = '>= 4.2'
 sphinx-rtd-theme          = '*'
 sphinxcontrib-httpdomain  = '*'
-tox                       = '>= 3.8'
+tox                       = '>= 3.8 < 4.0'
 twine                     = '^3.4.2'
 
 [tool.poetry.scripts]
