@@ -1,5 +1,5 @@
-ait.core.server.plugins.apid_routing module
-======================================
+ait.core.server.plugins.apid\_routing module
+============================================
 
 .. automodule:: ait.core.server.plugins.apid_routing
    :members:

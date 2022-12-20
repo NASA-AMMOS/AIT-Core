@@ -197,7 +197,7 @@ enum (optional):
 The fixed constructor allows you to define constant values in your command.
 
 type:
-    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at ``ait.core.dtype.PrimitiveTypes``.
+    A **string** specifying the data type of the argument. You can see all the valid primitive types that will be accepted here by looking at :doc:`AIT Data Types <data_types>`.
 
 bytes:
     Specifies which byte(s) in the command filled by this constant. This can be specified as a single integer or as a list of integers (in the case of a range of bytes). Byte values must be specified in correct numerical order when a command has multiple Arguments or Fixed attributes.

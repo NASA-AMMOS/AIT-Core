@@ -18,6 +18,7 @@ Visit the :doc:`Installation and Environment Configuration <installation>` guide
    server_architecture
    Command Dictionary Introduction <command_intro>
    Telemetry Dictionary Introduction <telemetry_intro>
+   Data Types <data_types>
    Ground Script API Introduction <api_intro>
    EVR Introduction <evr_intro>
    limits_intro

@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    ait.core.server.handlers.ccsds_packet_handler
    ait.core.server.handlers.packet_handler

@@ -12,6 +12,9 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 
+from typing import Optional
+from ait.core import util
+
 """AIT Primitive Data Types (PDT)
 
 The ait.core.dtype module provides definitions and functions for
@@ -123,7 +126,7 @@ PrimitiveTypeFormats = {
 }
 
 
-class PrimitiveType(object):
+class PrimitiveType:
     """PrimitiveType
 
     A PrimitiveType contains a number of fields that provide information
@@ -807,6 +810,29 @@ ComplexTypeMap = {
 }
 
 
+class CustomTypes:
+    '''Pseudo-ABC for users to inject custom types into AIT
+
+    CustomTypes is the vector through which users can inject custom types that
+    they create into the toolkit. `dtype.get` is used throughout AIT to fetch
+    the appropriate class for a given data type. Users that want to create a
+    custom type should inherit from CustomTypes, implement `get()` so their
+    types can be exposed, and configure AIT's extensions to use their class.
+
+    Custom classes must inherit from PrimitiveType. For examples of "custom"
+    types look at the implementation of the `ComplexTypeMap` classes. All of
+    these build on top of PrimitiveType in some way.
+    '''
+
+    def get(self, typename: str) -> Optional[PrimitiveType]:
+        '''Retrieve an instance of a type's class given its name
+
+        Maps a class name to an instance of its respective class. Should
+        return None if no match is found.
+        '''
+        return None
+
+
 def get_pdt(typename):
     """Returns the PrimitiveType for typename or None."""
     if typename not in PrimitiveTypeMap and typename.startswith("S"):
@@ -821,8 +847,12 @@ def get_cdt(typename):
 
 
 def get(typename):
-    """Returns the PrimitiveType or ComplexType for typename or None."""
-    dt = get_pdt(typename) or get_cdt(typename)
+    """Returns the type for typename or None.
+
+    `get()` checks primitive types, then complex types, and finally custom
+    user defined types (via CustomTypes extension) for the typename.
+    """
+    dt = get_pdt(typename) or get_cdt(typename) or USER_DEFN_TYPES.get(typename)
 
     if dt is None:
         pdt, nelems = ArrayType.parse(typename)
@@ -830,3 +860,10 @@ def get(typename):
             dt = ArrayType(pdt, nelems)
 
     return dt
+
+
+util.__init_extensions__(__name__, globals())
+
+# Note, this must be defined after the `util.__init_extensions__` call in order
+# for the magical createXXX function to exist.
+USER_DEFN_TYPES = createCustomTypes()  # type: ignore[name-defined] # noqa: F821

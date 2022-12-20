@@ -107,7 +107,7 @@ To view the documentation, open ``doc/build/html/index.html`` in a web browser. 
 
 If you need to update the auto-generated documentation you can run the following command to rebuild all of the package documentation::
 
-    sphinx-apidoc --separate --force --no-toc -o doc/source ait ait/core/server/test ait/core/test
+    sphinx-apidoc --separate --force --no-toc -o doc/source ait --implicit-namespaces
 
 Please make sure to update the docs if changes in a ticket result in the documentation being out of date.
 
