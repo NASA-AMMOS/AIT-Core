@@ -1,0 +1,42 @@
+name: Full Test and Lint
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ait_build:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Poetry Install
+        run: |
+          pipx install poetry
+          poetry --version
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          # Caching is currently causing the tox build to fail for 3.10.
+          # Specifically, the `lint` run claims that it's unable to find
+          # pre-commit. Oddly enough, the install for 3.10 shows that
+          # pre-commit is installed and the tox run claims that it doesn't
+          # need to install anything.
+          #cache: 'poetry'
+      - name: Install Package
+        run: poetry install
+      - name: Set AIT Config
+        run: echo "AIT_CONFIG=./config/config.yaml" >> $GITHUB_ENV
+      - name: "Install dependencies"
+        run: |
+          set -xe
+          python -VV
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade tox-gh-actions
+      - name: Run Tox
+        run: tox
