@@ -56,7 +56,7 @@ You should configure `pre-commit` by running the following. This will install ou
 
 Finally, you should install the different Python versions that the project supports so they're accessible to `tox`. Using `pyenv` is the easiest way to accomplish this::
 
-    pyenv install
+    cat .python-version | xargs -I{} pyenv install --skip-existing {}
 
 Dev Tools
 ---------
