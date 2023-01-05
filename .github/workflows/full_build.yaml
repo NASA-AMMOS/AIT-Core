@@ -37,6 +37,6 @@ jobs:
           set -xe
           python -VV
           python -m pip install --upgrade pip
-          python -m pip install --upgrade tox-gh-actions
+          python -m pip install --upgrade "tox-gh-actions<3"
       - name: Run Tox
         run: tox
