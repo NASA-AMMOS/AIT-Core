@@ -1,3 +1,7 @@
+.. image:: https://readthedocs.org/projects/ait-core/badge/?version=latest
+    :target: https://ait-core.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 The AMMOS Instrument Toolkit (Formerly the Bespoke Links to Instruments
 for Surface and Space (BLISS)) is a Python-based software suite
 developed to handle Ground Data System (GDS), Electronic Ground Support
