@@ -1,3 +1,8 @@
+
+.. image:: https://github.com/NASA-AMMOS/AIT-Core/actions/workflows/full_build.yaml/badge.svg?branch=master
+   :target: https://github.com/NASA-AMMOS/AIT-Core/actions
+   :alt: Build and Lint Status
+
 .. image:: https://readthedocs.org/projects/ait-core/badge/?version=latest
     :target: https://ait-core.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
