@@ -23,6 +23,7 @@ import sys
 import socket
 import datetime
 import time
+from typing import Callable, Optional
 
 import logging
 import logging.handlers
@@ -316,10 +317,10 @@ def notice(*args, **kwargs):
 # type `Any` addresses mypy issues where log calls are marked as
 # "None" being not callable.
 logger = None
-crit = None
-debug = None
-error = None
-info = None
-warn = None
+crit: Optional[Callable[[str], str]] = None
+debug: Optional[Callable[[str], str]] = None
+error: Optional[Callable[[str], str]] = None
+info: Optional[Callable[[str], str]] = None
+warn: Optional[Callable[[str], str]] = None
 
 init()
