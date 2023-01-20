@@ -164,14 +164,3 @@ Changes are required to be reviewed by at least one member of the AIT PMC/Commit
 
 Resolve #248
 --------------
-
-|travis|
-|docs|
-
-.. |travis| image:: https://travis-ci.com/NASA-AMMOS/AIT-Core.svg?branch=master
-    :target: https://travis-ci.com/NASA-AMMOS/AIT-Core
-
-.. |docs| image:: https://readthedocs.org/projects/ait-core/badge/?version=master
-    :alt: Documentation Status
-    :scale: 100%
-    :target: https://ait-core.readthedocs.io/en/latest/?badge=master
