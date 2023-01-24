@@ -1,1 +1,2 @@
 include ait/core/data/*.json
+include ait/core/py.typed
