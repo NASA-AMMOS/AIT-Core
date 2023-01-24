@@ -23,6 +23,7 @@ import sys
 import socket
 import datetime
 import time
+from typing import Callable, Optional
 
 import logging
 import logging.handlers
@@ -37,6 +38,13 @@ PROGRAM = logging.INFO + 3
 logging.addLevelName(NOTICE, "NOTICE")
 logging.addLevelName(COMMAND, "COMMAND")
 logging.addLevelName(PROGRAM, "PROGRAM")
+
+logger = None
+crit: Optional[Callable[[str], str]] = None
+debug: Optional[Callable[[str], str]] = None
+error: Optional[Callable[[str], str]] = None
+info: Optional[Callable[[str], str]] = None
+warn: Optional[Callable[[str], str]] = None
 
 
 class LogFormatter(logging.Formatter):
@@ -311,15 +319,5 @@ def program(*args, **kwargs):
 def notice(*args, **kwargs):
     logger.log(NOTICE, *args, **kwargs)
 
-
-# These are "guaranteed" at runtime to be not-None. Marking this as
-# type `Any` addresses mypy issues where log calls are marked as
-# "None" being not callable.
-logger = None
-crit = None
-debug = None
-error = None
-info = None
-warn = None
 
 init()
