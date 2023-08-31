@@ -167,7 +167,8 @@ Here is an example of how the **server** portion of **config.yaml** should look:
 
             - stream:
                 name: telem_testbed_stream
-                input: telem_port_in_stream
+                input:
+                    - telem_port_in_stream
                 handlers:
                     - name: ait.server.handlers.PacketHandler
                       packet: 1553_HS_Packet
