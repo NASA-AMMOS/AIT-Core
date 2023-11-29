@@ -346,7 +346,7 @@ class UTCLeapSeconds(object):
         """Updates the systems leap second information
 
         Pulls the latest leap second information from
-        https://www.ietf.org/timezones/data/leap-seconds.list
+        https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list
         and updates the leapsecond config file.
 
         Raises:
@@ -361,7 +361,7 @@ class UTCLeapSeconds(object):
             os.path.join(ait.config._directory, _DEFAULT_FILE_NAME),
         )
 
-        url = "https://www.ietf.org/timezones/data/leap-seconds.list"
+        url = "https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list"
         r = requests.get(url)
 
         if r.status_code != 200:
@@ -374,13 +374,13 @@ class UTCLeapSeconds(object):
 
         data = {"valid": None, "leapseconds": []}
         data["valid"] = datetime.datetime(1900, 1, 1) + datetime.timedelta(
-            seconds=int(lines[0].split("\t")[1])
+            seconds=int(lines[0].split()[1])
         )
 
         leap = 1
         for line in lines[1:-1]:
             t = datetime.datetime(1900, 1, 1) + datetime.timedelta(
-                seconds=int(line.split("\t")[0])
+                seconds=int(line.split()[0])
             )
             if t < GPS_Epoch:
                 continue
