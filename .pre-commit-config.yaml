@@ -45,7 +45,6 @@ repos:
         name: AIT TLM YAML check
         entry: 'ait-yaml-validate --tlm'
         language: system
-        stages: [push]
         pass_filenames: false
 
 -   repo: local
@@ -54,7 +53,6 @@ repos:
         name: AIT CMD YAML check
         entry: 'ait-yaml-validate --cmd'
         language: system
-        stages: [push]
         pass_filenames: false
 
 -   repo: local
@@ -63,7 +61,6 @@ repos:
         name: AIT EVR YAML check
         entry: 'ait-yaml-validate --evr'
         language: system
-        stages: [push]
         pass_filenames: false
 
 -   repo: local
@@ -72,7 +69,6 @@ repos:
         name: AIT LIMITS YAML check
         entry: 'ait-yaml-validate --limits'
         language: system
-        stages: [push]
         pass_filenames: false
 
 -   repo: local
