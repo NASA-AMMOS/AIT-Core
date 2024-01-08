@@ -163,9 +163,9 @@ class Seq(object):
         stream.close()
 
         if magic == self.magic:
-            self.readBinary(filename)
+            self.read_binary(filename)
         else:
-            self.readText(filename)
+            self.read_text(filename)
 
     def read_binary(self, filename=None):
         """Reads a binary command sequence from the given filename (defaults to
