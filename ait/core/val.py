@@ -456,19 +456,27 @@ class Validator(object):
 
         """
         content_val_list = []
-        schema_val = self.schema_val(messages)
+        try:
+            schema_val = self.schema_val(messages)
+        except yaml.YAMLError as e:
+            log.error(
+                "Unable to validate file due to YAML error. "
+                f"Verify that the YAML file is well formed.\n\nError: {e}"
+            )
+            return False
+        except jsonschema.SchemaError as e:
+            log.error(
+                "Unable to validate file due to error with schema file. "
+                f"Verify availability and validity of the schema file.\n\nError: {e}"
+            )
+            return False
 
         # Loop through the list of all the tested yaml files
         for yaml_file in self.yml_files_to_validate:
             log.info(f"Validating: {yaml_file}")
             content_val_list.append(self.content_val(yaml_file, messages=messages))
 
-        if all(content_val_list):  # Test that all tested files returned True
-            content_val = True
-        else:
-            content_val = False
-
-        return schema_val and content_val
+        return schema_val and all(content_val_list)
 
     def schema_val(self, messages=None):
         """Perform validation with processed YAML and Schema"""
@@ -520,8 +528,19 @@ class Validator(object):
         return valid
 
     def content_val(self, yaml_file, ymldata=None, messages=None):
-        """Simple base content_val method - needed for unit tests"""
+        """Simple base content_val method - needed for unit tests
+
+        The base content_val method doesn't check any useful elements of the
+        loaded file. Instead it just returns whether the file was successfully
+        loaded by the YAMLProcessor.
+
+        Child classes should overwrite this to implement checks for specific
+        content requirements that cannot be easily encoded in a schema file.
+        For examples, see :meth:`CmdValidator.content_val` or
+        :meth:`TlmValidator.content_val`
+        """
         self._ymlproc = YAMLProcessor(yaml_file, False)
+        return self._ymlproc.loaded
 
 
 class CmdValidator(Validator):
