@@ -212,7 +212,7 @@ def main():
 
         if options.timedelta:
             ait.config._datetime = time.strptime(
-                dmc.getUTCDatetimeDOY(days=options.timedelta), dmc.DOY_Format
+                dmc.get_utc_datetime_doy(days=options.timedelta), dmc.DOY_Format
             )
 
         pathvars["year"] = ait.config._datetime.tm_year
