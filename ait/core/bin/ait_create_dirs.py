@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage:
     ait-create-dirs [options]
@@ -114,15 +112,15 @@ Description:
 
 
 """
-
-import os
-import errno
-import traceback
 import argparse
+import errno
+import os
 import time
+import traceback
 
 import ait
-from ait.core import dmc, log
+from ait.core import dmc
+from ait.core import log
 
 
 def create_dir_struct(paths, verbose=True):

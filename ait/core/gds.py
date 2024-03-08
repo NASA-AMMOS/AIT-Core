@@ -11,16 +11,15 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Ground Data System
 
 The ait.core.gds module provides utility functions specific to GDS
 command-line tools.
 """
-
-from typing import Optional, ByteString
 import zlib
+from typing import ByteString
+from typing import Optional
 
 from ait.core import log
 

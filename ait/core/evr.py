@@ -11,20 +11,22 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Event Record (EVR) Reader
 
 The ait.core.evr module is used to read the EVRs from a YAML file.
 """
-
 import os
-import pkg_resources
 import re
+
+import pkg_resources
 import yaml
 
 import ait.core
-from ait.core import dtype, json, log, util
+from ait.core import dtype
+from ait.core import json
+from ait.core import log
+from ait.core import util
 
 
 class EVRDict(dict):

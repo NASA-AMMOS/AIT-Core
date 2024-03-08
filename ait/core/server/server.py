@@ -1,17 +1,23 @@
-import gevent
-import gevent.monkey
-
-from importlib import import_module
 import sys
 import traceback
+from importlib import import_module
+
+import gevent.monkey
 
 import ait.core.server
-from .stream import PortInputStream, ZMQStream, PortOutputStream
-from .config import ZmqConfig
 from .broker import Broker
-from .plugin import PluginType, Plugin, PluginConfig
+from .config import ZmqConfig
+from .plugin import Plugin
+from .plugin import PluginConfig
+from .plugin import PluginType
 from .process import PluginsProcess
-from ait.core import log, cfg
+from .stream import input_stream_factory
+from .stream import output_stream_factory
+from .stream import TCPInputClientStream
+from .stream import TCPInputServerStream
+from .stream import UDPInputServerStream
+from ait.core import cfg
+from ait.core import log
 
 gevent.monkey.patch_all()
 
@@ -113,7 +119,6 @@ class Server(object):
                 common_err_msg.format(stream_type) + specific_err_msg[stream_type]
             )
             streams = ait.config.get(f"server.{stream_type}-streams")
-
             if streams is None:
                 log.warn(err_msgs[stream_type])
             else:
@@ -121,7 +126,11 @@ class Server(object):
                     try:
                         if stream_type == "inbound":
                             strm = self._create_inbound_stream(s["stream"])
-                            if type(strm) == PortInputStream:
+                            if (
+                                type(strm) == UDPInputServerStream
+                                or type(strm) == TCPInputClientStream
+                                or type(strm) == TCPInputServerStream
+                            ):
                                 self.servers.append(strm)
                             else:
                                 self.inbound_streams.append(strm)
@@ -131,8 +140,10 @@ class Server(object):
                         log.info(f"Added {stream_type} stream {strm}")
                     except Exception:
                         exc_type, value, tb = sys.exc_info()
-                        log.error(f"{exc_type} creating {stream_type} stream "
-                                  f"{index}: {value}")
+                        log.error(
+                            f"{exc_type} creating {stream_type} stream "
+                            f"{index}: {value}"
+                        )
         if not self.inbound_streams and not self.servers:
             log.warn(err_msgs["inbound"])
 
@@ -212,7 +223,7 @@ class Server(object):
     def _get_stream_name(self, config):
         name = config.get("name", None)
         if name is None:
-            raise (cfg.AitConfigMissing("stream name"))
+            raise (cfg.AitConfigMissingError("stream name"))
         if name in [
             x.name
             for x in (
@@ -222,8 +233,10 @@ class Server(object):
                 + self.plugins
             )
         ]:
-            raise ValueError(f"Duplicate stream name '{name}' encountered. "
-                             "Stream names must be unique.")
+            raise ValueError(
+                f"Duplicate stream name '{name}' encountered. "
+                "Stream names must be unique."
+            )
 
         return name
 
@@ -234,8 +247,9 @@ class Server(object):
                 for handler in config["handlers"]:
                     hndlr = self._create_handler(handler)
                     stream_handlers.append(hndlr)
-                    log.info(f"Created handler {type(hndlr).__name__} for "
-                             f"stream {name}")
+                    log.info(
+                        f"Created handler {type(hndlr).__name__} for " f"stream {name}"
+                    )
         else:
             log.warn(f"No handlers specified for stream {name}")
 
@@ -254,30 +268,21 @@ class Server(object):
         """
         if config is None:
             raise ValueError("No stream config to create stream from.")
-
         name = self._get_stream_name(config)
         stream_handlers = self._get_stream_handlers(config, name)
         stream_input = config.get("input", None)
         if stream_input is None:
-            raise (cfg.AitConfigMissing(f"inbound stream {name}'s input"))
+            raise (cfg.AitConfigMissingError(f"inbound stream {name}'s input"))
 
         # Create ZMQ args re-using the Broker's context
         zmq_args_dict = self._create_zmq_args(True)
 
-        if type(stream_input[0]) is int:
-            return PortInputStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
-        else:
-            return ZMQStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
+        return input_stream_factory(
+            name,
+            stream_input,
+            stream_handlers,
+            zmq_args=zmq_args_dict,
+        )
 
     def _create_outbound_stream(self, config=None):
         """
@@ -307,24 +312,9 @@ class Server(object):
         # Create ZMQ args re-using the Broker's context
         zmq_args_dict = self._create_zmq_args(True)
 
-        if type(stream_output) is int:
-            ostream = PortOutputStream(
-                name,
-                stream_input,
-                stream_output,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
-        else:
-            if stream_output is not None:
-                log.warn(f"Output of stream {name} is not an integer port. "
-                         "Stream outputs can only be ports.")
-            ostream = ZMQStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
+        ostream = output_stream_factory(
+            name, stream_input, stream_output, stream_handlers, zmq_args=zmq_args_dict
+        )
 
         # Set the cmd subscriber field for the stream
         ostream.cmd_subscriber = stream_cmd_sub is True
@@ -378,46 +368,52 @@ class Server(object):
                 # that indicates that plugin will run in a separate process
                 # with that id.  Multiple plugins can specify the same value
                 # which allows them to all run within a process together
-                process_namespace = ait_cfg_plugin.pop('process_id', None)
-                plugin_type = PluginType.STANDARD if process_namespace is \
-                    None else PluginType.PROCESS
+                process_namespace = ait_cfg_plugin.pop("process_id", None)
+                plugin_type = (
+                    PluginType.STANDARD
+                    if process_namespace is None
+                    else PluginType.PROCESS
+                )
 
                 if plugin_type == PluginType.PROCESS:
-
                     # Plugin will run in a separate process (possibly with other
                     # plugins)
 
                     try:
                         # Check if the namespace has already been created
                         plugins_process = self.plugin_process_dict.get(
-                                          process_namespace, None)
+                            process_namespace, None
+                        )
 
                         # If not, then create it and add to managed dict
                         if plugins_process is None:
                             plugins_process = PluginsProcess(process_namespace)
-                            self.plugin_process_dict[process_namespace] = \
+                            self.plugin_process_dict[process_namespace] = (
                                 plugins_process
+                            )
 
                         # Convert ait config section to PluginConfig instance
-                        plugin_info = self._create_plugin_info(ait_cfg_plugin,
-                                                               False)
+                        plugin_info = self._create_plugin_info(ait_cfg_plugin, False)
 
                         # If successful, then add it to the process
                         if plugin_info is not None:
                             plugins_process.add_plugin_info(plugin_info)
-                            log.info("Added config for deferred plugin "
-                                     f"{plugin_info.name} to plugin-process "
-                                     f"'{process_namespace}'")
+                            log.info(
+                                "Added config for deferred plugin "
+                                f"{plugin_info.name} to plugin-process "
+                                f"'{process_namespace}'"
+                            )
 
                     except Exception:
                         exc_type, exc_msg, tb = sys.exc_info()
-                        log.error(f"{exc_type} creating plugin config {index} "
-                                  f"for process-id '{process_namespace}': "
-                                  f"{exc_msg}")
+                        log.error(
+                            f"{exc_type} creating plugin config {index} "
+                            f"for process-id '{process_namespace}': "
+                            f"{exc_msg}"
+                        )
                         log.error(traceback.format_exc())
 
                 else:
-
                     # Plugin will run in current process's greenlet set
                     try:
                         plugin = self._create_plugin(ait_cfg_plugin)
@@ -427,12 +423,12 @@ class Server(object):
 
                     except Exception:
                         exc_type, value, tb = sys.exc_info()
-                        log.error(f"{exc_type} creating plugin {index}: "
-                                  f"{value}")
+                        log.error(f"{exc_type} creating plugin {index}: " f"{value}")
 
             if not self.plugins and not self.plugin_process_dict:
-                log.warn("No valid plugin configurations found. No plugins"
-                         " will be added.")
+                log.warn(
+                    "No valid plugin configurations found. No plugins" " will be added."
+                )
 
     def _create_zmq_args(self, reuse_broker_context):
         """
@@ -490,7 +486,6 @@ class Server(object):
         zmq_args = self._create_zmq_args(reuse_broker_context)
 
         # Create Plugin config (which checks for required args)
-        plugin_config = PluginConfig.build_from_ait_config(ait_plugin_config,
-                                                           zmq_args)
+        plugin_config = PluginConfig.build_from_ait_config(ait_plugin_config, zmq_args)
 
         return plugin_config

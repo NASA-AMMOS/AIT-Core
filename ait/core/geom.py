@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """AIT 2D/3D Geometry
 
 This module contains basic 2D and 3D geometry classes (Point, Line,

@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Configuration
 
@@ -19,17 +18,18 @@ The ait.core.cfg module provides classes and functions to manage
 (re)configurable aspects of AIT via a YAML configuration file.
 
 """
-
 import os
 import platform
+import re
 import sys
 import time
-import re
-import yaml
 from io import IOBase
 
+import yaml
+
 import ait
-from ait.core import log, util
+from ait.core import log
+from ait.core import util
 
 
 DEFAULT_PATH_VARS = {
@@ -204,13 +204,13 @@ class AitConfigError(Exception):
     pass
 
 
-class AitConfigMissing(Exception):
+class AitConfigMissingError(Exception):
     """Raised when a AIT configuration parameter is missing."""
 
     def __init__(self, param):
         values = param, ait.config._filename
         format = "The parameter %s is missing from config.yaml (%s)."
-        super(AitConfigMissing, self).__init__(format % values)
+        super(AitConfigMissingError, self).__init__(format % values)
         self.param = param
 
 
@@ -342,7 +342,7 @@ class AitConfig(object):
                 paths["mib"] = data["mib"]["path"]
 
         except KeyError as e:
-            raise AitConfigMissing(str(e))
+            raise AitConfigMissingError(str(e))
         except Exception as e:
             raise AitConfigError("Error reading data paths: %s" % e)
 

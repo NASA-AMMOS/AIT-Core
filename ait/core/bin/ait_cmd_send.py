@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 #
 #
 #    Sends the given command and its arguments to the ISS simulator via
@@ -23,7 +21,6 @@
 #            $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
 #
 #
-
 """
 usage: ait-cmd-send [options] command [arguments]
 
@@ -40,12 +37,13 @@ Examples:
 
   $ ait-cmd-send OCO3_CMD_START_SEQUENCE_NOW 1
 """
-
 import argparse
 from collections import OrderedDict
 
 import ait
-from ait.core import api, log, util
+from ait.core import api
+from ait.core import log
+from ait.core import util
 
 
 def main():

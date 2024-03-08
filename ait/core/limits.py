@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Limits
 
@@ -62,14 +61,15 @@ For example:
         - BAR
 
 """
-
 import os
-import pkg_resources
-import yaml
 from io import IOBase
 
+import pkg_resources
+import yaml
+
 import ait
-from ait.core import json, util
+from ait.core import json
+from ait.core import util
 
 
 class Thresholds(json.SlotSerializer, object):

@@ -22,7 +22,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python           = '>= 3.7 < 3.11'
+python           = '>= 3.8 < 3.11'
 bottle           = '0.12.23'
 jsonschema       = '3.0.2'
 pyyaml           = '5.3.1'  # Temporarily pinning this to 5.3.1 because pyyaml and Cython 3 don't get along

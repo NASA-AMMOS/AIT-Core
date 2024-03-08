@@ -11,9 +11,8 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-from email.mime.text import MIMEText
 import smtplib
+from email.mime.text import MIMEText
 
 import ait
 from ait.core import log

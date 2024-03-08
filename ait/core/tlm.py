@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Telemetry
 
@@ -19,17 +18,20 @@ The ait.core.tlm module provides telemetry fields and telemetry
 dictionaries.  Dictionaries contain packet, header, data, and field
 definitions.
 """
-
 import collections.abc
-import os
-import pkg_resources
-import struct
-import yaml
 import csv
+import os
+import struct
 from io import IOBase
 
+import pkg_resources
+import yaml
+
 import ait
-from ait.core import dtype, json, log, util
+from ait.core import dtype
+from ait.core import json
+from ait.core import log
+from ait.core import util
 
 
 class WordArray:
