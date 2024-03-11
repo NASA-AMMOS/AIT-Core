@@ -11,7 +11,7 @@ repos:
     rev: v2.6.0
     hooks:
     -   id: reorder-python-imports
-        files: ^src/|test/
+        files: ^ait/|tests/
 
 -   repo: local
     hooks:
@@ -27,7 +27,7 @@ repos:
     -   id: black
         name: black
         entry: black
-        files: ^src/|test/
+        files: ^ait/|tests/
         language: system
         types: [python]
 
