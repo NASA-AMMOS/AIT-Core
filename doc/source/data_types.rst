@@ -59,9 +59,8 @@ Consider the following example which creates a custom 24-bit MSB type.
 
    class MyCustomTypes(dtype.CustomTypes):
        def get(self, typename: str) -> Optional[dtype.PrimitiveType]:
-           match typename:
-               case 'My24BitMSB':
-                   return My24BitMSB()
+            if typename == 'My24BitMSB':
+               return My24BitMSB()
 
            return None
 
