@@ -1,8 +1,12 @@
 import ait.core.log
-from .client import ZMQInputClient, PortInputClient, PortOutputClient
+from .client import PortInputClient
+from .client import PortOutputClient
+from .client import TCPInputClient
+from .client import TCPInputServer
+from .client import ZMQInputClient
 
 
-class Stream():
+class Stream:
     """
     This is the base Stream class that all streams will inherit from.
     It calls its handlers to execute on all input messages sequentially,
@@ -69,7 +73,6 @@ class Stream():
         """
         for handler in self.handlers:
             output = handler.handle(input_data)
-
             if output:
                 input_data = output
             else:
@@ -79,7 +82,6 @@ class Stream():
                 )
                 ait.core.log.info(msg)
                 return
-
         self.publish(input_data)
 
     def valid_workflow(self):
@@ -99,6 +101,97 @@ class Stream():
         return True
 
 
+def input_stream_factory(name, inputs, handlers, zmq_args=None):
+    """
+    This factory preempts the creating of streams directly.  It accepts
+    the same args as any given stream class and then based primarily on the
+    values in 'inputs' decides on the appropriate stream to instantiate and
+    then returns it.
+    """
+    stream = None
+
+    # Stream specs in the form:
+    # - stream:
+    #     name: telem_stream_udp_server
+    #     input:
+    #         - 24000
+    # - stream:
+    #     name: telem_stream_zmq_server
+    #     input:
+    #         - foo_zmq
+    if len(inputs) == 1:
+        if type(inputs[0]) is int and 1024 <= inputs[0] <= 65535:
+            stream = PortInputStream(name, inputs, handlers, zmq_args=zmq_args)
+        elif type(inputs[0]) is str:
+            stream = ZMQStream(name, inputs, handlers, zmq_args=zmq_args)
+        else:
+            raise ValueError(
+                "Input stream specification with 1 arg must be [ {port_num|str} ]"
+            )
+
+    # Stream specs in the form:
+    # - stream:
+    #     name: telem_stream_udp_server
+    #     input:
+    #         - 'UDP'
+    #         - 'server'
+    #         - 24000
+    # - stream:
+    #     name: telem_stream_tcp_server
+    #     input:
+    #         - 'TCP'
+    #         - 'server'
+    #         - 24000
+    # - stream:
+    #     name: telem_stream_tcp_client
+    #     input:
+    #         - 'TCP'
+    #         - '1.2.3.4'
+    #         - 24000
+    elif len(inputs) == 3:
+        if type(inputs[0]) is str and inputs[0].upper() == "TCP":
+            if type(inputs[1]) is str and inputs[1].lower() == "server":
+                if type(inputs[2]) is int and 1024 <= inputs[2] <= 65535:
+                    stream = TCPInputServerStream(name, inputs[1:], handlers, zmq_args)
+                else:
+                    raise ValueError(
+                        "Input stream specification with 3 args must be [ {'TCP'|'UDP'}, {'server'|ip_address}, {port_num} ]"
+                    )
+            elif type(inputs[1]) is str and inputs[1].lower() != "server":
+                if type(inputs[2]) is int and 1024 <= inputs[2] <= 65535:
+                    stream = TCPInputClientStream(name, inputs[1:], handlers, zmq_args)
+                else:
+                    raise ValueError(
+                        "Input stream specification with 3 args must be [ {'TCP'|'UDP'}, {'server'|ip_address}, {port_num} ]"
+                    )
+            else:
+                raise ValueError(
+                    "Input stream specification with 3 args must be [ {'TCP'|'UDP'}, {'server'|ip_address}, {port_num} ]"
+                )
+        elif type(inputs[0]) is str and inputs[0].upper() == "UDP":
+            if type(inputs[1]) is str and inputs[1].lower() == "server":
+                if type(inputs[2]) is int and 1024 <= inputs[2] <= 65535:
+                    stream = PortInputStream(
+                        name, inputs[2:], handlers, zmq_args=zmq_args
+                    )
+                else:
+                    raise ValueError(
+                        "Input stream specification with 3 args must be [ {'TCP'|'UDP'}, {'server'|ip_address}, {port_num} ]"
+                    )
+            else:
+                raise NotImplementedError("UDP client not supported atm")
+        else:
+            raise ValueError(
+                "Input stream specification with 3 args must be [ {'TCP'|'UDP'}, {'server'|ip_address}, {port_num} ]"
+            )
+    else:
+        raise ValueError("Input stream specification must contain either 1 or 3 args")
+
+    if stream is None:
+        raise ValueError("Input stream specification invalid")
+    return stream
+
+
 class PortInputStream(Stream, PortInputClient):
     """
     This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
@@ -106,6 +199,24 @@ class PortInputStream(Stream, PortInputClient):
 
     def __init__(self, name, inputs, handlers, zmq_args=None):
         super(PortInputStream, self).__init__(name, inputs, handlers, zmq_args)
+
+
+class TCPInputServerStream(Stream, TCPInputServer):
+    """
+    This stream type listens for messages from a TCP port and publishes to a ZMQ socket.
+    """
+
+    def __init__(self, name, inputs, handlers, zmq_args=None):
+        super(TCPInputServerStream, self).__init__(name, inputs, handlers, zmq_args)
+
+
+class TCPInputClientStream(Stream, TCPInputClient):
+    """
+    This stream type connects to a TCP server and publishes to a ZMQ socket.
+    """
+
+    def __init__(self, name, inputs, handlers, zmq_args=None):
+        super(TCPInputClientStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
 class ZMQStream(Stream, ZMQInputClient):

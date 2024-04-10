@@ -61,7 +61,7 @@ AIT provides a number of default plugins. Check the `Plugins API documentation <
 Streams
 ^^^^^^^
 - Streams must be listed under either **inbound-streams** or **outbound-streams**, and must have a **name**.
-- **Inbound streams** can have an integer port or inbound streams as their **input**. Inbound streams can have multiple inputs. A port input should always be listed as the first input to an inbound stream.
+- **Inbound streams** can have an address specification or inbound streams as their **input**. Inbound streams can have multiple inputs.
 
     - The server sets up an input stream that emits properly formed telemetry packet messages over a globally configured topic. This is used internally by the ground script API for telemetry monitoring. The input streams that pass data to this stream must output data in the Packet UID annotated format that the core packet handlers use. The input streams used can be configured via the **server.api-telemetry-streams** field. If no configuration is provided the server will default to all valid input streams if possible. See :ref:`the Ground Script API documentation <api_telem_setup>` for additional information.
 
@@ -72,7 +72,7 @@ Streams
    - The server exposes an entry point for commands submitted by other processes. During initialization, this entry point will be connected to a single outbound stream, either explicitly declared by the stream (by setting the **command-subscriber** field; see :ref:`example config below <Stream_config>`), or decided by the server (select the first outbound stream in the configuration file).
 
 - Streams can have any number of **handlers**. A stream passes each received *packet* through its handlers in order and publishes the result.
-- There are several stream classes that inherit from the base stream class. These child classes exist for handling the input and output of streams differently based on whether the inputs/output are ports or other streams and plugins. The appropriate stream type will be instantiated based on whether the stream is an inbound or outbound stream and based on the inputs/output specified in the stream's configs. If the input type of an inbound stream is an integer, it will be assumed to be a port. If it is a string, it will be assumed to be another stream name or plugin. Only outbound streams can have an output, and the output must be a port, not another stream or plugin.
+- There are several stream classes that inherit from the base stream class. These child classes exist for handling the input and output of streams differently based on whether the inputs/output are remote hosts, ports or other streams and plugins. The appropriate stream type will be instantiated based on whether the stream is an inbound or outbound stream and based on the inputs/output specified in the stream's configs. Only outbound streams can have an output, and the output must be a port, not another stream or plugin.
 
 .. _Stream_config:
 
@@ -86,17 +86,48 @@ Example configuration:
             input:
                 - 3077
 
+        # UDP Input Server
         - stream:
-            name: telem_port_in_stream
+            name: telem_port_in_stream_1
             input:
                 - 3076
+            handlers:
+                - my_custom_handlers.TestbedTelemHandler
+
+        # UDP Input Server
+        - stream:
+            name: telem_port_in_stream_2
+            input:
+                - "UDP"
+                - "server"
+                - 3077
+            handlers:
+                - my_custom_handlers.TestbedTelemHandler
+
+        # TCP Input Server
+        - stream:
+            name: telem_port_in_stream_3
+            input:
+                - "TCP"
+                - "server"
+                - 3078
+            handlers:
+                - my_custom_handlers.TestbedTelemHandler
+
+        # TCP Input Client
+        - stream:
+            name: telem_port_in_stream_4
+            input:
+                - "TCP"
+                - "1.2.3.4"
+                - 3079
             handlers:
                 - my_custom_handlers.TestbedTelemHandler
 
         - stream:
             name: telem_testbed_stream
             input:
-                - telem_port_in_stream
+                - telem_port_in_stream_1
             handlers:
                 - name: ait.server.handlers.PacketHandler
                   packet: 1553_HS_Packet
