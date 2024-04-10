@@ -317,7 +317,7 @@ class TCPInputClient(ZMQClient):
         return "<%s %s>" % (type(self).__name__, self._formatinfo())
 
     def start(self):
-        self.proc = gevent.spawn(self._client).join()
+        self.proc = gevent.spawn(self._client)
 
     def _connect(self):
         while self.connection_reattempts:
