@@ -77,6 +77,7 @@ class TestTCPClient:
 
     def test_TCP_client(self):
         self.client.start()
+        gevent.sleep(1)
         assert self.client.input_data == TEST_BYTES
 
     def test_bad_connection(self):
