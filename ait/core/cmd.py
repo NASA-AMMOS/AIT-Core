@@ -11,22 +11,23 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Commands
 
 The ait.core.cmd module provides commands and command dictionaries.
 Dictionaries contain command and argument definitions.
 """
-
 import os
-import pkg_resources
 import struct
-import yaml
 from io import IOBase
 
+import pkg_resources
+import yaml
+
 import ait
-from ait.core import json, util, log
+from ait.core import json
+from ait.core import log
+from ait.core import util
 
 
 MAX_CMD_WORDS = 54
@@ -124,7 +125,11 @@ class ArgDefn(json.SlotSerializer, object):
 
         if type(value) == str and self.enum and value in self.enum:
             value = self.enum[value]
-        return self.type.encode(*value) if type(value) in [tuple, list] else self.type.encode(value)
+        return (
+            self.type.encode(*value)
+            if type(value) in [tuple, list]
+            else self.type.encode(value)
+        )
 
     def slice(self, offset=0):
         """Returns a Python slice object (e.g. for array indexing) indicating
@@ -486,7 +491,7 @@ class CmdDict(dict):
             else:
                 stream = content
 
-            cmds = yaml.load(stream, Loader=yaml.Loader)
+            cmds = yaml.safe_load(stream)
             cmds = handle_includes(cmds)
             for cmd in cmds:
                 self.add(cmd)
@@ -503,7 +508,7 @@ def getDefaultCmdDict(reload=False):  # noqa
 
 
 def getDefaultDict(reload=False):  # noqa
-    create_cmd_dict_func = globals().get('createCmdDict', None)
+    create_cmd_dict_func = globals().get("createCmdDict", None)
     loader = create_cmd_dict_func if create_cmd_dict_func else CmdDict
     return util.getDefaultDict(__name__, "cmddict", loader, reload)
 
@@ -559,13 +564,13 @@ def YAMLCtor_include(loader, node):  # noqa
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
     with open(name, "r") as f:
-        data = yaml.load(f)
+        data = yaml.safe_load(f)
     return data
 
 
-yaml.add_constructor("!include", YAMLCtor_include)
-yaml.add_constructor("!Command", YAMLCtor_CmdDefn)
-yaml.add_constructor("!Argument", YAMLCtor_ArgDefn)
-yaml.add_constructor("!Fixed", YAMLCtor_ArgDefn)
+yaml.SafeLoader.add_constructor("!include", YAMLCtor_include)
+yaml.SafeLoader.add_constructor("!Command", YAMLCtor_CmdDefn)
+yaml.SafeLoader.add_constructor("!Argument", YAMLCtor_ArgDefn)
+yaml.SafeLoader.add_constructor("!Fixed", YAMLCtor_ArgDefn)
 
 util.__init_extensions__(__name__, globals())

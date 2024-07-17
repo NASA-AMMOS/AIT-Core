@@ -1,12 +1,15 @@
-from abc import ABCMeta, abstractmethod
-
-import enum
 import copy
+import enum
+from abc import ABCMeta
+from abc import abstractmethod
 from importlib import import_module
-from ait.core import log, cfg
-from .client import ZMQInputClient
 
 import gevent.monkey
+
+from .client import ZMQInputClient
+from ait.core import cfg
+from ait.core import log
+
 gevent.monkey.patch_all()
 
 
@@ -14,6 +17,7 @@ class PluginType(enum.Enum):
     """
     Enumeration for Plugin type: standard plugin (greenlet) or process-based
     """
+
     STANDARD = enum.auto()
     PROCESS = enum.auto()
 
@@ -65,7 +69,7 @@ class PluginConfig(object):
             **kwargs:   (optional) Dependent on requirements of child class.
         """
         if name is None:
-            raise (cfg.AitConfigMissing("plugin name"))
+            raise (cfg.AitConfigMissingError("plugin name"))
 
         self.name = name
         self.inputs = inputs if inputs is not None else []
@@ -90,7 +94,7 @@ class PluginConfig(object):
 
         Returns: ZMQ Context, possibly None
         """
-        return self.zmq_args.get('zmq_context', None)
+        return self.zmq_args.get("zmq_context", None)
 
     def set_zmq_context(self, context):
         """
@@ -99,7 +103,7 @@ class PluginConfig(object):
         Params:
             context:    ZeroMQ Context, can be None
         """
-        self.zmq_args['zmq_context'] = context
+        self.zmq_args["zmq_context"] = context
 
     @staticmethod
     def build_from_ait_config(ait_plugin_config, zmq_args=None):
@@ -118,7 +122,8 @@ class PluginConfig(object):
             PluginConfig - New PluginConfig built from config
 
         Raises:
-            AitConfigMissing:  if any of the required config values are missing
+            AitConfigMissingError:  if any of the required config
+            values are missing
         """
 
         if zmq_args is None:
@@ -130,7 +135,7 @@ class PluginConfig(object):
         # Extract name and ensure it is defined
         name = other_args.pop("name", None)
         if name is None:
-            raise (cfg.AitConfigMissing("plugin name"))
+            raise (cfg.AitConfigMissingError("plugin name"))
 
         plugin_inputs = other_args.pop("inputs", None)
         if plugin_inputs is None:
@@ -142,8 +147,9 @@ class PluginConfig(object):
             log.warn(f"No plugin outputs specified for {name}")
             subscribers = []
 
-        plugin_config = PluginConfig(name, plugin_inputs, subscribers,
-                                     zmq_args, other_args)
+        plugin_config = PluginConfig(
+            name, plugin_inputs, subscribers, zmq_args, other_args
+        )
 
         return plugin_config
 
@@ -233,7 +239,7 @@ class Plugin(ZMQInputClient):
             inputs=plugin_config.inputs,
             outputs=plugin_config.outputs,
             zmq_args=plugin_config.zmq_args,
-            **plugin_config.kwargs
+            **plugin_config.kwargs,
         )
 
         if plugin_instance is None:
