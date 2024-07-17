@@ -260,7 +260,7 @@ class TestStreamCreation(object):
         config = {"input": "some_stream", "handlers": [{"name": "some-handler"}]}
         server = Server()
         with pytest.raises(
-            cfg.AitConfigMissing,
+            cfg.AitConfigMissingError,
             match="The parameter stream name is missing from config.yaml",
         ):
             server._get_stream_name(config)
@@ -282,8 +282,10 @@ class TestStreamCreation(object):
         server.plugins = [FakeStream(name="myname")]
         with pytest.raises(
             ValueError,
-            match=("Duplicate stream name 'myname' encountered. "
-                   "Stream names must be unique."),
+            match=(
+                "Duplicate stream name 'myname' encountered. "
+                "Stream names must be unique."
+            ),
         ):
             server._get_stream_name(config)
 
@@ -322,7 +324,7 @@ class TestStreamCreation(object):
         config = {"name": "some_stream", "handlers": [{"name": "some-handler"}]}
 
         with pytest.raises(
-            cfg.AitConfigMissing,
+            cfg.AitConfigMissingError,
             match="The parameter {} is missing from config.yaml".format(
                 "inbound stream {}'s input".format("some_stream")
             ),
@@ -487,7 +489,7 @@ class TestPluginCreation(object):
 
         config = {"inputs": "some_inputs"}
         with pytest.raises(
-            cfg.AitConfigMissing,
+            cfg.AitConfigMissingError,
             match="The parameter plugin name is missing from config.yaml",
         ):
             server._create_plugin(config)

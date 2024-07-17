@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,18 +12,17 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage: ait-bsc
 
 Start the ait BSC for capturing network traffic into PCAP files
 and the manager server for RESTful manipulation of active loggers.
 """
-
+import argparse
 import os
 import threading
+
 import yaml
-import argparse
 
 import ait
 from ait.core import bsc
@@ -49,7 +47,7 @@ def main():
 
     else:
         with open(config_file) as log_conf:
-            conf = yaml.load(log_conf, Loader=yaml.Loader)
+            conf = yaml.safe_load(log_conf)
 
         mngr_conf = conf["capture_manager"]
         host = mngr_conf["manager_server"]["host"]

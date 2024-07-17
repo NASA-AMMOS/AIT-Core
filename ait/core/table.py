@@ -16,10 +16,10 @@ import hashlib
 import io
 import os
 import pickle
+
 import yaml
 
 import ait
-
 from ait.core import dmc
 from ait.core import dtype
 from ait.core import log
@@ -46,9 +46,11 @@ class FSWColDefn(object):
 
             if len(self.enum) != len(self._enum_rev):
                 msg = (
-                    f"Table enumeration mappings are not one-to-one for '{self.name}'. "
-                    "This may result in expected or incorrect results when encoding or "
-                    "decoding. Remove enumerations from this column or proceed with caution"
+                    "Table enumeration mappings are not one-to-one "
+                    f"for '{self.name}'. This may result in expected "
+                    "or incorrect results when encoding or decoding. "
+                    "Remove enumerations from this column or proceed "
+                    "with caution"
                 )
                 log.error(msg)
 
@@ -187,7 +189,6 @@ def hash_file(filename):
 
     # open file for reading in binary mode
     with open(filename, "rb") as file:
-
         # loop till the end of the file
         chunk = 0
         while chunk != b"":
@@ -322,8 +323,10 @@ class FSWTabDefn(object):
 
         # Skip header-encoding for tables without a header definition
         if len(self.fswheaderdefns) > 0:
-            # Read / locate header values either from kwargs or by reading the input file.
-            # hdr_vals = [i.strip() for i in kwargs['hdr_vals']] if 'hdr_vals' in kwargs else None
+            # Read / locate header values either from kwargs or by reading
+            # the input file.
+            # hdr_vals = [i.strip() for i in kwargs['hdr_vals']]
+            #    if 'hdr_vals' in kwargs else None
             hdr_vals = kwargs.get("hdr_vals", None)
 
             # If no header values are provided we read them from the input stream
@@ -370,7 +373,8 @@ class FSWTabDefn(object):
         Arguments:
             in_stream: A file-like object from which to read data.
 
-            raw: Boolean indicating whether raw or enumerated values should be returned.
+            raw: Boolean indicating whether raw or enumerated values should
+                 be returned.
                 (default: False which returns enumerated values if possible)
 
         Raises:
@@ -441,7 +445,7 @@ class FSWTabDict(dict):
             self.filename = filename
 
         stream = open(self.filename, "rb")
-        for doc in yaml.load_all(stream, Loader=yaml.Loader):
+        for doc in yaml.safe_load_all(stream):
             for table in doc:
                 self.add(table)
         stream.close()
@@ -458,7 +462,8 @@ class FSWTabDictCache(object):
 
     @property
     def dirty(self):
-        """True if the pickle cache needs to be regenerated, False to use current pickle binary"""
+        """True if the pickle cache needs to be regenerated, False to
+        use current pickle binary"""
         return util.check_yaml_timestamps(self.filename, self.cachename)
 
     def load(self):
@@ -466,11 +471,13 @@ class FSWTabDictCache(object):
             if self.dirty:
                 self.fswtabdict = FSWTabDict(self.filename)
                 util.update_cache(self.filename, self.cachename, self.fswtabdict)
-                log.info(f'Loaded new pickle file: {self.cachename}')
+                log.info(f"Loaded new pickle file: {self.cachename}")
             else:
                 with open(self.cachename, "rb") as stream:
                     self.fswtabdict = pickle.load(stream)
-                log.info(f'Current pickle file loaded: {self.cachename.split("/")[-1]}')
+                log.info(
+                    "Current pickle file loaded: " f'{self.cachename.split("/")[-1]}'
+                )
 
         return self.fswtabdict
 
@@ -540,5 +547,5 @@ def decode_to_file(tbl_type, in_path, out_path):
             print(defn.delimiter.join(map(str, line)), file=out_file)
 
 
-yaml.add_constructor("!FSWTable", YAMLCtor_FSWTabDefn)
-yaml.add_constructor("!FSWColumn", YAMLCtor_FSWColDefn)
+yaml.SafeLoader.add_constructor("!FSWTable", YAMLCtor_FSWTabDefn)
+yaml.SafeLoader.add_constructor("!FSWColumn", YAMLCtor_FSWColDefn)

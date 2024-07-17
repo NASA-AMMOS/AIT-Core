@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Telemetry
 
@@ -19,17 +18,20 @@ The ait.core.tlm module provides telemetry fields and telemetry
 dictionaries.  Dictionaries contain packet, header, data, and field
 definitions.
 """
-
 import collections.abc
-import os
-import pkg_resources
-import struct
-import yaml
 import csv
+import os
+import struct
 from io import IOBase
 
+import pkg_resources
+import yaml
+
 import ait
-from ait.core import dtype, json, log, util
+from ait.core import dtype
+from ait.core import json
+from ait.core import log
+from ait.core import util
 
 
 class WordArray:
@@ -1014,7 +1016,7 @@ class TlmDict(dict):
             else:
                 stream = content
 
-            pkts = yaml.load(stream, Loader=yaml.Loader)
+            pkts = yaml.safe_load(stream)
             pkts = handle_includes(pkts)
             for pkt in pkts:
                 self.add(pkt)
@@ -1137,14 +1139,14 @@ def YAMLCtor_include(loader, node):  # noqa
     name = os.path.join(os.path.dirname(loader.name), node.value)
     data = None
     with open(name, "r") as f:
-        data = yaml.load(f, Loader=yaml.Loader)
+        data = yaml.safe_load(f)
     return data
 
 
-yaml.add_constructor("!include", YAMLCtor_include)
-yaml.add_constructor("!Packet", YAMLCtor_PacketDefinition)
-yaml.add_constructor("!Field", YAMLCtor_FieldDefinition)
-yaml.add_constructor("!Derivation", YAMLCtor_DerivationDefinition)
+yaml.SafeLoader.add_constructor("!include", YAMLCtor_include)
+yaml.SafeLoader.add_constructor("!Packet", YAMLCtor_PacketDefinition)
+yaml.SafeLoader.add_constructor("!Field", YAMLCtor_FieldDefinition)
+yaml.SafeLoader.add_constructor("!Derivation", YAMLCtor_DerivationDefinition)
 
 
 util.__init_extensions__(__name__, globals())

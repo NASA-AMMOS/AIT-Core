@@ -11,27 +11,29 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT YAML Validator
 
 The ait.core.val module provides validation of content for YAML
 files based on specified schema.
 """
-
+import collections
 import json
+import linecache
+import re
+
+import jsonschema
 import yaml
 from yaml.scanner import ScannerError
-import re
-import linecache
-import jsonschema
-import collections
 
-from ait.core import cmd, dtype, log, tlm, util
+from ait.core import cmd
+from ait.core import dtype
+from ait.core import log
+from ait.core import tlm
+from ait.core import util
 
 
 class YAMLProcessor(object):
-
     __slots__ = ["ymlfile", "data", "loaded", "doclines", "_clean"]
 
     def __init__(self, ymlfile=None, clean=True):
@@ -64,7 +66,7 @@ class YAMLProcessor(object):
                 self.data = self.process(self.ymlfile)
             else:
                 with open(self.ymlfile, "rb") as stream:
-                    for data in yaml.load_all(stream, Loader=yaml.Loader):
+                    for data in yaml.safe_load_all(stream):
                         self.data.append(data)
             self.loaded = True
 
@@ -118,7 +120,6 @@ class YAMLProcessor(object):
 
 
 class SchemaProcessor(object):
-
     __slots__ = ["_schemafile", "data", "_proc_schema", "loaded"]
 
     def __init__(self, schemafile=None):
@@ -137,7 +138,6 @@ class SchemaProcessor(object):
 
     @property
     def schemafile(self):
-
         return self._schemafile
 
     @schemafile.setter
@@ -234,25 +234,27 @@ class ErrorHandler(object):
                 context = collections.deque(maxlen=20)
                 tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n" ""
                 for cnt, _path in enumerate(error.relative_path):
-
-                    # Need to set the key we are looking, and then check the array count
-                    # if it is an array, we have some interesting checks to do
+                    # Need to set the key we are looking, and then check the
+                    # array count if it is an array, we have some interesting
+                    # checks to do
                     if int(cnt) % 2 == 0:
                         # we know we have some array account
-                        # array_index keeps track of the array count we are looking for or number
-                        # of matches we need to skip over before we get to the one we care about
+                        # array_index keeps track of the array count we are looking
+                        # for or number of matches we need to skip over before we
+                        # get to the one we care about
 
-                        # check if previous array_index > 0. if so, then we know we need to use
-                        # that one to track down the specific instance of this nested key.
-                        # later on, we utilize this array_index loop through
-                        # if array_index == 0:
+                        # check if previous array_index > 0. if so, then we know we
+                        # need to use that one to track down the specific instance
+                        # of this nested key. later on, we utilize this array_index
+                        # loop through if array_index == 0:
                         array_index = jsonpath[cnt]
 
                         match_count = 0
                         continue
                     elif int(cnt) % 2 == 1:
                         # we know we have some key name
-                        # current_key keeps track of the key we are looking for in the JSON Path
+                        # current_key keeps track of the key we are looking for in the
+                        # JSON Path
                         current_key = jsonpath[cnt]
 
                     for linenum in range(current_start, end):
@@ -277,15 +279,18 @@ class ErrorHandler(object):
                                 key = key.strip()
 
                             if str(key) == current_key:
-                                # check if we are at our match_count and end of the path
+                                # check if we are at our match_count and end of
+                                # the path
                                 if match_count == array_index:
                                     # check if we are at end of the jsonpath
                                     if cnt == len(jsonpath) - 1:
-                                        # we are at the end of path so let's stop here'
+                                        # we are at the end of path so let's
+                                        # stop here
                                         if error.validator == "type":
                                             if value.strip() == str(error.instance):
                                                 errormsg = (
-                                                    "Value '%s' should be of type '%s'"
+                                                    "Value '%s' should be of "
+                                                    "type '%s'"
                                                     % (
                                                         error.instance,
                                                         str(error.validator_value),
@@ -313,20 +318,22 @@ class ErrorHandler(object):
                                         # print array_index
                                         # print current_key
                                         # print line
-                                        # otherwise change the start to the current line
+                                        # otherwise change the start to the...
+                                        # ...current line
                                         current_start = linenum
                                         break
 
                                 match_count += 1
 
-                        # for the context queue, we want to get the error to appear in
-                        # the middle of the error output. to do so, we will only append
-                        # to the queue in 2 cases:
+                        # for the context queue, we want to get the error to
+                        # appear in the middle of the error output. to do so,
+                        # we will only append to the queue in 2 cases:
                         #
                         # 1. before we find the error (found == False). we can
-                        #    just keep pushing on the queue until we find it in the YAML.
-                        # 2. once we find the error (found == True), we just want to push
-                        #    onto the queue until the the line is in the middle
+                        #    just keep pushing on the queue until we find it in the
+                        #    YAML.
+                        # 2. once we find the error (found == True), we just want to
+                        #    push onto the queue until the the line is in the middle
                         if not found or (
                             found and context.maxlen > (linenum - foundline) * 2
                         ):
@@ -357,9 +364,16 @@ class ErrorHandler(object):
 
 
 class Validator(object):
-
-    __slots__ = ["_ymlfile", "_schemafile", "_ymlproc", "_schemaproc", "ehandler",
-                 "validate_list", "yml_dir", "yml_files_to_validate"]
+    __slots__ = [
+        "_ymlfile",
+        "_schemafile",
+        "_ymlproc",
+        "_schemaproc",
+        "ehandler",
+        "validate_list",
+        "yml_dir",
+        "yml_files_to_validate",
+    ]
 
     def __init__(self, ymlfile, schemafile):
         """
@@ -382,10 +396,10 @@ class Validator(object):
 
     def get_included_files(self, yml_file):
         """
-        Make a list of  yaml files to validate against the schema.  The first member
-        of the list will include the full path to the yaml file.
-        The next element will the module yml file (e.g. cmd.yml),
-        followed by the names of any included files.
+        Make a list of  yaml files to validate against the schema.
+        The first member of the list will include the full path to
+        the yaml file. The next element will the module yml file
+        (e.g. cmd.yml), followed by the names of any included files.
         The assumption is made that all the included yml files are
         found in the same directory as the module yml file.
 
@@ -402,28 +416,33 @@ class Validator(object):
         """
         # The first yaml file to validate will include a full path
         # Any included yaml files will have the path added.
-        if '/' in yml_file:
+        if "/" in yml_file:
             self.validate_list.append(yml_file)
         else:
-            yml_file = f'{self.yml_dir}/{yml_file}'
+            yml_file = f"{self.yml_dir}/{yml_file}"
 
         try:
             with open(yml_file, "r") as yml_fh:
                 for line in yml_fh:
                     if not line.strip().startswith("#") and "!include" in line:
-                        included_file_name = line.split('!include ')[-1].strip()
-                        self.validate_list.append(f'{self.yml_dir}/{included_file_name}')
+                        included_file_name = line.split("!include ")[-1].strip()
+                        self.validate_list.append(
+                            f"{self.yml_dir}/{included_file_name}"
+                        )
                         # Look for includes within included file
                         self.get_included_files(included_file_name)
                 # Check and flag multiple includes
                 if len(self.validate_list) != len(set(self.validate_list)):
-                    log.info(f'WARNING: Validate: Duplicate config files in the '
-                             f'include tree. {self.validate_list}')
+                    log.info(
+                        f"WARNING: Validate: Duplicate config files in the "
+                        f"include tree. {self.validate_list}"
+                    )
                 return set(self.validate_list)
         except RecursionError as e:
             log.info(
-                f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
-                'back and forth on one another through the "!include" statements.'
+                f"ERROR: {e}: Infinite loop: check that yaml config "
+                "files are not looping back and forth on one another "
+                'through the "!include" statements.'
             )
 
     def validate_schema(self, messages=None):
@@ -442,7 +461,8 @@ class Validator(object):
     def validate(self, ymldata=None, messages=None):
         """
         Validates the Command or Telemetry Dictionary definitions
-        The method will validate module (cmd.yml or tlm.yaml) and included yaml config files
+        The method will validate module (cmd.yml or tlm.yaml) and
+        included yaml config files
 
         Returns
         -------
@@ -492,24 +512,26 @@ class Validator(object):
 
         # Make sure the yml and schema have been loaded
         if self._ymlproc.loaded and self._schemaproc.loaded:
-            # Load all of the yaml documents. Could be more than one in the same YAML file.
-            for docnum, data in enumerate(
-                yaml.load_all(self._ymlproc.data, Loader=yaml.Loader)
-            ):
-                # Since YAML allows integer keys but JSON does not, we need to first
-                # dump the data as a JSON string to encode all of the potential integers
-                # as strings, and then read it back out into the YAML format. Kind of
-                # a clunky workaround but it works as expected.
-                data = yaml.load(json.dumps(data), Loader=yaml.Loader)
+            # Load all of the yaml documents. Could be more than one in
+            # the same YAML file.
+            for docnum, data in enumerate(yaml.safe_load_all(self._ymlproc.data)):
+                # Since YAML allows integer keys but JSON does not, we need to
+                # first dump the data as a JSON string to encode all of the
+                # potential integers as strings, and then read it back out into
+                # the YAML format. Kind of a clunky workaround but it works
+                # as expected.
+                data = yaml.safe_load(json.dumps(data))
 
                 # Now we want to get a validator ready
                 v = jsonschema.Draft4Validator(self._schemaproc.data)
 
-                # Loop through the errors (if any) and set valid = False if any are found
+                # Loop through the errors (if any) and set valid = False if
+                # any are found
                 # Display the error message
                 for error in v.iter_errors(data):
                     msg = (
-                        f"Schema-based validation failed for YAML file ' {self._ymlfile} '"
+                        "Schema-based validation failed for YAML file "
+                        f"' {self._ymlfile} '"
                     )
                     self.ehandler.process(
                         docnum, self._ymlproc.doclines, error, messages
@@ -522,7 +544,9 @@ class Validator(object):
         elif not self._ymlproc.loaded:
             raise util.YAMLError("YAML must be loaded in order to validate.")
         elif not self._schemaproc.loaded:
-            raise jsonschema.SchemaError("Schema must be loaded in order to validate.")
+            raise jsonschema.SchemaError(
+                "Schema must be loaded in order " "to validate."
+            )
 
         log.debug("END: Schema-based validation complete for '%s'", self._ymlfile)
         return valid
@@ -615,7 +639,8 @@ class CmdValidator(Validator):
                     )
                 )
 
-                # set argument enumerations rule to check no enumerations contain un-quoted YAML special variables
+                # set argument enumerations rule to check no enumerations contain
+                # un-quoted YAML special variables
                 argrules.append(
                     EnumRule(
                         "enum",
@@ -675,8 +700,9 @@ class TlmValidator(Validator):
 
     def content_val(self, yaml_file, ymldata=None, messages=None):
         """
-        Validates the Telemetry Dictionary to ensure the contents for each of the fields
-        meets specific criteria regarding the expected types, byte ranges, etc.
+        Validates the Telemetry Dictionary to ensure the contents
+        for each of the fields meets specific criteria regarding
+        the expected types, byte ranges, etc.
         """
 
         self._ymlproc = YAMLProcessor(yaml_file, False)
@@ -737,7 +763,8 @@ class TlmValidator(Validator):
                     )
                 )
 
-                # set field enumerations rule to check no enumerations contain un-quoted YAML special variables
+                # set field enumerations rule to check no enumerations contain
+                # un-quoted YAML special variables
                 fldrules.append(
                     EnumRule(
                         "enum",
