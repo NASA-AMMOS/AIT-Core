@@ -1,14 +1,14 @@
-import zmq.green as zmq
-
 import copy
 import sys
+
 import gevent
 import gipc  # type: ignore
 import setproctitle  # type: ignore
+import zmq.green as zmq
 
-from ait.core import log
-from .plugin import Plugin
 from .broker import Broker
+from .plugin import Plugin
+from ait.core import log
 
 
 class PluginsProcess(object):
@@ -55,8 +55,9 @@ class PluginsProcess(object):
         Returns a list of plugin names (short versions) managed by instance
         Returns: List of plugin names
         """
-        return [pi.short_name if use_short_names else pi.name
-                for pi in self._plugin_infos]
+        return [
+            pi.short_name if use_short_names else pi.name for pi in self._plugin_infos
+        ]
 
     def get_plugin_outputs(self, use_short_names=True):
         """
@@ -93,8 +94,9 @@ class PluginsProcess(object):
             RuntimeError if the process is already running
         """
         if self._spawned:
-            raise RuntimeError("Cannot add plugin info after process has "
-                               "been spawned")
+            raise RuntimeError(
+                "Cannot add plugin info after process has " "been spawned"
+            )
 
         if plugin_info is not None:
             self._plugin_infos.append(plugin_info)
@@ -147,7 +149,6 @@ class PluginsProcess(object):
 
     @staticmethod
     def load_plugins(namespace, plugin_info_list):
-
         # List of plugins to be returned
         plugin_list = []
 
@@ -161,17 +162,23 @@ class PluginsProcess(object):
             try:
                 plugin = PluginsProcess.create_plugin(p_info, proc_context)
                 if plugin is None:
-                    log.info(f"Unable to create {plugin_name}, will not be "
-                             f"added to {namespace} plugins list")
+                    log.info(
+                        f"Unable to create {plugin_name}, will not be "
+                        f"added to {namespace} plugins list"
+                    )
                 else:
-                    log.debug(f"Adding process-greenlet '{plugin_name}' to "
-                              f"'{namespace}' plugins list")
+                    log.debug(
+                        f"Adding process-greenlet '{plugin_name}' to "
+                        f"'{namespace}' plugins list"
+                    )
                     plugin_list.append(plugin)
 
             except Exception:
                 exc_type, exc_value, tb = sys.exc_info()
-                log.error(f"{exc_type} creating plugin '{plugin_name}'' for "
-                          f"process '{namespace}'': {exc_value}")
+                log.error(
+                    f"{exc_type} creating plugin '{plugin_name}'' for "
+                    f"process '{namespace}'': {exc_value}"
+                )
 
         return plugin_list
 
@@ -229,8 +236,7 @@ class PluginsProcess(object):
 
         # Start all of the plugin-gevents
         for greenlet in plugin_list:
-            log.info(f"Starting {greenlet} greenlet in process "
-                     f"'{namespace}'...")
+            log.info(f"Starting {greenlet} greenlet in process " f"'{namespace}'...")
             greenlet.start()
 
         # Wait for Plugins to finish

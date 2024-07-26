@@ -11,14 +11,12 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Javascript Object Notation (JSON)
 
 The ait.core.json module provides JSON utilities and mixin classes
 for encoding and decoding between AIT data structures and JSON.
 """
-
 import collections.abc
 from typing import List
 

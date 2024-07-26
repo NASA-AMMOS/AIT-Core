@@ -11,21 +11,20 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Sequences
 
 The ait.core.seq module provides sequences of commands.
 """
-
 from __future__ import absolute_import
 
-import os
 import math
+import os
 import struct
 import sys
 
-from ait.core import cmd, util
+from ait.core import cmd
+from ait.core import util
 
 
 def set_bit(value, bit, bitval):
@@ -202,7 +201,7 @@ class Seq(object):
         in_body = False
 
         with open(filename, "rt") as stream:
-            for (lineno, line) in enumerate(stream.readlines()):
+            for lineno, line in enumerate(stream.readlines()):
                 stripped = line.strip()
                 if stripped == "":
                     continue

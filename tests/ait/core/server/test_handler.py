@@ -8,7 +8,6 @@ from ait.core.server.handlers import PacketHandler
 
 
 class TestCCSDSPacketCheck(unittest.TestCase):
-
     # Check if packet length is at least 7 bytes
     def test_ccsds_packet_length(self):
         handler = CCSDSPacketHandler(packet_types={"01011100111": "CCSDS_HEADER"})

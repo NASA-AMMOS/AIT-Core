@@ -11,14 +11,12 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Coordinate Functions
 
 The ait.core.coord module provides various coordinate manpulation
 and transformation functions.
 """
-
 import math
 
 from ait.core import dmc
@@ -36,8 +34,8 @@ class Ellipsoid(object):
         """
         self.a = a
         self.b = b
-        self.a2 = a ** 2
-        self.b2 = b ** 2
+        self.a2 = a**2
+        self.b2 = b**2
         self.f = (a - b) / a
         self.e2 = 1 - (self.b2 / self.a2)
         self.ep2 = (self.a2 - self.b2) / self.b2

@@ -11,24 +11,20 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Logging
 
 The ait.core.log module logs warnings, errors, and other information to
 standard output and via syslog.
 """
-
-import sys
-import socket
 import datetime
-import time
-from typing import Callable, Optional
-
-import logging
 import logging.handlers
+import socket
+import sys
+import time
+from typing import Callable
+from typing import Optional
 
-import ait
 import ait.core
 
 

@@ -11,12 +11,10 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-from collections import defaultdict
-import pickle
 import importlib
+import pickle
+from collections import defaultdict
 
-import gevent
 import gevent.monkey
 
 gevent.monkey.patch_all()

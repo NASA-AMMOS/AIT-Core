@@ -11,17 +11,15 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 This module, pcap.py, is a library to read/write PCAP-formatted files with
 simple open, read, write, close functions.  (PCAP - packet capture)
 """
-
 import builtins
 import calendar
+import datetime
 import math
 import struct
-import datetime
 
 from .dmc import get_timestamp_utc
 from ait.core import log
@@ -53,6 +51,7 @@ class PCapGlobalHeader:
 
         https://wiki.wireshark.org/Development/LibpcapFileFormat
     """
+
     def __init__(self, stream=None):
         """Creates a new PCapGlobalHeader with default values.  If a stream
         is given, the global header data is read from it.
@@ -65,10 +64,10 @@ class PCapGlobalHeader:
             self.magic_number = 0xA1B2C3D4  # detects file format and byte ordering
             self.version_major = 2
             self.version_minor = 4
-            self.thiszone = 0       # GMT to local correction (0 == GMT)
-            self.sigfigs = 0        # accuracy of timestamps
-            self.snaplen = 65535    # max length of captured packets, in octets
-            self.network = 147      # data link type  (147-162 are reserved for private use)
+            self.thiszone = 0  # GMT to local correction (0 == GMT)
+            self.sigfigs = 0  # accuracy of timestamps
+            self.snaplen = 65535  # max length of captured packets, in octets
+            self.network = 147  # data link type  (147-162 are reserved for private use)
             self._data = self.pack()
         else:
             self.read(stream)
@@ -79,10 +78,12 @@ class PCapGlobalHeader:
 
     def __str__(self):
         """Returns this PCapGlobalHeader as a binary string."""
-        return f'PCapGlobalHeader Class: \r\n   format={self._format}, magic number={self.magic_number},'\
-               f'major version={self.version_major}, minor version={self.version_minor}, \r\n' \
-               f'   time zone={self.thiszone}, timestamp accuracy={self.sigfigs}, max packet size={self.snaplen}, '\
-               f'network={self.network}'
+        return (
+            f"PCapGlobalHeader Class: \r\n   format={self._format}, magic number={self.magic_number},"
+            f"major version={self.version_major}, minor version={self.version_minor}, \r\n"
+            f"   time zone={self.thiszone}, timestamp accuracy={self.sigfigs}, max packet size={self.snaplen}, "
+            f"network={self.network}"
+        )
 
     def pack(self):
         return struct.pack(
@@ -161,9 +162,11 @@ class PCapPacketHeader:
     def __str__(self):
         """Returns this PCapPacketHeader as a binary string."""
 
-        return f'PCapPacketHeader Class: \r\n   format={self._format}, timestamp seconds={self.ts_sec},' \
-               f'timestamp microseconds={self.ts_usec}.\r\n   number of octets in file={self.incl_len}, ' \
-               f'actual length of packet={self.orig_len}'
+        return (
+            f"PCapPacketHeader Class: \r\n   format={self._format}, timestamp seconds={self.ts_sec},"
+            f"timestamp microseconds={self.ts_usec}.\r\n   number of octets in file={self.incl_len}, "
+            f"actual length of packet={self.orig_len}"
+        )
 
     def pack(self):
         """Returns this PCapPacketHeader as a binary string."""
@@ -493,9 +496,7 @@ def query(starttime, endtime, output=None, *filenames):
             with open(filename, "r") as stream:
                 for header, packet in stream:
                     if packet is not None:
-                        if (
-                                starttime <= header.timestamp <= endtime
-                        ):
+                        if starttime <= header.timestamp <= endtime:
                             outfile.write(packet, header=header)
 
 

@@ -1,6 +1,5 @@
-import zmq.green as zmq
-import gevent
 import gevent.monkey
+import zmq.green as zmq
 
 gevent.monkey.patch_all()
 
@@ -86,7 +85,8 @@ class Broker(gevent.Greenlet):
                     log.warn(
                         f"The outbound stream {output} does not "
                         "exist so will not receive messages "
-                        f"from {plugin}")
+                        f"from {plugin}"
+                    )
                 else:
                     Broker.subscribe(subscriber, plugin.name)
 
@@ -128,15 +128,18 @@ class Broker(gevent.Greenlet):
             log.warn(
                 f"Multiple output streams found with {cmd_sub_flag_field} "
                 f"field enabled, {cmd_stream.name} was selected as the "
-                "default.")
+                "default."
+            )
 
         # No stream yet, so just grab the first output stream
         if cmd_stream is None:
             cmd_stream = next((x for x in self.outbound_streams), None)
             if cmd_stream is not None:
-                log.warn("No output stream was designated as the command "
-                         f"subscriber, {cmd_stream.name} was selected as "
-                         "the default.")
+                log.warn(
+                    "No output stream was designated as the command "
+                    f"subscriber, {cmd_stream.name} was selected as "
+                    "the default."
+                )
 
         if cmd_stream is not None:
             Broker.subscribe(cmd_stream, self.command_topic)
@@ -163,14 +166,14 @@ class Broker(gevent.Greenlet):
 
         # Search for output stream instance by name
         subscriber = next(
-            (x for x in self.outbound_streams if
-             x.name == output_name), None
+            (x for x in self.outbound_streams if x.name == output_name), None
         )
         if subscriber is None:
             log.warn(
                 f"The outbound stream {output_name} does not "
                 "exist so will not receive messages "
-                f"from {topic_name}")
+                f"from {topic_name}"
+            )
             return False
         else:
             # Finally, setup the output stream's subscription

@@ -16,10 +16,10 @@ import hashlib
 import io
 import os
 import pickle
+
 import yaml
 
 import ait
-
 from ait.core import dmc
 from ait.core import dtype
 from ait.core import log
@@ -187,7 +187,6 @@ def hash_file(filename):
 
     # open file for reading in binary mode
     with open(filename, "rb") as file:
-
         # loop till the end of the file
         chunk = 0
         while chunk != b"":
@@ -466,7 +465,7 @@ class FSWTabDictCache(object):
             if self.dirty:
                 self.fswtabdict = FSWTabDict(self.filename)
                 util.update_cache(self.filename, self.cachename, self.fswtabdict)
-                log.info(f'Loaded new pickle file: {self.cachename}')
+                log.info(f"Loaded new pickle file: {self.cachename}")
             else:
                 with open(self.cachename, "rb") as stream:
                     self.fswtabdict = pickle.load(stream)

@@ -12,6 +12,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import os
@@ -203,6 +204,7 @@ class TestErrorHandler:
         eh.process(1, [1, 2], error, messages)
         assert pretty_mock.called
         pretty_mock.assert_called_with(1, 3, error, messages)
+
 
 def validate_schema(args):
     msgs = []

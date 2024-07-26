@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage:
     ait-bsc-stop-handler [options] <name>
@@ -23,9 +21,9 @@ Usage:
 --service-port=<port> The port for the BSC REST service connection
                       [default: 8080]
 """
+import argparse
 
 import requests
-import argparse
 
 
 def main():

@@ -11,27 +11,29 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT YAML Validator
 
 The ait.core.val module provides validation of content for YAML
 files based on specified schema.
 """
-
+import collections
 import json
+import linecache
+import re
+
+import jsonschema
 import yaml
 from yaml.scanner import ScannerError
-import re
-import linecache
-import jsonschema
-import collections
 
-from ait.core import cmd, dtype, log, tlm, util
+from ait.core import cmd
+from ait.core import dtype
+from ait.core import log
+from ait.core import tlm
+from ait.core import util
 
 
 class YAMLProcessor(object):
-
     __slots__ = ["ymlfile", "data", "loaded", "doclines", "_clean"]
 
     def __init__(self, ymlfile=None, clean=True):
@@ -118,7 +120,6 @@ class YAMLProcessor(object):
 
 
 class SchemaProcessor(object):
-
     __slots__ = ["_schemafile", "data", "_proc_schema", "loaded"]
 
     def __init__(self, schemafile=None):
@@ -137,7 +138,6 @@ class SchemaProcessor(object):
 
     @property
     def schemafile(self):
-
         return self._schemafile
 
     @schemafile.setter
@@ -234,7 +234,6 @@ class ErrorHandler(object):
                 context = collections.deque(maxlen=20)
                 tag = "        <<<<<<<<< Expects: %s <<<<<<<<<\n" ""
                 for cnt, _path in enumerate(error.relative_path):
-
                     # Need to set the key we are looking, and then check the array count
                     # if it is an array, we have some interesting checks to do
                     if int(cnt) % 2 == 0:
@@ -357,9 +356,16 @@ class ErrorHandler(object):
 
 
 class Validator(object):
-
-    __slots__ = ["_ymlfile", "_schemafile", "_ymlproc", "_schemaproc", "ehandler",
-                 "validate_list", "yml_dir", "yml_files_to_validate"]
+    __slots__ = [
+        "_ymlfile",
+        "_schemafile",
+        "_ymlproc",
+        "_schemaproc",
+        "ehandler",
+        "validate_list",
+        "yml_dir",
+        "yml_files_to_validate",
+    ]
 
     def __init__(self, ymlfile, schemafile):
         """
@@ -402,27 +408,31 @@ class Validator(object):
         """
         # The first yaml file to validate will include a full path
         # Any included yaml files will have the path added.
-        if '/' in yml_file:
+        if "/" in yml_file:
             self.validate_list.append(yml_file)
         else:
-            yml_file = f'{self.yml_dir}/{yml_file}'
+            yml_file = f"{self.yml_dir}/{yml_file}"
 
         try:
             with open(yml_file, "r") as yml_fh:
                 for line in yml_fh:
                     if not line.strip().startswith("#") and "!include" in line:
-                        included_file_name = line.split('!include ')[-1].strip()
-                        self.validate_list.append(f'{self.yml_dir}/{included_file_name}')
+                        included_file_name = line.split("!include ")[-1].strip()
+                        self.validate_list.append(
+                            f"{self.yml_dir}/{included_file_name}"
+                        )
                         # Look for includes within included file
                         self.get_included_files(included_file_name)
                 # Check and flag multiple includes
                 if len(self.validate_list) != len(set(self.validate_list)):
-                    log.info(f'WARNING: Validate: Duplicate config files in the '
-                             f'include tree. {self.validate_list}')
+                    log.info(
+                        f"WARNING: Validate: Duplicate config files in the "
+                        f"include tree. {self.validate_list}"
+                    )
                 return set(self.validate_list)
         except RecursionError as e:
             log.info(
-                f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                f"ERROR: {e}: Infinite loop: check that yaml config files are not looping "
                 'back and forth on one another through the "!include" statements.'
             )
 
@@ -508,9 +518,7 @@ class Validator(object):
                 # Loop through the errors (if any) and set valid = False if any are found
                 # Display the error message
                 for error in v.iter_errors(data):
-                    msg = (
-                        f"Schema-based validation failed for YAML file ' {self._ymlfile} '"
-                    )
+                    msg = f"Schema-based validation failed for YAML file ' {self._ymlfile} '"
                     self.ehandler.process(
                         docnum, self._ymlproc.doclines, error, messages
                     )
