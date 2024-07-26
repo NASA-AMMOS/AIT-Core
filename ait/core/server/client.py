@@ -134,6 +134,7 @@ class OutputClient(ZMQInputClient):
         super(OutputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
+        self.protocol = "UDP"
         output_spec = kwargs.get("output", None)
         if output_spec is None:
             raise ValueError(f"Invalid output client specification: {output_spec}")
@@ -167,6 +168,7 @@ class OutputClient(ZMQInputClient):
             and type(output_spec[1]) is str
             and type(output_spec[2]) is int
         ):
+            self.protocol = "TCP"
             self.host = output_spec[1]
             self.out_port = output_spec[2]
             self.pub = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -175,7 +177,11 @@ class OutputClient(ZMQInputClient):
         self.context = zmq_context
 
     def publish(self, msg):
-        self.pub.sendto(msg, (self.host, int(self.out_port)))
+        if self.protocol == "TCP":
+            self.pub.connect((self.host, int(self.out_port)))
+            self.pub.sendall(msg)
+        else:
+            self.pub.sendto(msg, (self.host, int(self.out_port)))
         log.debug("Published message from {}".format(self))
 
 
@@ -289,6 +295,7 @@ class TCPInputServer(ZMQClient, gs.StreamServer):
                     break
                 log.debug("{} received message from port {}".format(self, address))
                 self.process(data)
+                gevent.sleep(0)  # pass control back
 
 
 class TCPInputClient(ZMQClient):
