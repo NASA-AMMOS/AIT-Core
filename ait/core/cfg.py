@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Configuration
 
@@ -19,17 +18,18 @@ The ait.core.cfg module provides classes and functions to manage
 (re)configurable aspects of AIT via a YAML configuration file.
 
 """
-
 import os
 import platform
+import re
 import sys
 import time
-import re
-import yaml
 from io import IOBase
 
+import yaml
+
 import ait
-from ait.core import log, util
+from ait.core import log
+from ait.core import util
 
 
 DEFAULT_PATH_VARS = {
@@ -61,8 +61,9 @@ def expand_config_paths(
 
             for p in cleaned:
                 if not os.path.exists(p):
-                    msg = "Config parameter {}.{} specifies nonexistent path {}".format(
-                        parameter_key, name, p
+                    msg = (
+                        "Config parameter {}.{} specifies nonexistent "
+                        "path {}".format(parameter_key, name, p)
                     )
                     log.warn(msg)
 
@@ -176,7 +177,7 @@ def load_yaml(filename=None, data=None):
         if filename:
             data = open(filename, "rt")
 
-        config = yaml.load(data, Loader=yaml.Loader)
+        config = yaml.safe_load(data)
 
         if isinstance(data, IOBase):
             data.close()
@@ -204,13 +205,13 @@ class AitConfigError(Exception):
     pass
 
 
-class AitConfigMissing(Exception):
+class AitConfigMissingError(Exception):
     """Raised when a AIT configuration parameter is missing."""
 
     def __init__(self, param):
         values = param, ait.config._filename
         format = "The parameter %s is missing from config.yaml (%s)."
-        super(AitConfigMissing, self).__init__(format % values)
+        super(AitConfigMissingError, self).__init__(format % values)
         self.param = param
 
 
@@ -342,7 +343,7 @@ class AitConfig(object):
                 paths["mib"] = data["mib"]["path"]
 
         except KeyError as e:
-            raise AitConfigMissing(str(e))
+            raise AitConfigMissingError(str(e))
         except Exception as e:
             raise AitConfigError("Error reading data paths: %s" % e)
 

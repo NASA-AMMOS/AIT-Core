@@ -221,7 +221,7 @@ def test_datapaths():
     try:
         paths = config._datapaths
         assert False
-    except cfg.AitConfigMissing as e:
+    except cfg.AitConfigMissingError as e:
         assert True
 
 

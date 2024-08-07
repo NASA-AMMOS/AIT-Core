@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Limits
 
@@ -20,20 +19,26 @@ The ait.core.limits module provides limit definitions for telemetry fields.
 The expected limits.yaml should follow this schema:
 
 - !Limit
-  source:      -- telemetry source for the limit. should follow format 'Packet.field_name'
+  source:      -- telemetry source for the limit. should follow format
+                  'Packet.field_name'
   desc:        -- description of the limit
-  units:       -- the units used for possible conversion depending on the units set in the
-                  telemetry dictionary
+  units:       -- the units used for possible conversion depending on
+                  the units set in the telemetry dictionary
   lower:       -- lower limits
-    error:     -- trigger error if telemetry value exceeds this lower bound (exclusive)
-    warn:      -- trigger warning if telemetry value exceeds this lower bound (exclusive)
+    error:     -- trigger error if telemetry value exceeds this lower
+                  bound (exclusive)
+    warn:      -- trigger warning if telemetry value exceeds this lower
+                  bound (exclusive)
   upper:       -- upper limits
-    error:     -- trigger error if telemetry value exceeds this upper bound (exclusive)
-    warn:      -- trigger warning if telemetry value exceeds this upper bound (exclusive)
+    error:     -- trigger error if telemetry value exceeds this upper
+                  bound (exclusive)
+    warn:      -- trigger warning if telemetry value exceeds this upper
+                  bound (exclusive)
   value:       -- enumerated values to trigger error/warning
     error:     -- trigger error if telemetry value == or in list of strings
     warn:      -- trigger warning if telemetry value == or in list of strings
-  when:        -- when condition for specifying the necessary state when this limit applies
+  when:        -- when condition for specifying the necessary state when this
+                  limit applies
   persist:     -- number of seconds the value must persist before limits trigger
 
 For example:
@@ -62,14 +67,15 @@ For example:
         - BAR
 
 """
-
 import os
-import pkg_resources
-import yaml
 from io import IOBase
 
+import pkg_resources
+import yaml
+
 import ait
-from ait.core import json, util
+from ait.core import json
+from ait.core import util
 
 
 class Thresholds(json.SlotSerializer, object):
@@ -201,7 +207,7 @@ class LimitsDict(dict):
             else:
                 stream = content
 
-            limits = yaml.load(stream, Loader=yaml.Loader)
+            limits = yaml.safe_load(stream)
 
             for lmt in limits:
                 self.add(lmt)
@@ -230,6 +236,6 @@ def YAMLCtor_LimitDefinition(loader, node):  # noqa
     return createLimitDefinition(**fields)  # noqa
 
 
-yaml.add_constructor("!Limit", YAMLCtor_LimitDefinition)
+yaml.SafeLoader.add_constructor("!Limit", YAMLCtor_LimitDefinition)
 
 util.__init_extensions__(__name__, globals())

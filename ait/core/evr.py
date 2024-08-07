@@ -11,20 +11,22 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Event Record (EVR) Reader
 
 The ait.core.evr module is used to read the EVRs from a YAML file.
 """
-
 import os
-import pkg_resources
 import re
+
+import pkg_resources
 import yaml
 
 import ait.core
-from ait.core import dtype, json, log, util
+from ait.core import dtype
+from ait.core import json
+from ait.core import log
+from ait.core import util
 
 
 class EVRDict(dict):
@@ -59,7 +61,7 @@ class EVRDict(dict):
             stream = content
 
         try:
-            evrs = yaml.load(stream, Loader=yaml.Loader)
+            evrs = yaml.safe_load(stream)
         except IOError as e:
             msg = "Could not load EVR YAML '{}': '{}'".format(stream, str(e))
             log.error(msg)
@@ -196,7 +198,9 @@ class EVRDefn(json.SlotSerializer, object):
                 data_chunks.append(d)
             # TODO: Make this not suck
             except Exception:
-                msg = "Unable to format EVR Message with data {}".format(evr_hist_data)
+                msg = "Unable to format EVR Message with data " "{}".format(
+                    evr_hist_data
+                )
                 log.error(msg)
                 raise ValueError(msg)
 
@@ -212,9 +216,9 @@ class EVRDefn(json.SlotSerializer, object):
         if len(formatters) == 0:
             return self._message
         else:
-            # Python format strings cannot handle size formatter information. So something
-            # such as %llu needs to be adjusted to be a valid identifier in python by
-            # removing the size formatter.
+            # Python format strings cannot handle size formatter information.
+            # So something such as %llu needs to be adjusted to be a valid
+            # identifier in python by removing the size formatter.
             msg = self._message
             for f in formatters:
                 if len(f) > 1:
@@ -237,6 +241,6 @@ def YAMLCtor_EVRDefn(loader, node):  # noqa
     return createEVRDefn(**fields)  # noqa
 
 
-yaml.add_constructor("!EVR", YAMLCtor_EVRDefn)
+yaml.SafeLoader.add_constructor("!EVR", YAMLCtor_EVRDefn)
 
 util.__init_extensions__(__name__, globals())
