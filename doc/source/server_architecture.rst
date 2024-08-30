@@ -192,3 +192,31 @@ Here is an example of how the **server** portion of **config.yaml** should look:
                     - command_flightlike_stream
                 output:
                     - 3075
+
+
+
+Notes on Security
+-----------------
+
+AIT provides a light-weight implementation and configuration to make installation and setup straightforward for new users.
+However, there are real-world security considerations that projects should take into account as part of their adaptation.
+While many concerns are general, actual implementation details are expected to vary per project.
+As such, those specifics should be discussed with your security and operations teams.
+
+
+Network Security
+^^^^^^^^^^^^^^^^
+
+AIT uses ZeroMQ as the underlying messaging library with no security mechanisms enabled by default.
+While ZeroMQ port-based input streams are supported, we recommend that adaptations not expose unprotected ports.  Instead consider alternate mechanisms, such as Plugins or network service, which publish messages to ZeroMQ.
+For further protection that includes authentication and encryption, we recommend utilizing CurveZMQ (http://curvezmq.org/), which provides security protocols for ZeroMQ.
+
+
+Configuration Security
+^^^^^^^^^^^^^^^^^^^^^^
+
+AIT uses configurations files that provide details for telemetry, commands, databases, and much more.
+These configuration files, if left unsecured, could provide an entry point for bad-actors to introduce exploits.
+As such, we highly recommend that all configuration files and working directories be secured from unauthorized edits or replacement.
+
+
