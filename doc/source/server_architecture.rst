@@ -217,6 +217,6 @@ Configuration Security
 
 AIT uses configurations files that provide details for telemetry, commands, databases, and much more.
 These configuration files, if left unsecured, could provide an entry point for bad-actors to introduce exploits.
-As such, we highly recommend that all configuration files and working directories be secured from unauthorized edits or replacement.
+As such, we highly recommend that all configuration files and working directories be secured from unauthorized edits or replacement via ownership and access controls.
 
 
