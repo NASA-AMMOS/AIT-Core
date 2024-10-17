@@ -744,7 +744,7 @@ class PacketExpression:
     """PacketExpression
 
     A Packet Expression is a simple mathematical expression that can
-    be evaluted in the context of a Packet.  Names in the formula
+    be evaluated in the context of a Packet.  Names in the formula
     refer to fields in the packet.
 
     Packet Expressions provide a convenient mechanism to express and

@@ -33,6 +33,7 @@ gevent-websocket = '0.10.1'
 pyzmq            = '24.0.0'
 gipc             = "^1.1.0"
 setproctitle = "^1.2.3"
+msgpack          = '*'
 
 [tool.poetry.dev-dependencies]
 black                     = '*'

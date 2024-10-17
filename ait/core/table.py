@@ -14,8 +14,6 @@
 import datetime
 import hashlib
 import io
-import os
-import pickle
 
 import yaml
 
@@ -457,27 +455,11 @@ class FSWTabDictCache(object):
             filename = ait.config.get("table.filename")
 
         self.filename = filename
-        self.cachename = os.path.splitext(filename)[0] + ".pkl"
         self.fswtabdict = None
-
-    @property
-    def dirty(self):
-        """True if the pickle cache needs to be regenerated, False to
-        use current pickle binary"""
-        return util.check_yaml_timestamps(self.filename, self.cachename)
 
     def load(self):
         if self.fswtabdict is None:
-            if self.dirty:
-                self.fswtabdict = FSWTabDict(self.filename)
-                util.update_cache(self.filename, self.cachename, self.fswtabdict)
-                log.info(f"Loaded new pickle file: {self.cachename}")
-            else:
-                with open(self.cachename, "rb") as stream:
-                    self.fswtabdict = pickle.load(stream)
-                log.info(
-                    "Current pickle file loaded: " f'{self.cachename.split("/")[-1]}'
-                )
+            self.fswtabdict = FSWTabDict(self.filename)
 
         return self.fswtabdict
 

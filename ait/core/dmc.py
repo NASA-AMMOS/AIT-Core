@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """AIT DeLorean Motor Company (DMC)
 
 The ait.dmc module provides utilities to represent, translate, and
@@ -22,15 +21,17 @@ Many functions assume the GPS (and ISS) epoch: January 6, 1980 at
 midnight.
 
 """
-
 import calendar
 import datetime
 import math
 import os.path
-import pickle
 from typing import Tuple
 
+import msgpack  # type: ignore
 import requests
+from msgpack.exceptions import ExtraData  # type: ignore
+from msgpack.exceptions import FormatError  # type: ignore
+from msgpack.exceptions import StackError  # type: ignore
 
 import ait.core
 from ait.core import log
@@ -175,8 +176,8 @@ def to_gmst(dt=None) -> float:
 
     t_ut1 = (jd - 2451545.0) / 36525.0
     gmst = 67310.54841 + (876600 * 3600 + 8640184.812866) * t_ut1
-    gmst += 0.093104 * t_ut1 ** 2
-    gmst -= 6.2e-6 * t_ut1 ** 3
+    gmst += 0.093104 * t_ut1**2
+    gmst -= 6.2e-6 * t_ut1**3
 
     # Convert from seconds to degrees, i.e.
     # 86400 seconds / 360 degrees = 240 seconds / degree
@@ -318,10 +319,22 @@ class UTCLeapSeconds(object):
         try:
             log.info("Attempting to load leapseconds.dat")
             with open(ls_file, "rb") as outfile:
-                self._data = pickle.load(outfile)
-            log.info("Loaded leapseconds config file successfully")
+                packed_data = outfile.read()
+
+            unpacked_data = msgpack.unpackb(packed_data, object_hook=mp_decode_datetime)
+
+            # msgpack converts tuples to lists, so have to convert back
+            if unpacked_data and "leapseconds" in unpacked_data:
+                lst_list = unpacked_data["leapseconds"]
+                tup_list = [tuple(lst) for lst in lst_list]
+                unpacked_data["leapseconds"] = tup_list
+                self._data = unpacked_data
+                log.info("Loaded leapseconds config file successfully")
+
         except IOError:
             log.info("Unable to locate leapseconds config file")
+        except (ValueError, ExtraData, FormatError, StackError):
+            log.info("Unable to load leapseconds.dat")
 
         if not (self._data and self.is_valid()):
             try:
@@ -370,7 +383,9 @@ class UTCLeapSeconds(object):
             raise ValueError(msg)
 
         text = r.text.split("\n")
-        lines = [line for line in text if line.startswith("#@") or not line.startswith("#")]
+        lines = [
+            line for line in text if line.startswith("#@") or not line.startswith("#")
+        ]
 
         data = {"valid": None, "leapseconds": []}
         data["valid"] = datetime.datetime(1900, 1, 1) + datetime.timedelta(
@@ -391,10 +406,22 @@ class UTCLeapSeconds(object):
         log.info("Leapsecond data processed")
 
         self._data = data
+        packed_data = msgpack.packb(data, default=mp_encode_datetime)
         with open(ls_file, "wb") as outfile:
-            pickle.dump(data, outfile)
-
+            outfile.write(packed_data)
         log.info("Successfully generated leapseconds config file")
+
+
+def mp_decode_datetime(obj):
+    if "__datetime__" in obj:
+        obj = datetime.datetime.strptime(obj["as_str"], "%Y%m%dT%H:%M:%S.%f")
+    return obj
+
+
+def mp_encode_datetime(obj):
+    if isinstance(obj, datetime.datetime):
+        return {"__datetime__": True, "as_str": obj.strftime("%Y%m%dT%H:%M:%S.%f")}
+    return obj
 
 
 if not LeapSeconds:

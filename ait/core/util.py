@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,23 +11,19 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Utilities
 
 The ait.core.util module provides general utility functions.
 """
-
 import os
 import pydoc
 import stat
 import sys
-import time
-import zlib
 import tempfile
+import time
 import warnings
-
-import pickle
+import zlib
 
 import ait
 from ait.core import log
@@ -40,30 +34,14 @@ class ObjectCache(object):
         """
         Creates a new ObjectCache
 
-        Caches the Python object returned by loader(filename), using
-        Python's pickle object serialization mechanism.  An ObjectCache
-        is useful when loader(filename) is slow.
+        Caches the Python object returned by loader(filename).
+        An ObjectCache is useful when loader(filename) is slow.
 
-        The result of loader(filename) is cached to cachename, the
-        basename of filename with a '.pkl' extension.
-
-        Use the load() method to load, either via loader(filename) or
-        the pickled cache file, whichever was modified most recently.
+        Use the load() method to load
         """
         self._loader = loader
         self._dict = None
         self._filename = filename
-        self._cachename = os.path.splitext(filename)[0] + ".pkl"
-
-    @property
-    def cachename(self):
-        """The pickled cache filename"""
-        return self._cachename
-
-    @property
-    def dirty(self):
-        """True if the pickle cache needs to be regenerated, False to use current pickle binary"""
-        return check_yaml_timestamps(self.filename, self.cachename)
 
     @property
     def filename(self):
@@ -74,19 +52,12 @@ class ObjectCache(object):
         """
         Loads the Python object
 
-        Loads the Python object, either via loader (filename) or the
-        pickled cache file, whichever was modified most recently.
+        Loads the Python object via loader (filename).
         """
 
         if self._dict is None:
-            if self.dirty:
-                self._dict = self._loader(self.filename)
-                update_cache(self.filename, self.cachename, self._dict)
-                log.info(f'Loaded new pickle file: {self.cachename}')
-            else:
-                with open(self.cachename, "rb") as stream:
-                    self._dict = pickle.load(stream)
-                log.info(f'Current pickle file loaded: {self.cachename.split("/")[-1]}')
+            self._dict = self._loader(self.filename)
+
         return self._dict
 
 
@@ -98,74 +69,57 @@ else:
     timer = time.time
 
 
-def check_yaml_timestamps(yaml_file_name, cache_name):
+def check_yaml_timestamps(yaml_file_name, cache_file_name):
     """
-    Checks YAML configuration file timestamp and any 'included' YAML configuration file's
-    timestamp against the pickle cache file timestamp.
-    The term 'dirty' means that a yaml config file has a more recent timestamp than the
-    pickle cache file.  If a pickle cache file is found to be 'dirty' (return true) the
-    pickle cache file is not up-to-date, and a new pickle cache file must be generated.
-    If the cache file in not 'dirty' (return false) the existing pickle binary will
-    be loaded.
+    Checks YAML configuration file timestamp and any 'included' YAML
+    configuration file's timestamp against the cache file's timestamp.
+    The term 'dirty' means that a yaml config file has a more recent
+    timestamp than the cache file.  If file is found to be 'dirty'
+    (return True) the cache file can be considered not up-to-date.
+    If the other file in not 'dirty' (return False) the cache file can be
+    considered up-to-date.
 
     param: yaml_file_name: str
         Name of the yaml configuration file to be tested
-    param: cache_name: str
-        Filename with path to the cached pickle file for this config file.
+    param: cache_file_name: str
+        Filename with path to the cache file to be compared
 
     return: boolean
         True:
-            Indicates 'dirty' pickle cache: i.e. the file is not current, generate new binary
+            The cache file is not current, or does not exist
         False
-            Load current cache file
+            The cache file can be considered current
 
     """
-    # If no pickle cache exists return True to make a new one.
-    if not os.path.exists(cache_name):
-        log.debug('No pickle cache exists, make a new one')
+    # If no cache exists return True to make a new one.
+    if not os.path.exists(cache_file_name):
+        log.debug("No cache exists, make a new one")
         return True
-    # Has the yaml config file has been modified since the creation of the pickle cache
-    if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
-        log.info(f'{yaml_file_name} modified - make a new binary pickle cache file.')
+    # Has the yaml config file has been modified since the creation of the cache
+    if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_file_name):
+        log.info(f"{yaml_file_name} modified - make a new cache file.")
         return True
     # Get the directory of the yaml config file to be parsed
     dir_name = os.path.dirname(yaml_file_name)
-    # Open the yaml config file to look for '!includes' to be tested on the next iteration
+    # Open the yaml config file to look for '!includes' to be tested
+    # on the next iteration
     with open(yaml_file_name, "r") as file:
         try:
             for line in file:
                 if not line.strip().startswith("#") and "!include" in line:
                     check = check_yaml_timestamps(
-                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_name)
+                        os.path.join(dir_name, line.strip().split(" ")[2]),
+                        cache_file_name,
+                    )
                     if check:
                         return True
         except RecursionError as e:
             log.info(
-                f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
-                f'back and forth on one another through the "!include" statements.'
+                f"ERROR: {e}: Infinite loop: check that yaml config files "
+                "are not looping back and forth on one another through "
+                'the "!include" statements.'
             )
     return False
-
-
-def update_cache(yaml_file_name, cache_file_name, object_to_serialize):
-    """
-    Caches the result of loader (yaml_file_name) to pickle binary (cache_file_name), if
-    the yaml config file has been modified since the last pickle cache was created, i.e.
-    (the binary pickle cache is declared to be 'dirty' in 'check_yaml_timestamps()').
-
-    param: yaml_file_name: str
-        Name of the yaml configuration file to be serialized ('pickled')
-    param: cache_file_name: str
-        File name with path to the new serialized cached pickle file for this config file.:
-    param: object_to_serialize: object
-        Object to serialize ('pickle') e.g. instance of 'ait.core.cmd.CmdDict'
-
-    """
-
-    msg = f'Saving updates from more recent {yaml_file_name} to {cache_file_name}.'
-    log.info(msg)
-    with open(cache_file_name, "wb") as output:
-        pickle.dump(object_to_serialize, output, -1)
 
 
 def __init_extensions__(modname, modsyms):  # noqa
@@ -293,11 +247,11 @@ def setDictDefaults(d, defaults):  # noqa
 
 def getDefaultDict(modname, config_key, loader, reload=False, filename=None):  # noqa
     """
-    Returns default AIT dictonary for modname
+    Returns default AIT dictionary for modname
 
     This helper function encapulates the core logic necessary to
-    (re)load, cache (via util.ObjectCache), and return the default
-    dictionary.  For example, in ait.core.cmd:
+    (re)load and return the default dictionary.
+    For example, in ait.core.cmd:
 
     def getDefaultDict(reload=False):
         return ait.util.getDefaultDict(__name__, 'cmddict', CmdDict, reload)
@@ -520,6 +474,7 @@ class TestFile:
     Whether the above assert passes or throws AssertionError, filename
     will be deleted.
     """
+
     __test__ = False
 
     def __init__(self, data, options):
