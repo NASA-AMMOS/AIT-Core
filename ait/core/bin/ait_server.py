@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-
 """
 Usage: ait-server
 
 Start the AIT telemetry server for managing telemety streams,
 command outputs, processing handlers, and plugins.
 """
-
 import argparse
 
 from ait.core.server import Server

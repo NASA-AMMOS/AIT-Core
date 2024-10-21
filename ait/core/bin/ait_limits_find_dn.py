@@ -12,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 ait-limits-find-dn
 
@@ -39,7 +38,6 @@ example value limit:
           - TABLE_FOO
           - TABLE_BAR
 """
-
 from ait.core import limits
 from ait.core import log
 from ait.core import tlm

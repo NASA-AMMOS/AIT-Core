@@ -1,7 +1,6 @@
-import gevent
-import gevent.socket
-import gevent.server as gs
 import gevent.monkey
+import gevent.server as gs
+import gevent.socket
 
 gevent.monkey.patch_all()
 
@@ -27,13 +26,12 @@ class ZMQClient(object):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         self.context = zmq_context
         # open PUB socket & connect to broker
         self.pub = self.context.socket(zmq.PUB)
         self.pub.connect(zmq_proxy_xsub_url.replace("*", "localhost"))
-        if 'listener' in kwargs and isinstance(kwargs['listener'], int) :
-            kwargs['listener'] = "127.0.0.1:"+str(kwargs['listener'])
+        if "listener" in kwargs and isinstance(kwargs["listener"], int):
+            kwargs["listener"] = "127.0.0.1:" + str(kwargs["listener"])
         # calls gevent.Greenlet or gs.DatagramServer __init__
         super(ZMQClient, self).__init__(**kwargs)
 
@@ -89,7 +87,6 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         super(ZMQInputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
@@ -134,7 +131,6 @@ class PortOutputClient(ZMQInputClient):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         super(PortOutputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
@@ -162,7 +158,6 @@ class PortInputClient(ZMQClient, gs.DatagramServer):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         if "input" in kwargs and type(kwargs["input"][0]) is int:
             super(PortInputClient, self).__init__(
                 zmq_context,

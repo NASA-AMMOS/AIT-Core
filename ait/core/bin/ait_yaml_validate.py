@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 usage: ait-yaml-validate
 
@@ -43,14 +41,17 @@ Examples:
   $ ait-yaml-validate --tlm --yaml /path/to/tlm.yaml
   $ ait-yaml-validate --yaml /path/to/yaml --schema /path/to/schema
 """
-
-
 import argparse
 import os
 import sys
 
 import ait
-from ait.core import cmd, evr, log, tlm, val, limits
+from ait.core import cmd
+from ait.core import evr
+from ait.core import limits
+from ait.core import log
+from ait.core import tlm
+from ait.core import val
 
 
 def validate(validator, yml, schema):

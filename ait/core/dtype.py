@@ -11,8 +11,8 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 from typing import Optional
+
 from ait.core import util
 
 """AIT Primitive Data Types (PDT)
@@ -175,7 +175,7 @@ class PrimitiveType:
             self._max = 2 ** (self.nbits - 1)
             self._min = -1 * (self.max - 1)
         elif not self.string:
-            self._max = 2 ** self.nbits - 1
+            self._max = 2**self.nbits - 1
             self._min = 0
 
     def __eq__(self, other):
@@ -811,7 +811,7 @@ ComplexTypeMap = {
 
 
 class CustomTypes:
-    '''Pseudo-ABC for users to inject custom types into AIT
+    """Pseudo-ABC for users to inject custom types into AIT
 
     CustomTypes is the vector through which users can inject custom types that
     they create into the toolkit. `dtype.get` is used throughout AIT to fetch
@@ -822,14 +822,14 @@ class CustomTypes:
     Custom classes must inherit from PrimitiveType. For examples of "custom"
     types look at the implementation of the `ComplexTypeMap` classes. All of
     these build on top of PrimitiveType in some way.
-    '''
+    """
 
     def get(self, typename: str) -> Optional[PrimitiveType]:
-        '''Retrieve an instance of a type's class given its name
+        """Retrieve an instance of a type's class given its name
 
         Maps a class name to an instance of its respective class. Should
         return None if no match is found.
-        '''
+        """
         return None
 
 

@@ -11,18 +11,17 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 import datetime
 import os
 import struct
-import warnings
 import time
-
+import warnings
 from unittest import mock
 
 from gevent import monkey
 
-from ait.core import dmc, pcap
+from ait.core import dmc
+from ait.core import pcap
 from ait.core.util import TestFile
 
 monkey.patch_all()
@@ -32,7 +31,7 @@ TmpFilename = None
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    with TestFile('', "wb") as filename:
+    with TestFile("", "wb") as filename:
         TmpFilename = filename
 
 
