@@ -11,11 +11,12 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 import sys
 
+from ait.core import cfg
+from ait.core import log
+
 # cfg isn't used but we want the AIT-level config attribute created
-from ait.core import cfg, log  # noqa
 
 
 def deprecated(message):
@@ -45,3 +46,6 @@ sys.modules["ait"].DEFAULT_CMD_ZMQ_SLEEP = 1  # type: ignore[attr-defined]
 
 sys.modules["ait"].SERVER_DEFAULT_XSUB_URL = "tcp://*:5559"  # type: ignore[attr-defined]
 sys.modules["ait"].SERVER_DEFAULT_XPUB_URL = "tcp://*:5560"  # type: ignore[attr-defined]
+
+sys.modules["ait"].MIN_PORT = 1024  # type: ignore[attr-defined]
+sys.modules["ait"].MAX_PORT = 65535  # type: ignore[attr-defined]
