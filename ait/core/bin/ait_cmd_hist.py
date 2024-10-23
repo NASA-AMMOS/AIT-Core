@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
 import argparse
 
-from ait.core import log, pcap
+from ait.core import log
+from ait.core import pcap
 
 
 """Query all commands from a Command History PCAP"""

@@ -92,8 +92,10 @@ class FalseWaitError(Exception):
 
     @property
     def msg(self):
-        s = 'FalseWaitError: "False" boolean passed as argument to wait. Ensure wait ' \
+        s = (
+            'FalseWaitError: "False" boolean passed as argument to wait. Ensure wait '
             'condition args are surrounded by lambda or " "'
+        )
 
         if self._msg:
             s += ": " + self._msg
@@ -110,7 +112,6 @@ class CmdAPI:
     """
 
     def __init__(self, udp_dest=None, cmddict=None, verbose=False, cmdtopic=None):
-
         if cmddict is None:
             cmddict = cmd.getDefaultCmdDict()
 
@@ -847,7 +848,9 @@ class UIAPI(object):
             log.error("User prompt request failed due to too many redirects")
             ret = None
         except requests.exceptions.Timeout:
-            raise APITimeoutError(timeout=conn_timeout, msg="User confirm prompt timed out")
+            raise APITimeoutError(
+                timeout=conn_timeout, msg="User confirm prompt timed out"
+            )
         except KeyError:
             log.error("User prompt request received malformed response")
             ret = None

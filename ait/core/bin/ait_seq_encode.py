@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 usage:  ait-seq-encode mission_seq_SSS_desc_NNN.txt
 where:
@@ -27,12 +25,12 @@ Examples:
 
   $ ait-seq-encode seq/ait_seq_gps_reset_001.txt
 """
-
+import argparse
 import os
 import sys
-import argparse
 
-from ait.core import log, seq
+from ait.core import log
+from ait.core import seq
 
 
 def main():

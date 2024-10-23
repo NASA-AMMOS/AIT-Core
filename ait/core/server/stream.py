@@ -1,8 +1,10 @@
 import ait.core.log
-from .client import ZMQInputClient, PortInputClient, PortOutputClient
+from .client import PortInputClient
+from .client import PortOutputClient
+from .client import ZMQInputClient
 
 
-class Stream():
+class Stream:
     """
     This is the base Stream class that all streams will inherit from.
     It calls its handlers to execute on all input messages sequentially,

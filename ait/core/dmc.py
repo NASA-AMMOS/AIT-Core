@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """AIT DeLorean Motor Company (DMC)
 
 The ait.dmc module provides utilities to represent, translate, and
@@ -22,7 +21,6 @@ Many functions assume the GPS (and ISS) epoch: January 6, 1980 at
 midnight.
 
 """
-
 import calendar
 import datetime
 import math
@@ -175,8 +173,8 @@ def to_gmst(dt=None) -> float:
 
     t_ut1 = (jd - 2451545.0) / 36525.0
     gmst = 67310.54841 + (876600 * 3600 + 8640184.812866) * t_ut1
-    gmst += 0.093104 * t_ut1 ** 2
-    gmst -= 6.2e-6 * t_ut1 ** 3
+    gmst += 0.093104 * t_ut1**2
+    gmst -= 6.2e-6 * t_ut1**3
 
     # Convert from seconds to degrees, i.e.
     # 86400 seconds / 360 degrees = 240 seconds / degree
@@ -370,7 +368,9 @@ class UTCLeapSeconds(object):
             raise ValueError(msg)
 
         text = r.text.split("\n")
-        lines = [line for line in text if line.startswith("#@") or not line.startswith("#")]
+        lines = [
+            line for line in text if line.startswith("#@") or not line.startswith("#")
+        ]
 
         data = {"valid": None, "leapseconds": []}
         data["valid"] = datetime.datetime(1900, 1, 1) + datetime.timedelta(

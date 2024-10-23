@@ -279,7 +279,7 @@ class TestTableDecode(unittest.TestCase):
                 out_file.write(encoded)
 
             with open(temp_bin_file, "rb") as out_file:
-                 decoded = defn.decode(file_in=out_file)
+                decoded = defn.decode(file_in=out_file)
 
         # Check header
         assert decoded[0][0] == 13

@@ -1,9 +1,18 @@
+from gevent import Greenlet
+from gevent import sleep
+
 from ait.core.server.plugins import Plugin
-from gevent import Greenlet, sleep
 
 
 class PacketAccumulator(Plugin):
-    def __init__(self, inputs=None, outputs=None, zmq_args=None, timer_seconds=1, max_size_octets=1024):
+    def __init__(
+        self,
+        inputs=None,
+        outputs=None,
+        zmq_args=None,
+        timer_seconds=1,
+        max_size_octets=1024,
+    ):
         super().__init__(inputs, outputs, zmq_args)
 
         self.packet_queue = []

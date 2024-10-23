@@ -12,17 +12,15 @@
 # responsibility to obtain export licenses, or other export authority
 # as may be required before exporting such information to foreign
 # countries or providing access to foreign persons.
-
-
 """
 Consultative Committee for Space Data Systems (CCSDS)
 
 The ait.core.ccsds module provides CCSDS header definitions and
 datatypes.
 """
-
-
-from ait.core import json, tlm, util
+from ait.core import json
+from ait.core import tlm
+from ait.core import util
 
 
 class CcsdsDefinition(json.SlotSerializer, object):

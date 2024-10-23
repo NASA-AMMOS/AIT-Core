@@ -11,11 +11,12 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 import sys
 
+from ait.core import cfg  # noqa
+from ait.core import log
+
 # cfg isn't used but we want the AIT-level config attribute created
-from ait.core import cfg, log  # noqa
 
 
 def deprecated(message):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,18 +12,18 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Inserts telemetry into a database from one or more PCAP files.
 """
-
-
 import argparse
 import os
 import struct
 
 import ait
-from ait.core import db, log, tlm, pcap
+from ait.core import db
+from ait.core import log
+from ait.core import pcap
+from ait.core import tlm
 
 
 def main():
@@ -98,7 +97,6 @@ def main():
             log.info("Processing %s" % filename)
             with pcap.open(filename) as stream:
                 for header, pkt_data in stream:
-
                     try:
                         packet = tlm.Packet(defn, pkt_data)
 
