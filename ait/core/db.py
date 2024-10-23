@@ -11,24 +11,27 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """AIT Database
 
 The ait.db module provides a general database storage layer for
 commands and telemetry with several backends.
 """
-
-from abc import ABCMeta, abstractmethod
 import datetime as dt
 import importlib
 import itertools
 import math
 import os.path
-
 import sqlite3
+from abc import ABCMeta
+from abc import abstractmethod
 
 import ait
-from ait.core import cfg, cmd, dmc, evr, log, tlm
+from ait.core import cfg
+from ait.core import cmd
+from ait.core import dmc
+from ait.core import evr
+from ait.core import log
+from ait.core import tlm
 
 
 class AITDBResult:
@@ -701,12 +704,16 @@ class SQLiteBackend(GenericBackend):
         if isinstance(time, dt.datetime):
             time = time.strftime(dmc.RFC3339_Format)
 
-        sql = f'INSERT INTO "{packet._defn.name}" (PKTDATA, time) VALUES (?, ?)' \
-            if time \
+        sql = (
+            f'INSERT INTO "{packet._defn.name}" (PKTDATA, time) VALUES (?, ?)'
+            if time
             else f'INSERT INTO "{packet._defn.name}" (PKTDATA) VALUES (?)'
-        values = (sqlite3.Binary(packet._data), time) \
-            if time \
+        )
+        values = (
+            (sqlite3.Binary(packet._data), time)
+            if time
             else (sqlite3.Binary(packet._data))
+        )
 
         self._conn.execute(sql, values)
         self._conn.commit()

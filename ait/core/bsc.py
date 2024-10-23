@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Binary Stream Capturer
 
@@ -19,20 +18,20 @@ The ait.bsc module handles logging of network data to PCAP files
 along with the server definition for RESTful manipulation of running
 loggers.
 """
-
 import calendar
 import json
 import os
 import socket
 import time
 
-from bottle import request, Bottle
-import gevent
 import gevent.monkey
 import gevent.pool
 import gevent.socket
+from bottle import Bottle
+from bottle import request
 
-from ait.core import pcap, log
+from ait.core import log
+from ait.core import pcap
 
 gevent.monkey.patch_all()
 

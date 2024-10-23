@@ -13,7 +13,7 @@
 # information to foreign countries or providing access to foreign persons.
 import sys
 
-from ait.core import cfg
+from ait.core import cfg  # noqa
 from ait.core import log
 
 # cfg isn't used but we want the AIT-level config attribute created
