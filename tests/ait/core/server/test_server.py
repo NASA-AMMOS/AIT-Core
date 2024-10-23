@@ -356,7 +356,7 @@ class TestStreamCreation(object):
         created_stream = server._create_inbound_stream(config)
         assert type(created_stream) == ait.core.server.stream.UDPInputServerStream
         assert created_stream.name == "some_stream"
-        assert created_stream.inputs == [3333]
+        assert created_stream.inputs == 3333
         assert created_stream.handlers == []
 
     @mock.patch.object(ait.core.server.server.Server, "_create_handler")

@@ -1,0 +1,65 @@
+default:
+
+    cmddict:
+        filename:  ../config/cmd.yaml
+
+    tlmdict:
+        filename:  ../config/tlm.yaml
+
+    server:
+
+        inbound-streams:
+
+            - stream:
+                name: input_stream_debug_4
+                input:
+                    - input_stream_debug_1
+                    - input_stream_debug_2
+                    - input_stream_debug_3
+                handlers:
+                    - name: ait.core.server.handlers.DebugHandler
+                      handler_name: "Input Stream Handler"
+
+            - stream:
+                name: input_stream_debug_1
+                input:
+                    - "UDP:0.0.0.0:1234"
+                handlers:
+                    - name: ait.core.server.handlers.DebugHandler
+                      handler_name: "UDP Input Server Stream 1"
+
+
+            - stream:
+                name: input_stream_debug_2
+                input:
+                    - "TCP:0.0.0.0:1235"
+                handlers:
+                    - name: ait.core.server.handlers.DebugHandler
+                      handler_name: "TCP Input Server Stream 2"
+
+            - stream:
+                name: input_stream_debug_3
+                input:
+                    - "TCP:tcp-server-send:1236"
+                handlers:
+                    - name: ait.core.server.handlers.DebugHandler
+                      handler_name: "TCP Input Client Stream 3"
+
+        outbound-streams:
+            # - stream:
+            #     input:
+            #         - input_stream_debug_1
+            #     name: output_stream_debug_1
+            #     output:
+            #         - "TCP"
+            #         - "tcp-server"
+            #         - 1237
+
+            # - stream:
+            #     name: output_stream_debug_2
+            #     input:
+            #         - input_stream_debug_2
+            #     output:
+            #         - "UDP"
+            #         - "udp-server"
+            #         - 1236

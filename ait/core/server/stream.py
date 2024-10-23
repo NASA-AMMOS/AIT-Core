@@ -5,6 +5,7 @@ from .client import TCPInputServer
 from .client import UDPInputServer
 from .client import ZMQInputClient
 import ait
+from .utils import is_valid_address_spec
 
 
 class Stream:
@@ -75,6 +76,7 @@ class Stream:
                          if applicable
         """
         for handler in self.handlers:
+            ait.core.log.info(f"Message from topic: {topic}")
             output = handler.handle(input_data)
             if output:
                 input_data = output
@@ -140,62 +142,85 @@ def input_stream_factory(name, inputs, handlers, zmq_args=None):
 
     stream = None
 
-    if inputs is None or (type(inputs) is list and len(inputs) == 0):
+    if type(inputs) is not list or (type(inputs) is list and len(inputs) == 0):
         raise ValueError(f"Input stream specification invalid: {inputs}")
-    if type(inputs) is int and ait.MIN_PORT <= inputs <= ait.MAX_PORT:
-        stream = UDPInputServerStream(name, [inputs], handlers, zmq_args=zmq_args)
-    elif (
-        type(inputs) is list
-        and len(inputs) == 1
-        and type(inputs[0]) is int
-        and ait.MIN_PORT <= inputs[0] <= ait.MAX_PORT
-    ):
-        stream = UDPInputServerStream(name, inputs, handlers, zmq_args=zmq_args)
-    elif type(inputs) is list:
-        if len(inputs) == 3 and type(inputs[0]) is str and inputs[0].upper() == "TCP":
-            if type(inputs[1]) is str and inputs[1].lower() in [
-                "server",
-                "localhost",
-                "127.0.0.1",
-                "0.0.0.0",
-            ]:
-                if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
-                    stream = TCPInputServerStream(name, inputs[1:], handlers, zmq_args)
-                else:
-                    raise ValueError(f"Input stream specification invalid: {inputs}")
-            elif type(inputs[1]) is str and inputs[1].lower() not in [
-                "server",
-                "localhost",
-                "127.0.0.1",
-                "0.0.0.0",
-            ]:
-                if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
-                    stream = TCPInputClientStream(name, inputs[1:], handlers, zmq_args)
-                else:
-                    raise ValueError(f"Input stream specification invalid: {inputs}")
-            else:
-                raise ValueError(f"Input stream specification invalid: {inputs}")
-        elif len(inputs) == 3 and type(inputs[0]) is str and inputs[0].upper() == "UDP":
-            if type(inputs[1]) is str and inputs[1].lower() in [
-                "server",
-                "localhost",
-                "127.0.0.1",
-                "0.0.0.0",
-            ]:
-                if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
-                    stream = UDPInputServerStream(
-                        name, inputs[1:], handlers, zmq_args=zmq_args
-                    )
-                else:
-                    raise ValueError(f"Input stream specification invalid: {inputs}")
-            else:
-                raise ValueError(f"Input stream specification invalid: {inputs}")
-        elif all(isinstance(item, str) for item in inputs):
-            stream = ZMQStream(name, inputs, handlers, zmq_args=zmq_args)
-        else:
+    
+    # backwards compatability with original UDP server spec
+    if type(inputs) is list and type(inputs[0]) is int and ait.MIN_PORT <= inputs[0] <= ait.MAX_PORT:
+        stream = UDPInputServerStream(name, inputs[0], handlers, zmq_args=zmq_args)
+    elif is_valid_address_spec(inputs[0]):
+        protocol,hostname,port = inputs[0].split(':')
+        if int(port) < ait.MIN_PORT or int(port) > ait.MAX_PORT:
             raise ValueError(f"Input stream specification invalid: {inputs}")
+        if protocol.lower() == "tcp":
+            if hostname.lower() in ["server","localhost","127.0.0.1","0.0.0.0",]:
+                stream = TCPInputServerStream(name, inputs[0], handlers, zmq_args)
+            else:
+                stream = TCPInputClientStream(name, inputs[0], handlers, zmq_args)
+        else:
+            if hostname.lower() in ["server","localhost","127.0.0.1","0.0.0.0",]:
+                stream = UDPInputServerStream(name, inputs[0], handlers, zmq_args=zmq_args)
+            else:
+                raise ValueError(f"Input stream specification invalid: {inputs}")
+    elif all(isinstance(item, str) for item in inputs):
+        stream = ZMQStream(name, inputs, handlers, zmq_args=zmq_args)
     else:
         raise ValueError(f"Input stream specification invalid: {inputs}")
+
+
+                               
+    # elif (
+    #     type(inputs) is list
+    #     and len(inputs) == 1
+    #     and type(inputs[0]) is int
+    #     and ait.MIN_PORT <= inputs[0] <= ait.MAX_PORT
+    # ):
+    #     stream = UDPInputServerStream(name, inputs, handlers, zmq_args=zmq_args)
+    # elif type(inputs) is list:
+    #     if len(inputs) == 3 and type(inputs[0]) is str and inputs[0].upper() == "TCP":
+    #         if type(inputs[1]) is str and inputs[1].lower() in [
+    #             "server",
+    #             "localhost",
+    #             "127.0.0.1",
+    #             "0.0.0.0",
+    #         ]:
+    #             if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
+    #                 stream = TCPInputServerStream(name, inputs[1:], handlers, zmq_args)
+    #             else:
+    #                 raise ValueError(f"Input stream specification invalid: {inputs}")
+    #         elif type(inputs[1]) is str and inputs[1].lower() not in [
+    #             "server",
+    #             "localhost",
+    #             "127.0.0.1",
+    #             "0.0.0.0",
+    #         ]:
+    #             if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
+    #                 stream = TCPInputClientStream(name, inputs[1:], handlers, zmq_args)
+    #             else:
+    #                 raise ValueError(f"Input stream specification invalid: {inputs}")
+    #         else:
+    #             raise ValueError(f"Input stream specification invalid: {inputs}")
+    #     elif len(inputs) == 3 and type(inputs[0]) is str and inputs[0].upper() == "UDP":
+    #         if type(inputs[1]) is str and inputs[1].lower() in [
+    #             "server",
+    #             "localhost",
+    #             "127.0.0.1",
+    #             "0.0.0.0",
+    #         ]:
+    #             if type(inputs[2]) is int and ait.MIN_PORT <= inputs[2] <= ait.MAX_PORT:
+    #                 stream = UDPInputServerStream(
+    #                     name, inputs[1:], handlers, zmq_args=zmq_args
+    #                 )
+    #             else:
+    #                 raise ValueError(f"Input stream specification invalid: {inputs}")
+    #         else:
+    #             raise ValueError(f"Input stream specification invalid: {inputs}")
+    #     elif all(isinstance(item, str) for item in inputs):
+    #         stream = ZMQStream(name, inputs, handlers, zmq_args=zmq_args)
+    #     else:
+    #         raise ValueError(f"Input stream specification invalid: {inputs}")
+    # else:
+    #     raise ValueError(f"Input stream specification invalid: {inputs}")
 
     if stream is None:
         raise ValueError(f"Input stream specification invalid: {inputs}")

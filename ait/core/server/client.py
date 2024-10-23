@@ -32,6 +32,8 @@ class ZMQClient(object):
         self.pub.connect(zmq_proxy_xsub_url.replace("*", "localhost"))
         if "listener" in kwargs and isinstance(kwargs["listener"], int):
             kwargs["listener"] = "127.0.0.1:" + str(kwargs["listener"])
+        # if "listener" in kwargs and isinstance(kwargs["listener"], str):
+        #     kwargs["listener"] = kwargs["listener"]
         # calls gevent.Greenlet or gs.DatagramServer __init__
         super(ZMQClient, self).__init__(**kwargs)
 
@@ -200,25 +202,22 @@ class UDPInputServer(ZMQClient, gs.DatagramServer):
         **kwargs,
     ):
         if "input" in kwargs:
-            if type(kwargs["input"]) is int:
-                host_spec = kwargs["input"]
-            elif (
-                type(kwargs["input"]) in [list, tuple]
-                and len(kwargs["input"]) == 1
-                and type(kwargs["input"][0]) is int
-            ):
-                host_spec = kwargs["input"][0]
-            elif type(kwargs["input"]) in [list, tuple] and len(kwargs["input"]) == 2:
-                host_spec = (
-                    (
-                        "127.0.0.1"
-                        if kwargs["input"][0].lower() in ["127.0.0.1", "localhost"]
-                        else "0.0.0.0"
-                    ),
-                    kwargs["input"][1],
-                )
+            input = kwargs["input"]
+            if type(input) is int:
+                host_spec = input
+            elif utils.is_valid_address_spec(input):
+                protocol,hostname,port = input.split(":")
+                if protocol.lower() != "udp":
+                    raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
+                if hostname in ["127.0.0.1", "localhost"]:
+                    host_spec = port
+                elif hostname in ["0.0.0.0", "server"]:
+                    host_spec = f"0.0.0.0:{port}"
+                else:
+                    raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
+                
             else:
-                raise (ValueError("Invalid specification for UDPInputServer"))
+                raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
             super(UDPInputServer, self).__init__(
                 zmq_context,
                 zmq_proxy_xsub_url,
@@ -226,7 +225,7 @@ class UDPInputServer(ZMQClient, gs.DatagramServer):
                 listener=host_spec,
             )
         else:
-            raise (ValueError("Invalid specification for UDPInputServer"))
+            raise (ValueError("UDPInputServer: Invalid Specification"))
 
         # open sub socket
         self.sub = gevent.socket.socket(gevent.socket.AF_INET, gevent.socket.SOCK_DGRAM)
@@ -253,36 +252,39 @@ class TCPInputServer(ZMQClient, gs.StreamServer):
         self.cur_socket = None
         self.buffer = buffer
         if "input" in kwargs:
-            if (
-                type(kwargs["input"]) not in [tuple, list]
-                or kwargs["input"][0].lower()
-                not in ["server", "127.0.0.1", "localhost", "0.0.0.0"]
-                or type(kwargs["input"][1]) != int
-            ):
+            input = kwargs["input"]
+            if not utils.is_valid_address_spec(input):
                 raise (
                     ValueError(
-                        "TCPInputServer input must be tuple|list of (str,int) e.g. ('server',1234)"
+                        f"TCPInputServer: Invalid Specification {input}"
+                    )
+                )
+            protocol,hostname,port = input.split(":")
+            if protocol.lower() != "tcp" or hostname not in ["127.0.0.1", "localhost", "server", "0.0.0.0"]:
+                raise (
+                    ValueError(
+                        f"TCPInputServer: Invalid Specification {input}"
                     )
                 )
 
             self.sub = gevent.socket.socket(
                 gevent.socket.AF_INET, gevent.socket.SOCK_STREAM
             )
-            host = (
+            hostname = (
                 "127.0.0.1"
-                if kwargs["input"][0].lower() in ["127.0.0.1", "localhost"]
+                if hostname in ["127.0.0.1", "localhost"]
                 else "0.0.0.0"
             )
             super(TCPInputServer, self).__init__(
                 zmq_context,
                 zmq_proxy_xsub_url,
                 zmq_proxy_xpub_url,
-                listener=(host, kwargs["input"][1]),
+                listener=(hostname, int(port)),
             )
         else:
             raise (
                 ValueError(
-                    "TCPInputServer input must be tuple|list of (str,int) e.g. ('server',1234)"
+                    "TCPInputServer:  Invalid Specification"
                 )
             )
 
@@ -328,30 +330,34 @@ class TCPInputClient(ZMQClient):
             self.buffer = kwargs["buffer"]
 
         if "input" in kwargs:
+            input = kwargs["input"]
+            if not utils.is_valid_address_spec(input):
+                raise (
+                    ValueError(
+                        f"TCPInputClient: Invalid Specification {input}"
+                    )
+                )
+            protocol,hostname,port = input.split(":")
+            if protocol.lower() != "tcp":
+                raise (
+                    ValueError(
+                        f"TCPInputClient: Invalid Specification {input}"
+                    )
+                )
             super(TCPInputClient, self).__init__(
                 zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
             )
-            if (
-                type(kwargs["input"]) not in [tuple, list]
-                or type(kwargs["input"][0]) != str
-                or type(kwargs["input"][1]) != int
-            ):
-                raise (
-                    ValueError(
-                        "TCPInputClient 'input' must be tuple|list of (str,int) e.g. ('127.0.0.1',1234)"
-                    )
-                )
 
             self.sub = gevent.socket.socket(gevent.socket.AF_INET, self.protocol)
 
-            self.host = kwargs["input"][0]
-            self.port = kwargs["input"][1]
-            self.address = tuple(kwargs["input"])
+            self.hostname = hostname
+            self.port = int(port)
+            self.address = (hostname,int(port))
 
         else:
             raise (
                 ValueError(
-                    "TCPInputClient 'input' must be tuple of (str,int) e.g. ('127.0.0.1',1234)"
+                    "TCPInputClient: Invalid Specification"
                 )
             )
 
@@ -389,7 +395,7 @@ class TCPInputClient(ZMQClient):
     def _connect(self):
         while self.connection_reattempts:
             try:
-                res = self.sub.connect_ex((self.host, self.port))
+                res = self.sub.connect_ex((self.hostname, self.port))
                 if res == 0:
                     self.connection_reattempts = 5
                     return res
