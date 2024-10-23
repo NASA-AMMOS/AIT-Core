@@ -119,10 +119,10 @@ class ZMQInputClient(ZMQClient, gevent.Greenlet):
             raise (e)
 
 
-class OutputClient(ZMQInputClient):
+class UDPOutputClient(ZMQInputClient):
     """
     This is the parent class for all outbound streams which publish
-    to a port. It opens a UDP port to publish to and publishes
+    to a UDP port. It opens a UDP port to publish to and publishes
     outgoing message data to this port.
     """
 
@@ -133,58 +133,72 @@ class OutputClient(ZMQInputClient):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-        super(OutputClient, self).__init__(
+
+        super(UDPOutputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
-        self.protocol = "UDP"
-        output_spec = kwargs.get("output", None)
-        if output_spec is None:
-            raise ValueError(f"Invalid output client specification: {output_spec}")
-        if type(output_spec) is int:
-            self.host = "localhost"
-            self.out_port = output_spec
-            self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif (
-            type(output_spec) in [list, tuple]
-            and len(output_spec) == 1
-            and type(output_spec[0]) is int
-        ):
-            self.host = "localhost"
-            self.out_port = output_spec[0]
-            self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif (
-            type(output_spec) in [list, tuple]
-            and len(output_spec) == 3
-            and type(output_spec[0]) is str
-            and output_spec[0].upper() == "UDP"
-            and type(output_spec[1]) is str
-            and type(output_spec[2]) is int
-        ):
-            self.host = output_spec[1]
-            self.out_port = output_spec[2]
-            self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif (
-            len(output_spec) == 3
-            and type(output_spec[0]) is str
-            and output_spec[0].upper() == "TCP"
-            and type(output_spec[1]) is str
-            and type(output_spec[2]) is int
-        ):
-            self.protocol = "TCP"
-            self.host = output_spec[1]
-            self.out_port = output_spec[2]
-            self.pub = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if "output" in kwargs:
+            output = kwargs["output"]
+            if type(output) is int:
+                self.addr_spec = ("localhost", output)
+            elif utils.is_valid_address_spec(output):
+                protocol,hostname,port = output.split(":")
+                if protocol.lower() != "udp":
+                    raise (ValueError(f"UDPOutputClient: Invalid Specification {output}"))
+                self.addr_spec = (hostname,int(port))
+            else:
+                raise (ValueError(f"UDPOutputClient: Invalid Specification {output}"))
         else:
-            raise ValueError(f"Invalid output client specification: {output_spec}")
+            raise (ValueError(f"UDPOutputClient: Invalid Specification"))
+
+
         self.context = zmq_context
+        # override pub to be udp socket
+        self.pub = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def publish(self, msg):
-        if self.protocol == "TCP":
-            self.pub.connect((self.host, int(self.out_port)))
-            self.pub.sendall(msg)
-        else:
-            self.pub.sendto(msg, (self.host, int(self.out_port)))
+        self.pub.sendto(msg, self.addr_spec)
         log.debug("Published message from {}".format(self))
+
+class TCPOutputClient(ZMQInputClient):
+    """
+    This is the parent class for all outbound streams which publish
+    to a TCP port. It opens a TCP connection to publish to and publishes
+    outgoing message data to this port.
+    """
+
+    def __init__(
+        self,
+        zmq_context,
+        zmq_proxy_xsub_url=ait.SERVER_DEFAULT_XSUB_URL,
+        zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
+        **kwargs,
+    ):
+
+        super(TCPOutputClient, self).__init__(
+            zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
+        )
+        if "output" in kwargs:
+            output = kwargs["output"]
+            if utils.is_valid_address_spec(output):
+                protocol,hostname,port = output.split(":")
+                if protocol.lower() != "tcp":
+                    raise (ValueError(f"TCPOutputClient: Invalid Specification {output}"))
+                self.addr_spec = (hostname,int(port))
+            else:
+                raise (ValueError(f"TCPOutputClient: Invalid Specification {output}"))
+        else:
+            raise (ValueError(f"TCPOutputClient: Invalid Specification"))
+
+
+        self.context = zmq_context
+        self.pub = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+
+    def publish(self, msg):
+        self.pub.connect(self.addr_spec)
+        self.pub.sendall(msg)
+
 
 
 class UDPInputServer(ZMQClient, gs.DatagramServer):

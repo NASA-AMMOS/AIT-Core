@@ -46,20 +46,17 @@ default:
                       handler_name: "TCP Input Client Stream 3"
 
         outbound-streams:
-            # - stream:
-            #     input:
-            #         - input_stream_debug_1
-            #     name: output_stream_debug_1
-            #     output:
-            #         - "TCP"
-            #         - "tcp-server"
-            #         - 1237
+            - stream:
+                name: output_stream_debug_1
+                input:
+                    - input_stream_debug_1
+                output:
+                    - "TCP:tcp-server:1237"
 
-            # - stream:
-            #     name: output_stream_debug_2
-            #     input:
-            #         - input_stream_debug_2
-            #     output:
-            #         - "UDP"
-            #         - "udp-server"
-            #         - 1236
+            - stream:
+                name: output_stream_debug_2
+                input:
+                    - input_stream_debug_2
+                output:
+                    - "UDP:udp-server:1238"
+    

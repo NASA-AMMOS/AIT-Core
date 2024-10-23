@@ -5,7 +5,7 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
-    depends_on: [tcp-server-send]
+    depends_on: [tcp-server-send, tcp-server, udp-server]
     command: ["source ~/.bashrc && ait-server"]
     environment:
       LOG_LEVEL: INFO
@@ -56,15 +56,15 @@ services:
   #   networks:
   #     - ait
 
-  # tcp-server:
-  #   container_name: tcp-server
-  #   platform: linux/amd64
-  #   build:
-  #     context: ../
-  #     dockerfile: ./docker/Dockerfile
-  #   command: ["source /home/ait/.bashrc && cd AIT-Core && workon ait && python -u scripts/network_tester.py server TCP 0.0.0.0 1237"]
-  #   networks:
-  #     - ait
+  tcp-server:
+    container_name: tcp-server
+    platform: linux/amd64
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    command: ["source ~/.bashrc && python -u scripts/network_tester.py server TCP 0.0.0.0 1237"]
+    networks:
+      - ait
 
   tcp-server-send:
     container_name: tcp-server-send
@@ -76,15 +76,15 @@ services:
     networks:
       - ait
 
-  # udp-server:
-  #   container_name: udp-server
-  #   platform: linux/amd64
-  #   build:
-  #     context: ../
-  #     dockerfile: ./docker/Dockerfile
-  #   command: ["source /home/ait/.bashrc && cd AIT-Core && workon ait && python -u scripts/network_tester.py server UDP 0.0.0.0 1236"]
-  #   networks:
-  #     - ait
+  udp-server:
+    container_name: udp-server
+    platform: linux/amd64
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    command: ["source ~/.bashrc && python -u scripts/network_tester.py server UDP 0.0.0.0 1238"]
+    networks:
+      - ait
 
 networks:
   ait:
