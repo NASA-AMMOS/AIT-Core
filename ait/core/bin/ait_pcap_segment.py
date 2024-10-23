@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,8 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-
 """
 Segments one or more pcap files into multiple pcap files, according to
 a threshold number of bytes, packets, and/or seconds.  New segment
@@ -37,11 +34,10 @@ If the first packet written to a file has a time of 2017-11-23
 And a new file will be started when a packet is written with a
 timestamp that exceeds 2017-11-23 19:59:59.
 """
-
-
 import argparse
 
-from ait.core import log, pcap
+from ait.core import log
+from ait.core import pcap
 
 
 def main():

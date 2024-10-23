@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,23 +12,20 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Utilities
 
 The ait.core.util module provides general utility functions.
 """
-
 import os
+import pickle
 import pydoc
 import stat
 import sys
-import time
-import zlib
 import tempfile
+import time
 import warnings
-
-import pickle
+import zlib
 
 import ait
 from ait.core import log
@@ -82,7 +78,7 @@ class ObjectCache(object):
             if self.dirty:
                 self._dict = self._loader(self.filename)
                 update_cache(self.filename, self.cachename, self._dict)
-                log.info(f'Loaded new pickle file: {self.cachename}')
+                log.info(f"Loaded new pickle file: {self.cachename}")
             else:
                 with open(self.cachename, "rb") as stream:
                     self._dict = pickle.load(stream)
@@ -122,11 +118,11 @@ def check_yaml_timestamps(yaml_file_name, cache_name):
     """
     # If no pickle cache exists return True to make a new one.
     if not os.path.exists(cache_name):
-        log.debug('No pickle cache exists, make a new one')
+        log.debug("No pickle cache exists, make a new one")
         return True
     # Has the yaml config file has been modified since the creation of the pickle cache
     if os.path.getmtime(yaml_file_name) > os.path.getmtime(cache_name):
-        log.info(f'{yaml_file_name} modified - make a new binary pickle cache file.')
+        log.info(f"{yaml_file_name} modified - make a new binary pickle cache file.")
         return True
     # Get the directory of the yaml config file to be parsed
     dir_name = os.path.dirname(yaml_file_name)
@@ -136,12 +132,13 @@ def check_yaml_timestamps(yaml_file_name, cache_name):
             for line in file:
                 if not line.strip().startswith("#") and "!include" in line:
                     check = check_yaml_timestamps(
-                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_name)
+                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_name
+                    )
                     if check:
                         return True
         except RecursionError as e:
             log.info(
-                f'ERROR: {e}: Infinite loop: check that yaml config files are not looping '
+                f"ERROR: {e}: Infinite loop: check that yaml config files are not looping "
                 f'back and forth on one another through the "!include" statements.'
             )
     return False
@@ -162,7 +159,7 @@ def update_cache(yaml_file_name, cache_file_name, object_to_serialize):
 
     """
 
-    msg = f'Saving updates from more recent {yaml_file_name} to {cache_file_name}.'
+    msg = f"Saving updates from more recent {yaml_file_name} to {cache_file_name}."
     log.info(msg)
     with open(cache_file_name, "wb") as output:
         pickle.dump(object_to_serialize, output, -1)
@@ -520,6 +517,7 @@ class TestFile:
     Whether the above assert passes or throws AssertionError, filename
     will be deleted.
     """
+
     __test__ = False
 
     def __init__(self, data, options):

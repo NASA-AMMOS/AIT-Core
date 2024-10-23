@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,8 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
-
 """
 Usage: ait-tlm-csv [options] <pcap-filename>
 
@@ -40,15 +37,16 @@ Examples:
   $ ait-tlm-csv --packet 1553_HS_Packet --all --csv './ait-tlm-csv-output.csv' \
                 ./ait-tlm-csv-input.pcap
 """
-
-
 import argparse
 import csv
-import sys
 import os
+import sys
 from datetime import datetime
 
-from ait.core import log, tlm, pcap, dmc
+from ait.core import dmc
+from ait.core import log
+from ait.core import pcap
+from ait.core import tlm
 
 
 """Parses 1553 telemetry into CSV file."""
@@ -75,7 +73,9 @@ def main():
     )
 
     parser.add_argument(
-        "--packet", required=True, help="Packet name from telemetry dictionary specified in config file."
+        "--packet",
+        required=True,
+        help="Packet name from telemetry dictionary specified in config file.",
     )
 
     parser.add_argument(

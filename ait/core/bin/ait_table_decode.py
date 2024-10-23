@@ -13,14 +13,13 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """Decode AIT FSW table binaries"""
-
 import argparse
 import os.path
 import sys
 
-from ait.core import log, table
+from ait.core import log
+from ait.core import table
 
 
 def main():

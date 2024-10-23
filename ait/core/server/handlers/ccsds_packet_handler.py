@@ -1,9 +1,9 @@
-import pickle
 import binascii
-import ait.core.log
+import pickle
 
-from ait.core.server.handler import Handler
+import ait.core.log
 from ait.core import tlm
+from ait.core.server.handler import Handler
 
 
 class CCSDSPacketHandler(Handler):

@@ -11,7 +11,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 AIT Plugin for OpenMCT Telemetry service
 
@@ -20,16 +19,14 @@ a web service that implements the service API for the OpenMCT
 framework for realtime and, eventually, historical telemetry
 from AIT.
 """
-
-import pickle
 import datetime
 import json
+import pickle
 import random
 import struct
 import sys
 import webbrowser
 
-import gevent
 import gevent.monkey
 
 gevent.monkey.patch_all()
@@ -44,10 +41,11 @@ from ait.core import api, dtype, log, tlm
 from ait.core.server.plugin import Plugin
 
 
-class ManagedWebSocket():
+class ManagedWebSocket:
     """
     A data structure to maintain state for OpenMCT websockets
     """
+
     id_counter = 0  # to assign unique ids
 
     PACKET_ID_WILDCARD = "*"
@@ -141,12 +139,12 @@ class ManagedWebSocket():
         :param omc_packet: Full OpenMCT packet with all fields
         :return: New modified packet if any match in fields, else None
         """
-        packet_id = omc_packet['packet']
+        packet_id = omc_packet["packet"]
         if not self.accepts_packet(packet_id):
             return None
 
         # Grab the original field data dict
-        orig_fld_dict = omc_packet['data']
+        orig_fld_dict = omc_packet["data"]
         if not orig_fld_dict:
             return None
 
@@ -160,7 +158,7 @@ class ManagedWebSocket():
             filt_fld_dict = {k: v for k, v in orig_fld_dict.items() if k in field_set}
             # If filtered dict is non-empty, then build new packet for return
             if filt_fld_dict:
-                sub_pkt = {'packet': packet_id, 'data': filt_fld_dict}
+                sub_pkt = {"packet": packet_id, "data": filt_fld_dict}
 
         return sub_pkt
 
@@ -229,7 +227,9 @@ class DictUtils(object):
 
                 mct_field_dict = dict()
                 # mct_field_dict['key'] = ait_pkt_id + "." + ait_field_id
-                mct_field_dict["key"] = DictUtils.create_mct_pkt_id(ait_pkt_id, ait_field_id)
+                mct_field_dict["key"] = DictUtils.create_mct_pkt_id(
+                    ait_pkt_id, ait_field_id
+                )
 
                 mct_field_dict["name"] = ait_field_def.name
                 mct_field_dict["name"] = ait_pkt_id + ":" + ait_field_def.name
@@ -298,7 +298,7 @@ class DictUtils(object):
                     tmax = 2 ** (tnbits - 1)
                     tmin = -1 * (tmax - 1)
                 elif not tstring:
-                    tmax = 2 ** tnbits - 1
+                    tmax = 2**tnbits - 1
                     tmin = 0
 
                 if tmin is not None:
@@ -357,7 +357,7 @@ class AITOpenMctPlugin(Plugin):
         outputs,
         zmq_args=None,
         datastore="ait.core.db.InfluxDBBackend",
-        **kwargs
+        **kwargs,
     ):
         """
         Params:
@@ -457,7 +457,6 @@ class AITOpenMctPlugin(Plugin):
         dbconn = None
 
         if self._databaseEnabled:
-
             # Perform sanity check that database config exists somewhere
             db_cfg = ait.config.get("database", kwargs.get("database", None))
             if not db_cfg:
@@ -506,12 +505,16 @@ class AITOpenMctPlugin(Plugin):
                 self._process_telem_msg(tlm_packet)
                 processed = True
             else:
-                log.error("OpenMCT Plugin received telemetry message with unknown "
-                          f"packet id {pkt_id}.  Skipping input...")
+                log.error(
+                    "OpenMCT Plugin received telemetry message with unknown "
+                    f"packet id {pkt_id}.  Skipping input..."
+                )
         except Exception as e:
             log.error(f"OpenMCT Plugin: {e}")
-            log.error("OpenMCT Plugin received input_data that it is unable to "
-                      "process. Skipping input ...")
+            log.error(
+                "OpenMCT Plugin received input_data that it is unable to "
+                "process. Skipping input ..."
+            )
 
         return processed
 
@@ -633,12 +636,11 @@ class AITOpenMctPlugin(Plugin):
 
         try:
             while not websocket.closed:
-
                 message = None
                 with Timeout(3, False):
                     message = websocket.receive()
                 if message:
-                    self.dbg_message("Received websocket message: "+message)
+                    self.dbg_message("Received websocket message: " + message)
                 else:
                     self.dbg_message("Received NO websocket message")
 
@@ -651,7 +653,9 @@ class AITOpenMctPlugin(Plugin):
 
                     ait_pkt = ait.core.tlm.Packet(pkt_defn, data=data)
 
-                    packet_id, openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
+                    packet_id, openmct_pkt = DictUtils.format_tlmpkt_for_openmct(
+                        ait_pkt
+                    )
 
                     openmct_pkt_jsonstr = json.dumps(
                         openmct_pkt, default=self.datetime_jsonifier
@@ -713,7 +717,9 @@ class AITOpenMctPlugin(Plugin):
         managed set and this method returns
         :param mws: Managed web-socket instance
         """
-        self.dbg_message(f"Adding record for new web-socket ID:{mws.id} with IP: {mws.client_ip}")
+        self.dbg_message(
+            f"Adding record for new web-socket ID:{mws.id} with IP: {mws.client_ip}"
+        )
         self._socket_set.add(mws)
 
         while mws.is_alive:
@@ -724,7 +730,7 @@ class AITOpenMctPlugin(Plugin):
                 gsleep(AITOpenMctPlugin.DEFAULT_WEBSOCKET_CHECK_SLEEP_SECS)
 
         # Web-socket is considered closed, so remove from set and return
-        rem_msg_state = 'err' if mws.is_error else 'closed'
+        rem_msg_state = "err" if mws.is_error else "closed"
         self.dbg_message(f"Removing {rem_msg_state} web-socket record ID {mws.id}")
         self._socket_set.remove(mws)
 
@@ -740,8 +746,10 @@ class AITOpenMctPlugin(Plugin):
         # Set the content type of response for OpenMct to know its JSON
         bottle.response.content_type = "application/json"
 
-        self.dbg_message("Received request for historical tlm: "
-                         f"Ids={mct_pkt_id} Start={start_time_ms} End={end_time_ms}")
+        self.dbg_message(
+            "Received request for historical tlm: "
+            f"Ids={mct_pkt_id} Start={start_time_ms} End={end_time_ms}"
+        )
 
         # The tutorial indicated that this could be a comma-separated list of ids...
         # If its a single, then this will create a list with one entry
@@ -754,8 +762,10 @@ class AITOpenMctPlugin(Plugin):
         # Dump results to JSON string
         json_result = json.dumps(results)
 
-        self.dbg_message(f"Result for historical tlm ( {start_time_ms} "
-                         f"- {end_time_ms} ): {json_result}")
+        self.dbg_message(
+            f"Result for historical tlm ( {start_time_ms} "
+            f"- {end_time_ms} ): {json_result}"
+        )
 
         return json_result
 
@@ -851,8 +861,9 @@ class AITOpenMctPlugin(Plugin):
             end_timestamp_secs, tz=datetime.timezone.utc
         )
 
-        query_args_str = f"Packets = {packet_ids}; Start = {start_date};" \
-                         f" End = {end_date}"
+        query_args_str = (
+            f"Packets = {packet_ids}; Start = {start_date};" f" End = {end_date}"
+        )
         self.dbg_message(f"Query args : {query_args_str}")
 
         # default response is empty
@@ -880,15 +891,16 @@ class AITOpenMctPlugin(Plugin):
                     res_pkts = list(ait_db_result.get_packets())
 
                 # Debug result size
-                self.dbg_message(f"Number of results for query "
-                                 f"{query_args_str} : {len(res_pkts)}")
+                self.dbg_message(
+                    f"Number of results for query "
+                    f"{query_args_str} : {len(res_pkts)}"
+                )
 
         except Exception as e:
             log.error("[OpenMCT] Database query failed.  Error: " + str(e))
             return None
 
         for cur_pkt_time, cur_pkt in res_pkts:
-
             # Convert datetime to Javascript timestamp (in milliseconds)
             cur_timestamp_sec = datetime.datetime.timestamp(cur_pkt_time)
             unix_timestamp_msec = int(cur_timestamp_sec) * 1000
@@ -941,7 +953,6 @@ class AITOpenMctPlugin(Plugin):
         info_msg = ""
 
         while True:
-
             # Special handling for simply integer based packet, others will
             # have all 0 zero
             if ait_pkt_defn.name == "1553_HS_Packet":
@@ -994,7 +1005,9 @@ class AITOpenMctPlugin(Plugin):
         """
         try:
             self.dbg_message("Polling Telemetry queue...")
-            ait_pkt = self._tlmQueue.popleft(timeout=self.DEFAULT_TELEM_QUEUE_TIMEOUT_SECS)
+            ait_pkt = self._tlmQueue.popleft(
+                timeout=self.DEFAULT_TELEM_QUEUE_TIMEOUT_SECS
+            )
             openmct_pkt = DictUtils.format_tlmpkt_for_openmct(ait_pkt)
             self.dbg_message(f"Broadcasting {openmct_pkt} to managed web-sockets...")
             self.broadcast_packet(openmct_pkt)
@@ -1023,8 +1036,9 @@ class AITOpenMctPlugin(Plugin):
         openmct_pkt_id = openmct_pkt["packet"]
 
         for mws in self._socket_set:
-            pkt_emitted_by_cur = self.send_socket_pkt_mesg(mws,
-                                                           openmct_pkt_id, openmct_pkt)
+            pkt_emitted_by_cur = self.send_socket_pkt_mesg(
+                mws, openmct_pkt_id, openmct_pkt
+            )
             pkt_emitted_by_any = pkt_emitted_by_cur or pkt_emitted_by_any
         return pkt_emitted_by_any
 
@@ -1051,10 +1065,11 @@ class AITOpenMctPlugin(Plugin):
             subscribed_pkt = mws.create_subscribed_packet(mct_pkt)
             # If that new packet still has fields, stringify and send
             if subscribed_pkt:
-                pkt_mesg = json.dumps(subscribed_pkt,
-                                      default=self.datetime_jsonifier)
-                self.dbg_message("Sending realtime telemetry web-socket msg "
-                                 f"to websocket {mws.id}: {pkt_mesg}")
+                pkt_mesg = json.dumps(subscribed_pkt, default=self.datetime_jsonifier)
+                self.dbg_message(
+                    "Sending realtime telemetry web-socket msg "
+                    f"to websocket {mws.id}: {pkt_mesg}"
+                )
                 self.managed_web_socket_send(mws, pkt_mesg)
                 return True
 
@@ -1064,11 +1079,11 @@ class AITOpenMctPlugin(Plugin):
 
     @staticmethod
     def managed_web_socket_recv(mws):
-        '''
+        """
         Attempts to read message from the websocket with timeout.
         :param mws: Managed web-socket instance
         :return: Message retrieved from underlying-websocket, or None
-        '''
+        """
         message = None
         try:
             with Timeout(AITOpenMctPlugin.DEFAULT_WS_RECV_TIMEOUT_SECS, False):
@@ -1080,16 +1095,18 @@ class AITOpenMctPlugin(Plugin):
 
     @staticmethod
     def managed_web_socket_send(mws, message):
-        '''
+        """
         Sends message to underlying web-socket
         :param mws: Managed web-socket instance
         :param message: Message to be sent
-        '''
+        """
         if mws.is_alive:
             try:
                 mws.web_socket.send(message)
             except geventwebsocket.WebSocketError as wserr:
-                log.warn(f"Error while writing to web-socket {mws.id}; Message:'{message}'; Error: {wserr}")
+                log.warn(
+                    f"Error while writing to web-socket {mws.id}; Message:'{message}'; Error: {wserr}"
+                )
                 mws.set_error()
 
     # ---------------------------------------------------------------------
@@ -1148,13 +1165,15 @@ class AITOpenMctPlugin(Plugin):
         """
         msg_parts = message.split(" ", 1)
         directive = msg_parts[0]
-        if directive == 'close':
-            self.dbg_message(f"Received 'close' message.  Marking web-socket ID {mws.id} as closed")
+        if directive == "close":
+            self.dbg_message(
+                f"Received 'close' message.  Marking web-socket ID {mws.id} as closed"
+            )
             mws.is_closed = True
-        elif directive == 'subscribe' and len(msg_parts) > 1:
+        elif directive == "subscribe" and len(msg_parts) > 1:
             self.dbg_message(f"Subscribing websocket {mws.id} to: {msg_parts[1]}")
             mws.subscribe_field(msg_parts[1])
-        elif directive == 'unsubscribe':
+        elif directive == "unsubscribe":
             self.dbg_message(f"Unsubscribing websocket {mws.id} from: {msg_parts[1]}")
             mws.unsubscribe_field(msg_parts[1])
         else:

@@ -1,6 +1,6 @@
 """
 Implements a plugin which routes CCSDS packets by APID
-"""
+"""  # fmt: skip
 import os
 
 import yaml

@@ -12,13 +12,13 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 # gevent.monkey.patch_all()
-
 import csv
 import os
-import pytest
 import struct
 
+import pytest
 from gevent import monkey
+
 monkey.patch_all()
 
 from ait.core import tlm

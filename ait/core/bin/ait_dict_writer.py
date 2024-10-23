@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage:
         ait-dict-writer [options] (--tlm | --cmd)
@@ -39,11 +37,11 @@ Description:
         Copyright 2016 California Institute of Technology.  ALL RIGHTS RESERVED.
         U.S. Government Sponsorship acknowledged.
 """
-
-import sys
 import argparse
+import sys
 
-from ait.core import log, tlm
+from ait.core import log
+from ait.core import tlm
 
 
 def main():

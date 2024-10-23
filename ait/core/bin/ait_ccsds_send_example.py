@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
 import socket
 import struct
 import time
+
 from ait.core import log
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
