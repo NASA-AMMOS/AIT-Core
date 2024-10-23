@@ -8,10 +8,11 @@ from ait.core.server.broker import Broker
 from ait.core.server.handlers import PacketHandler
 from ait.core.server.stream import input_stream_factory
 from ait.core.server.stream import output_stream_factory
-from ait.core.server.stream import PortOutputStream
 from ait.core.server.stream import TCPInputClientStream
 from ait.core.server.stream import TCPInputServerStream
+from ait.core.server.stream import TCPOutputStream
 from ait.core.server.stream import UDPInputServerStream
+from ait.core.server.stream import UDPOutputStream
 from ait.core.server.stream import ZMQStream
 
 

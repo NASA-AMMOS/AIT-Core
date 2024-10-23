@@ -107,15 +107,23 @@ class Stream:
 
 
 def output_stream_factory(name, inputs, outputs, handlers, zmq_args=None):
+    """
+    This factory preempts the creating of output streams directly.  It accepts
+    the same args as any given stream class and then based primarily on the
+    values in 'outputs' decides on the appropriate stream to instantiate and
+    then returns it.
+    """
     ostream = None
     if type(outputs) is not list or (type(outputs) is list and len(outputs) == 0):
-        raise ValueError(f"Output stream specification invalid: {outputs}")
+        ostream = ZMQStream(
+            name,
+            inputs,
+            handlers,
+            zmq_args=zmq_args,
+        )
+        return ostream
     # backwards compatability with original UDP spec
-    if (
-        type(outputs) is list
-        and type(outputs[0]) is int
-        and ait.MIN_PORT <= outputs[0] <= ait.MAX_PORT
-    ):
+    if type(outputs[0]) is int and ait.MIN_PORT <= outputs[0] <= ait.MAX_PORT:
         ostream = UDPOutputStream(name, inputs, outputs[0], handlers, zmq_args=zmq_args)
     elif is_valid_address_spec(outputs[0]):
         protocol, hostname, port = outputs[0].split(":")
@@ -141,7 +149,7 @@ def output_stream_factory(name, inputs, outputs, handlers, zmq_args=None):
 
 def input_stream_factory(name, inputs, handlers, zmq_args=None):
     """
-    This factory preempts the creating of streams directly.  It accepts
+    This factory preempts the creating of input streams directly.  It accepts
     the same args as any given stream class and then based primarily on the
     values in 'inputs' decides on the appropriate stream to instantiate and
     then returns it.

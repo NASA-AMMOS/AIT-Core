@@ -375,11 +375,11 @@ class TestStreamCreation(object):
         assert type(created_stream.handlers) == list
 
         # Testing creation of outbound stream with port output
-        config = cfg.AitConfig(config={"name": "some_stream", "output": 3333})
+        config = cfg.AitConfig(config={"name": "some_stream", "output": [3333]})
         created_stream = server._create_outbound_stream(config)
-        assert type(created_stream) == ait.core.server.stream.PortOutputStream
+        assert type(created_stream) == ait.core.server.stream.UDPOutputStream
         assert created_stream.name == "some_stream"
-        assert created_stream.out_port == 3333
+        assert created_stream.addr_spec == ("localhost", 3333)
         assert created_stream.handlers == []
 
 
