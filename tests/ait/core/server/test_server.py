@@ -354,7 +354,7 @@ class TestStreamCreation(object):
         # Testing creation of inbound stream with port input
         config = cfg.AitConfig(config={"name": "some_stream", "input": [3333]})
         created_stream = server._create_inbound_stream(config)
-        assert type(created_stream) == ait.core.server.stream.PortInputStream
+        assert type(created_stream) == ait.core.server.stream.UDPInputServerStream
         assert created_stream.name == "some_stream"
         assert created_stream.inputs == [3333]
         assert created_stream.handlers == []
