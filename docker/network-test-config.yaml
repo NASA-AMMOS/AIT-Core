@@ -59,4 +59,3 @@ default:
                     - input_stream_debug_2
                 output:
                     - "UDP:udp-server:1238"
-    

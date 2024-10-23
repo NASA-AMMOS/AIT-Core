@@ -1,6 +1,10 @@
 import ait.core.log
-from .client import UDPOutputClient, TCPOutputClient, TCPInputClient, TCPInputServer, UDPInputServer, ZMQInputClient
-import ait
+from .client import TCPInputClient
+from .client import TCPInputServer
+from .client import TCPOutputClient
+from .client import UDPInputServer
+from .client import UDPOutputClient
+from .client import ZMQInputClient
 from .utils import is_valid_address_spec
 
 
@@ -107,16 +111,24 @@ def output_stream_factory(name, inputs, outputs, handlers, zmq_args=None):
     if type(outputs) is not list or (type(outputs) is list and len(outputs) == 0):
         raise ValueError(f"Output stream specification invalid: {outputs}")
     # backwards compatability with original UDP spec
-    if type(outputs) is list and type(outputs[0]) is int and ait.MIN_PORT <= outputs[0] <= ait.MAX_PORT:
+    if (
+        type(outputs) is list
+        and type(outputs[0]) is int
+        and ait.MIN_PORT <= outputs[0] <= ait.MAX_PORT
+    ):
         ostream = UDPOutputStream(name, inputs, outputs[0], handlers, zmq_args=zmq_args)
     elif is_valid_address_spec(outputs[0]):
-        protocol,hostname,port = outputs[0].split(':')
+        protocol, hostname, port = outputs[0].split(":")
         if int(port) < ait.MIN_PORT or int(port) > ait.MAX_PORT:
             raise ValueError(f"Output stream specification invalid: {outputs}")
         if protocol.lower() == "udp":
-            ostream = UDPOutputStream(name, inputs, outputs[0], handlers, zmq_args=zmq_args)
+            ostream = UDPOutputStream(
+                name, inputs, outputs[0], handlers, zmq_args=zmq_args
+            )
         elif protocol.lower() == "tcp":
-            ostream = TCPOutputStream(name, inputs, outputs[0], handlers, zmq_args=zmq_args)
+            ostream = TCPOutputStream(
+                name, inputs, outputs[0], handlers, zmq_args=zmq_args
+            )
         else:
             raise ValueError(f"Output stream specification invalid: {outputs}")
     else:
@@ -125,7 +137,6 @@ def output_stream_factory(name, inputs, outputs, handlers, zmq_args=None):
     if ostream is None:
         raise ValueError(f"Output stream specification invalid: {outputs}")
     return ostream
-
 
 
 def input_stream_factory(name, inputs, handlers, zmq_args=None):
@@ -140,22 +151,38 @@ def input_stream_factory(name, inputs, handlers, zmq_args=None):
 
     if type(inputs) is not list or (type(inputs) is list and len(inputs) == 0):
         raise ValueError(f"Input stream specification invalid: {inputs}")
-    
+
     # backwards compatability with original UDP server spec
-    if type(inputs) is list and type(inputs[0]) is int and ait.MIN_PORT <= inputs[0] <= ait.MAX_PORT:
+    if (
+        type(inputs) is list
+        and type(inputs[0]) is int
+        and ait.MIN_PORT <= inputs[0] <= ait.MAX_PORT
+    ):
         stream = UDPInputServerStream(name, inputs[0], handlers, zmq_args=zmq_args)
     elif is_valid_address_spec(inputs[0]):
-        protocol,hostname,port = inputs[0].split(':')
+        protocol, hostname, port = inputs[0].split(":")
         if int(port) < ait.MIN_PORT or int(port) > ait.MAX_PORT:
             raise ValueError(f"Input stream specification invalid: {inputs}")
         if protocol.lower() == "tcp":
-            if hostname.lower() in ["server","localhost","127.0.0.1","0.0.0.0",]:
+            if hostname.lower() in [
+                "server",
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+            ]:
                 stream = TCPInputServerStream(name, inputs[0], handlers, zmq_args)
             else:
                 stream = TCPInputClientStream(name, inputs[0], handlers, zmq_args)
         else:
-            if hostname.lower() in ["server","localhost","127.0.0.1","0.0.0.0",]:
-                stream = UDPInputServerStream(name, inputs[0], handlers, zmq_args=zmq_args)
+            if hostname.lower() in [
+                "server",
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+            ]:
+                stream = UDPInputServerStream(
+                    name, inputs[0], handlers, zmq_args=zmq_args
+                )
             else:
                 raise ValueError(f"Input stream specification invalid: {inputs}")
     elif all(isinstance(item, str) for item in inputs):
@@ -215,6 +242,7 @@ class UDPOutputStream(Stream, UDPOutputClient):
         super(UDPOutputStream, self).__init__(
             name, inputs, handlers, zmq_args, output=output
         )
+
 
 class TCPOutputStream(Stream, TCPOutputClient):
     """

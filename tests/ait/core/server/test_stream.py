@@ -59,7 +59,7 @@ class TestStream:
             "tcp_server",
             {
                 "name": "some_tcp_stream_server",
-                "inputs": 'TCP:server:1234',
+                "inputs": "TCP:server:1234",
                 "handlers_len": 1,
                 "handler_type": PacketHandler,
                 "broker_context": broker.context,
@@ -72,7 +72,7 @@ class TestStream:
             "tcp_client",
             {
                 "name": "some_tcp_stream_client",
-                "inputs": 'TCP:127.0.0.1:1234',
+                "inputs": "TCP:127.0.0.1:1234",
                 "handlers_len": 1,
                 "handler_type": PacketHandler,
                 "broker_context": broker.context,

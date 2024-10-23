@@ -131,7 +131,6 @@ class UDPOutputClient(ZMQInputClient):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         super(UDPOutputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
@@ -140,15 +139,16 @@ class UDPOutputClient(ZMQInputClient):
             if type(output) is int:
                 self.addr_spec = ("localhost", output)
             elif utils.is_valid_address_spec(output):
-                protocol,hostname,port = output.split(":")
+                protocol, hostname, port = output.split(":")
                 if protocol.lower() != "udp":
-                    raise (ValueError(f"UDPOutputClient: Invalid Specification {output}"))
-                self.addr_spec = (hostname,int(port))
+                    raise (
+                        ValueError(f"UDPOutputClient: Invalid Specification {output}")
+                    )
+                self.addr_spec = (hostname, int(port))
             else:
                 raise (ValueError(f"UDPOutputClient: Invalid Specification {output}"))
         else:
-            raise (ValueError(f"UDPOutputClient: Invalid Specification"))
-
+            raise (ValueError("UDPOutputClient: Invalid Specification"))
 
         self.context = zmq_context
         # override pub to be udp socket
@@ -157,6 +157,7 @@ class UDPOutputClient(ZMQInputClient):
     def publish(self, msg):
         self.pub.sendto(msg, self.addr_spec)
         log.debug("Published message from {}".format(self))
+
 
 class TCPOutputClient(ZMQInputClient):
     """
@@ -172,31 +173,29 @@ class TCPOutputClient(ZMQInputClient):
         zmq_proxy_xpub_url=ait.SERVER_DEFAULT_XPUB_URL,
         **kwargs,
     ):
-
         super(TCPOutputClient, self).__init__(
             zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
         )
         if "output" in kwargs:
             output = kwargs["output"]
             if utils.is_valid_address_spec(output):
-                protocol,hostname,port = output.split(":")
+                protocol, hostname, port = output.split(":")
                 if protocol.lower() != "tcp":
-                    raise (ValueError(f"TCPOutputClient: Invalid Specification {output}"))
-                self.addr_spec = (hostname,int(port))
+                    raise (
+                        ValueError(f"TCPOutputClient: Invalid Specification {output}")
+                    )
+                self.addr_spec = (hostname, int(port))
             else:
                 raise (ValueError(f"TCPOutputClient: Invalid Specification {output}"))
         else:
-            raise (ValueError(f"TCPOutputClient: Invalid Specification"))
-
+            raise (ValueError("TCPOutputClient: Invalid Specification"))
 
         self.context = zmq_context
         self.pub = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
 
     def publish(self, msg):
         self.pub.connect(self.addr_spec)
         self.pub.sendall(msg)
-
 
 
 class UDPInputServer(ZMQClient, gs.DatagramServer):
@@ -218,7 +217,7 @@ class UDPInputServer(ZMQClient, gs.DatagramServer):
             if type(input) is int:
                 host_spec = input
             elif utils.is_valid_address_spec(input):
-                protocol,hostname,port = input.split(":")
+                protocol, hostname, port = input.split(":")
                 if protocol.lower() != "udp":
                     raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
                 if hostname in ["127.0.0.1", "localhost"]:
@@ -227,7 +226,7 @@ class UDPInputServer(ZMQClient, gs.DatagramServer):
                     host_spec = f"0.0.0.0:{port}"
                 else:
                     raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
-                
+
             else:
                 raise (ValueError(f"UDPInputServer: Invalid Specification {input}"))
             super(UDPInputServer, self).__init__(
@@ -266,26 +265,21 @@ class TCPInputServer(ZMQClient, gs.StreamServer):
         if "input" in kwargs:
             input = kwargs["input"]
             if not utils.is_valid_address_spec(input):
-                raise (
-                    ValueError(
-                        f"TCPInputServer: Invalid Specification {input}"
-                    )
-                )
-            protocol,hostname,port = input.split(":")
-            if protocol.lower() != "tcp" or hostname not in ["127.0.0.1", "localhost", "server", "0.0.0.0"]:
-                raise (
-                    ValueError(
-                        f"TCPInputServer: Invalid Specification {input}"
-                    )
-                )
+                raise (ValueError(f"TCPInputServer: Invalid Specification {input}"))
+            protocol, hostname, port = input.split(":")
+            if protocol.lower() != "tcp" or hostname not in [
+                "127.0.0.1",
+                "localhost",
+                "server",
+                "0.0.0.0",
+            ]:
+                raise (ValueError(f"TCPInputServer: Invalid Specification {input}"))
 
             self.sub = gevent.socket.socket(
                 gevent.socket.AF_INET, gevent.socket.SOCK_STREAM
             )
             hostname = (
-                "127.0.0.1"
-                if hostname in ["127.0.0.1", "localhost"]
-                else "0.0.0.0"
+                "127.0.0.1" if hostname in ["127.0.0.1", "localhost"] else "0.0.0.0"
             )
             super(TCPInputServer, self).__init__(
                 zmq_context,
@@ -294,11 +288,7 @@ class TCPInputServer(ZMQClient, gs.StreamServer):
                 listener=(hostname, int(port)),
             )
         else:
-            raise (
-                ValueError(
-                    "TCPInputServer:  Invalid Specification"
-                )
-            )
+            raise (ValueError("TCPInputServer:  Invalid Specification"))
 
     def handle(self, socket, address):
         self.cur_socket = socket
@@ -344,18 +334,10 @@ class TCPInputClient(ZMQClient):
         if "input" in kwargs:
             input = kwargs["input"]
             if not utils.is_valid_address_spec(input):
-                raise (
-                    ValueError(
-                        f"TCPInputClient: Invalid Specification {input}"
-                    )
-                )
-            protocol,hostname,port = input.split(":")
+                raise (ValueError(f"TCPInputClient: Invalid Specification {input}"))
+            protocol, hostname, port = input.split(":")
             if protocol.lower() != "tcp":
-                raise (
-                    ValueError(
-                        f"TCPInputClient: Invalid Specification {input}"
-                    )
-                )
+                raise (ValueError(f"TCPInputClient: Invalid Specification {input}"))
             super(TCPInputClient, self).__init__(
                 zmq_context, zmq_proxy_xsub_url, zmq_proxy_xpub_url
             )
@@ -364,14 +346,10 @@ class TCPInputClient(ZMQClient):
 
             self.hostname = hostname
             self.port = int(port)
-            self.address = (hostname,int(port))
+            self.address = (hostname, int(port))
 
         else:
-            raise (
-                ValueError(
-                    "TCPInputClient: Invalid Specification"
-                )
-            )
+            raise (ValueError("TCPInputClient: Invalid Specification"))
 
     def __exit__(self):
         try:

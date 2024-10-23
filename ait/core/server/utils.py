@@ -64,6 +64,7 @@ def decode_message(msg):
 
     return (tpc, msg)
 
+
 def is_valid_address_spec(address):
     if type(address) is not str:
         return False
