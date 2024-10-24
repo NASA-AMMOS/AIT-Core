@@ -16,6 +16,7 @@ default:
                     - input_stream_debug_1
                     - input_stream_debug_2
                     - input_stream_debug_3
+                    - input_stream_debug_5
                 handlers:
                     - name: ait.core.server.handlers.DebugHandler
                       handler_name: "Input Stream Handler"
@@ -44,6 +45,13 @@ default:
                 handlers:
                     - name: ait.core.server.handlers.DebugHandler
                       handler_name: "TCP Input Client Stream 3"
+
+            - stream:
+                name: input_stream_debug_5
+                input: 6969
+                handlers:
+                    - name: ait.core.server.handlers.DebugHandler
+                      handler_name: "TCP Input Client Stream 4"
 
         outbound-streams:
             - stream:
