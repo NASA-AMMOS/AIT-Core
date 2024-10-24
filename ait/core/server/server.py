@@ -11,9 +11,11 @@ from .plugin import Plugin
 from .plugin import PluginConfig
 from .plugin import PluginType
 from .process import PluginsProcess
-from .stream import PortInputStream
-from .stream import PortOutputStream
-from .stream import ZMQStream
+from .stream import input_stream_factory
+from .stream import output_stream_factory
+from .stream import TCPInputClientStream
+from .stream import TCPInputServerStream
+from .stream import UDPInputServerStream
 from ait.core import cfg
 from ait.core import log
 
@@ -117,7 +119,6 @@ class Server(object):
                 common_err_msg.format(stream_type) + specific_err_msg[stream_type]
             )
             streams = ait.config.get(f"server.{stream_type}-streams")
-
             if streams is None:
                 log.warn(err_msgs[stream_type])
             else:
@@ -125,7 +126,11 @@ class Server(object):
                     try:
                         if stream_type == "inbound":
                             strm = self._create_inbound_stream(s["stream"])
-                            if type(strm) == PortInputStream:
+                            if (
+                                type(strm) == UDPInputServerStream
+                                or type(strm) == TCPInputClientStream
+                                or type(strm) == TCPInputServerStream
+                            ):
                                 self.servers.append(strm)
                             else:
                                 self.inbound_streams.append(strm)
@@ -263,7 +268,6 @@ class Server(object):
         """
         if config is None:
             raise ValueError("No stream config to create stream from.")
-
         name = self._get_stream_name(config)
         stream_handlers = self._get_stream_handlers(config, name)
         stream_input = config.get("input", None)
@@ -273,20 +277,12 @@ class Server(object):
         # Create ZMQ args re-using the Broker's context
         zmq_args_dict = self._create_zmq_args(True)
 
-        if type(stream_input[0]) is int:
-            return PortInputStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
-        else:
-            return ZMQStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
+        return input_stream_factory(
+            name,
+            stream_input,
+            stream_handlers,
+            zmq_args=zmq_args_dict,
+        )
 
     def _create_outbound_stream(self, config=None):
         """
@@ -316,26 +312,9 @@ class Server(object):
         # Create ZMQ args re-using the Broker's context
         zmq_args_dict = self._create_zmq_args(True)
 
-        if type(stream_output) is int:
-            ostream = PortOutputStream(
-                name,
-                stream_input,
-                stream_output,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
-        else:
-            if stream_output is not None:
-                log.warn(
-                    f"Output of stream {name} is not an integer port. "
-                    "Stream outputs can only be ports."
-                )
-            ostream = ZMQStream(
-                name,
-                stream_input,
-                stream_handlers,
-                zmq_args=zmq_args_dict,
-            )
+        ostream = output_stream_factory(
+            name, stream_input, stream_output, stream_handlers, zmq_args=zmq_args_dict
+        )
 
         # Set the cmd subscriber field for the stream
         ostream.cmd_subscriber = stream_cmd_sub is True
