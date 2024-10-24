@@ -176,12 +176,18 @@ class TestStream:
             (["TCP:localhost:1234"], TCPInputServerStream),
             (["TCP:foo:1234"], TCPInputClientStream),
             ([1234], UDPInputServerStream),
+            (1234, UDPInputServerStream),
             (["UDP:server:1234"], UDPInputServerStream),
             (["UDP:localhost:1234"], UDPInputServerStream),
             (["UDP:0.0.0.0:1234"], UDPInputServerStream),
             (["UDP:127.0.0.1:1234"], UDPInputServerStream),
+            ("UDP:127.0.0.1:1234", UDPInputServerStream),
             (["FOO"], ZMQStream),
             (["FOO", "BAR"], ZMQStream),
+            (
+                [1234, "FOO", "BAR"],
+                UDPInputServerStream,
+            ),  # Technically valid but not really correct
         ],
     )
     def test_valid_input_stream_factory(self, args, expected):
@@ -215,47 +221,52 @@ class TestStream:
         with pytest.raises(expected):
             _ = input_stream_factory(*full_args)
 
-    # @pytest.mark.parametrize(
-    #     "args,expected",
-    #     [
-    #         (["TCP", "127.0.0.1", 1234], PortOutputStream),
-    #         (["TCP", "localhost", 1234], PortOutputStream),
-    #         (["TCP", "foo", 1234], PortOutputStream),
-    #         (["UDP", "127.0.0.1", 1234], PortOutputStream),
-    #         (["UDP", "localhost", 1234], PortOutputStream),
-    #         (["UDP", "foo", 1234], PortOutputStream),
-    #         ([1234], PortOutputStream),
-    #         (1234, PortOutputStream),
-    #         ([], ZMQStream),
-    #         (None, ZMQStream),
-    #     ],
-    # )
-    # def test_valid_output_stream_factory(self, args, expected):
-    #     full_args = [
-    #         "foo",
-    #         "bar",
-    #         args,
-    #         [PacketHandler(input_type=int, output_type=str, packet="CCSDS_HEADER")],
-    #         {"zmq_context": broker.context},
-    #     ]
-    #     stream = output_stream_factory(*full_args)
-    #     assert isinstance(stream, expected)
+    @pytest.mark.parametrize(
+        "args,expected",
+        [
+            (["TCP:127.0.0.1:1234"], TCPOutputStream),
+            (["TCP:localhost:1234"], TCPOutputStream),
+            (["TCP:foo:1234"], TCPOutputStream),
+            (["UDP:127.0.0.1:1234"], UDPOutputStream),
+            (["UDP:localhost:1234"], UDPOutputStream),
+            (["UDP:foo:1234"], UDPOutputStream),
+            ([1234], UDPOutputStream),
+            (1234, UDPOutputStream),
+            ("UDP:foo:1234", UDPOutputStream),
+            ([], ZMQStream),
+            (None, ZMQStream),
+            (
+                [1234, "TCP:foo:1234"],
+                UDPOutputStream,
+            ),  # Technically valid but not really correct
+        ],
+    )
+    def test_valid_output_stream_factory(self, args, expected):
+        full_args = [
+            "foo",
+            "bar",
+            args,
+            [PacketHandler(input_type=int, output_type=str, packet="CCSDS_HEADER")],
+            {"zmq_context": broker.context},
+        ]
+        stream = output_stream_factory(*full_args)
+        assert isinstance(stream, expected)
 
-    # @pytest.mark.parametrize(
-    #     "args,expected",
-    #     [
-    #         (["FOO", "127.0.0.1", 1234], ValueError),
-    #         (["UDP", "127.0.0.1", "1234"], ValueError),
-    #         (["UDP", 1, "1234"], ValueError),
-    #     ],
-    # )
-    # def test_invalid_output_stream_factory(self, args, expected):
-    #     full_args = [
-    #         "foo",
-    #         "bar",
-    #         args,
-    #         [PacketHandler(input_type=int, output_type=str, packet="CCSDS_HEADER")],
-    #         {"zmq_context": broker.context},
-    #     ]
-    #     with pytest.raises(expected):
-    #         _ = output_stream_factory(*full_args)
+    @pytest.mark.parametrize(
+        "args,expected",
+        [
+            (["FOO:127.0.0.1:1234"], ValueError),
+            (["UDP", "127.0.0.1", "1234"], ValueError),
+            (["FOO"], ValueError),
+        ],
+    )
+    def test_invalid_output_stream_factory(self, args, expected):
+        full_args = [
+            "foo",
+            "bar",
+            args,
+            [PacketHandler(input_type=int, output_type=str, packet="CCSDS_HEADER")],
+            {"zmq_context": broker.context},
+        ]
+        with pytest.raises(expected):
+            _ = output_stream_factory(*full_args)
