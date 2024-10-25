@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage: ait-tlm-simulate [options]
 
@@ -32,13 +30,12 @@ Examples:
   $ ait-tlm-simulate
 
 """
-
-
+import argparse
 import socket
 import time
-import argparse
 
-from ait.core import log, tlm
+from ait.core import log
+from ait.core import tlm
 
 
 def main():

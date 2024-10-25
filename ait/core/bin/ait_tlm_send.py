@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage: ait-tlm-send [options] <pcap-filename>
 
@@ -27,18 +25,16 @@ Examples:
   $ ait-tlm-send test/data/pcap/oco3fsw-iss1553-2015-04-22.pcap
 
 """
-
-
+import argparse
 import socket
 import time
-import argparse
 
-from ait.core import log, pcap
+from ait.core import log
+from ait.core import pcap
 
 
 def main():
     try:
-
         log.begin()
 
         parser = argparse.ArgumentParser(

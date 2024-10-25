@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import argparse
 import datetime as dt
 import os.path

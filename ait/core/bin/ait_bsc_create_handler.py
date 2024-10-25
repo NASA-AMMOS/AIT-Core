@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Usage:
     ait-bsc-create-handler [options] <name> <loc> <port> <conn_type>
@@ -35,8 +33,8 @@ Usage:
                           include handler metadata values as well as strftime
                           format characters [default: %Y-%m-%d-%H-%M-%S-{name}.pcap]
 """
-
 import argparse
+
 import requests
 
 
@@ -63,9 +61,7 @@ def main():
         default="day",
     )
     parser.add_argument("--rotate-log-delta", type=int, default=1)
-    parser.add_argument(
-        "--file-name-pattern", default="%Y-%m-%d-%H-%M-%S-{name}.pcap"
-    )
+    parser.add_argument("--file-name-pattern", default="%Y-%m-%d-%H-%M-%S-{name}.pcap")
 
     # Get command line arguments
     args = vars(parser.parse_args())

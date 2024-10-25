@@ -446,7 +446,6 @@ class TestInfluxDBBackend(unittest.TestCase):
         assert isinstance(res_pkts[0], tuple)
 
         for i, test_data in enumerate(ret_data[0][1]):
-
             assert dmc.rfc3339_str_to_datetime(test_data["time"]) == res_pkts[i][0]
             assert res_pkts[i][1].Voltage_A == i
 
@@ -663,7 +662,10 @@ class TestSQLiteBackend(unittest.TestCase):
             'INSERT INTO "Packet1" (PKTDATA, time) VALUES (?, ?)'
             in sqlbackend._conn.execute.call_args[0]
         )
-        assert (now.strftime(dmc.RFC3339_Format) == sqlbackend._conn.execute.call_args[0][1][1])
+        assert (
+            now.strftime(dmc.RFC3339_Format)
+            == sqlbackend._conn.execute.call_args[0][1][1]
+        )
 
         os.remove(self.test_yaml_file)
 

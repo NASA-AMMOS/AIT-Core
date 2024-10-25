@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,16 +12,17 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 Provides a command line script for running pcap library functions.
 """
-
 import argparse
 import datetime
 import os
 
-from ait.core import dmc, log, pcap, util
+from ait.core import dmc
+from ait.core import log
+from ait.core import pcap
+from ait.core import util
 
 
 def main():

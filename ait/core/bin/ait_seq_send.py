@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # Advanced Multi-Mission Operations System (AMMOS) Instrument Toolkit (AIT)
 # Bespoke Link to Instruments and Small Satellites (BLISS)
 #
@@ -13,7 +12,6 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-
 """
 usage: ait-seq-send [options] filename.rts
 
@@ -30,14 +28,15 @@ Examples:
 
   $ ait-seq-send test.rts
 """
-
+import argparse
 import os
 import time
-import argparse
 from collections import OrderedDict
 
 import ait.core
-from ait.core import api, log, util
+from ait.core import api
+from ait.core import log
+from ait.core import util
 
 
 def system(command):

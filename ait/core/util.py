@@ -17,6 +17,7 @@ AIT Utilities
 The ait.core.util module provides general utility functions.
 """
 import os
+import pickle
 import pydoc
 import stat
 import sys
@@ -57,7 +58,6 @@ class ObjectCache(object):
 
         if self._dict is None:
             self._dict = self._loader(self.filename)
-
         return self._dict
 
 
@@ -108,16 +108,14 @@ def check_yaml_timestamps(yaml_file_name, cache_file_name):
             for line in file:
                 if not line.strip().startswith("#") and "!include" in line:
                     check = check_yaml_timestamps(
-                        os.path.join(dir_name, line.strip().split(" ")[2]),
-                        cache_file_name,
+                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_file_name
                     )
                     if check:
                         return True
         except RecursionError as e:
             log.info(
-                f"ERROR: {e}: Infinite loop: check that yaml config files "
-                "are not looping back and forth on one another through "
-                'the "!include" statements.'
+                f"ERROR: {e}: Infinite loop: check that yaml config files are not looping "
+                f'back and forth on one another through the "!include" statements.'
             )
     return False
 
