@@ -25,10 +25,13 @@ import calendar
 import datetime
 import math
 import os.path
-import pickle
 from typing import Tuple
 
+import msgpack  # type: ignore
 import requests
+from msgpack.exceptions import ExtraData  # type: ignore
+from msgpack.exceptions import FormatError  # type: ignore
+from msgpack.exceptions import StackError  # type: ignore
 
 import ait.core
 from ait.core import log
@@ -316,10 +319,22 @@ class UTCLeapSeconds(object):
         try:
             log.info("Attempting to load leapseconds.dat")
             with open(ls_file, "rb") as outfile:
-                self._data = pickle.load(outfile)
-            log.info("Loaded leapseconds config file successfully")
+                packed_data = outfile.read()
+
+            unpacked_data = msgpack.unpackb(packed_data, object_hook=mp_decode_datetime)
+
+            # msgpack converts tuples to lists, so have to convert back
+            if unpacked_data and "leapseconds" in unpacked_data:
+                lst_list = unpacked_data["leapseconds"]
+                tup_list = [tuple(lst) for lst in lst_list]
+                unpacked_data["leapseconds"] = tup_list
+                self._data = unpacked_data
+                log.info("Loaded leapseconds config file successfully")
+
         except IOError:
             log.info("Unable to locate leapseconds config file")
+        except (ValueError, ExtraData, FormatError, StackError):
+            log.info("Unable to load leapseconds.dat")
 
         if not (self._data and self.is_valid()):
             try:
@@ -391,10 +406,22 @@ class UTCLeapSeconds(object):
         log.info("Leapsecond data processed")
 
         self._data = data
+        packed_data = msgpack.packb(data, default=mp_encode_datetime)
         with open(ls_file, "wb") as outfile:
-            pickle.dump(data, outfile)
-
+            outfile.write(packed_data)
         log.info("Successfully generated leapseconds config file")
+
+
+def mp_decode_datetime(obj):
+    if "__datetime__" in obj:
+        obj = datetime.datetime.strptime(obj["as_str"], "%Y%m%dT%H:%M:%S.%f")
+    return obj
+
+
+def mp_encode_datetime(obj):
+    if isinstance(obj, datetime.datetime):
+        return {"__datetime__": True, "as_str": obj.strftime("%Y%m%dT%H:%M:%S.%f")}
+    return obj
 
 
 if not LeapSeconds:
