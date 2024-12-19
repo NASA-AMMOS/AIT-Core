@@ -1,7 +1,11 @@
 import ait.core.log
-from .client import PortInputClient
-from .client import PortOutputClient
+from .client import TCPInputClient
+from .client import TCPInputServer
+from .client import TCPOutputClient
+from .client import UDPInputServer
+from .client import UDPOutputClient
 from .client import ZMQInputClient
+from .utils import is_valid_address_spec
 
 
 class Stream:
@@ -51,7 +55,9 @@ class Stream:
                 input=self.inputs, output=kwargs["output"], **zmq_args
             )
         else:
-            super(Stream, self).__init__(input=self.inputs, **zmq_args)
+            super(Stream, self).__init__(
+                input=self.inputs, protocol=kwargs.get("protocol", None), **zmq_args
+            )
 
     def __repr__(self):
         return "<{} name={}>".format(
@@ -71,7 +77,6 @@ class Stream:
         """
         for handler in self.handlers:
             output = handler.handle(input_data)
-
             if output:
                 input_data = output
             else:
@@ -81,7 +86,6 @@ class Stream:
                 )
                 ait.core.log.info(msg)
                 return
-
         self.publish(input_data)
 
     def valid_workflow(self):
@@ -101,13 +105,146 @@ class Stream:
         return True
 
 
-class PortInputStream(Stream, PortInputClient):
+def output_stream_factory(name, inputs, outputs, handlers, zmq_args=None):
+    """
+    This factory preempts the creating of output streams directly.  It accepts
+    the same args as any given stream class and then based primarily on the
+    values in 'outputs' decides on the appropriate stream to instantiate and
+    then returns it.
+    """
+
+    parsed_output = outputs
+    if type(parsed_output) is list and len(parsed_output) > 0:
+        if len(parsed_output) > 1:
+            ait.core.log.warn(f"Additional output args discarded {parsed_output[1:]}")
+        parsed_output = parsed_output[0]
+    if type(parsed_output) is int:
+        if ait.MIN_PORT <= parsed_output <= ait.MAX_PORT:
+            return UDPOutputStream(
+                name, inputs, parsed_output, handlers, zmq_args=zmq_args
+            )
+        else:
+            raise ValueError(f"Output stream specification invalid: {outputs}")
+
+    elif type(parsed_output) is str and is_valid_address_spec(parsed_output):
+        protocol, hostname, port = parsed_output.split(":")
+        if protocol.lower() == "udp" and ait.MIN_PORT <= int(port) <= ait.MAX_PORT:
+            return UDPOutputStream(
+                name, inputs, parsed_output, handlers, zmq_args=zmq_args
+            )
+        elif protocol.lower() == "tcp" and ait.MIN_PORT <= int(port) <= ait.MAX_PORT:
+            return TCPOutputStream(
+                name, inputs, parsed_output, handlers, zmq_args=zmq_args
+            )
+        else:
+            raise ValueError(f"Output stream specification invalid: {outputs}")
+    elif parsed_output is None or (
+        type(parsed_output) is list and len(parsed_output) == 0
+    ):
+        return ZMQStream(
+            name,
+            inputs,
+            handlers,
+            zmq_args=zmq_args,
+        )
+    else:
+        raise ValueError(f"Output stream specification invalid: {outputs}")
+
+
+def input_stream_factory(name, inputs, handlers, zmq_args=None):
+    """
+    This factory preempts the creating of input streams directly.  It accepts
+    the same args as any given stream class and then based primarily on the
+    values in 'inputs' decides on the appropriate stream to instantiate and
+    then returns it.
+    """
+
+    stream = None
+    parsed_inputs = inputs
+    if type(parsed_inputs) is int:
+        parsed_inputs = [parsed_inputs]
+    if type(parsed_inputs) is str:
+        parsed_inputs = [parsed_inputs]
+
+    if type(parsed_inputs) is not list or (
+        type(parsed_inputs) is list and len(parsed_inputs) == 0
+    ):
+        raise ValueError(f"Input stream specification invalid: {parsed_inputs}")
+
+    # backwards compatability with original UDP server spec
+    if (
+        type(parsed_inputs) is list
+        and type(parsed_inputs[0]) is int
+        and ait.MIN_PORT <= parsed_inputs[0] <= ait.MAX_PORT
+    ):
+        stream = UDPInputServerStream(
+            name, parsed_inputs[0], handlers, zmq_args=zmq_args
+        )
+    elif is_valid_address_spec(parsed_inputs[0]):
+        protocol, hostname, port = parsed_inputs[0].split(":")
+        if int(port) < ait.MIN_PORT or int(port) > ait.MAX_PORT:
+            raise ValueError(f"Input stream specification invalid: {parsed_inputs}")
+        if protocol.lower() == "tcp":
+            if hostname.lower() in [
+                "server",
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+            ]:
+                stream = TCPInputServerStream(
+                    name, parsed_inputs[0], handlers, zmq_args
+                )
+            else:
+                stream = TCPInputClientStream(
+                    name, parsed_inputs[0], handlers, zmq_args
+                )
+        else:
+            if hostname.lower() in [
+                "server",
+                "localhost",
+                "127.0.0.1",
+                "0.0.0.0",
+            ]:
+                stream = UDPInputServerStream(
+                    name, parsed_inputs[0], handlers, zmq_args=zmq_args
+                )
+            else:
+                raise ValueError(f"Input stream specification invalid: {parsed_inputs}")
+    elif all(isinstance(item, str) for item in parsed_inputs):
+        stream = ZMQStream(name, parsed_inputs, handlers, zmq_args=zmq_args)
+    else:
+        raise ValueError(f"Input stream specification invalid: {parsed_inputs}")
+
+    if stream is None:
+        raise ValueError(f"Input stream specification invalid: {parsed_inputs}")
+    return stream
+
+
+class UDPInputServerStream(Stream, UDPInputServer):
     """
     This stream type listens for messages from a UDP port and publishes to a ZMQ socket.
     """
 
     def __init__(self, name, inputs, handlers, zmq_args=None):
-        super(PortInputStream, self).__init__(name, inputs, handlers, zmq_args)
+        super(UDPInputServerStream, self).__init__(name, inputs, handlers, zmq_args)
+
+
+class TCPInputServerStream(Stream, TCPInputServer):
+    """
+    This stream type listens for messages from a TCP port and publishes to a ZMQ socket.
+    """
+
+    def __init__(self, name, inputs, handlers, zmq_args=None):
+        super(TCPInputServerStream, self).__init__(name, inputs, handlers, zmq_args)
+
+
+class TCPInputClientStream(Stream, TCPInputClient):
+    """
+    This stream type connects to a TCP server and publishes to a ZMQ socket.
+    """
+
+    def __init__(self, name, inputs, handlers, zmq_args=None):
+        super(TCPInputClientStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
 class ZMQStream(Stream, ZMQInputClient):
@@ -120,13 +257,25 @@ class ZMQStream(Stream, ZMQInputClient):
         super(ZMQStream, self).__init__(name, inputs, handlers, zmq_args)
 
 
-class PortOutputStream(Stream, PortOutputClient):
+class UDPOutputStream(Stream, UDPOutputClient):
     """
     This stream type listens for messages from another stream or plugin and
     publishes to a UDP port.
     """
 
     def __init__(self, name, inputs, output, handlers, zmq_args=None):
-        super(PortOutputStream, self).__init__(
+        super(UDPOutputStream, self).__init__(
+            name, inputs, handlers, zmq_args, output=output
+        )
+
+
+class TCPOutputStream(Stream, TCPOutputClient):
+    """
+    This stream type listens for messages from another stream or plugin and
+    publishes to a TCP port.
+    """
+
+    def __init__(self, name, inputs, output, handlers, zmq_args=None):
+        super(TCPOutputStream, self).__init__(
             name, inputs, handlers, zmq_args, output=output
         )

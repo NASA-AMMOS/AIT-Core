@@ -9,6 +9,7 @@ import ait.core
 import ait.core.server
 from ait.core import log
 from .config import ZmqConfig
+from .utils import is_valid_address_spec
 
 
 class Broker(gevent.Greenlet):
@@ -69,7 +70,11 @@ class Broker(gevent.Greenlet):
         """
         for stream in self.inbound_streams + self.outbound_streams:
             for input_ in stream.inputs:
-                if not type(input_) is int and input_ is not None:
+                if (
+                    not type(input_) is int
+                    and input_ is not None
+                    and not is_valid_address_spec(input_)
+                ):
                     Broker.subscribe(stream, input_)
 
         for plugin in self.plugins:

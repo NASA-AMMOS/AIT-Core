@@ -12,6 +12,7 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 import pickle
+import re
 
 
 def encode_message(topic, data):
@@ -62,3 +63,10 @@ def decode_message(msg):
         msg = None
 
     return (tpc, msg)
+
+
+def is_valid_address_spec(address):
+    if type(address) is not str:
+        return False
+    pattern = r"^(TCP|UDP|tcp|udp):.*:\d{1,5}$"
+    return bool(re.match(pattern, address))
