@@ -76,7 +76,6 @@ class Stream:
                          if applicable
         """
         for handler in self.handlers:
-            ait.core.log.info(f"Message from topic: {topic}")
             output = handler.handle(input_data)
             if output:
                 input_data = output
