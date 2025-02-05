@@ -12,7 +12,6 @@
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
 import importlib
-import pickle
 from collections import defaultdict
 
 import gevent.monkey
@@ -81,8 +80,7 @@ class DataArchive(Plugin):
             **kwargs:    any args required for connected to the backend
         """
         try:
-            load = pickle.loads(input_data)
-            uid, pkt = int(load[0]), load[1]
+            uid, pkt = int(input_data[0]), input_data[1]
             defn = self.packet_dict[uid]
             decoded = tlm.Packet(defn, data=bytearray(pkt))
             self.dbconn.insert(decoded, **kwargs)

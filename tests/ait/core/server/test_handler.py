@@ -1,4 +1,3 @@
-import pickle
 import unittest
 from unittest import mock
 
@@ -43,7 +42,7 @@ class TestCCSDSPacketCheck(unittest.TestCase):
         tlm_dict = tlm.getDefaultDict()
         packet_uid = tlm_dict["CCSDS_HEADER"].uid
         result = handler.handle(data)
-        self.assertEqual(packet_uid, pickle.loads(result)[0])
+        self.assertEqual(packet_uid, result[0])
 
 
 class TestHandlerClassWithInputOutputTypes(object):
