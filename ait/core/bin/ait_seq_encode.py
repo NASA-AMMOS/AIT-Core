@@ -83,7 +83,7 @@ def main():
                 seqid = sequence.seqid
 
                 log.info(f"Writing {binpath} (seqid=0x{seqid:04X}).")
-                sequence.writeBinary()
+                sequence.write_binary()
 
             exit = 0
     except Exception as e:
