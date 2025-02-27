@@ -288,7 +288,7 @@ class Seq(object):
             filename = self.txtpath
 
         with open(filename, "wt") as output:
-            self.printText(output)
+            self.print_text(output)
 
 
 class SeqPos(object):
