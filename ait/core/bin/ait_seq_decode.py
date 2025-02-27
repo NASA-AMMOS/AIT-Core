@@ -77,7 +77,7 @@ def main():
         msg = "Writing %s (seqid=0x%04x, version=%u)."
         log.info(msg, txtpath, seqid, version)
 
-        sequence.writeText()
+        sequence.write_text()
 
     log.end()
 
