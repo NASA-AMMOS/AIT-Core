@@ -17,7 +17,6 @@ AIT Utilities
 The ait.core.util module provides general utility functions.
 """
 import os
-import pickle
 import pydoc
 import stat
 import sys
@@ -108,7 +107,8 @@ def check_yaml_timestamps(yaml_file_name, cache_file_name):
             for line in file:
                 if not line.strip().startswith("#") and "!include" in line:
                     check = check_yaml_timestamps(
-                        os.path.join(dir_name, line.strip().split(" ")[2]), cache_file_name
+                        os.path.join(dir_name, line.strip().split(" ")[2]),
+                        cache_file_name,
                     )
                     if check:
                         return True
