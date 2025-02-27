@@ -1,5 +1,3 @@
-import pickle
-
 from ait.core import tlm
 from ait.core.server.handler import Handler
 
@@ -42,4 +40,4 @@ class PacketHandler(Handler):
         Returns:
             tuple of packet UID and message received by stream
         """
-        return pickle.dumps((self._pkt_defn.uid, input_data), 2)
+        return (self._pkt_defn.uid, input_data)

@@ -11,26 +11,29 @@
 # laws and regulations. User has the responsibility to obtain export licenses,
 # or other export authority as may be required before exporting such
 # information to foreign countries or providing access to foreign persons.
-import pickle
+from ait.core.server import serial
+
+# Create serializer (populated from AIT config)
+serializer = serial.Serializer()
 
 
 def encode_message(topic, data):
     """Encode a message for sending via 0MQ
 
-    Given a string topic name and a pickle-able data object, encode and prep
+    Given a string topic name and a serializable data object, encode and prep
     the data for sending via `send_multipart`
 
     Returns a list of the form:
         [
             Bytes object of String (UTF-8),
-            Pickled data object
+            Serialized data object
         ]
 
     If encoding fails None will be returned.
 
     """
     try:
-        enc = [bytes(topic, "utf-8"), pickle.dumps(data)]
+        enc = [bytes(topic, "utf-8"), serializer.serialize(data)]
     # TODO: This should be way less generic than Exception
     except Exception:
         enc = None
@@ -46,16 +49,16 @@ def decode_message(msg):
     Returns a tuple of the form:
         (
             UTF-8 string
-            De-pickled data object
+            Deserialized data object
         )
 
     If decoding fails a tuple of None objects will be returned.
     """
-    [topic, message] = msg
+    [topic, data] = msg
 
     try:
         tpc = topic.decode("utf-8")
-        msg = pickle.loads(message)
+        msg = serializer.deserialize(data)
     # TODO: This should be way less generic than Exception
     except Exception:
         tpc = None

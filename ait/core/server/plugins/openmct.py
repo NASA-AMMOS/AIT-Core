@@ -21,7 +21,6 @@ from AIT.
 """
 import datetime
 import json
-import pickle
 import random
 import struct
 import sys
@@ -496,8 +495,7 @@ class AITOpenMctPlugin(Plugin):
         processed = False
 
         try:
-            pkl_load = pickle.loads(input_data)
-            pkt_id, pkt_data = int(pkl_load[0]), pkl_load[1]
+            pkt_id, pkt_data = int(input_data[0]), input_data[1]
             packet_def = self._get_tlm_packet_def(pkt_id)
             if packet_def:
                 packet_def = self._uidToPktDefMap[pkt_id]

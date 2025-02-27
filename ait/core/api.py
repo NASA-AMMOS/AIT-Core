@@ -27,7 +27,6 @@ import collections.abc
 import inspect
 import json
 import os
-import pickle
 import socket
 import time
 
@@ -587,7 +586,6 @@ class TlmMonitor(gevent.Greenlet):
                 gevent.sleep(0)
                 msg = self._sub.recv_multipart()
                 topic, message = serv_utils.decode_message(msg)
-                message = pickle.loads(message)
 
                 if topic is None or message is None:
                     log.error(f"{self} received invalid topic or message. Skipping")

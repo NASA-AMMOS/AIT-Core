@@ -47,6 +47,12 @@ RFC3339_Format = "%Y-%m-%dT%H:%M:%S.%fZ"
 _DEFAULT_FILE_NAME = "leapseconds.dat"
 LeapSeconds = None
 
+# keywords for custom encoding of datetime, tuples
+TAG_DATETIME_KEY = "__dmc_datetime__"
+TAG_DATETIME_VAL = "as_iso_str"
+TAG_TUPLE_KEY = "__dmc_tuple__"
+TAG_TUPLE_VAL = "as_list"
+
 
 def get_timestamp_utc():
     """Returns the current UTC time in seconds and microseconds."""
@@ -321,7 +327,10 @@ class UTCLeapSeconds(object):
             with open(ls_file, "rb") as outfile:
                 packed_data = outfile.read()
 
-            unpacked_data = msgpack.unpackb(packed_data, object_hook=mp_decode_datetime)
+            # deserialize data using msgpack
+            unpacked_data = msgpack.unpackb(
+                packed_data, raw=False, object_hook=mp_decode
+            )
 
             # msgpack converts tuples to lists, so have to convert back
             if unpacked_data and "leapseconds" in unpacked_data:
@@ -406,21 +415,31 @@ class UTCLeapSeconds(object):
         log.info("Leapsecond data processed")
 
         self._data = data
-        packed_data = msgpack.packb(data, default=mp_encode_datetime)
+
+        # serialize data using msgpack
+        packed_data = msgpack.packb(data, default=mp_encode, strict_types=True)
+
         with open(ls_file, "wb") as outfile:
             outfile.write(packed_data)
         log.info("Successfully generated leapseconds config file")
 
 
-def mp_decode_datetime(obj):
-    if "__datetime__" in obj:
-        obj = datetime.datetime.strptime(obj["as_str"], "%Y%m%dT%H:%M:%S.%f")
+def mp_decode(obj):
+    if TAG_DATETIME_KEY in obj and TAG_DATETIME_VAL in obj:
+        obj = datetime.datetime.fromisoformat(obj[TAG_DATETIME_VAL])
+    elif TAG_TUPLE_KEY in obj and TAG_TUPLE_VAL in obj:
+        obj = tuple(obj[TAG_TUPLE_VAL])
     return obj
 
 
-def mp_encode_datetime(obj):
+def mp_encode(obj):
     if isinstance(obj, datetime.datetime):
-        return {"__datetime__": True, "as_str": obj.strftime("%Y%m%dT%H:%M:%S.%f")}
+        return {
+            TAG_DATETIME_KEY: True,
+            TAG_DATETIME_VAL: obj.isoformat(timespec="microseconds"),
+        }
+    elif isinstance(obj, tuple):
+        return {TAG_TUPLE_KEY: True, TAG_TUPLE_VAL: list(obj)}
     return obj
 
 
