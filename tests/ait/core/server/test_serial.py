@@ -18,6 +18,7 @@ import datetime
 import importlib
 import os
 import struct
+import tempfile
 
 import ait
 from ait.core.server import serial
@@ -275,11 +276,17 @@ def test_unregistered_class_throws_ex(serializer):
         encoded = serializer.serialize(input_obj)
 
 
-def rewrite_and_reload_config(filename, yaml):
-    with open(filename, "wt") as out:
-        out.write(yaml)
-
-    ait.config.reload(filename=filename)
+def write_temp_config_and_reload(yaml):
+    # Create a temp file (writeable,readable,text) and
+    # dump Yaml contents to it.  Then have AIT load it
+    # to replace config.
+    # 'delete=False' allows us to retain file and delete later
+    with tempfile.NamedTemporaryFile(mode="w+t", delete=False) as temp_file:
+        temp_file_path = temp_file.name
+        temp_file.write(yaml)
+        temp_file.flush()
+    ait.config.reload(filename=temp_file_path)
+    return temp_file_path
 
 
 @pytest.fixture(scope="module")
@@ -317,9 +324,8 @@ def serializer():
 
     """
 
-    # Setup config
-    test_yaml_file = "/tmp/test.yaml"
-    rewrite_and_reload_config(test_yaml_file, yaml)
+    # Setup config, temp file remains after
+    temp_file_path = write_temp_config_and_reload(yaml)
 
     # Instantiate serializer with config
     our_serial = serial.Serializer()
@@ -328,5 +334,5 @@ def serializer():
     yield our_serial
 
     # module-level teardown code here
-    if os.path.exists(test_yaml_file):
-        os.remove(test_yaml_file)
+    if os.path.exists(temp_file_path):
+        os.remove(temp_file_path)
