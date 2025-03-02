@@ -198,7 +198,7 @@ class DerivationDefinition(json.SlotSerializer):
                 flds = (self.name, str(value))
                 log("%s value '%s' not in allowed enumerated values." % flds)
             else:
-                primitive = int(self.enum.keys()[self.enum.values().index(value)])
+                primitive = int(list(self.enum.keys())[list(self.enum.values().index(value))])
 
         if self.type:
             if self.type.validate(primitive, messages, self.name) is False:
@@ -386,7 +386,7 @@ class FieldDefinition(json.SlotSerializer):
                 flds = (self.name, str(value))
                 log("%s value '%s' not in allowed enumerated values." % flds)
             else:
-                primitive = int(self.enum.keys()[self.enum.values().index(value)])
+                primitive = int(list(self.enum.keys())[list(self.enum.values().index(value))])
 
         if self.type:
             if self.type.validate(primitive, messages, self.name) is False:
