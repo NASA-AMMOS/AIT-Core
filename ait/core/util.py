@@ -162,7 +162,7 @@ def __init_extensions__(modname, modsyms):  # noqa
                     modname, clsname = parts
                     module = pydoc.locate(modname)
                     if module is None:
-                        raise ImportError("No module named %d" % modname)
+                        raise ImportError("No module named %s" % modname)
                     create.cls = getattr(module, clsname)
                 if create.cls is None:
                     raise ImportError("No class named %s" % extname)
