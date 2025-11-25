@@ -18,8 +18,10 @@ The ait.core.evr module is used to read the EVRs from a YAML file.
 """
 import os
 import re
+import atexit
+import importlib
+from contextlib import ExitStack
 
-import pkg_resources
 import yaml
 
 import ait.core
@@ -75,7 +77,10 @@ class EVRDict(dict):
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/evr_schema.json")
+    file_manager = ExitStack()
+    atexit.register(file_manager.close)
+    ref = importlib.resources.files("ait.core") / "data/evr_schema.json"
+    return file_manager.enter_context(importlib.resources.as_file(ref))
 
 
 def getDefaultDict(reload=False):  # noqa

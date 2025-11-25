@@ -21,10 +21,12 @@ definitions.
 import collections.abc
 import csv
 import os
+import atexit
 import struct
+import importlib
 from io import IOBase
+from contextlib import ExitStack
 
-import pkg_resources
 import yaml
 
 import ait
@@ -1096,7 +1098,10 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/tlm_schema.json")
+    file_manager = ExitStack()
+    atexit.register(file_manager.close)
+    ref = importlib.resources.files("ait.core") / "data/tlm_schema.json"
+    return file_manager.enter_context(importlib.resources.as_file(ref))
 
 
 def getDefaultDictFilename():  # noqa
