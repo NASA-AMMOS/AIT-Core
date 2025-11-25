@@ -18,10 +18,12 @@ The ait.core.cmd module provides commands and command dictionaries.
 Dictionaries contain command and argument definitions.
 """
 import os
+import atexit
 import struct
+import importlib
 from io import IOBase
+from contextlib import ExitStack
 
-import pkg_resources
 import yaml
 
 import ait
@@ -518,7 +520,10 @@ def getDefaultDictFilename():  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/cmd_schema.json")
+    file_manager = ExitStack()
+    atexit.register(file_manager.close)
+    ref = importlib.resources.files("ait.core") / "data/cmd_schema.json"
+    return file_manager.enter_context(importlib.resources.as_file(ref))
 
 
 def getMaxCmdSize():  # noqa

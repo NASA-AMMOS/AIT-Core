@@ -62,7 +62,7 @@ class ObjectCache(object):
 
 if sys.platform == "win32":
     # On Windows, the best timer is time.clock
-    timer = time.clock
+    timer = time.perf_counter
 else:
     # On most other platforms the best timer is time.time
     timer = time.time
@@ -162,7 +162,7 @@ def __init_extensions__(modname, modsyms):  # noqa
                     modname, clsname = parts
                     module = pydoc.locate(modname)
                     if module is None:
-                        raise ImportError("No module named %d" % modname)
+                        raise ImportError("No module named %s" % modname)
                     create.cls = getattr(module, clsname)
                 if create.cls is None:
                     raise ImportError("No class named %s" % extname)

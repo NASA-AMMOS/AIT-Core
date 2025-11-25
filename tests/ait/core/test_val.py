@@ -16,7 +16,6 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import os
-import pkg_resources
 import jsonschema
 
 import pytest
@@ -453,18 +452,20 @@ def testEvrValidation():
 def testTableValidation():
     # Validation test of current table configuration
     yml = ait.config.table.filename
-    schema = pkg_resources.resource_filename("ait.core", "data/table_schema.json")
-    msgs, v = validate_schema([yml, schema])
-    dispmsgs(msgs)
-    assert v
-    assert len(msgs) == 0
+    ref = importlib.resources.files("ait.core") / "data/table_schema.json"
+    with importlib.resources.as_file(ref) as schema:
+        msgs, v = validate_schema([yml, schema])
+        dispmsgs(msgs)
+        assert v
+        assert len(msgs) == 0
 
 
 def testLimitsValidation():
     # Validation test of current table configuration
     yml = ait.config.limits.filename
-    schema = pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
-    msgs, v = validate_schema([yml, schema])
-    dispmsgs(msgs)
-    assert v
-    assert len(msgs) == 0
+    ref = importlib.resources.files("ait.core") / "data/limits_schema.json"
+    with importlib.resources.as_file(ref) as schema:
+        msgs, v = validate_schema([yml, schema])
+        dispmsgs(msgs)
+        assert v
+        assert len(msgs) == 0
