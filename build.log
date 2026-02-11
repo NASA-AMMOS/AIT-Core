@@ -1,0 +1,106 @@
+The "poetry.dev-dependencies" section is deprecated and will be removed in a future version. Use "poetry.group.dev.dependencies" instead.
+============================= test session starts ==============================
+platform darwin -- Python 3.11.9, pytest-7.4.4, pluggy-1.2.0
+rootdir: /Users/jleach/Documents/Development/MGSS/AIT/AIT-Core
+configfile: setup.cfg
+plugins: cov-4.1.0, xdist-3.5.0
+collected 259 items
+
+tests/ait/core/test_bsc.py .........................                     [  9%]
+tests/ait/core/test_ccsds.py ....                                        [ 11%]
+tests/ait/core/test_cfg.py ...........                                   [ 15%]
+tests/ait/core/test_cmd.py .......                                       [ 18%]
+tests/ait/core/test_coord.py ...                                         [ 19%]
+tests/ait/core/test_db.py ........s...s.............                     [ 29%]
+tests/ait/core/test_dmc.py .........                                     [ 32%]
+tests/ait/core/test_dtype.py ...............                             [ 38%]
+tests/ait/core/test_evr.py ........                                      [ 41%]
+tests/ait/core/test_limits.py .............                              [ 46%]
+tests/ait/core/test_log.py ..                                            [ 47%]
+tests/ait/core/test_notify.py .                                          [ 47%]
+tests/ait/core/test_pcap.py ............                                 [ 52%]
+tests/ait/core/test_table.py ..........                                  [ 56%]
+tests/ait/core/test_tlm.py ...............                               [ 62%]
+tests/ait/core/test_util.py ..................                           [ 69%]
+tests/ait/core/test_val.py ..........................                    [ 79%]
+tests/ait/core/server/test_apid_routing.py ....                          [ 80%]
+tests/ait/core/server/test_handler.py ..............                     [ 86%]
+tests/ait/core/server/test_serial.py .......                             [ 88%]
+tests/ait/core/server/test_server.py ......................              [ 97%]
+tests/ait/core/server/test_stream.py .......                             [100%]
+
+=============================== warnings summary ===============================
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/bin/bottle.py:38
+  /Users/jleach/Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/bin/bottle.py:38: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+    import base64, cgi, email.utils, functools, hmac, itertools, mimetypes,\
+
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+  /Users/jleach/Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('sphinxcontrib')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
+  /Users/jleach/Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('zope')`.
+  Implementing implicit namespace packages (as specified in PEP 420) is preferred to `pkg_resources.declare_namespace`. See https://setuptools.pypa.io/en/latest/references/keywords.html#keyword-namespace-packages
+    declare_namespace(pkg)
+
+tests/ait/core/server/test_apid_routing.py:9
+  /Users/jleach/Documents/Development/MGSS/AIT/AIT-Core/tests/ait/core/server/test_apid_routing.py:9: PytestCollectionWarning: cannot collect test class 'TestPacket' because it has a __init__ constructor (from: tests/ait/core/server/test_apid_routing.py)
+    class TestPacket:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform darwin, python 3.11.9-final-0 ----------
+Name                                               Stmts   Miss  Cover
+----------------------------------------------------------------------
+ait/core/api.py                                      407    313    23%
+ait/core/bsc.py                                      278     73    74%
+ait/core/ccsds.py                                     23      1    96%
+ait/core/cfg.py                                      207     29    86%
+ait/core/cmd.py                                      304    118    61%
+ait/core/coord.py                                     44      2    95%
+ait/core/db.py                                       301     38    87%
+ait/core/dmc.py                                      177     20    89%
+ait/core/dtype.py                                    344     20    94%
+ait/core/evr.py                                      106     15    86%
+ait/core/gds.py                                       62     54    13%
+ait/core/geom.py                                     274    274     0%
+ait/core/json.py                                      34     25    26%
+ait/core/limits.py                                    97     16    84%
+ait/core/log.py                                      146     13    91%
+ait/core/notify.py                                    53     39    26%
+ait/core/pcap.py                                     235     11    95%
+ait/core/seq.py                                      379    379     0%
+ait/core/server/broker.py                             82     56    32%
+ait/core/server/client.py                             67     21    69%
+ait/core/server/config.py                              8      0   100%
+ait/core/server/handler.py                            14      2    86%
+ait/core/server/handlers/ccsds_packet_handler.py      48      3    94%
+ait/core/server/handlers/packet_handler.py            17      6    65%
+ait/core/server/plugin.py                             91     21    77%
+ait/core/server/plugins/PacketAccumulator.py          39     39     0%
+ait/core/server/plugins/PacketPadder.py               14     14     0%
+ait/core/server/plugins/apid_routing.py               72     19    74%
+ait/core/server/plugins/data_archive.py               33     23    30%
+ait/core/server/plugins/limit_monitor.py              51     32    37%
+ait/core/server/plugins/openmct.py                   577    485    16%
+ait/core/server/process.py                            97     68    30%
+ait/core/server/serial.py                            264     55    79%
+ait/core/server/server.py                            216     53    75%
+ait/core/server/stream.py                             43      4    91%
+ait/core/server/utils.py                              17      8    53%
+ait/core/table.py                                    242     76    69%
+ait/core/tlm.py                                      565    147    74%
+ait/core/util.py                                     209     44    79%
+ait/core/val.py                                      373     41    89%
+----------------------------------------------------------------------
+TOTAL                                               6610   2657    60%
+
+================= 257 passed, 2 skipped, 11 warnings in 6.65s ==================
