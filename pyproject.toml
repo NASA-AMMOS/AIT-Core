@@ -24,7 +24,7 @@ include = [
 [tool.poetry.dependencies]
 python           = '>= 3.9 < 3.14'
 bottle           = '>= 0.12.25'
-jsonschema       = '3.0.2'
+jsonschema       = '>= 4.0'
 pyyaml           = '6.0.1'
 requests         = '>= 2.22.0'
 greenlet         = '>= 2.0.0'
