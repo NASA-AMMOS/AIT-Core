@@ -30,10 +30,6 @@ tests/ait/core/server/test_server.py ......................              [ 97%]
 tests/ait/core/server/test_stream.py .......                             [100%]
 
 =============================== warnings summary ===============================
-../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/bin/bottle.py:38
-  /Users/jleach/Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/bin/bottle.py:38: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
-    import base64, cgi, email.utils, functools, hmac, itertools, mimetypes,\
-
 ../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
 ../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
 ../../../../../Library/Caches/pypoetry/virtualenvs/ait-core-E7YqPunI-py3.11/lib/python3.11/site-packages/pkg_resources/__init__.py:2871
@@ -103,4 +99,4 @@ ait/core/val.py                                      373     41    89%
 ----------------------------------------------------------------------
 TOTAL                                               6610   2657    60%
 
-================= 257 passed, 2 skipped, 11 warnings in 6.65s ==================
+================= 257 passed, 2 skipped, 10 warnings in 5.35s ==================

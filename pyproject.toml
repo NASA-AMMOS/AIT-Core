@@ -23,15 +23,15 @@ include = [
 
 [tool.poetry.dependencies]
 python           = '>= 3.9 < 3.14'
-bottle           = '0.12.23'
+bottle           = '>= 0.12.25'
 jsonschema       = '3.0.2'
 pyyaml           = '6.0.1'
 requests         = '>= 2.22.0'
 greenlet         = '>= 2.0.0'
 gevent           = '>= 23.9.0'
-gevent-websocket = '0.10.1'
-pyzmq            = '24.0.0'
-gipc             = "^1.1.0"
+gevent-websocket = '>= 0.10.1'
+pyzmq            = '>= 25.0.0'
+gipc             = '>= 1.6.0'
 setproctitle = "^1.2.3"
 msgpack          = '*'
 
