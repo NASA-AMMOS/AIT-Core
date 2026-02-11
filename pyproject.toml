@@ -35,7 +35,7 @@ gipc             = '>= 1.6.0'
 setproctitle = "^1.2.3"
 msgpack          = '*'
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black                     = '*'
 flake8                    = '*'
 pyproject-flake8          = '^0.0.1-alpha.2'
@@ -55,7 +55,7 @@ pre-commit                = '*'
 sphinx                    = '>= 4.2'
 sphinx-rtd-theme          = '*'
 sphinxcontrib-httpdomain  = '*'
-tox                       = '>= 3.8 < 4.0'
+tox                       = '>= 3.8 < 5.0'
 twine                     = '^3.4.2'
 
 [tool.poetry.scripts]

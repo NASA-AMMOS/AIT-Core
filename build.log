@@ -1,4 +1,3 @@
-The "poetry.dev-dependencies" section is deprecated and will be removed in a future version. Use "poetry.group.dev.dependencies" instead.
 ============================= test session starts ==============================
 platform darwin -- Python 3.11.9, pytest-7.4.4, pluggy-1.2.0
 rootdir: /Users/jleach/Documents/Development/MGSS/AIT/AIT-Core
@@ -99,4 +98,4 @@ ait/core/val.py                                      373     41    89%
 ----------------------------------------------------------------------
 TOTAL                                               6610   2657    60%
 
-================= 257 passed, 2 skipped, 10 warnings in 5.16s ==================
+================= 257 passed, 2 skipped, 10 warnings in 4.93s ==================
