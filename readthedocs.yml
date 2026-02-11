@@ -2,7 +2,7 @@ formats:
     - none
 
 python:
-    version: "3.8"
+    version: "3.12"
     pip_install: true
     extra_requirements:
         - docs

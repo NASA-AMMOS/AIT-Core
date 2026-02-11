@@ -87,7 +87,7 @@ Use `pytest` to manually run the test suite::
 
 Or via `tox` for a specific python version::
 
-    tox -e py310
+    tox -e py312
 
 
 Code Checks

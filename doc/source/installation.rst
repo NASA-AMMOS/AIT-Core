@@ -3,7 +3,7 @@ Installation and Environment Configuration
 
 The following guide will show you how to install and configure AIT Core. For information on how to configure a new project to use AIT, check out the :doc:`New Project Setup <project_setup>` page.
 
-.. note::  AIT is tested against *Python 3.7*.  Running AIT with other versions of *Python 3* may have issues.
+.. note::  AIT is tested against *Python 3.9, 3.10, 3.11, and 3.12*.  Python 3.12 is recommended for new installations.
 
 Installation
 ------------
