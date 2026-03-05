@@ -22,9 +22,9 @@ import collections.abc
 import csv
 import os
 import struct
+from importlib.resources import files
 from io import IOBase
 
-import pkg_resources
 import yaml
 
 import ait
@@ -1096,7 +1096,7 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/tlm_schema.json")
+    return files("ait.core").joinpath("data/tlm_schema.json")
 
 
 def getDefaultDictFilename():  # noqa

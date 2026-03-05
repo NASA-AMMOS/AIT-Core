@@ -107,19 +107,19 @@ jobs:
     - name: Post-Process Output
       run: |
         python3 -m pip install nasa-scrub
-     
+
         results_dir=`realpath ${{ github.workspace }}/../results`
         sarif_files=`find $results_dir -name '*.sarif'`
-     
+
         for sarif_file in $sarif_files
         do
           output_file="$results_dir/$(basename $sarif_file .sarif)_stripped.sarif"
-     
+
           python3 -m scrub.tools.parsers.translate_results $sarif_file $output_file ${{ github.workspace }} sarifv2.1.0
         done
- 
+
         echo "RESULTS_DIR=$results_dir" >> $GITHUB_ENV
- 
+
     # This step makes the analysis artifacts available for download
     # This can be helpful for debugging and archive purposes
     - name: Upload Artifacts
