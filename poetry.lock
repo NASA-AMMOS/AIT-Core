@@ -821,14 +821,14 @@ files = [
 
 [[package]]
 name = "importlib-metadata"
-version = "4.2.0"
+version = "4.3.0"
 description = "Read metadata from Python packages"
 optional = false
 python-versions = ">=3.6"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
-    {file = "importlib_metadata-4.2.0-py3-none-any.whl", hash = "sha256:057e92c15bc8d9e8109738a48db0ccb31b4d9d5cfbee5a8670879a30be66304b"},
-    {file = "importlib_metadata-4.2.0.tar.gz", hash = "sha256:b7e52a1f8dec14a75ea73e0891f3060099ca1d8e6a462a4dff11c3e119ea1b31"},
+    {file = "importlib_metadata-4.3.0-py3-none-any.whl", hash = "sha256:c8b9a7c6000baa7adf7abcd2c41db11f172bcb5d6e448c73c2407dbc7e7e2af3"},
+    {file = "importlib_metadata-4.3.0.tar.gz", hash = "sha256:c4646abbce80191bb548636f846e353ff1edc46a06bc536ea0a60d53211dc690"},
 ]
 
 [package.dependencies]
@@ -2047,14 +2047,14 @@ files = [
 
 [[package]]
 name = "sphinx"
-version = "4.2.0"
+version = "4.4.0"
 description = "Python documentation generator"
 optional = false
 python-versions = ">=3.6"
 groups = ["dev"]
 files = [
-    {file = "Sphinx-4.2.0-py3-none-any.whl", hash = "sha256:98a535c62a4fcfcc362528592f69b26f7caec587d32cd55688db580be0287ae0"},
-    {file = "Sphinx-4.2.0.tar.gz", hash = "sha256:94078db9184491e15bce0a56d9186e0aec95f16ac20b12d00e06d4e36f1058a6"},
+    {file = "Sphinx-4.4.0-py3-none-any.whl", hash = "sha256:5da895959511473857b6d0200f56865ed62c31e8f82dd338063b84ec022701fe"},
+    {file = "Sphinx-4.4.0.tar.gz", hash = "sha256:6caad9786055cb1fa22b4a365c1775816b876f91966481765d7d50e9f0dd35cc"},
 ]
 
 [package.dependencies]
@@ -2067,7 +2067,6 @@ Jinja2 = ">=2.3"
 packaging = "*"
 Pygments = ">=2.0"
 requests = ">=2.5.0"
-setuptools = "*"
 snowballstemmer = ">=1.1"
 sphinxcontrib-applehelp = "*"
 sphinxcontrib-devhelp = "*"
@@ -2078,7 +2077,7 @@ sphinxcontrib-serializinghtml = ">=1.1.5"
 
 [package.extras]
 docs = ["sphinxcontrib-websupport"]
-lint = ["docutils-stubs", "flake8 (>=3.5.0)", "isort", "mypy (>=0.900)", "types-pkg-resources", "types-requests", "types-typed-ast"]
+lint = ["docutils-stubs", "flake8 (>=3.5.0)", "isort", "mypy (>=0.931)", "types-requests", "types-typed-ast"]
 test = ["cython", "html5lib", "pytest", "pytest-cov", "typed-ast ; python_version < \"3.8\""]
 
 [[package]]
@@ -2459,7 +2458,7 @@ version = "3.15.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.7"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
     {file = "zipp-3.15.0-py3-none-any.whl", hash = "sha256:48904fc76a60e542af151aded95726c1a5c34ed43ab4134b597665c86d7ad556"},
     {file = "zipp-3.15.0.tar.gz", hash = "sha256:112929ad649da941c23de50f356a2b5570c954b65150642bccdd66bf194d224b"},
@@ -2545,4 +2544,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">= 3.10 < 3.12"
-content-hash = "de51ed18d30957657c6c9d7023252561281532c0d6ee182e3999eab101395efc"
+content-hash = "001212a56302d6cbfff33d1ca1dd530e55070ab6566bb008dc9b09d9c7eced03"
