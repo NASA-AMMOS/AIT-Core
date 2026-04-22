@@ -224,7 +224,7 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return files("ait.core").joinpath("data/limits_schema.json")
+    return str(files("ait.core").joinpath("data/limits_schema.json"))
 
 
 def getDefaultDictFilename():  # noqa

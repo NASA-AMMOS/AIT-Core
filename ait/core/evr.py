@@ -75,7 +75,7 @@ class EVRDict(dict):
 
 
 def getDefaultSchema():  # noqa
-    return files("ait.core").joinpath("data/evr_schema.json")
+    return str(files("ait.core").joinpath("data/evr_schema.json"))
 
 
 def getDefaultDict(reload=False):  # noqa

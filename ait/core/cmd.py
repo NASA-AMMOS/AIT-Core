@@ -518,7 +518,7 @@ def getDefaultDictFilename():  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return files("ait.core").joinpath("data/cmd_schema.json")
+    return str(files("ait.core").joinpath("data/cmd_schema.json"))
 
 
 def getMaxCmdSize():  # noqa

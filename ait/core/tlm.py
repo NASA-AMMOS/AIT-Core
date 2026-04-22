@@ -1096,7 +1096,7 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return files("ait.core").joinpath("data/tlm_schema.json")
+    return str(files("ait.core").joinpath("data/tlm_schema.json"))
 
 
 def getDefaultDictFilename():  # noqa
