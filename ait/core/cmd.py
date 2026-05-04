@@ -20,7 +20,7 @@ Dictionaries contain command and argument definitions.
 """
 
 import os
-import pkg_resources
+from importlib.resources import files
 import struct
 import yaml
 from io import IOBase
@@ -513,7 +513,7 @@ def getDefaultDictFilename():  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/cmd_schema.json")
+    return str(files("ait.core").joinpath("data/cmd_schema.json"))
 
 
 def getMaxCmdSize():  # noqa

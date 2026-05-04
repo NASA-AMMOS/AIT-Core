@@ -13,26 +13,25 @@ repository = 'https://github.com/NASA-AMMOS/AIT-Core'
 documentation = 'https://ait-core.readthedocs.io/en/latest'
 authors       = ['AMMOS Instrument Toolkit Development Team <ait-pmc@googlegroups.com>']
 
-packages = [
-    {include = "ait"}
-]
+packages = [{ include = "ait" }]
 
-include = [
-    "ait/core/data/*.json"
-]
+include = ["ait/core/data/*.json"]
 
 [tool.poetry.dependencies]
-python           = '>= 3.7 < 3.11'
-bottle           = '0.12.23'
-jsonschema       = '3.0.2'
-pyyaml           = '5.3.1'  # Temporarily pinning this to 5.3.1 because pyyaml and Cython 3 don't get along
-requests         = '>= 2.22.0'
-greenlet         = '1.1.3'
-gevent           = '*'
-gevent-websocket = '0.10.1'
-pyzmq            = '24.0.0'
-gipc             = "^1.1.0"
-setproctitle = "^1.2.3"
+python              = ">= 3.10 < 3.12"
+bottle              = "0.12.23"
+jsonschema          = "4.25.1"
+pyyaml              = "6.0.1"
+requests            = ">= 2.22.0"
+greenlet            = "^3.1.1"
+gevent              = "25.9.1"
+gevent-websocket    = "0.10.1"
+pyzmq               = "24.0.0"
+gipc                = "^1.1.0"
+setproctitle        = "^1.2.3"
+msgpack             = "1.0.5"
+importlib_metadata  = "4.3.0"
+importlib_resources = "6.5.2"
 
 [tool.poetry.dev-dependencies]
 black                     = '*'
@@ -51,7 +50,7 @@ pytest-cov                = '*'
 pytest-watch              = '*'
 pytest-xdist              = '*'
 pre-commit                = '*'
-sphinx                    = '>= 4.2'
+sphinx                      = "4.4"
 sphinx-rtd-theme          = '*'
 sphinxcontrib-httpdomain  = '*'
 tox                       = '>= 3.8 < 4.0'

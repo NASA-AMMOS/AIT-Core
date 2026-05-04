@@ -21,12 +21,13 @@ definitions.
 """
 
 import collections.abc
-import os
-import pkg_resources
-import struct
-import yaml
 import csv
+import os
+import struct
+from importlib.resources import files
 from io import IOBase
+
+import yaml
 
 import ait
 from ait.core import dtype, json, log, util
@@ -1094,7 +1095,7 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/tlm_schema.json")
+    return str(files("ait.core").joinpath("data/tlm_schema.json"))
 
 
 def getDefaultDictFilename():  # noqa

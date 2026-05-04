@@ -64,9 +64,10 @@ For example:
 """
 
 import os
-import pkg_resources
-import yaml
+from importlib.resources import files
 from io import IOBase
+
+import yaml
 
 import ait
 from ait.core import json, util
@@ -218,7 +219,7 @@ def getDefaultDict(reload=False):  # noqa
 
 
 def getDefaultSchema():  # noqa
-    return pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
+    return str(files("ait.core").joinpath("data/limits_schema.json"))
 
 
 def getDefaultDictFilename():  # noqa
