@@ -16,7 +16,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import os
-import pkg_resources
+from importlib.resources import files
 import jsonschema
 
 import pytest
@@ -443,7 +443,7 @@ def testTlmDictValidation():
 def testEvrValidation():
     # Validation test of current telemetry dictionary
     yml = ait.config.evrdict.filename
-    schema = os.path.join(os.path.dirname(yml), evr.getDefaultSchema())
+    schema = str(os.path.join(os.path.dirname(yml), evr.getDefaultSchema()))
     msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
@@ -453,7 +453,7 @@ def testEvrValidation():
 def testTableValidation():
     # Validation test of current table configuration
     yml = ait.config.table.filename
-    schema = pkg_resources.resource_filename("ait.core", "data/table_schema.json")
+    schema = str(files("ait.core").joinpath("data/table_schema.json"))
     msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
@@ -463,7 +463,7 @@ def testTableValidation():
 def testLimitsValidation():
     # Validation test of current table configuration
     yml = ait.config.limits.filename
-    schema = pkg_resources.resource_filename("ait.core", "data/limits_schema.json")
+    schema = str(files("ait.core").joinpath("data/limits_schema.json"))
     msgs, v = validate_schema([yml, schema])
     dispmsgs(msgs)
     assert v
