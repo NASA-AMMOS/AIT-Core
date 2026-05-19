@@ -27,6 +27,7 @@ import time
 import gevent.monkey
 import gevent.pool
 import gevent.socket
+from bottle import abort
 from bottle import Bottle
 from bottle import request
 
@@ -850,40 +851,43 @@ class StreamCaptureManagerServer(Bottle):
                 if the port or connection type are not supplied, or if
                 log_dir_path is provided (not allowed via REST API).
         """
-        data = dict(request.forms)
-        loc = data.pop("loc", "")
-        port = data.pop("port", None)
-        conn_type = data.pop("conn_type", None)
+        try:
+            data = dict(request.forms)
+            loc = data.pop("loc", "")
+            port = data.pop("port", None)
+            conn_type = data.pop("conn_type", None)
 
-        # Do not allow log_dir_path override from unauthenticated REST API
-        # to prevent path traversal attacks. log_dir_path can only be set via
-        # configuration file.
-        if "log_dir_path" in data:
-            raise ValueError(
-                "log_dir_path parameter is not allowed via REST API. "
-                "Configure log directories in the bsc.yaml configuration file instead."
-            )
+            # Do not allow log_dir_path override from unauthenticated REST API
+            # to prevent path traversal attacks. log_dir_path can only be set via
+            # configuration file.
+            if "log_dir_path" in data:
+                raise ValueError(
+                    "log_dir_path parameter is not allowed via REST API. "
+                    "Configure log directories in the bsc.yaml configuration file instead."
+                )
 
-        # Validate path parameter to prevent directory traversal
-        if "path" in data:
-            # Remove any leading slashes to force relative paths
-            data["path"] = data["path"].lstrip(os.sep)
-            # Reject paths with parent directory references
-            if ".." in data["path"]:
-                raise ValueError("path parameter cannot contain '..'")
+            # Validate path parameter to prevent directory traversal
+            if "path" in data:
+                # Remove any leading slashes to force relative paths
+                data["path"] = data["path"].lstrip(os.sep)
+                # Reject paths with parent directory references
+                if ".." in data["path"]:
+                    raise ValueError("Path parameter cannot contain ellipsis'")
 
-        if not port or not conn_type:
-            e = "Port and/or conn_type not set"
-            raise ValueError(e)
-        address = [loc, int(port)]
+            if not port or not conn_type:
+                e = "Port and/or conn_type not set"
+                raise ValueError(e)
+            address = [loc, int(port)]
 
-        if "rotate_log" in data:
-            data["rotate_log"] = True if data == "true" else False
+            if "rotate_log" in data:
+                data["rotate_log"] = True if data == "true" else False
 
-        if "rotate_log_delta" in data:
-            data["rotate_log_delta"] = int(data["rotate_log_delta"])
+            if "rotate_log_delta" in data:
+                data["rotate_log_delta"] = int(data["rotate_log_delta"])
 
-        self._logger_manager.add_logger(name, address, conn_type, **data)
+            self._logger_manager.add_logger(name, address, conn_type, **data)
+        except ValueError as e:
+            abort(400, str(e))
 
     def _stop_logger_by_name(self, name):
         """Handles requests for termination of a handler by name"""
