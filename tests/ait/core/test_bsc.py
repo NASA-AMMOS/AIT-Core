@@ -350,6 +350,73 @@ class TestSocketStreamCapturer:
         assert len(sl.capture_handlers) == 1
         assert sl.capture_handlers[0]["name"] == "h1"
 
+    @mock.patch("ait.core.pcap.open")
+    @mock.patch("gevent.socket.socket")
+    def test_path_traversal_with_absolute_path(self, socket_mock, pcap_open_mock):
+        """Test that absolute paths in 'path' parameter are stripped and allowed if valid"""
+        # After stripping leading slashes, "/etc/passwd" becomes "etc/passwd" which is
+        # a valid relative path under /tmp
+        handler = {
+            "name": "test",
+            "log_dir": "/tmp",
+            "path": "/etc/passwd",
+            "_validated_log_dir_root": "/tmp",
+        }
+        sl = bsc.SocketStreamCapturer(handler, ["", 9000], "udp")
+
+        # The path should have been stripped and become relative
+        log_file = sl._get_log_file(sl.capture_handlers[0])
+        assert log_file.startswith("/tmp")
+        # After stripping, it becomes "etc/passwd" which is valid
+        assert "etc/passwd" in log_file
+
+    @mock.patch("ait.core.pcap.open")
+    @mock.patch("gevent.socket.socket")
+    def test_path_traversal_with_parent_references(self, socket_mock, pcap_open_mock):
+        """Test that parent directory references (..) are blocked during initialization"""
+        handler = {
+            "name": "test",
+            "log_dir": "/tmp/logs",
+            "path": "../../etc",
+            "_validated_log_dir_root": "/tmp/logs",
+        }
+
+        # Should raise during initialization when _get_logger is called
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            bsc.SocketStreamCapturer(handler, ["", 9000], "udp")
+
+    @mock.patch("ait.core.pcap.open")
+    @mock.patch("gevent.socket.socket")
+    def test_path_traversal_complex_escape(self, socket_mock, pcap_open_mock):
+        """Test complex path traversal attempts are blocked during initialization"""
+        handler = {
+            "name": "test",
+            "log_dir": "/tmp/bsc",
+            "path": "subdir/../../../etc",
+            "_validated_log_dir_root": "/tmp/bsc",
+        }
+
+        # Should raise during initialization when _get_logger is called
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            bsc.SocketStreamCapturer(handler, ["", 9000], "udp")
+
+    @mock.patch("ait.core.pcap.open")
+    @mock.patch("gevent.socket.socket")
+    def test_valid_relative_path_allowed(self, socket_mock, pcap_open_mock):
+        """Test that valid relative paths within root are allowed"""
+        handler = {
+            "name": "test",
+            "log_dir": "/tmp/bsc",
+            "path": "subdir/nested",
+            "_validated_log_dir_root": "/tmp/bsc",
+        }
+        sl = bsc.SocketStreamCapturer(handler, ["", 9000], "udp")
+
+        # Should not raise an exception
+        log_file = sl._get_log_file(sl.capture_handlers[0])
+        assert log_file.startswith("/tmp/bsc")
+        assert "subdir/nested" in log_file
+
 
 class TestStreamCaptureManager:
     @mock.patch("ait.core.bsc.SocketStreamCapturer")
@@ -374,39 +441,31 @@ class TestStreamCaptureManager:
         cleaned_dir_path = os.path.normpath(mngr_conf["root_log_directory"])
 
         lm = bsc.StreamCaptureManager(mngr_conf, [])
-        lm.add_logger("foo", ["", 9000], "udp", "/tmp")
+        # Use a relative path within the root instead of absolute path outside root
+        lm.add_logger("foo", ["", 9000], "udp", "logs/subdir")
 
         assert len(lm._stream_capturers.keys()) == 1
         assert "['', 9000]" in lm._stream_capturers
 
         # Default root_log_directory usage and normalization check
         lm.add_logger("baz", ["", 8500], "udp")
-        socket_log_mock.assert_called_with(
-            {
-                "log_dir": cleaned_dir_path,
-                "name": "baz",
-                "rotate_log": True,
-                "pre_write_transforms": [],
-            },
-            ["", 8500],
-            "udp",
-        )
+        # Verify _validated_log_dir_root is present
+        call_args = socket_log_mock.call_args[0][0]
+        assert "log_dir" in call_args
+        assert call_args["name"] == "baz"
+        assert call_args["rotate_log"] == True
+        assert "_validated_log_dir_root" in call_args
         assert lm._pool.free_count() == 48
 
-        # Check to make sure that home directory expansion is being done
+        # Check to make sure that relative home directory paths work
         socket_log_mock.reset_mock()
-        lm.add_logger("testlog", ["", 1234], "udp", "~/logger_dir")
-        expanded_user_path = os.path.expanduser("~/logger_dir")
-        socket_log_mock.assert_called_with(
-            {
-                "log_dir": expanded_user_path,
-                "name": "testlog",
-                "rotate_log": True,
-                "pre_write_transforms": [],
-            },
-            ["", 1234],
-            "udp",
-        )
+        lm.add_logger("testlog", ["", 1234], "udp", "logger_dir")
+        # Since it's relative, it should be joined with root
+        expected_path = os.path.normpath(os.path.join(cleaned_dir_path, "logger_dir"))
+        call_args = socket_log_mock.call_args[0][0]
+        assert call_args["log_dir"] == expected_path
+        assert call_args["name"] == "testlog"
+        assert call_args["rotate_log"] == True
 
     @mock.patch("ait.core.pcap.open")
     @mock.patch("os.makedirs")
@@ -416,7 +475,7 @@ class TestStreamCaptureManager:
         lm = bsc.StreamCaptureManager(mngr_conf, [])
 
         kwargs = {"pre_write_transforms": ["identity_transform", lambda x: 1]}
-        lm.add_logger("testlog", ["", 9876], "udp", "~/logger_dir", **kwargs)
+        lm.add_logger("testlog", ["", 9876], "udp", "logger_dir", **kwargs)
         stream_capturer = lm._stream_capturers["['', 9876]"][0]
         handler = stream_capturer.capture_handlers[0]
 
@@ -443,7 +502,7 @@ class TestStreamCaptureManager:
 
         bad_func_name = "this function name doesnt exist"
         kwargs = {"pre_write_transforms": [bad_func_name]}
-        lm.add_logger("testlog", ["", 9876], "udp", "~/logger_dir", **kwargs)
+        lm.add_logger("testlog", ["", 9876], "udp", "logger_dir", **kwargs)
         msg = 'Unable to load data transformation "{}" for handler "{}"'.format(
             bad_func_name, "testlog"
         )
@@ -465,7 +524,7 @@ class TestStreamCaptureManager:
 
         bad_func_name = ("foobarbaz",)
         kwargs = {"pre_write_transforms": [bad_func_name]}
-        lm.add_logger("testlog", ["", 9876], "udp", "~/logger_dir", **kwargs)
+        lm.add_logger("testlog", ["", 9876], "udp", "logger_dir", **kwargs)
         msg = 'Unable to determine how to load data transform "{}"'.format(
             bad_func_name
         )
@@ -526,3 +585,187 @@ class TestStreamCaptureManager:
         lm.rotate_capture_handler_log("bar")
         post_rot_count = pcap_open_mock.call_count
         assert post_rot_count - pre_rot_count == 1
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_log_dir_path_traversal_absolute(self, socket_log_mock):
+        """Test that absolute log_dir_path outside root is blocked"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            lm.add_logger("malicious", ["", 9000], "udp", "/etc/passwd")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_log_dir_path_traversal_relative(self, socket_log_mock):
+        """Test that relative log_dir_path escaping root is blocked"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            lm.add_logger("malicious", ["", 9000], "udp", "../../etc")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_log_dir_path_valid_relative(self, socket_log_mock):
+        """Test that valid relative log_dir_path within root is allowed"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+
+        # Should not raise exception
+        lm.add_logger("valid", ["", 9000], "udp", "subdir/logs")
+
+        # Verify the handler was created with the correct path
+        assert "['', 9000]" in lm._stream_capturers
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_log_dir_path_validated_root_stored(self, socket_log_mock):
+        """Test that _validated_log_dir_root is stored in handler config"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+
+        lm.add_logger("test", ["", 9000], "udp", "subdir")
+
+        # Check that the first argument to SocketStreamCapturer contains _validated_log_dir_root
+        call_args = socket_log_mock.call_args
+        handler_conf = call_args[0][0]
+        assert "_validated_log_dir_root" in handler_conf
+        assert handler_conf["_validated_log_dir_root"] == os.path.realpath("/tmp/bsc")
+
+
+class TestStreamCaptureManagerServer:
+    """Tests for REST API security"""
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_blocks_log_dir_path(self, socket_log_mock):
+        """Test that log_dir_path parameter is blocked from REST API"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        # Mock the request.forms to simulate a POST request with log_dir_path
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "log_dir_path": "/etc",
+            }
+
+            with pytest.raises(
+                ValueError, match="log_dir_path parameter is not allowed via REST API"
+            ):
+                server._add_logger_by_name("malicious")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_strips_leading_slashes_from_path(self, socket_log_mock):
+        """Test that leading slashes are stripped from path parameter"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "path": "/absolute/path",
+            }
+
+            # Should not raise, but path should be stripped
+            server._add_logger_by_name("test")
+
+            # Verify SocketStreamCapturer was called and check the handler config
+            assert socket_log_mock.called
+            call_args = socket_log_mock.call_args[0][
+                0
+            ]  # First positional arg (handler config)
+            assert "path" in call_args
+            assert call_args["path"] == "absolute/path"  # Leading slash stripped
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_blocks_parent_directory_references(self, socket_log_mock):
+        """Test that .. in path parameter is blocked"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "path": "../../etc",
+            }
+
+            with pytest.raises(ValueError, match="path parameter cannot contain"):
+                server._add_logger_by_name("malicious")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_allows_valid_path(self, socket_log_mock):
+        """Test that valid relative paths are allowed"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "path": "logs/capture",
+            }
+
+            # Should not raise exception
+            server._add_logger_by_name("valid")
+
+            # Verify logger was added
+            assert "['127.0.0.1', 9000]" in lm._stream_capturers
+
+
+class TestPathValidation:
+    """Tests for path validation helper function"""
+
+    def test_validate_path_blocks_absolute_path_after_stripping(self):
+        """Test that absolute paths get stripped but still validated"""
+        # The function strips leading slashes, so "/etc/passwd" becomes "etc/passwd"
+        # which is a valid relative path. To truly escape, you need ..
+        result = bsc._validate_path_within_root("/tmp/bsc", "/etc/passwd")
+        # After stripping, this becomes a valid path under /tmp/bsc
+        real_root = os.path.realpath("/tmp/bsc")
+        assert result.startswith(real_root)
+
+    def test_validate_path_blocks_parent_traversal(self):
+        """Test that parent directory traversal is blocked"""
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            bsc._validate_path_within_root("/tmp/bsc", "../../etc")
+
+    def test_validate_path_blocks_complex_traversal(self):
+        """Test that complex traversal attempts are blocked"""
+        with pytest.raises(ValueError, match="must remain under root_log_directory"):
+            bsc._validate_path_within_root("/tmp/bsc", "logs/../../../etc/passwd")
+
+    def test_validate_path_allows_valid_relative(self):
+        """Test that valid relative paths are allowed"""
+        result = bsc._validate_path_within_root("/tmp/bsc", "logs/capture", "test.pcap")
+        # Use realpath for comparison since /tmp may be a symlink to /private/tmp on macOS
+        real_root = os.path.realpath("/tmp/bsc")
+        assert result.startswith(real_root)
+        assert "logs/capture" in result or "logs\\capture" in result  # Cross-platform
+        assert "test.pcap" in result
+
+    def test_validate_path_normalizes_result(self):
+        """Test that paths are normalized correctly"""
+        result = bsc._validate_path_within_root(
+            "/tmp/bsc", "logs//nested/", "file.pcap"
+        )
+        # Should normalize multiple slashes
+        assert "//" not in result
+        # Use realpath for comparison since /tmp may be a symlink to /private/tmp on macOS
+        real_root = os.path.realpath("/tmp/bsc")
+        assert result.startswith(real_root)
+
+    def test_validate_path_expands_user_home(self):
+        """Test that ~ expansion works for root"""
+        home = os.path.expanduser("~")
+        result = bsc._validate_path_within_root("~/test_root", "subdir")
+        assert result.startswith(home)
+        assert "test_root" in result

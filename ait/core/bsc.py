@@ -57,6 +57,48 @@ ETH_P_ALL = 0x0003
 ETH_PROTOCOL = ETH_P_ALL
 
 
+def _validate_path_within_root(root, user_path, filename=""):
+    """Validate that a path remains within the configured root directory.
+
+    Args:
+        root: The configured root directory path
+        user_path: User-supplied path component (from 'path' or 'log_dir_path')
+        filename: Optional filename component
+
+    Returns:
+        The validated canonical path
+
+    Raises:
+        ValueError: If the resulting path would escape the root directory
+    """
+    # Canonicalize the root
+    root = os.path.realpath(os.path.expanduser(root))
+
+    # Force user_path to be relative by stripping leading separators
+    if user_path:
+        user_path = user_path.lstrip(os.sep)
+    else:
+        user_path = ""
+
+    # Build the candidate path
+    if filename:
+        candidate = os.path.join(root, user_path, filename)
+    else:
+        candidate = os.path.join(root, user_path)
+
+    # Canonicalize the candidate path
+    candidate = os.path.realpath(candidate)
+
+    # Ensure the candidate is within the root
+    if not (candidate == root or candidate.startswith(root + os.sep)):
+        raise ValueError(
+            "Invalid log path; must remain under root_log_directory. "
+            f"Attempted path would resolve to: {candidate}"
+        )
+
+    return candidate
+
+
 class SocketStreamCapturer(object):
     """Class for logging socket data to a PCAP file."""
 
@@ -430,14 +472,30 @@ class SocketStreamCapturer(object):
         else:
             filename = handler["file_name_pattern"]
 
-        log_file = handler["log_dir"]
-        if "path" in handler:
-            log_file = os.path.join(log_file, handler["path"], filename)
-        else:
-            log_file = os.path.join(log_file, filename)
+        # Use the stored root for validation
+        root = handler.get("_validated_log_dir_root", handler["log_dir"])
 
+        # Sanitize and validate the path component
+        if "path" in handler:
+            user_path = handler["path"].lstrip(os.sep)
+            log_file = os.path.join(handler["log_dir"], user_path, filename)
+        else:
+            log_file = os.path.join(handler["log_dir"], filename)
+
+        # Apply time and format string substitutions
         log_file = time.strftime(log_file, time.gmtime())
         log_file = log_file.format(**handler)
+
+        # Validate the final path stays within root
+        log_file_real = os.path.realpath(log_file)
+        root_real = os.path.realpath(root)
+        if not (
+            log_file_real == root_real or log_file_real.startswith(root_real + os.sep)
+        ):
+            raise ValueError(
+                "Invalid log file path; must remain under root_log_directory. "
+                f"Attempted path: {log_file}"
+            )
 
         return log_file
 
@@ -526,12 +584,50 @@ class StreamCaptureManager(object):
         """
         capture_handler_conf = kwargs
 
-        if not log_dir_path:
-            log_dir_path = self._mngr_conf["root_log_directory"]
+        # Get the configured root directory (if available and if it's a dict)
+        root = None
+        if self._mngr_conf and isinstance(self._mngr_conf, dict):
+            root = self._mngr_conf.get("root_log_directory")
 
-        log_dir_path = os.path.normpath(os.path.expanduser(log_dir_path))
+        if not log_dir_path:
+            log_dir_path = root if root else "/tmp"
+            log_dir_path = os.path.normpath(os.path.expanduser(log_dir_path))
+        else:
+            log_dir_path = os.path.expanduser(log_dir_path)
+            # Only validate if we have a configured root AND log_dir_path is different from root
+            if root and os.path.normpath(log_dir_path) != os.path.normpath(root):
+                # If it's a relative path, join with root; if absolute, validate it
+                if not os.path.isabs(log_dir_path):
+                    log_dir_path = os.path.join(root, log_dir_path)
+
+                # Normalize and validate
+                log_dir_path = os.path.normpath(log_dir_path)
+                log_dir_path_real = os.path.realpath(log_dir_path)
+                root_real = os.path.realpath(os.path.expanduser(root))
+
+                if not (
+                    log_dir_path_real == root_real
+                    or log_dir_path_real.startswith(root_real + os.sep)
+                ):
+                    raise ValueError(
+                        "Invalid log_dir_path; must remain under root_log_directory. "
+                        f"Configured root: {root_real}, Requested path: {log_dir_path_real}"
+                    )
+            else:
+                # No root configured, or path equals root - just normalize the path
+                log_dir_path = os.path.normpath(log_dir_path)
 
         capture_handler_conf["log_dir"] = log_dir_path
+        # Store the original validated root for path validation in _get_log_file
+        if root:
+            capture_handler_conf["_validated_log_dir_root"] = os.path.realpath(
+                os.path.expanduser(root)
+            )
+        else:
+            # No root configured, use log_dir as the root
+            capture_handler_conf["_validated_log_dir_root"] = os.path.realpath(
+                log_dir_path
+            )
         capture_handler_conf["name"] = name
         if "rotate_log" not in capture_handler_conf:
             capture_handler_conf["rotate_log"] = True
@@ -751,12 +847,30 @@ class StreamCaptureManagerServer(Bottle):
 
         Raises:
             ValueError:
-                if the port or connection type are not supplied.
+                if the port or connection type are not supplied, or if
+                log_dir_path is provided (not allowed via REST API).
         """
         data = dict(request.forms)
         loc = data.pop("loc", "")
         port = data.pop("port", None)
         conn_type = data.pop("conn_type", None)
+
+        # Do not allow log_dir_path override from unauthenticated REST API
+        # to prevent path traversal attacks. log_dir_path can only be set via
+        # configuration file.
+        if "log_dir_path" in data:
+            raise ValueError(
+                "log_dir_path parameter is not allowed via REST API. "
+                "Configure log directories in the bsc.yaml configuration file instead."
+            )
+
+        # Validate path parameter to prevent directory traversal
+        if "path" in data:
+            # Remove any leading slashes to force relative paths
+            data["path"] = data["path"].lstrip(os.sep)
+            # Reject paths with parent directory references
+            if ".." in data["path"]:
+                raise ValueError("path parameter cannot contain '..'")
 
         if not port or not conn_type:
             e = "Port and/or conn_type not set"
