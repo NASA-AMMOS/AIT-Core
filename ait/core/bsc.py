@@ -872,7 +872,7 @@ class StreamCaptureManagerServer(Bottle):
                 data["path"] = data["path"].lstrip(os.sep)
                 # Reject paths with parent directory references
                 if ".." in data["path"]:
-                    raise ValueError("Path parameter cannot contain ellipsis'")
+                    raise ValueError("Path parameter cannot contain ellipsis")
 
             if not port or not conn_type:
                 e = "Port and/or conn_type not set"

@@ -15,6 +15,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
+import bottle
 import datetime
 import logging
 import os
@@ -651,7 +652,8 @@ class TestStreamCaptureManagerServer:
             }
 
             with pytest.raises(
-                ValueError, match="log_dir_path parameter is not allowed via REST API"
+                bottle.HTTPError,
+                match="log_dir_path parameter is not allowed via REST API",
             ):
                 server._add_logger_by_name("malicious")
 
@@ -696,7 +698,9 @@ class TestStreamCaptureManagerServer:
                 "path": "../../etc",
             }
 
-            with pytest.raises(ValueError, match="path parameter cannot contain"):
+            with pytest.raises(
+                bottle.HTTPError, match="Path parameter cannot contain ellipsis"
+            ):
                 server._add_logger_by_name("malicious")
 
     @mock.patch("ait.core.bsc.SocketStreamCapturer")
