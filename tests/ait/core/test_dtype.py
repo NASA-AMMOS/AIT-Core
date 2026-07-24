@@ -248,3 +248,33 @@ def testString():
 
     enc_ba = dt.encode("on-your-left")
     assert enc_ba
+
+
+def testSignedRange():
+    # An n-bit two's-complement signed integer is valid over
+    # [-2**(n-1), 2**(n-1) - 1]. Regression test for the min/max off-by-one
+    # that made validate() accept max+1 (which struct.pack rejects) and
+    # reject the true minimum.
+    for name in (
+        "I8",
+        "LSB_I16",
+        "MSB_I16",
+        "LSB_I32",
+        "MSB_I32",
+        "LSB_I64",
+        "MSB_I64",
+    ):
+        dt = dtype.get(name)
+        nbits = dt.nbits
+
+        assert dt.min == -(2 ** (nbits - 1))
+        assert dt.max == (2 ** (nbits - 1)) - 1
+
+        assert dt.validate(dt.min)
+        assert dt.validate(dt.max)
+        assert not dt.validate(dt.min - 1)
+        assert not dt.validate(dt.max + 1)
+
+        # The true minimum and maximum must round-trip through encode/decode.
+        assert dt.decode(dt.encode(dt.min)) == dt.min
+        assert dt.decode(dt.encode(dt.max)) == dt.max
