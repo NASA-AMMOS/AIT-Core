@@ -1,11 +1,18 @@
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+
+sphinx:
+  configuration: doc/source/conf.py
+
 formats:
-    - none
+  - pdf
 
 python:
-    version: "3.11"
-    pip_install: true
-    extra_requirements:
-        - docs
-        - tests
-    install:
-        - requirements: doc/requirements.txt
+  install:
+    - method: pip
+      path: .
+    - requirements: doc/requirements.txt
