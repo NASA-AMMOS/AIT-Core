@@ -653,7 +653,54 @@ class TestStreamCaptureManagerServer:
 
             with pytest.raises(
                 bottle.HTTPError,
-                match="log_dir_path parameter is not allowed via REST API",
+                match="log_dir_path and file_name_pattern parameters are not allowed via REST API",
+            ):
+                server._add_logger_by_name("malicious")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_blocks_file_name_pattern(self, socket_log_mock):
+        """Test that file_name_pattern parameter is blocked from REST API"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        # Mock the request.forms to simulate a POST request with file_name_pattern
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "file_name_pattern": "%Y-%m-%d-malicious-{name}.pcap",
+            }
+
+            with pytest.raises(
+                bottle.HTTPError,
+                match="log_dir_path and file_name_pattern parameters are not allowed via REST API",
+            ):
+                server._add_logger_by_name("malicious")
+
+    @mock.patch("ait.core.bsc.SocketStreamCapturer")
+    def test_rest_api_blocks_both_log_dir_path_and_file_name_pattern(
+        self, socket_log_mock
+    ):
+        """Test that both log_dir_path and file_name_pattern are blocked from REST API"""
+        mngr_conf = {"root_log_directory": "/tmp/bsc"}
+        lm = bsc.StreamCaptureManager(mngr_conf, [])
+        server = bsc.StreamCaptureManagerServer(lm, "localhost", 8080)
+
+        # Mock the request.forms to simulate a POST request with both parameters
+        with mock.patch("ait.core.bsc.request") as request_mock:
+            request_mock.forms = {
+                "loc": "127.0.0.1",
+                "port": "9000",
+                "conn_type": "udp",
+                "log_dir_path": "/etc",
+                "file_name_pattern": "%Y-%m-%d-malicious-{name}.pcap",
+            }
+
+            with pytest.raises(
+                bottle.HTTPError,
+                match="log_dir_path and file_name_pattern parameters are not allowed via REST API",
             ):
                 server._add_logger_by_name("malicious")
 
