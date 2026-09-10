@@ -1,0 +1,50 @@
+name: "CodeQL Security Scan Configuration"
+
+# Keep the default query suite and add the extended security queries.
+disable-default-queries: false
+
+queries:
+  - uses: security-extended
+
+# Scope note: AIT-Core is a Python ground data system toolkit -- the ait
+# package (library, CLI entry points under ait/core/bin, and the ZeroMQ
+# server/plugin/handler stack under ait/core/server) -- plus a small OpenMCT
+# JavaScript integration. What is worth analyzing is our own source. Everything
+# below is either not ours, not code, or not shipped as code.
+paths-ignore:
+  # Dependencies and build output -- covered by Dependabot, not our source.
+  - '**/node_modules/**'
+  - '**/__pycache__/**'
+  - '**/*.pyc'
+  - '**/.tox/**'
+  - '**/.venv/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/*.egg-info/**'
+
+  # Documentation. doc/ is Sphinx: ~90 .rst pages plus a conf.py that only
+  # configures the doc build and is not shipped in the package.
+  - 'doc/**'
+
+  # Configuration and dictionary data, not code. config/ holds the example
+  # mission dictionaries (cmd/tlm/evr/limits/table YAML) and leapseconds.dat;
+  # ait/data and ait/core/data hold packaged defaults and JSON schemas.
+  # Scanning them produces no security signal and they are large.
+  - 'config/**'
+  - 'ait/data/**'
+  - 'ait/core/data/**'
+  - 'sequences/**'
+
+  # Tests. AIT-Core keeps its suite outside the package, in tests/.
+  - 'tests/**'
+  - '**/test_*.py'
+  - '**/*.test.js'
+
+  # Build tooling for the docs (invoked by poetry, not shipped).
+  - 'poetry_cli/**'
+
+query-filters:
+  # Style and maintainability suggestions add volume without adding security
+  # signal; SonarQube already covers that ground.
+  - exclude:
+      problem.severity: recommendation
