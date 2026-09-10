@@ -95,10 +95,10 @@ Tox
 ~~~
 Use `tox` to run a thorough build of the toolkit that checks test execution across different Python versions, verifies the docs build, runs the linting pipeline, and checks that the repo packages cleanly. Make sure you run `tox` in Poetry's `shell` without another virtual environment active to avoid problems with `tox` finding different python versions for the tests. You can run all of the development tools with::
 
+    # Manual command:
     tox
 
-Or alternatively::
-
+    # Makefile equivalent:
     make tox
 
 You can see the available `tox` test environments by passing `-l` and execute a specific one by passing its name to `-e`. Run `tox -h` for more info.
@@ -108,18 +108,18 @@ Tests
 
 Use `pytest` to manually run the test suite::
 
+    # Manual command:
     pytest
 
-Or alternatively::
-
+    # Makefile equivalent:
     make test
 
 Or via `tox` for a specific python version::
 
+    # Manual command:
     tox -e py310
 
-Or alternatively::
-
+    # Makefile equivalent:
     make run-tests PY=py310
 
 
@@ -133,10 +133,10 @@ Individual calls to the tools are configured in ``.pre-commit-config.yaml``. If 
 
 You can run all the linting tools with tox as well::
 
+    # Manual command:
     tox -e lint
 
-Or alternatively::
-
+    # Makefile equivalent:
     make lint
 
 
@@ -145,10 +145,10 @@ Documentation
 
 AIT uses Sphinx to build its documentation. You can build the documentation with::
 
+    # Manual command:
     poetry run build_sphinx
 
-Or alternatively::
-
+    # Makefile equivalent:
     make docs
 
 To view the documentation, open ``doc/build/html/index.html`` in a web browser. If you just want to check that the docs build is working you can use tox::
