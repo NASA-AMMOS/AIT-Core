@@ -51,6 +51,27 @@ As always, we encourage you to install AIT into a virtual environment of your ch
 - `pyenv <https://github.com/pyenv/pyenv>`__ so you can easily install different Python versions
 - `poetry <https://python-poetry.org/docs/#installation>`__ installed either to your specific virtual environment or system-wide, whichever you prefer.
 
+Using Makefile (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The easiest way to set up your development environment is using the provided Makefile. This will handle all the setup steps automatically::
+
+    make setup
+
+This will:
+- Install the package with development dependencies
+- Install pre-commit and pre-push hooks
+- Install all required Python versions via pyenv
+
+After running `make setup`, remember to set your AIT_CONFIG::
+
+    export AIT_CONFIG=/path/to/ait-core/config/config.yaml
+
+You can see all available Makefile targets by running::
+
+    make help
+
+Alternatively: Manual Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install the package in "editable" mode with all the development dependencies by running the following::
 
     poetry install
@@ -76,6 +97,10 @@ Use `tox` to run a thorough build of the toolkit that checks test execution acro
 
     tox
 
+Or alternatively::
+
+    make tox
+
 You can see the available `tox` test environments by passing `-l` and execute a specific one by passing its name to `-e`. Run `tox -h` for more info.
 
 Tests
@@ -85,9 +110,17 @@ Use `pytest` to manually run the test suite::
 
     pytest
 
+Or alternatively::
+
+    make test
+
 Or via `tox` for a specific python version::
 
     tox -e py310
+
+Or alternatively::
+
+    make run-tests PY=py310
 
 
 Code Checks
@@ -102,6 +135,10 @@ You can run all the linting tools with tox as well::
 
     tox -e lint
 
+Or alternatively::
+
+    make lint
+
 
 Documentation
 ~~~~~~~~~~~~~
@@ -109,6 +146,10 @@ Documentation
 AIT uses Sphinx to build its documentation. You can build the documentation with::
 
     poetry run build_sphinx
+
+Or alternatively::
+
+    make docs
 
 To view the documentation, open ``doc/build/html/index.html`` in a web browser. If you just want to check that the docs build is working you can use tox::
 
