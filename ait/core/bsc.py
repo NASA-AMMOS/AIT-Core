@@ -857,13 +857,13 @@ class StreamCaptureManagerServer(Bottle):
             port = data.pop("port", None)
             conn_type = data.pop("conn_type", None)
 
-            # Do not allow log_dir_path override from unauthenticated REST API
-            # to prevent path traversal attacks. log_dir_path can only be set via
-            # configuration file.
-            if "log_dir_path" in data:
+            # Do not allow log_dir_path or file_name_pattern override from unauthenticated REST API
+            # to prevent path traversal attacks and format-string memory exhaustion (GHSA-fjr5-6w4j-47xf).
+            # These parameters can only be set via configuration file.
+            if "log_dir_path" in data or "file_name_pattern" in data:
                 raise ValueError(
-                    "log_dir_path parameter is not allowed via REST API. "
-                    "Configure log directories in the bsc.yaml configuration file instead."
+                    "log_dir_path and file_name_pattern parameters are not allowed via REST API. "
+                    "Configure these in the bsc.yaml configuration file instead."
                 )
 
             # Validate path parameter to prevent directory traversal
