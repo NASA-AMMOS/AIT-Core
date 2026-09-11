@@ -51,6 +51,27 @@ As always, we encourage you to install AIT into a virtual environment of your ch
 - `pyenv <https://github.com/pyenv/pyenv>`__ so you can easily install different Python versions
 - `poetry <https://python-poetry.org/docs/#installation>`__ installed either to your specific virtual environment or system-wide, whichever you prefer.
 
+Using Makefile (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The easiest way to set up your development environment is using the provided Makefile. This will handle all the setup steps automatically::
+
+    make setup
+
+This will:
+- Install the package with development dependencies
+- Install pre-commit and pre-push hooks
+- Install all required Python versions via pyenv
+
+After running `make setup`, remember to set your AIT_CONFIG::
+
+    export AIT_CONFIG=/path/to/ait-core/config/config.yaml
+
+You can see all available Makefile targets by running::
+
+    make help
+
+Alternatively: Manual Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Install the package in "editable" mode with all the development dependencies by running the following::
 
     poetry install
@@ -74,7 +95,11 @@ Tox
 ~~~
 Use `tox` to run a thorough build of the toolkit that checks test execution across different Python versions, verifies the docs build, runs the linting pipeline, and checks that the repo packages cleanly. Make sure you run `tox` in Poetry's `shell` without another virtual environment active to avoid problems with `tox` finding different python versions for the tests. You can run all of the development tools with::
 
+    # Manual command:
     tox
+
+    # Makefile equivalent:
+    make tox
 
 You can see the available `tox` test environments by passing `-l` and execute a specific one by passing its name to `-e`. Run `tox -h` for more info.
 
@@ -83,11 +108,19 @@ Tests
 
 Use `pytest` to manually run the test suite::
 
+    # Manual command:
     pytest
+
+    # Makefile equivalent:
+    make test
 
 Or via `tox` for a specific python version::
 
+    # Manual command:
     tox -e py310
+
+    # Makefile equivalent:
+    make run-tests PY=py310
 
 
 Code Checks
@@ -100,7 +133,11 @@ Individual calls to the tools are configured in ``.pre-commit-config.yaml``. If 
 
 You can run all the linting tools with tox as well::
 
+    # Manual command:
     tox -e lint
+
+    # Makefile equivalent:
+    make lint
 
 
 Documentation
@@ -108,7 +145,11 @@ Documentation
 
 AIT uses Sphinx to build its documentation. You can build the documentation with::
 
+    # Manual command:
     poetry run build_sphinx
+
+    # Makefile equivalent:
+    make docs
 
 To view the documentation, open ``doc/build/html/index.html`` in a web browser. If you just want to check that the docs build is working you can use tox::
 
