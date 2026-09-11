@@ -24,6 +24,7 @@ import os
 import struct
 from importlib.resources import files
 from io import IOBase
+from pathlib import Path
 
 import yaml
 
@@ -1054,9 +1055,17 @@ class TlmDictWriter:
             output_path = ait.config._directory
 
         for pkt_name in self.tlmdict:
-            filename = os.path.join(output_path, pkt_name + ".csv")
+            #  GHSA-93gm-4cqq-j774 - Sanitize packet name to prevent path traversal
+            safe_output_path = Path(output_path).resolve()
+            safe_filename = (safe_output_path / f"{pkt_name}.csv").resolve()
 
-            with open(filename, "wt") as output:
+            # Ensure the resolved path stays within output_path
+            if not str(safe_filename).startswith(str(safe_output_path)):
+                msg = f"Packet name '{pkt_name}' contains invalid path characters"
+                log.error(msg)
+                continue
+
+            with open(safe_filename, "wt") as output:
                 csvwriter = csv.writer(output, quoting=csv.QUOTE_ALL)
                 csvwriter.writerow(header)
 
