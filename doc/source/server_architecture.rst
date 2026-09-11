@@ -208,7 +208,27 @@ Network Security
 ^^^^^^^^^^^^^^^^
 
 AIT uses ZeroMQ as the underlying messaging library with no security mechanisms enabled by default.
-While ZeroMQ port-based input streams are supported, we recommend that adaptations not expose unprotected ports.  Instead consider alternate mechanisms, such as Plugins or network service, which publish messages to ZeroMQ.
+
+**ZeroMQ Broker Binding**
+
+The AIT server's ZeroMQ broker defaults to binding on localhost (``127.0.0.1``) for both XSUB (port 5559) and XPUB (port 5560) sockets. This prevents the broker from being exposed on all network interfaces, addressing potential security vunerabilities.
+
+For single-host deployments (recommended), use SSH with port forwarding to access AIT remotely:
+
+.. code-block:: bash
+
+    ssh -L 8080:localhost:8080 user@ait-server
+
+For multi-host deployments, you must explicitly configure the binding and implement authentication:
+
+.. code-block:: yaml
+
+    server:
+        xsub: "tcp://127.0.0.1:5559"  # Keep localhost, use VPN/SSH tunnel
+        xpub: "tcp://127.0.0.1:5560"
+
+**WARNING**: Do not bind to ``tcp://*`` or ``tcp://0.0.0.0`` without implementing ZeroMQ CURVE authentication and encryption. Unauthenticated network-exposed brokers allow arbitrary command injection and telemetry exfiltration.
+
 For further protection that includes authentication and encryption, we recommend utilizing CurveZMQ (http://curvezmq.org/), which provides security protocols for ZeroMQ.
 
 

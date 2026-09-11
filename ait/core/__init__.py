@@ -44,5 +44,5 @@ sys.modules["ait"].DEFAULT_TLM_TOPIC = "__tlmpkts__"  # type: ignore[attr-define
 sys.modules["ait"].DEFAULT_CMD_ZMQ_SLEEP = 1  # type: ignore[attr-defined]
 
 
-sys.modules["ait"].SERVER_DEFAULT_XSUB_URL = "tcp://*:5559"  # type: ignore[attr-defined]
-sys.modules["ait"].SERVER_DEFAULT_XPUB_URL = "tcp://*:5560"  # type: ignore[attr-defined]
+sys.modules["ait"].SERVER_DEFAULT_XSUB_URL = "tcp://127.0.0.1:5559"  # type: ignore[attr-defined]
+sys.modules["ait"].SERVER_DEFAULT_XPUB_URL = "tcp://127.0.0.1:5560"  # type: ignore[attr-defined]
