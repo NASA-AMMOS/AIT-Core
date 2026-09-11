@@ -25,6 +25,11 @@ import time
 import warnings
 import zlib
 
+import msgpack  # type: ignore
+from msgpack.exceptions import ExtraData  # type: ignore
+from msgpack.exceptions import FormatError  # type: ignore
+from msgpack.exceptions import StackError  # type: ignore
+
 import ait
 from ait.core import log
 
@@ -34,14 +39,30 @@ class ObjectCache(object):
         """
         Creates a new ObjectCache
 
-        Caches the Python object returned by loader(filename).
-        An ObjectCache is useful when loader(filename) is slow.
+        Caches the Python object returned by loader(filename), using
+        msgpack object serialization. An ObjectCache is useful when
+        loader(filename) is slow.
 
-        Use the load() method to load
+        The result of loader(filename) is cached to cachename, the
+        basename of filename with a '.msgpack' extension.
+
+        Use the load() method to load, either via loader(filename) or
+        the msgpack cache file, whichever was modified most recently.
         """
         self._loader = loader
         self._dict = None
         self._filename = filename
+        self._cachename = os.path.splitext(filename)[0] + ".msgpack"
+
+    @property
+    def cachename(self):
+        """The msgpack cache filename"""
+        return self._cachename
+
+    @property
+    def dirty(self):
+        """True if the msgpack cache needs to be regenerated, False to use current cache"""
+        return check_yaml_timestamps(self.filename, self.cachename)
 
     @property
     def filename(self):
@@ -52,11 +73,40 @@ class ObjectCache(object):
         """
         Loads the Python object
 
-        Loads the Python object via loader (filename).
+        Loads the Python object, either via loader(filename) or the
+        msgpack cache file, whichever was modified most recently.
         """
 
         if self._dict is None:
-            self._dict = self._loader(self.filename)
+            if self.dirty:
+                # Cache is stale or doesn't exist, load from source
+                self._dict = self._loader(self.filename)
+                update_cache(self.filename, self.cachename, self._dict)
+                log.info(f"Loaded new cache file: {self.cachename}")
+            else:
+                # Load from cache
+                try:
+                    with open(self.cachename, "rb") as stream:
+                        self._dict = msgpack.unpackb(
+                            stream.read(), raw=False, strict_map_key=False
+                        )
+                    log.info(
+                        f'Current cache file loaded: {self.cachename.split("/")[-1]}'
+                    )
+                except (
+                    ValueError,
+                    ExtraData,
+                    FormatError,
+                    StackError,
+                    FileNotFoundError,
+                ) as e:
+                    log.warn(
+                        f"Msgpack cache load failed ({e}), regenerating from source"
+                    )
+                    # Fall back to loading from source
+                    self._dict = self._loader(self.filename)
+                    update_cache(self.filename, self.cachename, self._dict)
+
         return self._dict
 
 
@@ -118,6 +168,35 @@ def check_yaml_timestamps(yaml_file_name, cache_file_name):
                 f'back and forth on one another through the "!include" statements.'
             )
     return False
+
+
+def update_cache(yaml_file_name, cache_file_name, object_to_serialize):
+    """
+    Caches the result of loader(yaml_file_name) to msgpack binary (cache_file_name), if
+    the yaml config file has been modified since the last cache was created, i.e.
+    (the binary cache is declared to be 'dirty' in 'check_yaml_timestamps()').
+
+    param: yaml_file_name: str
+        Name of the yaml configuration file to be serialized
+    param: cache_file_name: str
+        File name with path to the new serialized msgpack cache file for this config file.
+    param: object_to_serialize: object
+        Object to serialize with msgpack, e.g. instance of 'ait.core.cmd.CmdDict'
+
+    """
+
+    msg = f"Saving updates from more recent {yaml_file_name} to {cache_file_name}."
+    log.info(msg)
+    try:
+        with open(cache_file_name, "wb") as output:
+            msgpack.pack(
+                object_to_serialize, output, use_bin_type=True, strict_types=False
+            )
+    except (ValueError, TypeError) as e:
+        log.error(f"Failed to save cache file {cache_file_name}: {e}")
+        # Continue without caching rather than crashing
+        if os.path.exists(cache_file_name):
+            os.remove(cache_file_name)
 
 
 def __init_extensions__(modname, modsyms):  # noqa

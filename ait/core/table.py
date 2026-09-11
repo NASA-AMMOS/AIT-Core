@@ -14,8 +14,13 @@
 import datetime
 import hashlib
 import io
+import os
 
+import msgpack  # type: ignore
 import yaml
+from msgpack.exceptions import ExtraData  # type: ignore
+from msgpack.exceptions import FormatError  # type: ignore
+from msgpack.exceptions import StackError  # type: ignore
 
 import ait
 from ait.core import dmc
@@ -456,12 +461,69 @@ class FSWTabDictCache(object):
 
         self.filename = filename
         self.fswtabdict = None
+        self.cachename = (
+            os.path.splitext(filename)[0] + ".msgpack" if filename else None
+        )
+
+    @property
+    def dirty(self):
+        """True if the msgpack cache needs to be regenerated, False to use current cache"""
+        if not self.cachename or not self.filename:
+            return True
+        return util.check_yaml_timestamps(self.filename, self.cachename)
 
     def load(self):
         if self.fswtabdict is None:
-            self.fswtabdict = FSWTabDict(self.filename)
+            if self.dirty or not self.cachename:
+                # Cache is stale or doesn't exist, load from source
+                self.fswtabdict = FSWTabDict(self.filename)
+                if self.cachename:
+                    self._save_cache()
+                    log.info(f"Loaded new table cache file: {self.cachename}")
+            else:
+                # Try to load from cache
+                try:
+                    with open(self.cachename, "rb") as stream:
+                        self.fswtabdict = msgpack.unpackb(
+                            stream.read(), raw=False, strict_map_key=False
+                        )
+                    log.info(
+                        f'Current table cache file loaded: {self.cachename.split("/")[-1]}'
+                    )
+                except (
+                    ValueError,
+                    ExtraData,
+                    FormatError,
+                    StackError,
+                    FileNotFoundError,
+                ) as e:
+                    log.warn(
+                        f"Msgpack table cache load failed ({e}), regenerating from source"
+                    )
+                    # Fall back to loading from source
+                    self.fswtabdict = FSWTabDict(self.filename)
+                    if self.cachename:
+                        self._save_cache()
 
         return self.fswtabdict
+
+    def _save_cache(self):
+        """Save the table dictionary to msgpack cache"""
+        if not self.cachename or not self.fswtabdict:
+            return
+
+        try:
+            msg = f"Saving table cache to {self.cachename}."
+            log.info(msg)
+            with open(self.cachename, "wb") as output:
+                msgpack.pack(
+                    self.fswtabdict, output, use_bin_type=True, strict_types=False
+                )
+        except (ValueError, TypeError) as e:
+            log.error(f"Failed to save table cache file {self.cachename}: {e}")
+            # Continue without caching rather than crashing
+            if os.path.exists(self.cachename):
+                os.remove(self.cachename)
 
 
 _DefaultFSWTabDictCache = FSWTabDictCache()
