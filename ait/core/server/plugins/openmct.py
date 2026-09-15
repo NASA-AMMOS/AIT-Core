@@ -341,6 +341,7 @@ class AITOpenMctPlugin(Plugin):
     DEFAULT_DEBUG = False
     DEFAULT_DEBUG_MAX_LEN = 512
     DEFAULT_DATABASE_ENABLED = False
+    DEFAULT_BIND_ADDRESS = "127.0.0.1"  # GHSA-q6xr-3c9r-x9xg: Default to localhost
 
     DEFAULT_WS_RECV_TIMEOUT_SECS = 0.1
     DEFAULT_TELEM_QUEUE_TIMEOUT_SECS = 10
@@ -384,6 +385,8 @@ class AITOpenMctPlugin(Plugin):
         self._debugMimicRepeat = False
         # Port value for the server
         self._servicePort = AITOpenMctPlugin.DEFAULT_PORT
+        # Bind address for the server
+        self._bindAddress = AITOpenMctPlugin.DEFAULT_BIND_ADDRESS
         # Flag indicating if we should create a database connection for historical queries
         self._databaseEnabled = AITOpenMctPlugin.DEFAULT_DATABASE_ENABLED
 
@@ -425,6 +428,14 @@ class AITOpenMctPlugin(Plugin):
             elif isinstance(self.debug_enabled, str):
                 self._debugEnabled = self.debug_enabled.upper() == "TRUE"
             self.dbg_message("Debug flag = " + str(self._debugEnabled))
+            # GHSA-q6xr-3c9r-x9xg: Warn when debug mode is enabled
+            if self._debugEnabled:
+                log.warn(
+                    "[SECURITY WARNING] OpenMCT plugin debug mode is ENABLED. "
+                    "This exposes an unauthenticated endpoint that allows telemetry injection. "
+                    "Injected data is indistinguishable from real spacecraft telemetry. "
+                    "Do NOT enable in production environments."
+                )
 
         # Check if port is assigned
         if hasattr(self, "service_port"):
@@ -441,6 +452,11 @@ class AITOpenMctPlugin(Plugin):
             elif isinstance(self.database_enabled, str):
                 self._databaseEnabled = self.database_enabled.upper() == "TRUE"
             self.dbg_message("Database flag = " + str(self._databaseEnabled))
+
+        # Check if bind address was included
+        if hasattr(self, "bind_address"):
+            self._bindAddress = str(self.bind_address)
+            self.dbg_message("Bind Address = " + self._bindAddress)
 
     def load_database(self, **kwargs):
         """
@@ -553,8 +569,10 @@ class AITOpenMctPlugin(Plugin):
         """Initialize the web-server state"""
 
         self._route()
+        # GHSA-q6xr-3c9r-x9xg: Use configurable bind address instead of hardcoded 0.0.0.0
+        # to allow restricting server to localhost or specific interfaces
         wsgi_server = gevent.pywsgi.WSGIServer(
-            ("0.0.0.0", self._servicePort),
+            (self._bindAddress, self._servicePort),
             self._app,
             handler_class=geventwebsocket.handler.WebSocketHandler,
         )
@@ -695,7 +713,24 @@ class AITOpenMctPlugin(Plugin):
             bottle.abort(400, "Expected WebSocket request.")
             return
 
+        # GHSA-7h55-xp8q-247v: Validate Origin header to prevent cross-site WebSocket hijacking
+        # This prevents malicious websites from connecting to WebSocket from victim's browser
         req_env = bottle.request.environ
+        origin = req_env.get("HTTP_ORIGIN")
+        if origin:
+            # Allow connections from same origin (localhost variants and configured bind address)
+            allowed_origins = [
+                f"http://localhost:{self._servicePort}",
+                f"http://127.0.0.1:{self._servicePort}",
+                f"http://{self._bindAddress}:{self._servicePort}",
+            ]
+            if origin not in allowed_origins:
+                log.warn(
+                    f"Rejected WebSocket connection from unauthorized origin: {origin}"
+                )
+                bottle.abort(403, "Origin not allowed")
+                return
+
         client_ip = (
             req_env.get("HTTP_X_FORWARDED_FOR")
             or req_env.get("REMOTE_ADDR")
@@ -738,8 +773,14 @@ class AITOpenMctPlugin(Plugin):
         :param mct_pkt_id_part: OpenMCT id part (single entry or comma-separated list)
         :return: JSON string representing list of result dicts
         """
-        start_time_ms = float(bottle.request.query.start)
-        end_time_ms = float(bottle.request.query.end)
+        # GHSA-rgwv-x7h5-f7j3: Add exception handling to prevent crashes from
+        # invalid query parameters (missing/non-numeric start/end values)
+        try:
+            start_time_ms = float(bottle.request.query.start)
+            end_time_ms = float(bottle.request.query.end)
+        except (ValueError, AttributeError, TypeError) as e:
+            bottle.abort(400, f"Invalid query parameters: {e}")
+            return  # abort raises HTTPResponse, but return for safety
 
         # Set the content type of response for OpenMct to know its JSON
         bottle.response.content_type = "application/json"
@@ -829,7 +870,14 @@ class AITOpenMctPlugin(Plugin):
 
         result_list = []
 
-        ait_pkt_def = self._aitTlmDict[ait_pkt_id]
+        # GHSA-rgwv-x7h5-f7j3: Add exception handling to prevent crashes from
+        # invalid packet IDs not found in telemetry dictionary
+        try:
+            ait_pkt_def = self._aitTlmDict[ait_pkt_id]
+        except KeyError:
+            log.error(f"Invalid packet ID: {ait_pkt_id}")
+            return result_list
+
         ait_field_defs = ait_pkt_def.fields
 
         # Build field names list from tlm dictionary for sorting data query
@@ -920,6 +968,20 @@ class AITOpenMctPlugin(Plugin):
         If HTTP Request query includes a value for 'repeat', then this
         will continue emitting telemetry.
         """
+
+        # GHSA-q6xr-3c9r-x9xg: Log debug endpoint access for security monitoring
+        # This endpoint injects fake telemetry into live stream - operators cannot
+        # distinguish it from real spacecraft data, creating integrity risk
+        req_env = bottle.request.environ
+        client_ip = (
+            req_env.get("HTTP_X_FORWARDED_FOR")
+            or req_env.get("REMOTE_ADDR")
+            or "(unknown)"
+        )
+        log.warn(
+            f"[SECURITY] Debug telemetry injection endpoint accessed by {client_ip} "
+            f"for packet: {ait_tlm_pkt_name}"
+        )
 
         # Http query option, if it is set to anything, consider it true
         self._debugMimicRepeat = len(str(bottle.request.query.repeat)) > 0
@@ -1171,7 +1233,9 @@ class AITOpenMctPlugin(Plugin):
         elif directive == "subscribe" and len(msg_parts) > 1:
             self.dbg_message(f"Subscribing websocket {mws.id} to: {msg_parts[1]}")
             mws.subscribe_field(msg_parts[1])
-        elif directive == "unsubscribe":
+        # GHSA-rgwv-x7h5-f7j3: Add length check to prevent IndexError crash when
+        # unsubscribe message is sent without field argument
+        elif directive == "unsubscribe" and len(msg_parts) > 1:
             self.dbg_message(f"Unsubscribing websocket {mws.id} from: {msg_parts[1]}")
             mws.unsubscribe_field(msg_parts[1])
         else:
