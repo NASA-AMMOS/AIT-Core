@@ -172,8 +172,8 @@ class PrimitiveType:
             self._max = +sys.float_info.max
             self._min = -sys.float_info.max
         elif self.signed:
-            self._max = 2 ** (self.nbits - 1)
-            self._min = -1 * (self.max - 1)
+            self._max = 2 ** (self.nbits - 1) - 1
+            self._min = -1 * (self.max + 1)
         elif not self.string:
             self._max = 2**self.nbits - 1
             self._min = 0
