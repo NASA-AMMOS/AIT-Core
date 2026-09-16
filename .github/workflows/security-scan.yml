@@ -1,0 +1,176 @@
+name: Security-Scan
+
+# Static analysis for AIT-Core, following the AMMOS scanning guide:
+#   "Code Vulnerability Scanning Set Up for AMMOS Open Source Software"
+#   https://wiki.jpl.nasa.gov/display/AmmosArch/Code+Vulnerability+Scanning+Set+Up+for+AMMOS+Open+Source+Software
+#
+# Pipeline:
+#   CodeQL scan (python, javascript-typescript, actions)
+#     -> nasa-scrub translate_results   (the step the AMMOS guide prescribes)
+#     -> fix_sarif_paths.py             (repairs what scrub degrades)
+#     -> sonarqube-scan-action          (imports into SonarQube Cloud)
+#
+# Why the extra repair step: scrub rewrites CodeQL's workspace-relative URIs to
+# absolute paths and writes the absolute source root into uriBaseId, which stops
+# SonarQube mapping findings to files. It also deletes tool.extensions -- where
+# CodeQL keeps its real rule metadata -- and rebuilds tool.driver.rules as
+# id-only stubs, so every finding would otherwise import as MEDIUM regardless of
+# its true severity. fix_sarif_paths.py restores both from the pre-scrub report.
+# See .github/scripts/fix_sarif_paths.py for the measurements.
+#
+# This replaces the previous .github/workflows/code-scanning.yml, which ran the
+# unmodified guide boilerplate as a three-leg language matrix. That shape ran a
+# separate SonarQube analysis per language against the same project key, so the
+# legs raced and the last one to finish decided what the project showed. All
+# three languages are analyzed here in a single CodeQL run instead, and their
+# reports are imported together by one scanner invocation.
+#
+# Manual-first: dispatch this workflow to validate a change to the scan
+# pipeline. workflow_dispatch checks out the ref you select, so it scans that
+# branch's code.
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Shallow clones give SonarQube poorer relevancy on issue dating.
+          fetch-depth: 0
+
+      # Pinned interpreter for the scan tooling itself, so `pip install
+      # nasa-scrub` lands in a clean, non-externally-managed environment on the
+      # runner. Unrelated to the Python level AIT-Core targets, which is
+      # declared to the analyzer as sonar.python.version in
+      # sonar-project.properties.
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Extract version from pyproject.toml
+        run: |
+          set -euo pipefail
+          VERSION=$(python3 -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['tool']['poetry']['version'])")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+
+      # All three languages in one init. Every one of them is interpreted, so
+      # none needs a build; build-mode is left unset because the input is only
+      # accepted when a single language is analyzed, and `none` is already the
+      # default for these.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        with:
+          languages: python,javascript-typescript,actions
+          config-file: ./.github/codeql/codeql-config.yml
+
+      # category is left unset: with several languages in one run the action
+      # derives a distinct category per language, which is what keeps the
+      # GitHub code scanning alert sets from overwriting each other.
+      - name: CodeQL Scan
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+
+      - name: Post-Process Output
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check nasa-scrub==3.0.2
+
+          results_dir=$(realpath "${{ github.workspace }}/../results")
+          workspace_path="${{ github.workspace }}"
+
+          # Exported before any processing so the Upload Artifacts step still
+          # has a path to publish if a step below fails -- a broken run is
+          # exactly when you want the raw reports to look at.
+          echo "RESULTS_DIR=$results_dir" >> $GITHUB_ENV
+
+          echo "SARIF files directory: $results_dir"
+          echo "Workspace path: $workspace_path"
+          echo "Available SARIF files:"
+          ls -lh "$results_dir"/*.sarif
+
+          # Captured before the loop so the files written below are not picked
+          # up as inputs on a later iteration.
+          sarif_files=$(find "$results_dir" -name '*.sarif')
+
+          for sarif_file in $sarif_files
+          do
+            base=$(basename "$sarif_file" .sarif)
+            stripped_file="$results_dir/${base}_stripped.sarif"
+            processed_file="$results_dir/${base}_processed.sarif"
+            echo "Processing: $(basename "$sarif_file")"
+
+            # The AMMOS guide's step: reformat CodeQL output for SonarQube.
+            python3 -m scrub.tools.parsers.translate_results \
+              "$sarif_file" "$stripped_file" "$workspace_path" sarifv2.1.0
+
+            # Repair the paths and rule metadata scrub degrades, using the
+            # original CodeQL report as the source of truth.
+            python3 .github/scripts/fix_sarif_paths.py \
+              "$stripped_file" "$processed_file" "$workspace_path" \
+              --reference "$sarif_file"
+          done
+
+          sarif_list=$(find "$results_dir" -name '*_processed.sarif' | paste -sd, -)
+
+          echo "SARIF_FILES=$sarif_list" >> $GITHUB_ENV
+
+          echo ""
+          echo "SARIF files for SonarQube:"
+          echo "$sarif_list"
+
+      # Makes the raw, scrubbed and repaired reports downloadable, which is how
+      # you check attribution after a run without re-running the scan.
+      # Guarded on RESULTS_DIR rather than a bare always(): if the CodeQL step
+      # fails, Post-Process never runs, the env var is unset, and the upload
+      # action aborts the job a second time with "Input required and not
+      # supplied: path" -- burying the real error under a spurious one.
+      - name: Upload Artifacts
+        if: always() && env.RESULTS_DIR != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codeql-artifacts
+          path: ${{ env.RESULTS_DIR }}
+          if-no-files-found: warn
+          retention-days: 14
+
+      # sonar.branch.name is pinned to master on purpose while we validate the
+      # pipeline. This branch carries master's code plus CI config, so the
+      # findings belong on master's analysis -- and pinning keeps a validation
+      # run from creating a throwaway branch in SonarQube Cloud.
+      #
+      # Leaving it unset does NOT do the same thing. Measured on AIT-GUI run
+      # 34522749731: these projects are ALM-bound to GitHub, so the scanner
+      # auto-detects the branch from the Actions environment and published to
+      # a new SHORT-lived branch named after the git branch. Pinning is what
+      # actually puts the results on master.
+      #
+      # Once the results look right, change this to:
+      #     -Dsonar.branch.name=${{ github.ref_name }}
+      # so scans are attributed to the branch actually being analyzed. Until
+      # then, be aware that a run from a branch with real code changes will
+      # publish those numbers onto master.
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.sarifReportPaths=${{ env.SARIF_FILES }}
+            -Dsonar.projectVersion=${{ env.VERSION }}
+            -Dsonar.branch.name=master
