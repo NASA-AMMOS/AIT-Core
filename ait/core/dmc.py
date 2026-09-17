@@ -327,9 +327,9 @@ class UTCLeapSeconds(object):
             with open(ls_file, "rb") as outfile:
                 packed_data = outfile.read()
 
-            # deserialize data using msgpack
+            # Deserialize data using msgpack
             unpacked_data = msgpack.unpackb(
-                packed_data, raw=False, object_hook=mp_decode
+                packed_data, raw=False, object_hook=mp_decode, strict_map_key=False
             )
 
             # msgpack converts tuples to lists, so have to convert back
